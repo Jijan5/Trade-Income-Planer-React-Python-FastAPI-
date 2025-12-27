@@ -2,6 +2,7 @@ from decimal import Decimal, getcontext, ROUND_HALF_UP
 from typing import List, Dict
 import math
 import random
+import yfinance as yf
 from .models import SimulationRequest, DailyResult
 from .models import SimulationRequest, DailyResult, GoalPlannerRequest
 
@@ -235,3 +236,29 @@ def calculate_goal_plan(data: GoalPlannerRequest) -> Dict:
         }
     except Exception as e:
         return {"status": "error", "message": f"An error occurred: {str(e)}"}
+
+def get_market_price(symbol: str) -> Dict:
+    try:
+        # Mapping TradingView symbols to Yahoo Finance symbols
+        yf_symbol = symbol
+        if "BTC" in symbol and "USD" in symbol: yf_symbol = "BTC-USD"
+        elif "ETH" in symbol and "USD" in symbol: yf_symbol = "ETH-USD"
+        elif "SOL" in symbol and "USD" in symbol: yf_symbol = "SOL-USD"
+        elif "XAUUSD" in symbol or "GOLD" in symbol: yf_symbol = "GC=F"
+        elif "EURUSD" in symbol: yf_symbol = "EURUSD=X"
+        elif "GBPUSD" in symbol: yf_symbol = "GBPUSD=X"
+        elif "JPY" in symbol: yf_symbol = "JPY=X"
+        elif "IDX:" in symbol: yf_symbol = symbol.split(":")[1] + ".JK"
+        elif ":" in symbol: yf_symbol = symbol.split(":")[1] # NASDAQ:TSLA -> TSLA
+        
+        ticker = yf.Ticker(yf_symbol)
+        # Get fast price data
+        data = ticker.history(period="1d", interval="1m")
+        
+        if data.empty:
+             return {"status": "error", "price": 0}
+             
+        current_price = data['Close'].iloc[-1]
+        return {"status": "success", "symbol": yf_symbol, "price": float(current_price)}
+    except Exception as e:
+        return {"status": "error", "message": str(e), "price": 0}

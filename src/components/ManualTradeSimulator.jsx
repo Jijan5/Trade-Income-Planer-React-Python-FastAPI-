@@ -1,101 +1,173 @@
-import React, { useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
-const ManualTradeSimulator = () => {
+const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   const [config, setConfig] = useState({
     initialCapital: 10000,
-    riskType: 'percent', // 'percent' or 'fixed'
-    riskValue: 1, // 1% or $1
-    riskReward: 2,
+    tradeAmount: 1000, // Amount in USD to buy/sell
   });
 
-  const [tradingState, setTradingState] = useState({
-    isStarted: false,
-    currentBalance: 10000,
-    history: [], // { id, type: 'WIN'|'LOSS', pnl, balance }
-    chartData: [], // { trade: 0, balance: 10000 }
+  const [marketState, setMarketState] = useState({
+    price: 0,
+    isLoading: true,
+    lastUpdate: null
   });
 
-  const startTrading = (e) => {
-    e.preventDefault();
-    setTradingState({
-      isStarted: true,
-      currentBalance: config.initialCapital,
-      history: [],
-      chartData: [{ trade: 0, balance: config.initialCapital }],
-    });
+  const [account, setAccount] = useState({
+    balance: 10000,
+    equity: 10000,
+    positions: [], // { id, type: 'BUY'|'SELL', entryPrice, size, symbol, openTime }
+    history: []
+  });
+
+  const [isSessionActive, setIsSessionActive] = useState(false);
+  const pollInterval = useRef(null);
+
+  // Fetch Price Function
+  const fetchPrice = async () => {
+    try {
+      // Encode symbol to handle special chars like ':'
+      const encodedSymbol = encodeURIComponent(activeSymbol);
+      const response = await axios.get(`http://localhost:8000/api/price/${encodedSymbol}`);
+      
+      if (response.data.status === 'success') {
+        setMarketState(prev => ({
+          price: response.data.price,
+          isLoading: false,
+          lastUpdate: new Date()
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching price:", error);
+    }
   };
 
-  const executeTrade = (outcome) => {
-    const { currentBalance } = tradingState;
-    const { riskType, riskValue, riskReward } = config;
-
-    let riskAmount = 0;
-    if (riskType === 'percent') {
-      riskAmount = currentBalance * (riskValue / 100);
+  // Start/Stop Polling when Session is Active
+  useEffect(() => {
+    if (isSessionActive) {
+      fetchPrice(); // Initial fetch
+      pollInterval.current = setInterval(fetchPrice, 5000); // Poll every 5 seconds
     } else {
-      riskAmount = parseFloat(riskValue);
+      if (pollInterval.current) clearInterval(pollInterval.current);
     }
+    return () => {
+      if (pollInterval.current) clearInterval(pollInterval.current);
+    };
+  }, [isSessionActive, activeSymbol]);
 
-    let pnl = 0;
-    if (outcome === 'WIN') {
-      pnl = riskAmount * riskReward;
+  // Update Equity based on Price Changes
+  useEffect(() => {
+    if (account.positions.length > 0 && marketState.price > 0) {
+      let totalFloatingPnL = 0;
+      
+      const updatedPositions = account.positions.map(pos => {
+        let pnl = 0;
+        const priceDiff = marketState.price - pos.entryPrice;
+        // Calculate PnL based on position size and price movement percentage
+        // Formula: (PriceDiff / EntryPrice) * TradeAmount
+        if (pos.type === 'BUY') {
+          pnl = (priceDiff / pos.entryPrice) * pos.size;
+        } else {
+          pnl = (-priceDiff / pos.entryPrice) * pos.size;
+        }
+        totalFloatingPnL += pnl;
+        return { ...pos, currentPnL: pnl };
+      });
+
+      setAccount(prev => ({
+        ...prev,
+        equity: prev.balance + totalFloatingPnL,
+        // We don't update positions state here to avoid re-render loops, 
+        // just calculating equity is enough for the main view.
+        // But for the list, we might want to calculate PnL on render.
+      }));
     } else {
-      pnl = -riskAmount;
+        setAccount(prev => ({ ...prev, equity: prev.balance }));
     }
+  }, [marketState.price]);
 
-    const newBalance = currentBalance + pnl;
-    const newTrade = {
-      id: tradingState.history.length + 1,
-      type: outcome,
-      pnl: pnl,
-      balance: newBalance,
+  const startSession = (e) => {
+    e.preventDefault();
+    setAccount({
+        balance: config.initialCapital,
+        equity: config.initialCapital,
+        positions: [],
+        history: []
+    });
+    setIsSessionActive(true);
+  };
+
+  const openPosition = (type) => {
+    if (marketState.price === 0) return;
+    
+    const newPosition = {
+      id: Date.now(),
+      type,
+      entryPrice: marketState.price,
+      size: config.tradeAmount,
+      symbol: activeSymbol,
+      openTime: new Date()
     };
 
-    setTradingState(prev => ({
+    setAccount(prev => ({
       ...prev,
-      currentBalance: newBalance,
-      history: [newTrade, ...prev.history],
-      chartData: [...prev.chartData, { trade: prev.history.length + 1, balance: newBalance }]
+      positions: [newPosition, ...prev.positions]
     }));
   };
 
-  const resetTrading = () => {
-     setTradingState({
-      isStarted: true, // Keep started, just reset data
-      currentBalance: config.initialCapital,
-      history: [],
-      chartData: [{ trade: 0, balance: config.initialCapital }],
-    });
+  const closePosition = (id) => {
+    const position = account.positions.find(p => p.id === id);
+    if (!position) return;
+
+    let pnl = 0;
+    const priceDiff = marketState.price - position.entryPrice;
+    if (position.type === 'BUY') {
+      pnl = (priceDiff / position.entryPrice) * position.size;
+    } else {
+      pnl = (-priceDiff / position.entryPrice) * position.size;
+    }
+
+    const historyItem = {
+      ...position,
+      exitPrice: marketState.price,
+      closeTime: new Date(),
+      finalPnL: pnl
+    };
+
+    setAccount(prev => ({
+      ...prev,
+      balance: prev.balance + pnl,
+      equity: prev.balance + pnl, // Equity resets to balance after close
+      positions: prev.positions.filter(p => p.id !== id),
+      history: [historyItem, ...prev.history]
+    }));
   };
 
-  const changeCapital = () => {
-    setTradingState(prev => ({ ...prev, isStarted: false }));
-  };
-
-  if (!tradingState.isStarted) {
+  if (!isSessionActive) {
     return (
-      <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg max-w-2xl mx-auto mt-10">
-        <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-wider border-b border-gray-700 pb-4">
-          Manual Trading Simulator
+      <div className="bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-lg max-w-md mx-auto mt-10 text-center">
+        <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-wider">
+          Live Market Simulator
         </h2>
-        <form onSubmit={startTrading} className="space-y-6">
-            {/* Input for Initial Capital */}
+        <p className="text-gray-400 mb-8 text-sm">
+          Trade {activeSymbol} with real-time market data without risking real money.
+        </p>
+        <form onSubmit={startSession} className="space-y-6 text-left">
             <div>
                 <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Initial Capital ($)</label>
                 <input
                     type="number"
                     value={config.initialCapital}
                     onChange={(e) => setConfig({...config, initialCapital: parseFloat(e.target.value)})}
-                    className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none text-lg"
+                    className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none text-lg font-mono"
                     required
                 />
             </div>
             <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded font-bold uppercase tracking-wider transition duration-200"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded font-bold uppercase tracking-wider transition duration-200 shadow-lg"
             >
-                Start Trading Session
+                Start Trading
             </button>
         </form>
       </div>
@@ -103,144 +175,180 @@ const ManualTradeSimulator = () => {
   }
 
   return (
-    <div className="space-y-6">
-        {/* Header Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* LEFT COLUMN: CONTROLS */}
+        <div className="space-y-6">
+            {/* Account Stats */}
             <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                <p className="text-xs text-gray-400 uppercase">Current Balance</p>
-                <p className="text-2xl font-mono font-bold text-white">${tradingState.currentBalance.toFixed(2)}</p>
+                <div className="flex justify-between items-end mb-2">
+                    <p className="text-xs text-gray-400 uppercase">Equity</p>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${account.equity >= account.balance ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}`}>
+                        {((account.equity - account.balance) / account.balance * 100).toFixed(2)}%
+                    </span>
+                </div>
+                <p className="text-3xl font-mono font-bold text-white mb-4">${account.equity.toFixed(2)}</p>
+                
+                <div className="grid grid-cols-2 gap-4 border-t border-gray-700 pt-4">
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase">Balance</p>
+                        <p className="text-sm font-mono text-gray-300">${account.balance.toFixed(2)}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 uppercase">Open PnL</p>
+                        <p className={`text-sm font-mono font-bold ${account.equity - account.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            ${(account.equity - account.balance).toFixed(2)}
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                <p className="text-xs text-gray-400 uppercase">Total PnL</p>
-                <p className={`text-2xl font-mono font-bold ${tradingState.currentBalance >= config.initialCapital ? 'text-green-400' : 'text-red-400'}`}>
-                    {tradingState.currentBalance >= config.initialCapital ? '+' : ''}
-                    ${(tradingState.currentBalance - config.initialCapital).toFixed(2)}
-                </p>
+
+            {/* Trading Controls */}
+            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-sm font-bold text-gray-300 uppercase">{activeSymbol}</h3>
+                    <div className="text-right">
+                        <p className="text-2xl font-mono font-bold text-white">
+                            {marketState.isLoading ? "..." : marketState.price.toFixed(2)}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                            {marketState.isLoading ? "Fetching..." : "Live Price"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Trade Amount ($)</label>
+                    <input
+                        type="number"
+                        value={config.tradeAmount}
+                        onChange={(e) => setConfig({...config, tradeAmount: parseFloat(e.target.value)})}
+                        className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                    />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <button
+                        onClick={() => openPosition('BUY')}
+                        disabled={marketState.isLoading}
+                        className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
+                    >
+                        <span>BUY / LONG</span>
+                        <span className="text-[10px] opacity-70 font-normal">Profit if price goes UP</span>
+                    </button>
+                    <button
+                        onClick={() => openPosition('SELL')}
+                        disabled={marketState.isLoading}
+                        className="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
+                    >
+                        <span>SELL / SHORT</span>
+                        <span className="text-[10px] opacity-70 font-normal">Profit if price goes DOWN</span>
+                    </button>
+                </div>
             </div>
-            <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex flex-col justify-center gap-2">
-                 <button onClick={resetTrading} className="w-full bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded text-xs font-bold uppercase transition-colors">
-                    Reset Session (Keep Capital)
-                 </button>
-                 <button onClick={changeCapital} className="w-full bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded text-xs font-bold uppercase transition-colors">
-                    Change Capital
-                 </button>
-            </div>
+            
+            <button 
+                onClick={() => setIsSessionActive(false)}
+                className="w-full py-2 text-xs text-gray-500 hover:text-white border border-gray-700 hover:bg-gray-700 rounded transition-colors"
+            >
+                Reset / Change Capital
+            </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Controls */}
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 space-y-6 h-fit">
-                <h3 className="text-sm font-bold text-gray-300 uppercase border-b border-gray-700 pb-2">Trade Settings</h3>
-                
-                <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Risk Type</label>
-                    <div className="flex bg-gray-900 p-1 rounded border border-gray-600">
-                        {['percent', 'fixed'].map(type => (
-                            <button
-                                key={type}
-                                onClick={() => setConfig({...config, riskType: type})}
-                                className={`flex-1 py-1 text-xs font-bold uppercase rounded transition-colors ${config.riskType === type ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                {type}
-                            </button>
-                        ))}
-                    </div>
+        {/* RIGHT COLUMN: POSITIONS & HISTORY */}
+        <div className="lg:col-span-2 space-y-6">
+            {/* Open Positions */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden min-h-[200px]">
+                <div className="p-3 border-b border-gray-700 bg-gray-900 flex justify-between items-center">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase">Open Positions</h3>
+                    <span className="text-xs bg-blue-900 text-blue-300 px-2 rounded-full">{account.positions.length}</span>
                 </div>
-
-                <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
-                        Risk Value ({config.riskType === 'percent' ? '%' : '$'})
-                    </label>
-                    <input
-                        type="number"
-                        value={config.riskValue}
-                        onChange={(e) => setConfig({...config, riskValue: parseFloat(e.target.value)})}
-                        className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Risk : Reward</label>
-                    <input
-                        type="number"
-                        value={config.riskReward}
-                        onChange={(e) => setConfig({...config, riskReward: parseFloat(e.target.value)})}
-                        className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                    />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                    <button
-                        onClick={() => executeTrade('WIN')}
-                        className="bg-green-600 hover:bg-green-500 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all"
-                    >
-                        WIN
-                    </button>
-                    <button
-                        onClick={() => executeTrade('LOSS')}
-                        className="bg-red-600 hover:bg-red-500 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all"
-                    >
-                        LOSS
-                    </button>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                        <thead className="bg-gray-900/50">
+                            <tr>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Current</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">PnL</th>
+                                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-700">
+                            {account.positions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 text-sm">
+                                        No open positions. Place a trade to start.
+                                    </td>
+                                </tr>
+                            ) : (
+                                account.positions.map((pos) => {
+                                    const currentPnL = pos.type === 'BUY' 
+                                        ? ((marketState.price - pos.entryPrice) / pos.entryPrice) * pos.size
+                                        : (-(marketState.price - pos.entryPrice) / pos.entryPrice) * pos.size;
+                                    
+                                    return (
+                                        <tr key={pos.id} className="hover:bg-gray-700/30">
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-1 rounded text-xs font-bold ${pos.type === 'BUY' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                                                    {pos.type}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm font-mono text-gray-300">{pos.entryPrice.toFixed(2)}</td>
+                                            <td className="px-4 py-3 text-sm font-mono text-white">{marketState.price.toFixed(2)}</td>
+                                            <td className="px-4 py-3 text-sm font-mono text-gray-400">${pos.size}</td>
+                                            <td className={`px-4 py-3 text-sm font-mono font-bold ${currentPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                {currentPnL >= 0 ? '+' : ''}{currentPnL.toFixed(2)}
+                                            </td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button 
+                                                    onClick={() => closePosition(pos.id)}
+                                                    className="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded transition-colors"
+                                                >
+                                                    Close
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            {/* Chart & History */}
-            <div className="lg:col-span-2 space-y-6">
-                <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={tradingState.chartData}>
-                            <defs>
-                                <linearGradient id="colorBalanceManual" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                            <XAxis dataKey="trade" stroke="#9ca3af" tick={{fill: '#9ca3af', fontSize: 10}} />
-                            <YAxis domain={['auto', 'auto']} stroke="#9ca3af" tick={{fill: '#9ca3af', fontSize: 10}} tickFormatter={(val) => `$${val}`} />
-                            <Tooltip 
-                                contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151', color: '#f3f4f6' }}
-                                formatter={(value) => [`$${value.toFixed(2)}`, 'Balance']}
-                                labelFormatter={(label) => `Trade #${label}`}
-                            />
-                            <Area type="monotone" dataKey="balance" stroke="#3b82f6" fillOpacity={1} fill="url(#colorBalanceManual)" strokeWidth={2} />
-                        </AreaChart>
-                    </ResponsiveContainer>
+            {/* Trade History */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+                <div className="p-3 border-b border-gray-700 bg-gray-900">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase">Trade History</h3>
                 </div>
-
-                <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-                    <div className="p-3 border-b border-gray-700 bg-gray-900">
-                        <h3 className="text-xs font-bold text-gray-400 uppercase">Recent Trades</h3>
-                    </div>
-                    <div className="max-h-[200px] overflow-y-auto">
-                        <table className="min-w-full divide-y divide-gray-700">
-                            <thead className="bg-gray-900 sticky top-0">
-                                <tr>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">#</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Result</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">PnL</th>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-400 uppercase">Balance</th>
+                <div className="max-h-[300px] overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-700">
+                        <thead className="bg-gray-900/50 sticky top-0">
+                            <tr>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Exit</th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">PnL</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-700">
+                            {account.history.map((trade) => (
+                                <tr key={trade.id} className="hover:bg-gray-700/30">
+                                    <td className="px-4 py-2">
+                                        <span className={`text-xs font-bold ${trade.type === 'BUY' ? 'text-green-500' : 'text-red-500'}`}>
+                                            {trade.type}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.entryPrice.toFixed(2)}</td>
+                                    <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.exitPrice.toFixed(2)}</td>
+                                    <td className={`px-4 py-2 text-xs font-mono font-bold ${trade.finalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {trade.finalPnL >= 0 ? '+' : ''}{trade.finalPnL.toFixed(2)}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                                {tradingState.history.map((trade) => (
-                                    <tr key={trade.id} className="hover:bg-gray-700/50">
-                                        <td className="px-4 py-2 text-xs text-gray-500">{trade.id}</td>
-                                        <td className="px-4 py-2 text-xs">
-                                            <span className={`px-2 py-0.5 rounded font-bold ${trade.type === 'WIN' ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
-                                                {trade.type}
-                                            </span>
-                                        </td>
-                                        <td className={`px-4 py-2 text-xs font-mono font-bold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                            {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(2)}
-                                        </td>
-                                        <td className="px-4 py-2 text-xs font-mono text-gray-300">${trade.balance.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

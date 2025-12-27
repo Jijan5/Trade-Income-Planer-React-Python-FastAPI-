@@ -210,7 +210,7 @@ function App() {
               onClick={() => setActiveView("manual")}
               className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
                 activeView === "manual"
-                  ? "text-white border-b-2 border-blue-500"
+                  ? "text-gray-500 border-b-2 border-blue-500"
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
@@ -254,7 +254,7 @@ function App() {
             <GoalPlanner />
           )}
           {activeView === "manual" && (
-            <ManualTradeSimulator />
+            <ManualTradeSimulator activeSymbol={activeSymbol} />
           )}
         </div>
       </div>
