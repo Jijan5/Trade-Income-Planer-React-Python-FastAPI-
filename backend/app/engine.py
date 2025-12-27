@@ -7,6 +7,8 @@ getcontext().prec = 28
 
 def calculate_compounding(data: SimulationRequest) -> Dict:
   current_balance = data.initial_balance
+  peak_balance = data.initial_balance
+  max_drawdown_pct = Decimal("0")
   result = []
   
   # convertion percent to decimal
@@ -36,8 +38,19 @@ def calculate_compounding(data: SimulationRequest) -> Dict:
       # calculate expected value
       expected_value = (win_prob * reward_amount) - (loss_prob * risk_amount)
       
-      daily_pl += expected_value
-      current_balance += expected_value
+      # subtract fees (fees apply to every trade, win or lose)
+      net_profit = expected_value - data.fees_per_trade
+      
+      daily_pl += net_profit
+      current_balance += net_profit
+      
+      # Calculate Drawdown
+      if current_balance > peak_balance:
+        peak_balance = current_balance
+      else:
+        drawdown = (peak_balance - current_balance) / peak_balance * 100
+        if drawdown > max_drawdown_pct:
+          max_drawdown_pct = drawdown
       
       # edge case: balance should not go below zero
       if current_balance <= 0:
@@ -69,6 +82,7 @@ def calculate_compounding(data: SimulationRequest) -> Dict:
       "final_balance": f"{current_balance:.2f}",
       "total_profit": f"{total_profit:.2f}",
       "total_roi": f"{total_roi:.2f}%",
+      "max_drawdown": f"{max_drawdown_pct:.2f}%",
       "day_simulated": len(result)
     },
     "daily_breakdown": result

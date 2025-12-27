@@ -9,6 +9,7 @@ class SimulationRequest(BaseModel):
   win_rate: Decimal = Field(..., ge=0, le=100, description="The expected win rate percentage (0-100).")
   trades_per_day: int = Field(..., gt=0, description="The number of trades to simulate per day.")
   simulation_days: int = Field(..., gt=0, le=3650, description="The number of days over which to run the simulation (max 10 years).")
+  fees_per_trade: Decimal = Field(default=0, ge=0, description="Commission or fees per trade in currency.")
   
   #validators
   @field_validator('initial_balance')

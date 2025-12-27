@@ -9,7 +9,28 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
     win_rate: 50,
     trades_per_day: 3,
     simulation_days: 30,
+    fees_per_trade: 0,
   });
+
+  const [activeTooltip, setActiveTooltip] = useState(null);
+
+  // Preset Strategi Umum
+  const STRATEGY_PRESETS = [
+    {
+      name: "Scalper (Aggressive)",
+      data: { initial_balance: 2000, capital_utilization: 100, risk_per_trade: 1, risk_reward_ratio: 1.5, win_rate: 60, trades_per_day: 10, simulation_days: 30, fees_per_trade: 0.5 }
+    },
+    {
+      name: "Day Trader (Balanced)",
+      data: { initial_balance: 10000, capital_utilization: 50, risk_per_trade: 1, risk_reward_ratio: 2, win_rate: 50, trades_per_day: 3, simulation_days: 30, fees_per_trade: 2 }
+    },
+    {
+      name: "Swing Trader (Relaxed)",
+      data: { initial_balance: 5000, capital_utilization: 30, risk_per_trade: 2, risk_reward_ratio: 3, win_rate: 40, trades_per_day: 1, simulation_days: 90, fees_per_trade: 5 }
+    }
+  ];
+
+  const breakEvenWinRate = (1 / (1 + formData.risk_reward_ratio) * 100).toFixed(1);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,51 +45,139 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
     onSimulate(formData);
   };
 
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg"
+  const loadPreset = (presetData) => {
+    setFormData({ ...formData, ...presetData });
+  };
+
+  const renderInfoIcon = (title, content) => (
+    <button
+      type="button"
+      onClick={() => setActiveTooltip({ title, content })}
+      className="ml-auto text-gray-500 hover:text-blue-400 transition-colors focus:outline-none"
     >
-      <h2 className="text-lg font-semibold mb-6 text-gray-100 uppercase tracking-wider border-b border-gray-700 pb-2">
-        Configuration
-      </h2>
-      <div className="space-y-4">
-        {/* Modal Awal */}
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
-            INITIAL CAPITAL ($)
-          </label>
-          <input
-            type="number"
-            name="initial_balance"
-            value={formData.initial_balance}
-            onChange={handleChange}
-            className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            required
-          />
-        </div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-5 h-5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+        />
+      </svg>
+    </button>
+  );
 
-        {/* Penggunaan Modal */}
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
-            CAPITAL UTILIZATION (%)
-          </label>
-          <input
-            type="number"
-            name="capital_utilization"
-            value={formData.capital_utilization}
-            onChange={handleChange}
-            className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-            required
-          />
+  return (
+    <>
+      {/* Tooltip Modal */}
+      {activeTooltip && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setActiveTooltip(null)}
+        >
+          <div
+            className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full relative animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveTooltip(null)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+              <span className="text-blue-500">ℹ</span>
+              {activeTooltip.title}
+            </h3>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              {activeTooltip.content}
+            </p>
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-2 gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg"
+      >
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-700 pb-4 gap-4">
+          <h2 className="text-lg font-semibold text-gray-100 uppercase tracking-wider">
+            Configuration
+          </h2>
+          
+          {/* Preset Buttons */}
+          <div className="flex flex-wrap gap-2">
+            {STRATEGY_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => loadPreset(preset.data)}
+                className="px-3 py-1 text-xs font-medium bg-gray-700 hover:bg-gray-600 text-blue-300 rounded border border-gray-600 transition-colors"
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Modal Awal */}
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                INITIAL CAPITAL ($)
+              </label>
+              {renderInfoIcon(
+                "Initial Capital",
+                "The total amount of cash you have available to start trading."
+              )}
+            </div>
+            <input
+              type="number"
+              name="initial_balance"
+              value={formData.initial_balance}
+              onChange={handleChange}
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              required
+            />
+          </div>
+
+          {/* Penggunaan Modal */}
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                CAPITAL UTILIZATION (%)
+              </label>
+              {renderInfoIcon(
+                "Capital Utilization",
+                "Percentage of initial capital actually used for trading (the rest is cash reserves)."
+              )}
+            </div>
+            <input
+              type="number"
+              name="capital_utilization"
+              value={formData.capital_utilization}
+              onChange={handleChange}
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              required
+            />
+          </div>
+
           {/* Resiko Per Trade */}
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
-              RISK / TRADE (%)
-            </label>
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                RISK / TRADE (%)
+              </label>
+              {renderInfoIcon(
+                "Risk Per Trade",
+                "Percentage of capital that is ready to be lost (Stop Loss) per trade."
+              )}
+            </div>
             <input
               type="number"
               name="risk_per_trade"
@@ -81,10 +190,16 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
           </div>
 
           {/* Risk Reward */}
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
-              RISK : REWARD
-            </label>
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                RISK : REWARD
+              </label>
+              {renderInfoIcon(
+                "Risk : Reward Ratio",
+                "Comparison of profit targets to risk. Example 2.0 means a profit target of 2x the risk."
+              )}
+            </div>
             <input
               type="number"
               name="risk_reward_ratio"
@@ -95,14 +210,18 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               required
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
           {/* Win Rate */}
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
-              WIN RATE (%)
-            </label>
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                WIN RATE (%)
+              </label>
+              {renderInfoIcon(
+                "Win Rate",
+                "The probability percentage of your strategy's success (Example: 50% means half wins, half losses)."
+              )}
+            </div>
             <input
               type="number"
               name="win_rate"
@@ -111,13 +230,26 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
+            {/* Break Even Indicator */}
+            <div className="mt-1 text-[10px] flex justify-between">
+              <span className="text-gray-500">Min to not lose:</span>
+              <span className={`font-bold ${formData.win_rate < breakEvenWinRate ? 'text-red-500' : 'text-green-500'}`}>
+                {breakEvenWinRate}%
+              </span>
+            </div>
           </div>
 
           {/* Trades Per Day */}
-          <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">
-              TRADES / DAY
-            </label>
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                TRADES / DAY
+              </label>
+              {renderInfoIcon(
+                "Trades Per Day",
+                "The average number of trading positions taken each day."
+              )}
+            </div>
             <input
               type="number"
               name="trades_per_day"
@@ -127,32 +259,60 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               required
             />
           </div>
-        </div>
 
-        {/* Simulation Days */}
-        <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1">
-            DURATION (DAYS)
-          </label>
-          <input
-            type="number"
-            name="simulation_days"
-            value={formData.simulation_days}
-            onChange={handleChange}
-            className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            required
-          />
-        </div>
-      </div>
+          {/* Fees Per Trade */}
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                FEES / TRADE ($)
+              </label>
+              {renderInfoIcon(
+                "Fees Per Trade",
+                "Commission, spread, or swap fees per transaction (in US dollars)."
+              )}
+            </div>
+            <input
+              type="number"
+              name="fees_per_trade"
+              value={formData.fees_per_trade}
+              onChange={handleChange}
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded font-bold uppercase tracking-wider transition duration-200 disabled:bg-gray-700 disabled:text-gray-500"
-      >
-        {isLoading ? "CALCULATING..." : "RUN SIMULATION"}
-      </button>
-    </form>
+          {/* Simulation Days */}
+          <div className="relative">
+            <div className="flex items-center mb-1">
+              <label className="block text-xs font-medium text-gray-400">
+                DURATION (DAYS)
+              </label>
+              {renderInfoIcon(
+                "Duration",
+                "The duration of the simulation (in days)."
+              )}
+            </div>
+            <input
+              type="number"
+              name="simulation_days"
+              value={formData.simulation_days}
+              onChange={handleChange}
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-4 rounded font-bold uppercase tracking-wider transition duration-200 disabled:bg-gray-700 disabled:text-gray-500 h-[42px]"
+            >
+              {isLoading ? "CALCULATING..." : "RUN SIMULATION"}
+            </button>
+          </div>
+        </div>
+      </form>
+    </>
   );
 };
 

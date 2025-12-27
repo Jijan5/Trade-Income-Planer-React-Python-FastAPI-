@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -14,10 +14,74 @@ const ResultsDashboard = ({ data }) => {
 
   const { summary, daily_breakdown } = data;
 
+  const [filter, setFilter] = useState("daily");
+
+  const filters = [
+    { id: "daily", label: "Harian", days: 1 },
+    { id: "weekly", label: "Mingguan (5 Hari)", days: 5 },
+    { id: "monthly", label: "Bulanan (20 Hari)", days: 20 },
+    { id: "3months", label: "3 Bulan", days: 60 },
+    { id: "6months", label: "6 Bulan", days: 120 },
+    { id: "9months", label: "9 Bulan", days: 180 },
+    { id: "yearly", label: "Tahunan", days: 240 },
+  ];
+
+  const aggregatedData = useMemo(() => {
+    const selectedFilter = filters.find((f) => f.id === filter);
+    const period = selectedFilter ? selectedFilter.days : 1;
+
+    if (period === 1) return daily_breakdown;
+
+    const result = [];
+    for (let i = 0; i < daily_breakdown.length; i += period) {
+      const chunk = daily_breakdown.slice(i, i + period);
+      if (chunk.length === 0) continue;
+
+      const first = chunk[0];
+      const last = chunk[chunk.length - 1];
+
+      const startBal = parseFloat(first.start_balance);
+      const endBal = parseFloat(last.end_balance);
+      const pl = endBal - startBal;
+      const roi = startBal > 0 ? (pl / startBal) * 100 : 0;
+
+      result.push({
+        day: last.day,
+        start_balance: startBal.toFixed(2),
+        profit_loss: pl.toFixed(2),
+        end_balance: endBal.toFixed(2),
+        roi: roi.toFixed(2) + "%",
+      });
+    }
+    return result;
+  }, [daily_breakdown, filter]);
+
+  const downloadCSV = () => {
+    if (!daily_breakdown || daily_breakdown.length === 0) return;
+
+    const headers = ["Day", "Start Balance", "Profit/Loss", "End Balance", "ROI"];
+    const csvContent = [
+      headers.join(","),
+      ...daily_breakdown.map((row) =>
+        [row.day, row.start_balance, row.profit_loss, row.end_balance, row.roi].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "trading_simulation_results.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
         <div className="p-3">
           <p className="text-xs text-gray-400 uppercase tracking-wider">
             Modal Awal
@@ -50,6 +114,42 @@ const ResultsDashboard = ({ data }) => {
             {summary.total_roi}
           </p>
         </div>
+        <div className="p-3 border-l border-gray-700">
+          <p className="text-xs text-gray-400 uppercase tracking-wider">
+            Max Drawdown
+          </p>
+          <p className="text-xl font-mono font-bold text-red-400">
+            -{summary.max_drawdown || "0.00%"}
+          </p>
+        </div>
+      </div>
+
+      {/* Filter Controls */}
+      <div className="flex flex-wrap justify-between items-center bg-gray-800 p-2 rounded-lg border border-gray-700">
+        <div className="flex gap-2">
+          {filters.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all ${
+                filter === f.id
+                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                  : "bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={downloadCSV}
+          className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          Export CSV
+        </button>
       </div>
 
       {/* Chart */}
@@ -58,7 +158,7 @@ const ResultsDashboard = ({ data }) => {
           Proyeksi Pertumbuhan Ekuitas
         </h3>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={daily_breakdown}>
+        <AreaChart data={aggregatedData}>
             <defs>
               <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -131,7 +231,7 @@ const ResultsDashboard = ({ data }) => {
               </tr>
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {daily_breakdown.map((row) => (
+            {aggregatedData.map((row) => (
                 <tr key={row.day} className="hover:bg-gray-50">
                   <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
                     {row.day}
