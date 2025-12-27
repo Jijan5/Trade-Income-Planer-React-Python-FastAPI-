@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .models import SimulationRequest, SimulationResponse
-from .engine import calculate_compounding
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse
+from .engine import calculate_compounding, calculate_goal_plan
 
 app = FastAPI(title="Trading Simulation API", version="1.0.0")
 
@@ -26,3 +26,13 @@ async def run_simulation(request: SimulationRequest):
     return result
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/plan", response_model=GoalPlannerResponse)
+async def run_goal_planner(request: GoalPlannerRequest):
+  try:
+    result = calculate_goal_plan(request)
+    if result["status"] == "error":
+        raise HTTPException(status_code=400, detail=result["message"])
+    return result
+  except Exception as e:
+      raise HTTPException(status_code=500, detail=str(e))

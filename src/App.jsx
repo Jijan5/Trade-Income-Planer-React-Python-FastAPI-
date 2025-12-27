@@ -3,6 +3,8 @@ import axios from "axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
 import TradingViewWidget from "./components/TradingViewWidget";
+import GoalPlanner from "./components/GoalPlanner";
+import ManualTradeSimulator from "./components/ManualTradeSimulator";
 
 function App() {
   const [simulationData, setSimulationData] = useState(null);
@@ -10,6 +12,7 @@ function App() {
   const [error, setError] = useState(null);
   const [activeSymbol, setActiveSymbol] = useState("BINANCE:BTCUSDT");
   const [activeCategory, setActiveCategory] = useState("Crypto");
+  const [activeView, setActiveView] = useState("simulator");
 
   const assetCategories = {
     "Saham (Stock)": [
@@ -148,7 +151,9 @@ function App() {
                 className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               >
                 {Object.keys(assetCategories).map((category) => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
@@ -170,7 +175,7 @@ function App() {
               </select>
             </div>
           </div>
-          
+
           {/* Chart Container (Wide & Tall) */}
           <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
             <TradingViewWidget symbol={activeSymbol} />
@@ -178,39 +183,78 @@ function App() {
         </div>
 
         {/* SECTION 2: SIMULATION TOOLS */}
-        <div className="space-y-6">
-          {/* Configuration Form (Wide) */}
-          <SimulationForm onSimulate={handleSimulate} isLoading={loading} />
-
-          {error && (
-            <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm">
-              <p>{error}</p>
+        <div className="space-y-8">
+          {/* View Switcher */}
+          <div className="flex justify-center border-b border-gray-700">
+            <button
+              onClick={() => setActiveView("simulator")}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+                activeView === "simulator"
+                  ? "text-gray-500 border-b-2 border-blue-500"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              Strategy Simulator
+            </button>
+            <button
+              onClick={() => setActiveView("planner")}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+                activeView === "planner"
+                  ? "text-gray-500 border-b-2 border-blue-500"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              Goal Planner
+            </button>
+            <button
+              onClick={() => setActiveView("manual")}
+              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+                activeView === "manual"
+                  ? "text-white border-b-2 border-blue-500"
+                  : "text-gray-500 hover:text-gray-300"
+              }`}
+            >
+              Manual Trade
+            </button>
+          </div>
+          {activeView === "simulator" && (
+            <div className="space-y-6">
+              <SimulationForm onSimulate={handleSimulate} isLoading={loading} />
+              {error && (
+                <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm">
+                  <p>{error}</p>
+                </div>
+              )}
+              {simulationData ? (
+                <ResultsDashboard data={simulationData} />
+              ) : (
+                <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
+                  <svg
+                    className="w-16 h-16 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                  <p className="text-lg">
+                    Masukkan parameter di atas dan klik "Jalankan Simulasi"
+                    untuk melihat hasil.
+                  </p>
+                </div>
+              )}
             </div>
           )}
-
-          {/* Simulation Results */}
-          {simulationData ? (
-            <ResultsDashboard data={simulationData} />
-          ) : (
-            <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
-              <svg
-                className="w-16 h-16 mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              <p className="text-lg">
-                Masukkan parameter di sebelah kiri dan klik "Jalankan Simulasi"
-                untuk melihat hasil.
-              </p>
-            </div>
+          {activeView === "planner" && (
+            <GoalPlanner />
+          )}
+          {activeView === "manual" && (
+            <ManualTradeSimulator />
           )}
         </div>
       </div>

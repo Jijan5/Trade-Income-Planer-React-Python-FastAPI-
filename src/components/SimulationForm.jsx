@@ -10,6 +10,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
     trades_per_day: 3,
     simulation_days: 30,
     fees_per_trade: 0,
+    risk_type: "dynamic",
   });
 
   const [activeTooltip, setActiveTooltip] = useState(null);
@@ -18,25 +19,26 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
   const STRATEGY_PRESETS = [
     {
       name: "Scalper (Aggressive)",
-      data: { initial_balance: 2000, capital_utilization: 100, risk_per_trade: 1, risk_reward_ratio: 1.5, win_rate: 60, trades_per_day: 10, simulation_days: 30, fees_per_trade: 0.5 }
+      data: { initial_balance: 2000, capital_utilization: 100, risk_per_trade: 1, risk_reward_ratio: 1.5, win_rate: 60, trades_per_day: 10, simulation_days: 30, fees_per_trade: 0.5, risk_type: "dynamic" }
     },
     {
       name: "Day Trader (Balanced)",
-      data: { initial_balance: 10000, capital_utilization: 50, risk_per_trade: 1, risk_reward_ratio: 2, win_rate: 50, trades_per_day: 3, simulation_days: 30, fees_per_trade: 2 }
+      data: { initial_balance: 10000, capital_utilization: 50, risk_per_trade: 1, risk_reward_ratio: 2, win_rate: 50, trades_per_day: 3, simulation_days: 30, fees_per_trade: 2, risk_type: "dynamic" }
     },
     {
       name: "Swing Trader (Relaxed)",
-      data: { initial_balance: 5000, capital_utilization: 30, risk_per_trade: 2, risk_reward_ratio: 3, win_rate: 40, trades_per_day: 1, simulation_days: 90, fees_per_trade: 5 }
+      data: { initial_balance: 5000, capital_utilization: 30, risk_per_trade: 2, risk_reward_ratio: 3, win_rate: 40, trades_per_day: 1, simulation_days: 90, fees_per_trade: 5, risk_type: "fixed" }
     }
   ];
 
   const breakEvenWinRate = (1 / (1 + formData.risk_reward_ratio) * 100).toFixed(1);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    // Hanya parse ke float jika tipe inputnya number
     setFormData({
       ...formData,
-      [name]: parseFloat(value),
+      [name]: type === 'number' ? parseFloat(value) : value,
     });
   };
 
@@ -125,6 +127,34 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Risk Type Selection */}
+          <div className="relative md:col-span-2 lg:col-span-4 mb-2">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-medium text-gray-400">
+                RISK MANAGEMENT TYPE
+              </label>
+              {renderInfoIcon(
+                "Risk Type",
+                "Dynamic (Compounding): Risk amount increases as account grows. Fixed: Risk amount stays the same based on initial capital."
+              )}
+            </div>
+            <div className="flex bg-gray-900 p-1 rounded border border-gray-600 w-fit">
+              {["dynamic", "fixed"].map((type) => (
+                <button
+                key={type}
+                type="button"
+                onClick={() => setFormData({ ...formData, risk_type: type })}
+                className={`px-6 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${
+                  formData.risk_type === type
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-gray-400 hover:text-white hover:bg-gray-800"
+                }`}
+              >
+                {type}
+              </button>
+              ))}
+            </div>
+          </div>
           {/* Modal Awal */}
           <div className="relative">
             <div className="flex items-center mb-1">
@@ -187,6 +217,12 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
+            {formData.risk_per_trade > 2 && (
+              <div className="mt-1 text-xs text-yellow-400 flex items-center gap-1">
+                <span>⚠</span>
+                <span>High risk. Professionals rarely risk >2%.</span>
+              </div>
+            )}
           </div>
 
           {/* Risk Reward */}
