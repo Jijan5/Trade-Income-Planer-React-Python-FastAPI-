@@ -22,7 +22,7 @@ const GoalPlanner = () => {
     setError(null);
     setResult(null);
     try {
-      const response = await axios.post("http://localhost:8000/api/plan", params);
+      const response = await axios.post("http://127.0.0.1:8000/api/plan", params);
       setResult(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to calculate plan.");

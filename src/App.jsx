@@ -5,6 +5,7 @@ import ResultsDashboard from "./components/ResultsDashboard";
 import TradingViewWidget from "./components/TradingViewWidget";
 import GoalPlanner from "./components/GoalPlanner";
 import ManualTradeSimulator from "./components/ManualTradeSimulator";
+import ChatAssistant from "./components/ChatAssistant";
 
 function App() {
   const [simulationData, setSimulationData] = useState(null);
@@ -81,7 +82,7 @@ function App() {
     try {
       // Pastikan backend berjalan di port 8000
       const response = await axios.post(
-        "http://localhost:8000/api/simulate",
+        "http://127.0.0.1:8000/api/simulate",
         params
       );
       setSimulationData(response.data);
@@ -258,6 +259,8 @@ function App() {
           )}
         </div>
       </div>
+      {/* AI Chat Assistant Widget */}
+      <ChatAssistant />
     </div>
   );
 }

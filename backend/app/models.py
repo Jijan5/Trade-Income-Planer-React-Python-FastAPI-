@@ -48,3 +48,9 @@ class GoalPlannerResponse(BaseModel):
     required_monthly_return: str
     feasibility: str
     message: str
+
+class ChatRequest(BaseModel):
+  message: str
+
+class ChatResponse(BaseModel):
+  response: str

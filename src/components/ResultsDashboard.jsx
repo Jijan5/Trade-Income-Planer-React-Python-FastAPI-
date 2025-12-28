@@ -2,6 +2,10 @@ import React, { useState, useMemo } from "react";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  Cell,
+  ReferenceLine,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -60,11 +64,23 @@ const ResultsDashboard = ({ data }) => {
   const downloadCSV = () => {
     if (!daily_breakdown || daily_breakdown.length === 0) return;
 
-    const headers = ["Day", "Start Balance", "Profit/Loss", "End Balance", "ROI"];
+    const headers = [
+      "Day",
+      "Start Balance",
+      "Profit/Loss",
+      "End Balance",
+      "ROI",
+    ];
     const csvContent = [
       headers.join(","),
       ...daily_breakdown.map((row) =>
-        [row.day, row.start_balance, row.profit_loss, row.end_balance, row.roi].join(",")
+        [
+          row.day,
+          row.start_balance,
+          row.profit_loss,
+          row.end_balance,
+          row.roi,
+        ].join(",")
       ),
     ].join("\n");
 
@@ -86,15 +102,27 @@ const ResultsDashboard = ({ data }) => {
   const profitFactor = parseFloat(summary.profit_factor);
 
   if (ror > 1) {
-    warnings.push({ type: "danger", msg: `HIGH RISK OF RUIN: ${ror}% chance to blow up account.` });
+    warnings.push({
+      type: "danger",
+      msg: `HIGH RISK OF RUIN: ${ror}% chance to blow up account.`,
+    });
   }
   if (drawdown > 25) {
-    warnings.push({ type: "warning", msg: `HIGH DRAWDOWN: Max drawdown is ${drawdown}%. Can you handle this emotionally?` });
+    warnings.push({
+      type: "warning",
+      msg: `HIGH DRAWDOWN: Max drawdown is ${drawdown}%. Can you handle this emotionally?`,
+    });
   }
   if (profitFactor < 1.0) {
-    warnings.push({ type: "danger", msg: "UNPROFITABLE: Profit Factor < 1.0. You are losing money." });
+    warnings.push({
+      type: "danger",
+      msg: "UNPROFITABLE: Profit Factor < 1.0. You are losing money.",
+    });
   } else if (profitFactor < 1.5) {
-    warnings.push({ type: "warning", msg: "WEAK STRATEGY: Profit Factor is low (< 1.5). Consider improving win rate or RR." });
+    warnings.push({
+      type: "warning",
+      msg: "WEAK STRATEGY: Profit Factor is low (< 1.5). Consider improving win rate or RR.",
+    });
   }
 
   return (
@@ -145,7 +173,13 @@ const ResultsDashboard = ({ data }) => {
           <p className="text-xs text-gray-400 uppercase tracking-wider">
             Profit Factor
           </p>
-          <p className={`text-xl font-mono font-bold ${parseFloat(summary.profit_factor) >= 1.5 ? 'text-green-400' : 'text-yellow-400'}`}>
+          <p
+            className={`text-xl font-mono font-bold ${
+              parseFloat(summary.profit_factor) >= 1.5
+                ? "text-green-400"
+                : "text-yellow-400"
+            }`}
+          >
             {summary.profit_factor}
           </p>
         </div>
@@ -161,7 +195,13 @@ const ResultsDashboard = ({ data }) => {
           <p className="text-xs text-gray-400 uppercase tracking-wider">
             Risk of Ruin
           </p>
-          <p className={`text-xl font-mono font-bold ${parseFloat(summary.risk_of_ruin) < 1 ? 'text-green-400' : 'text-red-500'}`}>
+          <p
+            className={`text-xl font-mono font-bold ${
+              parseFloat(summary.risk_of_ruin) < 1
+                ? "text-green-400"
+                : "text-red-500"
+            }`}
+          >
             {summary.risk_of_ruin}
           </p>
         </div>
@@ -173,23 +213,38 @@ const ResultsDashboard = ({ data }) => {
         {monte_carlo && (
           <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
             <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider flex items-center gap-2">
-              Monte Carlo Simulation <span className="text-xs text-gray-500 normal-case">(500 Iterations)</span>
+              Monte Carlo Simulation{" "}
+              <span className="text-xs text-gray-500 normal-case">
+                (500 Iterations)
+              </span>
             </h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">Worst Case (Bottom 5%)</span>
-                <span className="font-mono font-bold text-red-400">${monte_carlo.worst_case}</span>
+                <span className="text-sm text-gray-400">
+                  Worst Case (Bottom 5%)
+                </span>
+                <span className="font-mono font-bold text-red-400">
+                  ${monte_carlo.worst_case}
+                </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">Median (Most Likely)</span>
-                <span className="font-mono font-bold text-blue-400">${monte_carlo.median}</span>
+                <span className="text-sm text-gray-400">
+                  Median (Most Likely)
+                </span>
+                <span className="font-mono font-bold text-blue-400">
+                  ${monte_carlo.median}
+                </span>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">Best Case (Top 5%)</span>
-                <span className="font-mono font-bold text-green-400">${monte_carlo.best_case}</span>
+                <span className="text-sm text-gray-400">
+                  Best Case (Top 5%)
+                </span>
+                <span className="font-mono font-bold text-green-400">
+                  ${monte_carlo.best_case}
+                </span>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                *Simulasi ini mengacak urutan win/loss untuk melihat variasi kemungkinan hasil nasib Anda.
+              *This simulation randomizes the win/loss sequence to see the possible variations in your fate.
               </p>
             </div>
           </div>
@@ -203,22 +258,26 @@ const ResultsDashboard = ({ data }) => {
           <div className="space-y-3">
             {warnings.length > 0 ? (
               warnings.map((w, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className={`p-3 rounded border flex items-start gap-3 ${
-                    w.type === 'danger' 
-                      ? 'bg-red-900/20 border-red-500/30 text-red-200' 
-                      : 'bg-yellow-900/20 border-yellow-500/30 text-yellow-200'
+                    w.type === "danger"
+                      ? "bg-red-900/20 border-red-500/30 text-red-200"
+                      : "bg-yellow-900/20 border-yellow-500/30 text-yellow-200"
                   }`}
                 >
-                  <span className="text-lg">{w.type === 'danger' ? 'VX' : '⚠'}</span>
+                  <span className="text-lg">
+                    {w.type === "danger" ? "VX" : "⚠"}
+                  </span>
                   <span className="text-sm font-medium">{w.msg}</span>
                 </div>
               ))
             ) : (
               <div className="p-4 bg-green-900/20 border border-green-500/30 rounded text-green-200 flex items-center gap-3">
                 <span className="text-lg">✓</span>
-                <span className="text-sm font-medium">Strategy looks healthy! No critical risks detected.</span>
+                <span className="text-sm font-medium">
+                  Strategy looks healthy! No critical risks detected.
+                </span>
               </div>
             )}
           </div>
@@ -246,8 +305,18 @@ const ResultsDashboard = ({ data }) => {
           onClick={downloadCSV}
           className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors flex items-center gap-2"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
           </svg>
           Export CSV
         </button>
@@ -256,10 +325,10 @@ const ResultsDashboard = ({ data }) => {
       {/* Chart */}
       <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 h-[400px]">
         <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider">
-          Proyeksi Pertumbuhan Ekuitas
+          Equity Growth Projections
         </h3>
         <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={aggregatedData}>
+          <AreaChart data={aggregatedData}>
             <defs>
               <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -308,6 +377,55 @@ const ResultsDashboard = ({ data }) => {
         </ResponsiveContainer>
       </div>
 
+      {/* PnL Chart */}
+      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 h-[400px]">
+        <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider">
+          Daily Profit / Loss
+        </h3>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={aggregatedData}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#374151"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="day"
+              stroke="#9ca3af"
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              tickFormatter={(value) => `$${value}`}
+              stroke="#9ca3af"
+              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1f2937",
+                borderColor: "#374151",
+                color: "#f3f4f6",
+              }}
+              cursor={{ fill: "#374151", opacity: 0.4 }}
+              formatter={(value) => [`$${value}`, "PnL"]}
+              labelFormatter={(label) => `Day ${label}`}
+            />
+            <ReferenceLine y={0} stroke="#4b5563" />
+            <Bar dataKey="profit_loss" name="Profit/Loss">
+              {aggregatedData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={parseFloat(entry.profit_loss) >= 0 ? "#4ade80" : "#f87171"}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Table Section */}
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         {/* Table Tabs */}
@@ -315,7 +433,9 @@ const ResultsDashboard = ({ data }) => {
           <button
             onClick={() => setViewMode("daily")}
             className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-              viewMode === "daily" ? "bg-gray-700 text-white" : "text-gray-400 hover:bg-gray-700/50"
+              viewMode === "daily"
+                ? "bg-gray-700 text-white"
+                : "text-gray-400 hover:bg-gray-700/50"
             }`}
           >
             Daily Breakdown
@@ -323,34 +443,61 @@ const ResultsDashboard = ({ data }) => {
           <button
             onClick={() => setViewMode("journal")}
             className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-              viewMode === "journal" ? "bg-gray-700 text-white" : "text-gray-400 hover:bg-gray-700/50"
+              viewMode === "journal"
+                ? "bg-gray-700 text-white"
+                : "text-gray-400 hover:bg-gray-700/50"
             }`}
           >
             Trade Journal (Log)
           </button>
         </div>
         <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
-        {viewMode === "daily" ? (
+          {viewMode === "daily" ? (
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-900 sticky top-0">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Day</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Start Balance</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">P/L</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">End Balance</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ROI</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Day
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Start Balance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    P/L
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    End Balance
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    ROI
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
                 {aggregatedData.map((row) => (
                   <tr key={row.day} className="hover:bg-gray-700/30">
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">{row.day}</td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono">${row.start_balance}</td>
-                    <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-medium ${parseFloat(row.profit_loss) >= 0 ? "text-green-400" : "text-red-400"}`}>
-                      {parseFloat(row.profit_loss) >= 0 ? "+" : ""}{row.profit_loss}
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
+                      {row.day}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-gray-200 font-mono">${row.end_balance}</td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">{row.roi}</td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono">
+                      ${row.start_balance}
+                    </td>
+                    <td
+                      className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-medium ${
+                        parseFloat(row.profit_loss) >= 0
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {parseFloat(row.profit_loss) >= 0 ? "+" : ""}
+                      {row.profit_loss}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-gray-200 font-mono">
+                      ${row.end_balance}
+                    </td>
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">
+                      {row.roi}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -359,29 +506,59 @@ const ResultsDashboard = ({ data }) => {
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-gray-900 sticky top-0">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">#</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Day</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Result</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">P/L ($)</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Balance</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Day
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Result
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    P/L ($)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Balance
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-gray-800 divide-y divide-gray-700">
-                {trade_log && trade_log.map((trade) => (
-                  <tr key={trade.trade_no} className="hover:bg-gray-700/30">
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">#{trade.trade_no}</td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">Day {trade.day}</td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${trade.result === "WIN" ? "bg-green-900/50 text-green-400" : "bg-red-900/50 text-red-400"}`}>
-                        {trade.result}
-                      </span>
-                    </td>
-                    <td className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-medium ${parseFloat(trade.pnl) >= 0 ? "text-green-400" : "text-red-400"}`}>
-                      {parseFloat(trade.pnl) >= 0 ? "+" : ""}{trade.pnl}
-                    </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-mono">${trade.balance}</td>
-                  </tr>
-                ))}
+                {trade_log &&
+                  trade_log.map((trade) => (
+                    <tr key={trade.trade_no} className="hover:bg-gray-700/30">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                        #{trade.trade_no}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">
+                        Day {trade.day}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-bold ${
+                            trade.result === "WIN"
+                              ? "bg-green-900/50 text-green-400"
+                              : "bg-red-900/50 text-red-400"
+                          }`}
+                        >
+                          {trade.result}
+                        </span>
+                      </td>
+                      <td
+                        className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-medium ${
+                          parseFloat(trade.pnl) >= 0
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {parseFloat(trade.pnl) >= 0 ? "+" : ""}
+                        {trade.pnl}
+                      </td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-mono">
+                        ${trade.balance}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           )}

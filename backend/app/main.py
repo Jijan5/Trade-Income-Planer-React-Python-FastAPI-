@@ -1,7 +1,12 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price
+import os
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="Trading Simulation API", version="1.0.0")
 
@@ -26,7 +31,33 @@ async def run_simulation(request: SimulationRequest):
     return result
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))
+  
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_with_ai(request: ChatRequest):
+    # 1. Cek apakah ada API KEY Google Gemini
+    # Cara set di terminal: set GEMINI_API_KEY=AIzaSy... (Windows) atau export GEMINI_API_KEY=... (Mac/Linux)
+    # Atau untuk testing cepat, Anda bisa hardcode sementara di bawah (TIDAK DISARANKAN UNTUK PRODUCTION):
+    # api_key = "PASTE_KEY_ANDA_DISINI" 
+    api_key = os.getenv("GEMINI_API_KEY")
 
+    if api_key:
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            
+            prompt = f"""
+            You are Tip, a professional AI Trading Mentor for the 'Trade Income Planer' app.
+            Answer the user's question about trading, finance, risk management, or psychology.
+            If the user speaks Indonesian, reply in Indonesian. If English, reply in English.
+            Keep it concise, helpful, and friendly.
+            
+            User Question: {request.message}
+            """
+            response = model.generate_content(prompt)
+            return {"response": response.text}
+        except Exception as e:
+            print(f"Gemini API Error: {e}")
+    return {"response": response}
 
 @app.get("/api/price/{symbol}")
 async def get_price(symbol: str):
