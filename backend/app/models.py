@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field, field_validator
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, Optional
+from sqlmodel import SQLModel, Field as SQLField
+from datetime import datetime
+
 class SimulationRequest(BaseModel):
   initial_balance: Decimal = Field(..., gt=0, description="The starting balance for the simulation.")
   capital_utilization: Decimal = Field(..., gt=0, le=100, description="% Balance to be used in each trade (0-100).")
@@ -54,3 +57,69 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
   response: str
+
+# db models (auth)
+
+class User(SQLModel, table=True):
+  id: Optional[int] = SQLField(default=None, primary_key=True)
+  username: str = SQLField(index=True, unique=True)
+  email: str = SQLField(index=True, unique=True)
+  hashed_password: str
+  role: str = SQLField(default="user")  # roles: user, admin
+  
+class UserCreate(BaseModel):
+  username: str
+  email: str
+  password: str
+
+class Token(BaseModel):
+  access_token: str
+  token_type: str
+
+# --- COMMUNITY MODELS ---
+class Community(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    name: str = SQLField(index=True)
+    description: str
+    members_count: int = SQLField(default=1)
+    active_count: int = SQLField(default=0)
+
+class CommunityCreate(BaseModel):
+    name: str
+    description: str
+
+class Post(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    community_id: int = SQLField(foreign_key="community.id")
+    username: str
+    content: str
+    image_url: Optional[str] = None
+    link_url: Optional[str] = None
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    likes: int = SQLField(default=0)
+    comments_count: int = SQLField(default=0)
+    shares_count: int = SQLField(default=0)
+
+class PostCreate(BaseModel):
+    content: str
+    image_url: Optional[str] = None
+    link_url: Optional[str] = None
+
+class Comment(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    post_id: int = SQLField(foreign_key="post.id")
+    username: str
+    content: str
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class CommentCreate(BaseModel):
+    content: str
+
+class Reaction(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    post_id: int = SQLField(foreign_key="post.id")
+    username: str
+    type: str # 'like', 'shock', 'rocket', 'chart_up', 'clap'
+
+class ReactionCreate(BaseModel):
+    type: str # 'like', 'shock', 'rocket', 'chart_up', 'clap'

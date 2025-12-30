@@ -4,3 +4,10 @@ pydantic
 yfinance
 google-generativeai
 python-dotenv
+requests
+sqlmodel
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+pymysql
+PyJWT
