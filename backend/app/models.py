@@ -99,6 +99,7 @@ class Post(SQLModel, table=True):
     likes: int = SQLField(default=0)
     comments_count: int = SQLField(default=0)
     shares_count: int = SQLField(default=0)
+    is_edited: bool = SQLField(default=False)
 
 class PostCreate(BaseModel):
     content: str
@@ -108,12 +109,15 @@ class PostCreate(BaseModel):
 class Comment(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
     post_id: int = SQLField(foreign_key="post.id")
+    parent_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
     username: str
     content: str
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    is_edited: bool = SQLField(default=False)
 
 class CommentCreate(BaseModel):
     content: str
+    parent_id: Optional[int] = None
 
 class Reaction(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)

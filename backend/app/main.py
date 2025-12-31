@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
 from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, Community, CommunityCreate, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price
@@ -11,7 +12,10 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import requests
 import random
+import uuid
+import shutil
 from datetime import timedelta
+from typing import Optional
 
 load_dotenv()
 
@@ -25,6 +29,9 @@ app.add_middleware(
   allow_methods=["*"],
   allow_headers=["*"],
 )
+
+# Sajikan folder 'static' agar bisa diakses dari browser
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
@@ -156,6 +163,14 @@ async def run_goal_planner(request: GoalPlannerRequest):
       raise HTTPException(status_code=500, detail=str(e))
     
 # --- COMMUNITY ENDPOINTS ---
+
+@app.get("/api/users/search")
+async def search_users(q: str = "", session: Session = Depends(get_session)):
+    if not q:
+        return []
+    users = session.exec(select(User).where(User.username.ilike(f"{q}%")).limit(5)).all()
+    return [{"username": user.username} for user in users]
+
 @app.get("/api/communities", response_model=list[Community])
 async def get_communities(session: Session = Depends(get_session)):
     return session.exec(select(Community)).all()
@@ -178,18 +193,39 @@ async def get_community_posts(community_id: int, session: Session = Depends(get_
     return session.exec(select(Post).where(Post.community_id == community_id).order_by(Post.created_at.desc())).all()
 
 @app.post("/api/communities/{community_id}/posts", response_model=Post)
-async def create_community_post(community_id: int, post: PostCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    db_post = Post(
-        community_id=community_id, 
-        username=user.username, 
-        content=post.content,
-        image_url=post.image_url,
-        link_url=post.link_url
-    )
-    session.add(db_post)
-    session.commit()
-    session.refresh(db_post)
-    return db_post
+async def create_community_post(community_id: int, content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    try:
+        image_url_to_save = None
+        if image_file:
+            # Pastikan direktori static/images ada
+            os.makedirs("static/images", exist_ok=True)
+            # Buat nama file yang unik
+            filename = f"{uuid.uuid4()}-{image_file.filename}"
+            file_path = os.path.join("static/images", filename)
+            
+            # Simpan file
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image_file.file, buffer)
+            
+            image_url_to_save = f"/static/images/{filename}"
+            
+        db_post = Post(
+            community_id=community_id, 
+            username=user.username, 
+            content=content,
+            image_url=image_url_to_save,
+            link_url=link_url
+        )
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
+        return db_post
+    except Exception as e:
+        session.rollback()
+        # Deteksi error kolom hilang (MySQL Error 1054)
+        if "1054" in str(e):
+            raise HTTPException(status_code=500, detail="Database schema mismatch: Missing columns in 'post' table. Please drop the table or migrate.")
+        raise HTTPException(status_code=500, detail=str(e))
   
 # --- INTERACTION ENDPOINTS ---
 
@@ -199,37 +235,50 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
 
 @app.post("/api/posts/{post_id}/comments", response_model=Comment)
 async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    # 1. Buat Komentar
-    db_comment = Comment(post_id=post_id, username=user.username, content=comment.content)
-    session.add(db_comment)
-    
-    # 2. Update Counter di Post
-    post = session.get(Post, post_id)
-    if post:
-        post.comments_count += 1
-        session.add(post)
+    try:
+        # 1. make comment
+        db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id)
+        session.add(db_comment)
         
-    session.commit()
-    session.refresh(db_comment)
-    return db_comment
+        # 2. Update Counter at post
+        post = session.get(Post, post_id)
+        if post:
+            post.comments_count += 1
+            session.add(post)
+            
+        session.commit()
+        session.refresh(db_comment)
+        return db_comment
+    except Exception as e:
+        session.rollback()
+        if "1054" in str(e) and "comment" in str(e):
+            raise HTTPException(status_code=500, detail="Database schema mismatch: 'comment' table is missing columns. Please update the database.")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/posts/{post_id}/react")
 async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    # Cek apakah user sudah react sebelumnya
+    # check user has been react or not
     existing_reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == user.username)).first()
     
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
     if existing_reaction:
-        existing_reaction.type = reaction.type # Update tipe reaksi
-        session.add(existing_reaction)
+        if existing_reaction.type == reaction.type:
+            # like/unlike
+            session.delete(existing_reaction)
+            post.likes -= 1
+        else:
+            # reaction update
+            existing_reaction.type = reaction.type
+            session.add(existing_reaction)
     else:
         new_reaction = Reaction(post_id=post_id, username=user.username, type=reaction.type)
         session.add(new_reaction)
-        # Update total likes count di Post (sebagai representasi total reaksi)
-        post = session.get(Post, post_id)
-        if post:
-            post.likes += 1
-            session.add(post)
-            
+        # Update total likes count
+        post.likes += 1
+    session.add(post)
     session.commit()
     return {"status": "success"}
 
@@ -240,4 +289,90 @@ async def share_post(post_id: int, session: Session = Depends(get_session)):
         post.shares_count += 1
         session.add(post)
         session.commit()
+    return {"status": "success"}
+
+# --- EDIT & DELETE ENDPOINTS ---
+
+@app.put("/api/posts/{post_id}", response_model=Post)
+async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this post")
+    
+    post.content = post_data.content
+    post.image_url = post_data.image_url
+    post.link_url = post_data.link_url
+    post.is_edited = True
+    session.add(post)
+    session.commit()
+    session.refresh(post)
+    return post
+
+@app.delete("/api/posts/{post_id}")
+async def delete_post(post_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
+   
+    session.exec(select(Comment).where(Comment.post_id == post_id)) # Query check
+    
+    # IMPORTANT: Delete dependent objects first to satisfy foreign key constraints.
+    
+    # 1. Delete all reactions that are related to the post.
+    reactions = session.exec(select(Reaction).where(Reaction.post_id == post_id)).all()
+    for r in reactions:
+        session.delete(r)
+        
+    # 2. Delete all comments related to the post.
+    # handle replies carefully to avoid integrity errors.
+    all_comments = session.exec(select(Comment).where(Comment.post_id == post_id)).all()
+    # First, delete all replies (children)
+    replies = [c for c in all_comments if c.parent_id is not None]
+    for reply in replies:
+        session.delete(reply)
+    # Then, delete all top-level (parent) comments.
+    top_level_comments = [c for c in all_comments if c.parent_id is None]
+    for comment in top_level_comments:
+        session.delete(comment)
+        
+    # 3. Finally, delete the post itself.
+    session.delete(post)
+    session.commit()
+    return {"status": "success"}
+
+@app.put("/api/comments/{comment_id}", response_model=Comment)
+async def update_comment(comment_id: int, comment_data: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    comment = session.get(Comment, comment_id)
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this comment")
+    
+    comment.content = comment_data.content
+    comment.is_edited = True
+    session.add(comment)
+    session.commit()
+    session.refresh(comment)
+    return comment
+
+@app.delete("/api/comments/{comment_id}")
+async def delete_comment(comment_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    comment = session.get(Comment, comment_id)
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    # less counter comment
+    post = session.get(Post, comment.post_id)
+    if post:
+        post.comments_count = max(0, post.comments_count - 1)
+        session.add(post)
+
+    session.delete(comment)
+    session.commit()
     return {"status": "success"}

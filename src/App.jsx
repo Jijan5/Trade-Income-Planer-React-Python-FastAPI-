@@ -19,12 +19,21 @@ function App() {
   const [error, setError] = useState(null);
   const [activeSymbol, setActiveSymbol] = useState("BTCUSDT");
   const [activeCategory, setActiveCategory] = useState("Crypto");
-  const [activeView, setActiveView] = useState("simulator");
-
+  const [activeView, setActiveView] = useState(
+    () => localStorage.getItem("activeView") || "simulator"
+  );
+  
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("activeView");
     setToken(null);
+    // Reset to home view on logout
+    setActiveView("simulator");
   };
+
+  useEffect(() => {
+    localStorage.setItem("activeView", activeView);
+  }, [activeView]);
 
   if (showAuth) {
     return (
@@ -87,7 +96,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full">
+    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
       {/* Override default Vite styles that constrain width */}
       <style>{`
         body { display: block !important; }
@@ -125,9 +134,7 @@ function App() {
           {/* Main Navigation (Center) */}
           <div className="hidden md:flex items-center space-x-2 bg-gray-900/50 p-1 rounded-lg border border-gray-700/50">
             <button
-              onClick={() => {
-                if (activeView === "explore") setActiveView("simulator");
-              }}
+              onClick={() => setActiveView("simulator")}
               className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
                 activeView !== "explore" && activeView !== "community"
                   ? "bg-blue-600 text-white shadow-lg"
@@ -333,6 +340,23 @@ function App() {
           </>
         )}
       </div>
+      {/* Footer */}
+      <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-center md:text-left">
+            <h2 className="text-lg font-bold tracking-wider mb-1">
+              TRADE INCOME<span className="text-blue-500"> PLANER</span>
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Professional Equity Simulator & Trading Assistant
+            </p>
+          </div>
+
+          <div className="text-gray-500 text-xs text-center md:text-right">
+            &copy; {new Date().getFullYear()} Trade Income Planer.<br/>All rights reserved.
+          </div>
+        </div>
+      </footer>
       {/* AI Chat Assistant Widget */}
       <ChatAssistant />
     </div>

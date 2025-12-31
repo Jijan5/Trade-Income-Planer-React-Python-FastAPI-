@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 const Community = () => {
@@ -7,18 +7,44 @@ const Community = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [newComm, setNewComm] = useState({ name: "", description: "" });
+  const [currentUser, setCurrentUser] = useState(null);
 
   // State join community
   const [activeCommunity, setActiveCommunity] = useState(null);
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
-  const [newPostMedia, setNewPostMedia] = useState({ image: "", link: "" });
-  const [showMediaInput, setShowMediaInput] = useState(false);
+  const [postImage, setPostImage] = useState({ file: null, preview: "" });
+  const [newPostLink, setNewPostLink] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
+
+  // Reaction Modal State
+  const [reactionModalPostId, setReactionModalPostId] = useState(null);
+  const longPressTimer = useRef(null);
+  const isLongPress = useRef(false);
+  const fileInputRef = useRef(null);
 
   // Interaction States
   const [expandedComments, setExpandedComments] = useState({}); // { postId: boolean }
   const [commentsData, setCommentsData] = useState({}); // { postId: [comments] }
   const [newCommentText, setNewCommentText] = useState({}); // { postId: string }
+
+  // Reply & Mention States
+  const [replyingTo, setReplyingTo] = useState(null); // { commentId, username }
+  const [mentionState, setMentionState] = useState({
+    active: false,
+    query: "",
+    suggestions: [],
+    target: null,
+    position: { top: 0, left: 0 },
+  });
+  const [replyContent, setReplyContent] = useState(""); // State for the reply input
+  const mentionDebounceTimer = useRef(null);
+
+  // Edit & Menu States
+  const [activeMenu, setActiveMenu] = useState(null); // { type: 'post'|'comment', id: number }
+  const [editingItem, setEditingItem] = useState(null); // { type: 'post'|'comment', id: number, content: string, ... }
+  const menuRef = useRef(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   // Fetch Communities
   const fetchCommunities = async () => {
@@ -36,16 +62,56 @@ const Community = () => {
     fetchCommunities();
   }, []);
 
-  // Fetch Posts ketika masuk ke komunitas
+  // Get Current User from Token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setCurrentUser(payload.sub);
+      } catch (error) {}
+    }
+  }, []);
+
+  // Fetch Posts after join community
   useEffect(() => {
     if (activeCommunity) {
       fetchPosts(activeCommunity.id);
     }
   }, [activeCommunity]);
 
+  // Close modal when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (reactionModalPostId && !event.target.closest(".reaction-modal")) {
+        setReactionModalPostId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [reactionModalPostId]);
+
+  // Combined hook to close popups when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close mention box
+      if (mentionState.active && !event.target.closest(".mention-box")) {
+        setMentionState((prev) => ({ ...prev, active: false }));
+      }
+
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setActiveMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mentionState.active, activeMenu]);
+
   const fetchPosts = async (communityId) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/communities/${communityId}/posts`);
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/communities/${communityId}/posts`
+      );
       setPosts(response.data);
     } catch (error) {
       console.error("Failed to fetch posts", error);
@@ -65,10 +131,22 @@ const Community = () => {
     }
   };
 
+  const handlePaste = (e) => {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        setPostImage({ file: file, preview: URL.createObjectURL(file) });
+        break; // Berhenti setelah menemukan gambar pertama
+      }
+    }
+  };
+
   // Handle Create Post
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-    if (!newPostContent.trim()) return;
+    if (!newPostContent.trim() && !postImage.file && !newPostLink.trim())
+      return;
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -76,26 +154,38 @@ const Community = () => {
       return;
     }
 
+    const formData = new FormData();
+    formData.append("content", newPostContent);
+    if (newPostLink) {
+      formData.append("link_url", newPostLink);
+    }
+    if (postImage.file) {
+      formData.append("image_file", postImage.file);
+    }
+
     try {
       await axios.post(
         `http://127.0.0.1:8000/api/communities/${activeCommunity.id}/posts`,
-        { 
-          content: newPostContent,
-          image_url: newPostMedia.image || null,
-          link_url: newPostMedia.link || null
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       setNewPostContent("");
-      setNewPostMedia({ image: "", link: "" });
-      setShowMediaInput(false);
+      setPostImage({ file: null, preview: "" });
+      setNewPostLink("");
+      setShowLinkInput(false);
       fetchPosts(activeCommunity.id); // Refresh feed
     } catch (error) {
       console.error("Failed to post", error);
       let msg = "Failed to post.";
       if (error.response) {
         msg = error.response.data.detail || "Server error.";
-        if (error.response.status === 401) msg = "Session expired. Please login again.";
+        if (error.response.status === 401)
+          msg = "Session expired. Please login again.";
       }
       alert(msg);
     }
@@ -107,17 +197,46 @@ const Community = () => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Please login to react.");
 
+    // Optimistic UI Update
+    setPosts(
+      posts.map((p) => {
+        if (p.id === postId) {
+          const isSame = p.user_reaction === type;
+          const isNew = !p.user_reaction;
+
+          let newLikes = p.likes;
+          let newReaction = type;
+
+          if (isSame) {
+            // Remove like
+            newLikes = Math.max(0, newLikes - 1);
+            newReaction = null;
+          } else if (isNew) {
+            // Add like
+            newLikes += 1;
+          }
+          // If swapping (isDifferent), likes count stays same, just update reaction type
+
+          return { ...p, likes: newLikes, user_reaction: newReaction };
+        }
+        return p;
+      })
+    );
+
     try {
       await axios.post(
         `http://127.0.0.1:8000/api/posts/${postId}/react`,
         { type },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Optimistic update (simple increment for demo, real app would refetch or use complex state)
-      setPosts(posts.map(p => p.id === postId ? { ...p, likes: p.likes + 1 } : p));
     } catch (error) {
       console.error("Reaction failed", error);
+      if (error.response && error.response.status === 401) {
+        alert("Session expired. Please login again.");
+      }
+      fetchPosts(activeCommunity.id); // Revert on error
     }
+    setReactionModalPostId(null); // Close modal after reaction
   };
 
   const toggleComments = async (postId) => {
@@ -127,7 +246,9 @@ const Community = () => {
     if (!isExpanded && !commentsData[postId]) {
       // Fetch comments if opening and not loaded yet
       try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/posts/${postId}/comments`);
+        const res = await axios.get(
+          `http://127.0.0.1:8000/api/posts/${postId}/comments`
+        );
         setCommentsData({ ...commentsData, [postId]: res.data });
       } catch (error) {
         console.error("Fetch comments failed", error);
@@ -135,8 +256,7 @@ const Community = () => {
     }
   };
 
-  const submitComment = async (postId) => {
-    const content = newCommentText[postId];
+  const submitComment = async (postId, content, parentId = null) => {
     const token = localStorage.getItem("token");
     if (!content || !content.trim()) return;
     if (!token) return alert("Please login to comment.");
@@ -144,17 +264,29 @@ const Community = () => {
     try {
       const res = await axios.post(
         `http://127.0.0.1:8000/api/posts/${postId}/comments`,
-        { content },
+        { content, parent_id: parentId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       // Update local state
       const currentComments = commentsData[postId] || [];
-      setCommentsData({ ...commentsData, [postId]: [...currentComments, res.data] });
-      setNewCommentText({ ...newCommentText, [postId]: "" });
-      
+      setCommentsData({
+        ...commentsData,
+        [postId]: [...currentComments, res.data],
+      });
+      if (parentId) {
+        setReplyingTo(null);
+        setReplyContent(""); // Clear reply input// Close reply form
+      } else {
+        setNewCommentText({ ...newCommentText, [postId]: "" }); // Clear main comment form
+      }
+
       // Update comment count on post
-      setPosts(posts.map(p => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p));
+      setPosts(
+        posts.map((p) =>
+          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
+        )
+      );
     } catch (error) {
       console.error("Comment failed", error);
     }
@@ -163,20 +295,327 @@ const Community = () => {
   const handleShare = async (postId) => {
     try {
       await axios.post(`http://127.0.0.1:8000/api/posts/${postId}/share`);
-      setPosts(posts.map(p => p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p));
+      setPosts(
+        posts.map((p) =>
+          p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p
+        )
+      );
       alert("Post shared to your timeline! (Simulated)");
     } catch (error) {
       console.error("Share failed", error);
     }
   };
 
+  const handlePressStart = (postId) => {
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+      setReactionModalPostId(postId);
+    }, 100);
+  };
+
+  const handlePressEnd = (postId) => {
+    clearTimeout(longPressTimer.current);
+    if (!isLongPress.current) {
+      const post = posts.find((p) => p.id === postId);
+      if (post) {
+        handleReaction(postId, post.user_reaction || "like");
+      }
+    }
+  };
+
   const reactions = [
     { emoji: "👍", label: "Like", type: "like" },
+    { emoji: "❤️", label: "Love", type: "love" },
     { emoji: "😮", label: "Shock", type: "shock" },
     { emoji: "🚀", label: "Rocket", type: "rocket" },
     { emoji: "📈", label: "Bullish", type: "chart_up" },
     { emoji: "👏", label: "Clap", type: "clap" },
   ];
+
+  const getReactionEmoji = (type) => {
+    return reactions.find((r) => r.type === type)?.emoji || "👍";
+  };
+
+  // --- MENTION HANDLERS ---
+  const handleMentionableInputChange = (e) => {
+    const input = e.target;
+    const text = input.value;
+    const cursorPosition = input.selectionStart;
+
+    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
+    const lastSpace = text.lastIndexOf(" ", cursorPosition - 1);
+
+    if (lastAt > lastSpace) {
+      const query = text.substring(lastAt + 1, cursorPosition);
+      const rect = input.getBoundingClientRect();
+      setMentionState({
+        active: true,
+        query: query,
+        suggestions: [],
+        target: input,
+        position: {
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+        },
+      });
+    } else {
+      setMentionState((prev) => ({ ...prev, active: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (mentionState.active) {
+      clearTimeout(mentionDebounceTimer.current);
+      mentionDebounceTimer.current = setTimeout(async () => {
+        if (mentionState.query.trim() === "" && mentionState.query !== "")
+          return; // Don't search for empty string after @
+        try {
+          const res = await axios.get(
+            `http://127.0.0.1:8000/api/users/search?q=${mentionState.query}`
+          );
+          setMentionState((prev) => ({ ...prev, suggestions: res.data }));
+        } catch (error) {
+          console.error("Failed to search users", error);
+        }
+      }, 300);
+    }
+  }, [mentionState.query, mentionState.active]);
+
+  const insertMention = (username) => {
+    const { target } = mentionState;
+    if (!target) return;
+
+    const text = target.value;
+    const cursorPosition = target.selectionStart;
+    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
+
+    const newText = `${text.substring(0, lastAt)}@${username} ${text.substring(
+      cursorPosition
+    )}`;
+
+    // Update the correct state based on the input's name or another identifier
+    if (target.name === "mainPostContent") {
+      setNewPostContent(newText);
+    } else if (target.name.startsWith("commentInput-")) {
+      const postId = target.name.split("-")[1];
+      setNewCommentText({ ...newCommentText, [postId]: newText });
+    } else if (target.name === "replyInput") {
+      setReplyContent(newText);
+    }
+
+    setMentionState({
+      active: false,
+      query: "",
+      suggestions: [],
+      target: null,
+      position: { top: 0, left: 0 },
+    });
+    setTimeout(() => target.focus(), 0); // Refocus the input
+  };
+
+  const renderWithMentions = (text) => {
+    return text.split(/(@\w+)/g).map((part, i) =>
+      part.startsWith("@") ? (
+        <strong key={i} className="text-blue-500 font-normal">
+          {part}
+        </strong>
+      ) : (
+        part
+      )
+    );
+  };
+
+  // --- EDIT & DELETE HANDLERS ---
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:8000/api/posts/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(posts.filter((p) => p.id !== postId));
+      setActiveMenu(null);
+    } catch (error) {
+      alert("Failed to delete post");
+    }
+  };
+
+  const handleUpdatePost = async () => {
+    if (!editingItem || !editingItem.content.trim()) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `http://127.0.0.1:8000/api/posts/${editingItem.id}`,
+        {
+          content: editingItem.content,
+          image_url: editingItem.image_url,
+          link_url: editingItem.link_url,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setPosts(
+        posts.map((p) => (p.id === editingItem.id ? { ...p, ...res.data } : p))
+      );
+      setEditingItem(null);
+    } catch (error) {
+      alert("Failed to update post");
+    }
+  };
+
+  const handleUpdateComment = async () => {
+    if (!editingItem || !editingItem.content.trim()) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `http://127.0.0.1:8000/api/comments/${editingItem.id}`,
+        {
+          content: editingItem.content,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Update local state
+      const postId = res.data.post_id;
+      const updatedComments = commentsData[postId].map((c) =>
+        c.id === editingItem.id ? res.data : c
+      );
+      setCommentsData({ ...commentsData, [postId]: updatedComments });
+
+      setEditingItem(null);
+    } catch (error) {
+      alert("Failed to update comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId, postId) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://127.0.0.1:8000/api/comments/${commentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Update local comments
+      const updatedComments = commentsData[postId].filter(
+        (c) => c.id !== commentId
+      );
+      setCommentsData({ ...commentsData, [postId]: updatedComments });
+
+      // Update post comment count
+      setPosts(
+        posts.map((p) =>
+          p.id === postId
+            ? { ...p, comments_count: Math.max(0, p.comments_count - 1) }
+            : p
+        )
+      );
+      setActiveMenu(null);
+    } catch (error) {
+      alert("Failed to delete comment");
+    }
+  };
+
+  // Note: Edit comment logic is simpler (no image/link) but backend supports content update
+  // For brevity, I'll implement delete first as requested, and basic edit structure.
+  // Since backend update_comment exists, let's add it.
+  /* 
+     Untuk Edit Comment, kita bisa gunakan logic serupa dengan Post, 
+     tapi karena keterbatasan ruang di UI, saya fokuskan delete dulu 
+     dan edit post yang lebih kompleks.
+  */
+
+  const toggleMenu = (type, id) => {
+    if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
+      setActiveMenu(null);
+    } else {
+      setActiveMenu({ type, id });
+    }
+  };
+
+  const startEditPost = (post) => {
+    setEditingItem({
+      type: "post",
+      id: post.id,
+      content: post.content,
+      image_url: post.image_url,
+      link_url: post.link_url,
+    });
+    setActiveMenu(null);
+  };
+
+  const startEditComment = (comment) => {
+    setEditingItem({
+      type: "comment",
+      id: comment.id,
+      content: comment.content,
+    });
+    setActiveMenu(null);
+  };
+
+  // --- RECURSIVE COMMENT RENDERING ---
+  const buildCommentTree = (comments) => {
+    const commentMap = {};
+    const topLevelComments = [];
+    comments.forEach((c) => {
+      commentMap[c.id] = { ...c, children: [] };
+    });
+    comments.forEach((c) => {
+      if (c.parent_id && commentMap[c.parent_id]) {
+        commentMap[c.parent_id].children.push(commentMap[c.id]);
+      } else {
+        topLevelComments.push(commentMap[c.id]);
+      }
+    });
+    return topLevelComments;
+  };
+
+  // Reply Form Component
+  const ReplyForm = ({ parentComment }) => {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submitComment(parentComment.post_id, replyContent, parentComment.id);
+        }}
+        className="mt-2 ml-8 flex gap-2"
+      >
+        <input
+          type="text"
+          name="replyInput"
+          value={replyContent}
+          onChange={(e) => {
+            setReplyContent(e.target.value);
+            handleMentionableInputChange(e);
+          }}
+          placeholder={`Replying to ${parentComment.username}...`}
+          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none"
+          autoFocus
+        />
+        <button
+          type="submit"
+          className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500"
+        >
+          Reply
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setReplyingTo(null);
+            setReplyContent("");
+          }}
+          className="text-xs text-gray-400 hover:text-white"
+        >
+          Cancel
+        </button>
+      </form>
+    );
+  };
 
   // Filter Logic
   const filteredCommunities = communities.filter((c) =>
@@ -190,19 +629,23 @@ const Community = () => {
         {/* Header Feed */}
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex items-center justify-between">
           <div>
-            <button 
+            <button
               onClick={() => setActiveCommunity(null)}
               className="text-gray-400 hover:text-white text-sm mb-2 flex items-center gap-1"
             >
               ← Back to Communities
             </button>
-            <h2 className="text-2xl font-bold text-white">{activeCommunity.name}</h2>
-            <p className="text-gray-400 text-sm">{activeCommunity.description}</p>
+            <h2 className="text-2xl font-bold text-white">
+              {activeCommunity.name}
+            </h2>
+            <p className="text-gray-400 text-sm">
+              {activeCommunity.description}
+            </p>
           </div>
           <div className="text-right">
-             <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
-               {activeCommunity.members_count} Members
-             </span>
+            <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
+              {activeCommunity.members_count} Members
+            </span>
           </div>
         </div>
 
@@ -211,39 +654,79 @@ const Community = () => {
           <form onSubmit={handlePostSubmit}>
             <textarea
               value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
+              onChange={(e) => {
+                setNewPostContent(e.target.value);
+                handleMentionableInputChange(e);
+              }}
+              name="mainPostContent"
+              onPaste={handlePaste}
               placeholder={`What's on your mind? Share a strategy or crypto news...`}
               className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
             />
 
-{showMediaInput && (
-              <div className="mt-3 space-y-2 animate-fade-in">
-                <input 
-                  type="text" 
-                  placeholder="Image URL (https://...)" 
-                  value={newPostMedia.image}
-                  onChange={(e) => setNewPostMedia({...newPostMedia, image: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+            {/* Image Preview */}
+            {postImage.preview && (
+              <div className="mt-3 relative w-fit">
+                <img
+                  src={postImage.preview}
+                  alt="Preview"
+                  className="max-h-40 rounded-lg border border-gray-600"
                 />
-                <input 
-                  type="text" 
-                  placeholder="Link URL (https://...)" 
-                  value={newPostMedia.link}
-                  onChange={(e) => setNewPostMedia({...newPostMedia, link: e.target.value})}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                />
+                <button
+                  type="button"
+                  onClick={() => setPostImage({ file: null, preview: "" })}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none text-xs"
+                >
+                  ✕
+                </button>
               </div>
             )}
 
-            <div className="flex justify-end mt-2">
-            <button 
-                type="button"
-                onClick={() => setShowMediaInput(!showMediaInput)}
-                className="mr-auto text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
-              >
-                📷 🔗 Add Media
-              </button>
-              <button 
+            {/* Link Input */}
+            {showLinkInput && (
+              <input
+                type="text"
+                placeholder="Paste a link URL..."
+                value={newPostLink}
+                onChange={(e) => setNewPostLink(e.target.value)}
+                className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none mt-3"
+              />
+            )}
+
+            <div className="flex justify-between items-center mt-2">
+              {/* Media Buttons */}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
+                >
+                  📷 Upload
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files[0])
+                      setPostImage({
+                        file: e.target.files[0],
+                        preview: URL.createObjectURL(e.target.files[0]),
+                      });
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLinkInput(!showLinkInput)}
+                  className="text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
+                >
+                  🔗 Add Link
+                </button>
+              </div>
+
+              {/* Post Button */}
+              <button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition-colors"
               >
@@ -256,105 +739,421 @@ const Community = () => {
         {/* Posts Feed */}
         <div className="space-y-4">
           {posts.length === 0 ? (
-            <div className="text-center text-gray-500 py-10">No posts yet. Be the first to share!</div>
+            <div className="text-center text-gray-500 py-10">
+              No posts yet. Be the first to share!
+            </div>
           ) : (
             posts.map((post) => (
-              <div key={post.id} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
-                {/* Post Header */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                    {post.username.substring(0, 2).toUpperCase()}
+              <div
+                key={post.id}
+                className="bg-gray-800 p-5 rounded-lg border border-gray-700"
+              >
+                {/* Post Header & Menu */}
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                      {post.username.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">
+                        {post.username}
+                      </p>
+                      <p className="text-[10px] text-gray-500">
+                        {new Date(post.created_at).toLocaleString()}
+                        {post.is_edited && (
+                          <span className="ml-1 italic opacity-75">
+                            (edited)
+                          </span>
+                        )}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">{post.username}</p>
-                    <p className="text-[10px] text-gray-500">{new Date(post.created_at).toLocaleString()}</p>
-                  </div>
+                  {/* Post Menu (Only for owner) */}
+                  {currentUser === post.username && (
+                    <div className="relative">
+                      <button
+                        onClick={() => toggleMenu("post", post.id)}
+                        className="text-gray-400 hover:text-white p-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-6 h-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                          />
+                        </svg>
+                      </button>
+                      {activeMenu?.type === "post" &&
+                        activeMenu?.id === post.id && (
+                          <div
+                            ref={menuRef}
+                            className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
+                          >
+                            <button
+                              onClick={() => startEditPost(post)}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                    </div>
+                  )}
                 </div>
                 {/* Post Content */}
-                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                {editingItem?.type === "post" && editingItem?.id === post.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={editingItem.content}
+                      onChange={(e) =>
+                        setEditingItem({
+                          ...editingItem,
+                          content: e.target.value,
+                        })
+                      }
+                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+                      rows={3}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => setEditingItem(null)}
+                        className="text-xs text-gray-400 hover:text-white px-3 py-1"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleUpdatePost}
+                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                    {renderWithMentions(post.content)}
+                  </p>
+                )}
 
                 {/* Post Media */}
                 {post.image_url && (
                   <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
-                    <img src={post.image_url} alt="Post attachment" className="w-full h-auto max-h-[400px] object-cover" />
+                    <img
+                      src={`http://127.0.0.1:8000${post.image_url}`}
+                      alt="Post attachment"
+                      className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() =>
+                        setPreviewImage(
+                          `http://127.0.0.1:8000${post.image_url}`
+                        )
+                      }
+                    />
                   </div>
                 )}
                 {post.link_url && (
-                  <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-3 p-3 bg-gray-900/50 border border-gray-700 rounded text-blue-400 text-sm hover:underline truncate">
+                  <a
+                    href={post.link_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block mt-3 p-3 bg-gray-900/50 border border-gray-700 rounded text-blue-400 text-sm hover:underline truncate"
+                  >
                     🔗 {post.link_url}
                   </a>
                 )}
 
                 {/* Post Actions (Like, Comment, Share) */}
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700">
+                <div className="flex items-center gap-6 mt-4 pt-4">
                   {/* Like / Reaction Button with Hover Menu */}
                   <div className="relative group">
-                    <button className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
-                      <span>👍</span> 
-                      <span className="text-sm font-bold">{post.likes}</span>
-                    </button>
-                    
-                    {/* Reaction Popup */}
-                    <div className="absolute bottom-full left-0 mb-2 hidden group-hover:flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in">
-                      {reactions.map((r) => (
-                        <button 
-                          key={r.type}
-                          onClick={() => handleReaction(post.id, r.type)}
-                          className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl"
-                          title={r.label}
+                    <button
+                      onMouseDown={() => handlePressStart(post.id)}
+                      onMouseUp={() => handlePressEnd(post.id)}
+                      onTouchStart={() => handlePressStart(post.id)}
+                      onTouchEnd={() => handlePressEnd(post.id)}
+                      className={`flex items-center gap-2 transition-colors ${
+                        post.user_reaction
+                          ? "text-blue-400"
+                          : "text-gray-400 hover:text-blue-400"
+                      }`}
+                    >
+                      {post.user_reaction ? (
+                        <span className="text-xl">
+                          {getReactionEmoji(post.user_reaction)}
+                        </span>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-5 h-5"
                         >
-                          {r.emoji}
-                        </button>
-                      ))}
-                    </div>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6"
+                          />
+                        </svg>
+                      )}
+                      <span className="text-sm font-bold">
+                        {post.likes > 0 ? post.likes : ""}
+                      </span>
+                    </button>
+
+                    {/* Reaction Popup */}
+                    {reactionModalPostId === post.id && (
+                      <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+                        {reactions.map((r) => (
+                          <button
+                            key={r.type}
+                            onClick={() => handleReaction(post.id, r.type)}
+                            className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl"
+                            title={r.label}
+                          >
+                            {r.emoji}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => toggleComments(post.id)}
                     className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
                   >
-                    <span>💬</span>
-                    <span className="text-sm font-bold">{post.comments_count}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+                      />
+                    </svg>
+                    <span className="text-sm font-bold">
+                      {post.comments_count > 0 ? post.comments_count : ""}
+                    </span>
                   </button>
 
-                  <button 
+                  <button
                     onClick={() => handleShare(post.id)}
                     className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
                   >
-                    <span>↗️</span>
-                    <span className="text-sm font-bold">{post.shares_count}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.287.696.287 1.093 0 .397-.107.769-.287 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+                      />
+                    </svg>
+                    <span className="text-sm font-bold">
+                      {post.shares_count > 0 ? post.shares_count : ""}
+                    </span>
                   </button>
                 </div>
 
                 {/* Comments Section */}
                 {expandedComments[post.id] && (
                   <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
-                    {/* Comment List */}
-                    <div className="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                      {commentsData[post.id]?.length > 0 ? (
-                        commentsData[post.id].map((comment) => (
-                          <div key={comment.id} className="bg-gray-900/50 p-3 rounded text-sm">
-                            <span className="font-bold text-blue-400 mr-2">{comment.username}</span>
-                            <span className="text-gray-300">{comment.content}</span>
+                    {(() => {
+                      const commentTree = buildCommentTree(
+                        commentsData[post.id] || []
+                      );
+
+                      const renderComment = (comment) => (
+                        <div
+                          key={comment.id}
+                          className="mt-3"
+                          style={{
+                            borderLeft: comment.parent_id
+                              ? "2px solid #374151"
+                              : "none",
+                            paddingLeft: comment.parent_id ? "1rem" : "0",
+                          }}
+                        >
+                          <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
+                            {editingItem?.type === "comment" &&
+                            editingItem?.id === comment.id ? (
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={editingItem.content}
+                                  onChange={(e) =>
+                                    setEditingItem({
+                                      ...editingItem,
+                                      content: e.target.value,
+                                    })
+                                  }
+                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none"
+                                />
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => setEditingItem(null)}
+                                    className="text-xs text-gray-400 hover:text-white px-2 py-0.5"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={handleUpdateComment}
+                                    className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="pr-6">
+                                <span className="font-bold text-blue-400 mr-2">
+                                  {comment.username}
+                                </span>
+                                <span className="text-gray-300">
+                                  {renderWithMentions(comment.content)}
+                                </span>
+                                {comment.is_edited && (
+                                  <span className="ml-2 text-[10px] text-gray-500 italic">
+                                    (edited)
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-4 mt-2">
+                              <button
+                                onClick={() => {
+                                  setReplyingTo({
+                                    commentId: comment.id,
+                                    username: comment.username,
+                                  });
+                                  setReplyContent("");
+                                }}
+                                className="text-[10px] text-gray-400 hover:text-white font-bold"
+                              >
+                                Reply
+                              </button>
+                              {currentUser === comment.username && (
+                                <div className="relative">
+                                  <button
+                                    onClick={() =>
+                                      toggleMenu("comment", comment.id)
+                                    }
+                                    className="text-gray-500 hover:text-white"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth={2}
+                                      stroke="currentColor"
+                                      className="w-3 h-3"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  {activeMenu?.type === "comment" &&
+                                    activeMenu?.id === comment.id && (
+                                      <div
+                                        ref={menuRef}
+                                        className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20"
+                                      >
+                                        <button
+                                          onClick={() =>
+                                            startEditComment(comment)
+                                          }
+                                          className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteComment(
+                                              comment.id,
+                                              post.id
+                                            )
+                                          }
+                                          className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        ))
+                          {replyingTo?.commentId === comment.id && (
+                            <ReplyForm parentComment={comment} />
+                          )}
+                          {comment.children.length > 0 && (
+                            <div className="mt-3">
+                              {comment.children.map(renderComment)}
+                            </div>
+                          )}
+                        </div>
+                      );
+
+                      return commentTree.length > 0 ? (
+                        commentTree.map(renderComment)
                       ) : (
-                        <p className="text-xs text-gray-500 italic">No comments yet.</p>
-                      )}
-                    </div>
+                        <p className="text-xs text-gray-500 italic">
+                          No comments yet.
+                        </p>
+                      );
+                    })()}
 
                     {/* Add Comment Input */}
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="Write a comment..." 
+                      <input
+                        type="text"
+                        placeholder="Write a comment..."
+                        name={`commentInput-${post.id}`}
                         value={newCommentText[post.id] || ""}
-                        onChange={(e) => setNewCommentText({...newCommentText, [post.id]: e.target.value})}
+                        onChange={(e) => {
+                          setNewCommentText({
+                            ...newCommentText,
+                            [post.id]: e.target.value,
+                          });
+                          handleMentionableInputChange(e);
+                        }}
                         className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                        onKeyPress={(e) => e.key === 'Enter' && submitComment(post.id)}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" &&
+                          submitComment(post.id, newCommentText[post.id])
+                        }
                       />
-                      <button 
-                        onClick={() => submitComment(post.id)}
+                      <button
+                        onClick={() =>
+                          submitComment(post.id, newCommentText[post.id])
+                        }
                         className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold"
                       >
                         Send
@@ -366,6 +1165,59 @@ const Community = () => {
             ))
           )}
         </div>
+        {/* Mention Box */}
+        {mentionState.active && mentionState.suggestions.length > 0 && (
+          <div
+            className="mention-box absolute z-30 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden"
+            style={{
+              top: mentionState.position.top,
+              left: mentionState.position.left,
+            }}
+          >
+            {mentionState.suggestions.map((user) => (
+              <button
+                key={user.username}
+                onClick={() => insertMention(user.username)}
+                className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-600"
+              >
+                {user.username}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Image Preview Modal */}
+        {previewImage && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            onClick={() => setPreviewImage(null)}
+          >
+            <button
+              className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+              onClick={() => setPreviewImage(null)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-8 h-8"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <img
+              src={previewImage}
+              alt="Full Preview"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -403,7 +1255,9 @@ const Community = () => {
 
       {/* Community Cards Grid */}
       {loading ? (
-        <div className="text-center text-gray-500 py-10">Loading communities...</div>
+        <div className="text-center text-gray-500 py-10">
+          Loading communities...
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCommunities.map((comm) => (
@@ -412,7 +1266,7 @@ const Community = () => {
               className="bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-blue-500 transition-all hover:shadow-xl group relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-              
+
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
                   {comm.name}
@@ -422,19 +1276,27 @@ const Community = () => {
                   {comm.active_count} Online
                 </span>
               </div>
-              
+
               <p className="text-gray-400 text-sm mb-6 line-clamp-2 h-10">
                 {comm.description}
               </p>
 
               <div className="flex items-center justify-between border-t border-gray-700 pt-4">
                 <div className="flex items-center gap-2 text-gray-300 text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                   </svg>
-                  <span className="font-mono font-bold">{comm.members_count.toLocaleString()}</span> Members
+                  <span className="font-mono font-bold">
+                    {comm.members_count.toLocaleString()}
+                  </span>{" "}
+                  Members
                 </div>
-                <button 
+                <button
                   onClick={() => setActiveCommunity(comm)}
                   className="text-blue-400 hover:text-white text-sm font-bold hover:underline"
                 >
@@ -450,25 +1312,35 @@ const Community = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-md w-full animate-fade-in">
-            <h3 className="text-xl font-bold text-white mb-4">Create New Community</h3>
+            <h3 className="text-xl font-bold text-white mb-4">
+              Create New Community
+            </h3>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Name</label>
+                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                  Name
+                </label>
                 <input
                   type="text"
                   required
                   value={newComm.name}
-                  onChange={(e) => setNewComm({ ...newComm, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewComm({ ...newComm, name: e.target.value })
+                  }
                   className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none"
                   placeholder="e.g. Bitcoin Whales Indonesia"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Description</label>
+                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                  Description
+                </label>
                 <textarea
                   required
                   value={newComm.description}
-                  onChange={(e) => setNewComm({ ...newComm, description: e.target.value })}
+                  onChange={(e) =>
+                    setNewComm({ ...newComm, description: e.target.value })
+                  }
                   className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none h-24 resize-none"
                   placeholder="Describe your community goal..."
                 />
