@@ -90,7 +90,7 @@ class CommunityCreate(BaseModel):
 
 class Post(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
-    community_id: int = SQLField(foreign_key="community.id")
+    community_id: Optional[int] = SQLField(foreign_key="community.id")
     username: str
     content: str
     image_url: Optional[str] = None

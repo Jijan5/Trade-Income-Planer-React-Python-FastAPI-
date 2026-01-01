@@ -161,7 +161,42 @@ async def run_goal_planner(request: GoalPlannerRequest):
     return result
   except Exception as e:
       raise HTTPException(status_code=500, detail=str(e))
-    
+
+# --- GLOBAL POSTS ENDPOINTS (HOME FEED) ---
+@app.get("/api/posts", response_model=list[Post])
+async def get_all_posts(session: Session = Depends(get_session)):
+    # take all post (community or globe)
+    return session.exec(select(Post).order_by(Post.created_at.desc())).all()
+
+@app.post("/api/posts", response_model=Post)
+async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    try:
+        image_url_to_save = None
+        if image_file:
+            os.makedirs("static/images", exist_ok=True)
+            filename = f"{uuid.uuid4()}-{image_file.filename}"
+            file_path = os.path.join("static/images", filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image_file.file, buffer)
+            image_url_to_save = f"/static/images/{filename}"
+            
+        db_post = Post(
+            community_id=None, # Global post
+            username=user.username, 
+            content=content,
+            image_url=image_url_to_save,
+            link_url=link_url
+        )
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
+        return db_post
+    except Exception as e:
+        session.rollback()
+        if "1054" in str(e):
+             raise HTTPException(status_code=500, detail="Database schema mismatch. Please drop tables and restart backend.")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # --- COMMUNITY ENDPOINTS ---
 
 @app.get("/api/users/search")

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-const Community = () => {
+const Community = ({ activeCommunity, setActiveCommunity }) => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,7 +10,6 @@ const Community = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   // State join community
-  const [activeCommunity, setActiveCommunity] = useState(null);
   const [posts, setPosts] = useState([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [postImage, setPostImage] = useState({ file: null, preview: "" });

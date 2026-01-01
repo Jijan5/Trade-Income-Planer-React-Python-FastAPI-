@@ -9,6 +9,7 @@ import ChatAssistant from "./components/ChatAssistant";
 import Auth from "./components/Auth";
 import Explore from "./components/Explore";
 import Community from "./components/Community";
+import Home from "./components/Home";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -23,6 +24,9 @@ function App() {
     () => localStorage.getItem("activeView") || "simulator"
   );
   
+  // Global state for active community (shared between Home and Community pages)
+  const [activeCommunity, setActiveCommunity] = useState(null);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("activeView");
@@ -134,16 +138,16 @@ function App() {
           {/* Main Navigation (Center) */}
           <div className="hidden md:flex items-center space-x-2 bg-gray-900/50 p-1 rounded-lg border border-gray-700/50">
             <button
-              onClick={() => setActiveView("simulator")}
-              className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
-                activeView !== "explore" && activeView !== "community"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Home TIP
-            </button>
-            <button
+            onClick={() => setActiveView("home")}
+            className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
+              activeView === "home"
+                ? "bg-blue-600 text-white shadow-lg"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Home
+          </button>
+          <button
               onClick={() => setActiveView("explore")}
               className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
                 activeView === "explore"
@@ -162,6 +166,16 @@ function App() {
               }`}
             >
               Community
+            </button>
+            <button
+              onClick={() => setActiveView("simulator")}
+              className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
+                activeView === "simulator"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              Simulation
             </button>
           </div>
 
@@ -205,10 +219,13 @@ function App() {
       </nav>
 
       <div className="w-full p-6 space-y-8 pt-24">
-        {activeView === "explore" ? (
+        {activeView === "home" ? (
+          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} />
+        ) : activeView === "explore" ? (
+
           <Explore />
         ) : activeView === "community" ? (
-          <Community />
+          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} />
         ) : (
           <>
             {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
