@@ -1,13 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-const Community = ({ activeCommunity, setActiveCommunity }) => {
+const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHighlightedPost }) => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [newComm, setNewComm] = useState({ name: "", description: "" });
   const [currentUser, setCurrentUser] = useState(null);
+  const [joinedCommunityIds, setJoinedCommunityIds] = useState([]);
+
+  // Community Creation State
+  const [newComm, setNewComm] = useState({
+    name: "",
+    description: "",
+    bgType: "color", // color, gradient, image
+    bgValue: "#1f2937",
+    textColor: "#ffffff",
+    fontFamily: "sans",
+    hoverAnimation: "none",
+    hoverColor: "#3b82f6",
+    gradientStart: "#4facfe",
+    gradientEnd: "#00f2fe",
+    gradientDir: "to right",
+  });
+  const [commAvatar, setCommAvatar] = useState(null);
+  const [commBgImage, setCommBgImage] = useState(null);
+  const [previewCommAvatar, setPreviewCommAvatar] = useState(null);
+  const [previewCommBg, setPreviewCommBg] = useState(null);
 
   // State join community
   const [posts, setPosts] = useState([]);
@@ -45,6 +64,10 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
   const menuRef = useRef(null);
   const [previewImage, setPreviewImage] = useState(null);
 
+  // Exit Modal State
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [communityToExit, setCommunityToExit] = useState(null);
+
   // Fetch Communities
   const fetchCommunities = async () => {
     try {
@@ -57,8 +80,22 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
     }
   };
 
+  const fetchJoinedCommunities = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/users/me/joined_communities", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setJoinedCommunityIds(res.data);
+    } catch (e) {
+      console.error("Failed to fetch joined communities", e);
+    }
+  };
+
   useEffect(() => {
     fetchCommunities();
+    fetchJoinedCommunities();
   }, []);
 
   // Get Current User from Token
@@ -90,7 +127,6 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [reactionModalPostId]);
 
-  // Combined hook to close popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Close mention box
@@ -120,13 +156,111 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
   // Handle Create Community
   const handleCreate = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Please login first");
+
+    const formData = new FormData();
+    formData.append("name", newComm.name);
+    formData.append("description", newComm.description);
+    formData.append("bg_type", newComm.bgType);
+    formData.append("bg_value", newComm.bgValue);
+    formData.append("text_color", newComm.textColor);
+    formData.append("font_family", newComm.fontFamily);
+    formData.append("hover_animation", newComm.hoverAnimation);
+    formData.append("hover_color", newComm.hoverColor);
+
+    if (commAvatar) formData.append("avatar_file", commAvatar);
+    if (commBgImage && newComm.bgType === "image")
+      formData.append("bg_image_file", commBgImage);
     try {
-      await axios.post("http://127.0.0.1:8000/api/communities", newComm);
+      await axios.post("http://127.0.0.1:8000/api/communities", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setShowModal(false);
-      setNewComm({ name: "", description: "" });
+      // Reset form
+      setNewComm({
+        name: "",
+        description: "",
+        bgType: "color",
+        bgValue: "#1f2937",
+        textColor: "#ffffff",
+        fontFamily: "sans",
+        hoverAnimation: "none",
+        hoverColor: "#3b82f6",
+        gradientStart: "#4facfe",
+        gradientEnd: "#00f2fe",
+        gradientDir: "to right",
+      });
+      setCommAvatar(null);
+      setCommBgImage(null);
+      setPreviewCommAvatar(null);
+      setPreviewCommBg(null);
       fetchCommunities(); // Refresh list
     } catch (error) {
-      alert("Failed to make community");
+      // Reset form
+      setNewComm({
+        name: "",
+        description: "",
+        bgType: "color",
+        bgValue: "#1f2937",
+        textColor: "#ffffff",
+        fontFamily: "sans",
+        hoverAnimation: "none",
+        hoverColor: "#3b82f6",
+        gradientStart: "#4facfe",
+        gradientEnd: "#00f2fe",
+        gradientDir: "to right",
+      });
+      setCommAvatar(null);
+      setCommBgImage(null);
+      setPreviewCommAvatar(null);
+      setPreviewCommBg(null);
+    }
+  };
+
+  // Handle Join Community
+  const handleJoinCommunity = async (e, comm) => {
+    e.stopPropagation(); // Prevent entering card immediately
+    const token = localStorage.getItem("token");
+    if (!token) return alert("Please login to join.");
+
+    try {
+      await axios.post(`http://127.0.0.1:8000/api/communities/${comm.id}/join`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setJoinedCommunityIds([...joinedCommunityIds, comm.id]);
+      setCommunities(communities.map(c => c.id === comm.id ? {...c, members_count: c.members_count + 1} : c));
+      // Optional: Auto enter after join
+      setActiveCommunity(comm);
+    } catch (error) {
+      alert("Failed to join community.");
+    }
+  };
+
+  // Handle Exit Request
+  const requestExitCommunity = (e, comm) => {
+    e.stopPropagation();
+    setCommunityToExit(comm);
+    setShowExitModal(true);
+  };
+
+  // Handle Confirm Exit
+  const confirmExitCommunity = async () => {
+    if (!communityToExit) return;
+    const token = localStorage.getItem("token");
+    try {
+      await axios.post(`http://127.0.0.1:8000/api/communities/${communityToExit.id}/leave`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setJoinedCommunityIds(joinedCommunityIds.filter(id => id !== communityToExit.id));
+      setCommunities(communities.map(c => c.id === communityToExit.id ? {...c, members_count: Math.max(0, c.members_count - 1)} : c));
+      setShowExitModal(false);
+      setCommunityToExit(null);
+    } catch (error) {
+      alert("Failed to leave community.");
     }
   };
 
@@ -523,11 +657,6 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
   // Note: Edit comment logic is simpler (no image/link) but backend supports content update
   // For brevity, I'll implement delete first as requested, and basic edit structure.
   // Since backend update_comment exists, let's add it.
-  /* 
-     Untuk Edit Comment, kita bisa gunakan logic serupa dengan Post, 
-     tapi karena keterbatasan ruang di UI, saya fokuskan delete dulu 
-     dan edit post yang lebih kompleks.
-  */
 
   const toggleMenu = (type, id) => {
     if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
@@ -616,6 +745,31 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
     );
   };
 
+  // Helper for Community Card Styles
+  const getCardStyle = (comm) => {
+    const style = {
+      color: comm.text_color || "#ffffff",
+      fontFamily:
+        comm.font_family === "serif"
+          ? "serif"
+          : comm.font_family === "mono"
+          ? "monospace"
+          : "sans-serif",
+          "--glow-color": comm.hover_color || "#3b82f6",
+    };
+
+    if (comm.bg_type === "image" && comm.bg_value) {
+      style.backgroundImage = `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(http://127.0.0.1:8000${comm.bg_value})`;
+      style.backgroundSize = "cover";
+      style.backgroundPosition = "center";
+    } else if (comm.bg_type === "gradient") {
+      style.background = comm.bg_value;
+    } else {
+      style.backgroundColor = comm.bg_value || "#1f2937";
+    }
+    return style;
+  };
+
   // Filter Logic
   const filteredCommunities = communities.filter((c) =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -626,20 +780,32 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
     return (
       <div className="animate-fade-in space-y-6 max-w-4xl mx-auto">
         {/* Header Feed */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex items-center justify-between">
-          <div>
+        <div 
+          style={getCardStyle(activeCommunity)}
+          className="p-6 rounded-lg border border-gray-700 flex items-center justify-between relative overflow-hidden transition-all shadow-xl"
+        >
+          <div className="relative z-10 flex items-center gap-4">
+            {activeCommunity.avatar_url ? (
+              <img src={`http://127.0.0.1:8000${activeCommunity.avatar_url}`} alt={activeCommunity.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold border-2 border-white/20">
+                {activeCommunity.name.substring(0, 2).toUpperCase()}
+              </div>
+            )}
+            <div>
             <button
               onClick={() => setActiveCommunity(null)}
-              className="text-gray-400 hover:text-white text-sm mb-2 flex items-center gap-1"
+              className="opacity-70 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold"
             >
               ← Back to Communities
             </button>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold">
               {activeCommunity.name}
             </h2>
-            <p className="text-gray-400 text-sm">
+            <p className="opacity-80 text-sm">
               {activeCommunity.description}
             </p>
+          </div>
           </div>
           <div className="text-right">
             <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
@@ -1259,32 +1425,71 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCommunities.map((comm) => (
+          {filteredCommunities.map((comm) => {
+            const isCreator = currentUser === comm.creator_username;
+            return (
             <div
               key={comm.id}
-              className="bg-gray-800 rounded-xl border border-gray-700 p-6 hover:border-blue-500 transition-all hover:shadow-xl group relative overflow-hidden"
+              style={getCardStyle(comm)}
+              onClick={() => {
+                if (isCreator || joinedCommunityIds.includes(comm.id)) {
+                  setActiveCommunity(comm);
+                }
+              }}
+              className={`rounded-xl border border-gray-700 p-6 transition-all group relative overflow-hidden cursor-pointer
+                ${comm.hover_animation === "scale" ? "hover:scale-105" : ""}
+                ${
+                  comm.hover_animation === "glow"
+                    ? "hover:shadow-[0_0_20px_var(--glow-color)]"
+                    : "hover:shadow-xl"
+                }
+                ${comm.hover_animation === "none" ? "hover:-translate-y-1" : ""}
+              `}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                  {comm.name}
-                </h3>
+              <div className="flex items-center gap-3 mb-4">
+                {comm.avatar_url ? (
+                  <img
+                    src={`http://127.0.0.1:8000${comm.avatar_url}`}
+                    alt={comm.name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                    {comm.name.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h3
+                    className="text-xl font-bold truncate"
+                    style={{ color: comm.text_color }}
+                  >
+                    {comm.name}
+                  </h3>
+                  <p className="text-xs opacity-70">
+                    by {comm.creator_username}
+                  </p>
+                </div>
                 <span className="bg-green-900/30 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                   {comm.active_count} Online
                 </span>
               </div>
 
-              <p className="text-gray-400 text-sm mb-6 line-clamp-2 h-10">
+              <p
+                className="text-sm mb-6 line-clamp-2 h-10 opacity-80"
+                style={{ color: comm.text_color }}
+              >
                 {comm.description}
               </p>
 
               <div className="flex items-center justify-between border-t border-gray-700 pt-4">
-                <div className="flex items-center gap-2 text-gray-300 text-sm">
+                <div
+                  className="flex items-center gap-2 text-sm opacity-80"
+                  style={{ color: comm.text_color }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-500"
+                    className="h-5 w-5 opacity-70"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -1295,54 +1500,347 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
                   </span>{" "}
                   Members
                 </div>
-                <button
-                  onClick={() => setActiveCommunity(comm)}
-                  className="text-blue-400 hover:text-white text-sm font-bold hover:underline"
-                >
-                  Join Group →
-                </button>
+                {isCreator ? (
+                  <span className="text-sm font-bold opacity-70" style={{ color: comm.text_color }}>
+                    Creator
+                  </span>
+                ) : joinedCommunityIds.includes(comm.id) ? (
+                  <button
+                    onClick={(e) => requestExitCommunity(e, comm)}
+                    className="text-sm font-bold hover:underline opacity-80 hover:opacity-100"
+                    style={{ color: comm.text_color }}
+                  >
+                    Exit Group
+                  </button>
+                ) : (
+                  <button onClick={(e) => handleJoinCommunity(e, comm)} className="text-sm font-bold hover:underline" style={{ color: comm.text_color }}>
+                    Join Group →
+                  </button>
+                )}
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       )}
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-md w-full animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-2xl w-full animate-fade-in my-8">
             <h3 className="text-xl font-bold text-white mb-4">
               Create New Community
             </h3>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={newComm.name}
-                  onChange={(e) =>
-                    setNewComm({ ...newComm, name: e.target.value })
-                  }
-                  className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none"
-                  placeholder="e.g. Bitcoin Whales Indonesia"
-                />
+            <form onSubmit={handleCreate} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left Column: Basic Info */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      Avatar (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600">
+                        {previewCommAvatar ? (
+                          <img
+                            src={previewCommAvatar}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="flex items-center justify-center h-full text-gray-500 text-xs">
+                            No Img
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setCommAvatar(file);
+                            setPreviewCommAvatar(URL.createObjectURL(file));
+                          }
+                        }}
+                        className="text-xs text-gray-400"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newComm.name}
+                      onChange={(e) =>
+                        setNewComm({ ...newComm, name: e.target.value })
+                      }
+                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none"
+                      placeholder="e.g. Bitcoin Whales Indonesia"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      Description
+                    </label>
+                    <textarea
+                      required
+                      value={newComm.description}
+                      onChange={(e) =>
+                        setNewComm({ ...newComm, description: e.target.value })
+                      }
+                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none h-24 resize-none"
+                      placeholder="Describe your community goal..."
+                    />
+                  </div>
+                </div>
+
+                {/* Right Column: Appearance */}
+                <div className="space-y-4 border-l border-gray-700 pl-6">
+                  <h4 className="text-sm font-bold text-blue-400 uppercase">
+                    Appearance
+                  </h4>
+
+                  {/* Background Type */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      Background Type
+                    </label>
+                    <select
+                      value={newComm.bgType}
+                      onChange={(e) =>
+                        setNewComm({ ...newComm, bgType: e.target.value })
+                      }
+                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 text-sm"
+                    >
+                      <option value="color">Solid Color</option>
+                      <option value="gradient">Gradient</option>
+                      <option value="image">Upload Image</option>
+                    </select>
+                  </div>
+
+                  {/* Background Value */}
+                  {newComm.bgType === "image" ? (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                        Upload Background
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setCommBgImage(file);
+                            setPreviewCommBg(URL.createObjectURL(file));
+                          }
+                        }}
+                        className="text-xs text-gray-400 w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                        {newComm.bgType === "color"
+                          ? "Color Hex"
+                          : "Gradient CSS"}
+                      </label>
+                      {newComm.bgType === "gradient" ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-[10px] text-gray-500 uppercase">Start Color</label>
+                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                                <input type="color" value={newComm.gradientStart} onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setNewComm(prev => ({ ...prev, gradientStart: newVal, bgValue: `linear-gradient(${prev.gradientDir}, ${newVal}, ${prev.gradientEnd})` }));
+                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                                <span className="text-xs text-gray-400">{newComm.gradientStart}</span>
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-[10px] text-gray-500 uppercase">End Color</label>
+                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                                <input type="color" value={newComm.gradientEnd} onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setNewComm(prev => ({ ...prev, gradientEnd: newVal, bgValue: `linear-gradient(${prev.gradientDir}, ${prev.gradientStart}, ${newVal})` }));
+                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                                <span className="text-xs text-gray-400">{newComm.gradientEnd}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-gray-500 uppercase">Direction</label>
+                            <select value={newComm.gradientDir} onChange={(e) => {
+                                const newVal = e.target.value;
+                                setNewComm(prev => ({ ...prev, gradientDir: newVal, bgValue: `linear-gradient(${newVal}, ${prev.gradientStart}, ${prev.gradientEnd})` }));
+                            }} className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs">
+                              <option value="to right">To Right →</option>
+                              <option value="to left">To Left ←</option>
+                              <option value="to bottom">To Bottom ↓</option>
+                              <option value="to top">To Top ↑</option>
+                              <option value="45deg">Diagonal ↗</option>
+                              <option value="135deg">Diagonal ↘</option>
+                            </select>
+                          </div>
+                        </div>
+                      ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          value={newComm.bgValue}
+                          onChange={(e) =>
+                            setNewComm({ ...newComm, bgValue: e.target.value })
+                          }
+                          className={`bg-gray-900 border border-gray-600 rounded text-white p-1 h-9 ${
+                            newComm.bgType === "color"
+                              ? "w-16"
+                              : "w-full text-xs"
+                          }`}
+                        />
+                      </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                        Text Color
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={newComm.textColor}
+                          onChange={(e) =>
+                            setNewComm({
+                              ...newComm,
+                              textColor: e.target.value,
+                            })
+                          }
+                          className="h-8 w-8 bg-transparent border-0 cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-400">
+                          {newComm.textColor}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                        Font
+                      </label>
+                      <select
+                        value={newComm.fontFamily}
+                        onChange={(e) =>
+                          setNewComm({ ...newComm, fontFamily: e.target.value })
+                        }
+                        className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs"
+                      >
+                        <option value="sans">Sans Serif</option>
+                        <option value="serif">Serif</option>
+                        <option value="mono">Monospace</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      Hover Animation
+                    </label>
+                    <select
+                      value={newComm.hoverAnimation}
+                      onChange={(e) =>
+                        setNewComm({
+                          ...newComm,
+                          hoverAnimation: e.target.value,
+                        })
+                      }
+                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 text-sm"
+                    >
+                      <option value="none">None (Lift)</option>
+                      <option value="scale">Scale Up</option>
+                      <option value="glow">Blue Glow</option>
+                    </select>
+                  </div>
+                  {newComm.hoverAnimation === "glow" && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                        Glow Color
+                      </label>
+                      <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                        <input type="color" value={newComm.hoverColor} onChange={(e) => setNewComm({...newComm, hoverColor: e.target.value})} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                        <span className="text-xs text-gray-400">{newComm.hoverColor}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
-                  Description
+
+              {/* Live Preview */}
+              <div className="border-t border-gray-700 pt-4">
+                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+                  Live Preview
                 </label>
-                <textarea
-                  required
-                  value={newComm.description}
-                  onChange={(e) =>
-                    setNewComm({ ...newComm, description: e.target.value })
+                <div
+                  style={{
+                    color: newComm.textColor,
+                    fontFamily:
+                      newComm.fontFamily === "serif"
+                        ? "serif"
+                        : newComm.fontFamily === "mono"
+                        ? "monospace"
+                        : "sans-serif",
+                    background:
+                      newComm.bgType === "image" && previewCommBg
+                        ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${previewCommBg})`
+                        : newComm.bgType === "gradient"
+                        ? newComm.bgValue
+                        : newComm.bgValue,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    "--glow-color": newComm.hoverColor,
+                  }}
+                  className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
+                  ${newComm.hoverAnimation === "scale" ? "hover:scale-105" : ""}
+                  ${
+                    newComm.hoverAnimation === "glow"
+                      ? "hover:shadow-[0_0_20px_var(--glow-color)]"
+                      : "hover:shadow-xl"
                   }
-                  className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none h-24 resize-none"
-                  placeholder="Describe your community goal..."
-                />
+                  ${newComm.hoverAnimation === "none" ? "hover:-translate-y-1" : ""}
+                `}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    {previewCommAvatar ? (
+                      <img
+                        src={previewCommAvatar}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                        {newComm.name
+                          ? newComm.name.substring(0, 2).toUpperCase()
+                          : "NA"}
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="text-xl font-bold">
+                        {newComm.name || "Community Name"}
+                      </h3>
+                      <p className="text-xs opacity-70">by You</p>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-6 opacity-80">
+                    {newComm.description ||
+                      "Community description will appear here..."}
+                  </p>
+                  <div className="flex items-center justify-between border-t border-white/10 pt-4 opacity-80">
+                    <span className="text-sm">1 Member</span>
+                    <span className="text-sm font-bold">Join Group →</span>
+                  </div>
+                </div>
               </div>
               <div className="flex gap-3 pt-2">
                 <button
@@ -1360,6 +1858,21 @@ const Community = ({ activeCommunity, setActiveCommunity }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Exit Confirmation Modal */}
+      {showExitModal && communityToExit && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full animate-fade-in text-center">
+            <h3 className="text-lg font-bold text-white mb-2">Exit Community?</h3>
+            <p className="text-gray-400 text-sm mb-6">
+              Are you sure you want to leave <span className="text-white font-bold">{communityToExit.name}</span>?
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => setShowExitModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">No, Cancel</button>
+              <button onClick={confirmExitCommunity} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Yes, Exit</button>
+            </div>
           </div>
         </div>
       )}

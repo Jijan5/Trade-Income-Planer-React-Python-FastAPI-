@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
@@ -10,6 +10,8 @@ import Auth from "./components/Auth";
 import Explore from "./components/Explore";
 import Community from "./components/Community";
 import Home from "./components/Home";
+import Profile from "./components/Profile";
+import NotificationsModal from "./components/NotificationsModal";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -26,13 +28,149 @@ function App() {
   
   // Global state for active community (shared between Home and Community pages)
   const [activeCommunity, setActiveCommunity] = useState(null);
+  const [communities, setCommunities] = useState([]);
 
-  const handleLogout = () => {
+  // Notification State
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [highlightedPost, setHighlightedPost] = useState(null);
+
+  // User Profile State (for Navbar)
+  const [userData, setUserData] = useState(null);
+
+  const fetchUserProfile = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/users/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUserData(res.data);
+    } catch (error) {
+      console.error("Failed to fetch user profile", error);
+    }
+  };
+
+  const fetchUnreadCount = async () => {
+    if (!token) return;
+    try {
+        const res = await axios.get("http://127.0.0.1:8000/api/notifications/unread_count", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setUnreadCount(res.data.count);
+    } catch (error) {
+        console.error("Failed to fetch unread count", error);
+    }
+  };
+
+  const fetchCommunities = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/communities");
+      setCommunities(res.data);
+    } catch (error) {
+      console.error("Failed to fetch communities", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCommunities();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile();
+      fetchUnreadCount();
+    } else {
+      setUserData(null);
+      setUnreadCount(0);
+    }
+  }, [token]);
+
+  // Feedback State
+  const [feedbackEmail, setFeedbackEmail] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedbackEmail || !feedbackMessage) return;
+    try {
+      await axios.post("http://127.0.0.1:8000/api/feedback", {
+        email: feedbackEmail,
+        message: feedbackMessage,
+      });
+      alert("Feedback sent! Thank you.");
+      setFeedbackEmail("");
+      setFeedbackMessage("");
+    } catch (error) {
+      console.error("Feedback error", error);
+      alert("Failed to send feedback.");
+    }
+  };
+
+  const handleLogout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("activeView");
     setToken(null);
+    setUnreadCount(0);
+    setUserData(null);
     // Reset to home view on logout
     setActiveView("simulator");
+  }, []);
+
+  // Global Axios interceptor for handling 401 errors
+  useEffect(() => {
+    const responseInterceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        // Check if it's a 401 Unauthorized error and not a login attempt
+        if (error.response && error.response.status === 401 && !error.config.url.endsWith('/api/token')) {
+          console.error("Sesi tidak valid atau telah berakhir. Logout otomatis.");
+          handleLogout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup interceptor on component unmount
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, [handleLogout]);
+
+  const handleBellClick = async () => {
+    setShowNotifications(!showNotifications);
+    if (!showNotifications) { // If we are opening it
+        try {
+            const res = await axios.get("http://127.0.0.1:8000/api/notifications", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setNotifications(res.data);
+
+            if (unreadCount > 0) {
+                await axios.post("http://127.0.0.1:8000/api/notifications/mark_as_read", {}, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setUnreadCount(0);
+            }
+        } catch (error) {
+            console.error("Failed to fetch/mark notifications", error);
+        }
+    }
+  };
+
+  const handleNotificationClick = (notification) => {
+      setShowNotifications(false);
+      setHighlightedPost({ postId: notification.post_id });
+
+      if (notification.community_id) {
+          const targetCommunity = communities.find(c => c.id === notification.community_id);
+          if (targetCommunity) {
+              setActiveCommunity(targetCommunity);
+              setActiveView("community");
+          }
+      } else {
+          setActiveView("home");
+      }
   };
 
   useEffect(() => {
@@ -105,6 +243,18 @@ function App() {
       <style>{`
         body { display: block !important; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+        @keyframes slide-in-right {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in-right { animation: slide-in-right 0.3s ease-out forwards; }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -182,9 +332,31 @@ function App() {
           <div className="flex items-center gap-4">
             {token ? (
               <>
-                <span className="text-sm text-gray-400 hidden sm:block">
-                  Professional Equity Simulator
-                </span>
+              <button onClick={handleBellClick} className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </button>
+                <div 
+                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
+                  onClick={() => setActiveView("profile")}
+                >
+                   {userData?.avatar_url ? (
+                       <img src={`http://127.0.0.1:8000${userData.avatar_url}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-500" />
+                   ) : (
+                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs border border-gray-500">
+                           {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                       </div>
+                   )}
+                   <span className="text-sm font-bold text-white hidden sm:block">
+                       {userData?.username || "User"}
+                   </span>
+                </div>
                 <button
                   onClick={handleLogout}
                   className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
@@ -220,12 +392,14 @@ function App() {
 
       <div className="w-full p-6 space-y-8 pt-24">
         {activeView === "home" ? (
-          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} />
+          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
+          ) : activeView === "profile" ? (
+          <Profile onUpdateProfile={fetchUserProfile} />
         ) : activeView === "explore" ? (
 
           <Explore />
         ) : activeView === "community" ? (
-          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} />
+          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
         ) : (
           <>
             {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
@@ -359,23 +533,60 @@ function App() {
       </div>
       {/* Footer */}
       <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="text-center md:text-left">
             <h2 className="text-lg font-bold tracking-wider mb-1">
               TRADE INCOME<span className="text-blue-500"> PLANER</span>
             </h2>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm mb-4">
               Professional Equity Simulator & Trading Assistant
             </p>
+            <div className="text-gray-500 text-xs">
+              &copy; {new Date().getFullYear()} Trade Income Planer.<br/>All rights reserved.
+            </div>
           </div>
 
-          <div className="text-gray-500 text-xs text-center md:text-right">
-            &copy; {new Date().getFullYear()} Trade Income Planer.<br/>All rights reserved.
+          {/* Feedback Form */}
+          <div className="md:col-span-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
+            <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">Send Feedback</h3>
+            <form onSubmit={handleFeedbackSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input
+                  type="email"
+                  placeholder="Your Email"
+                  value={feedbackEmail}
+                  onChange={(e) => setFeedbackEmail(e.target.value)}
+                  className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Your Feedback / Suggestion..."
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  className="sm:col-span-2 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                  required
+                />
+              </div>
+              <div className="text-right">
+                <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">
+                  Send
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </footer>
       {/* AI Chat Assistant Widget */}
       <ChatAssistant />
+
+      {showNotifications && (
+        <NotificationsModal
+            notifications={notifications}
+            onClose={() => setShowNotifications(false)}
+            onNotificationClick={handleNotificationClick}
+        />
+      )}
     </div>
   );
 }

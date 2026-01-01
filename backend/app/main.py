@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, Community, CommunityCreate, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price
 from .database import create_db_and_tables, get_session
 from .auth import get_password_hash, verify_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+import re
 import requests
 import random
 import uuid
@@ -52,6 +53,30 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
 def on_startup():
   create_db_and_tables()
 
+async def process_mentions_and_create_notifications(
+    session: Session,
+    content: str,
+    author_user: User,
+    post_id: int,
+    community_id: Optional[int],
+    notified_user_ids: set,
+    comment_id: Optional[int] = None
+):
+    mentioned_usernames = set(re.findall(r'@(\w+)', content))
+    for username in mentioned_usernames:
+        if username == author_user.username:
+            continue
+        
+        mentioned_user = session.exec(select(User).where(User.username == username)).first()
+        if mentioned_user and mentioned_user.id not in notified_user_ids:
+            notif_type = "mention_comment" if comment_id else "mention_post"
+            notification = Notification(
+                user_id=mentioned_user.id, actor_username=author_user.username, type=notif_type,
+                post_id=post_id, comment_id=comment_id, community_id=community_id
+            )
+            session.add(notification)
+            notified_user_ids.add(mentioned_user.id)
+
 @app.get("/")
 def read_root():
   return{"message": "Welcome to the Trading Simulation API"}
@@ -87,6 +112,51 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
   access_token = create_access_token(data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires)
   return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/api/users/me", response_model=UserRead)
+async def read_user_profile(user: User = Depends(get_current_user)):
+    return user
+
+@app.put("/api/users/me", response_model=UserRead)
+async def update_user_profile(
+    username: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    password: Optional[str] = Form(None),
+    avatar_file: Optional[UploadFile] = File(None),
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    #update username
+    if username and username != user.username:
+        existing_user = session.exec(select(User).where(User.username == username)).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        user.username = username
+
+    #update email
+    if email and email != user.email:
+        existing = session.exec(select(User).where(User.email == email)).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        user.email = email
+        
+    #update password
+    if password:
+        user.hashed_password = get_password_hash(password)
+        
+    #update avatar
+    if avatar_file:
+        os.makedirs("static/avatars", exist_ok=True)
+        filename = f"avatar_{user.id}_{uuid.uuid4()}_{avatar_file.filename}"
+        file_path = os.path.join("static/avatars", filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(avatar_file.file, buffer)
+        user.avatar_url = f"/static/avatars/{filename}"
+    
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
+
 @app.post("/api/simulate", response_model=SimulationResponse)
 async def run_simulation(request: SimulationRequest):
   try:
@@ -100,6 +170,7 @@ async def run_simulation(request: SimulationRequest):
 async def chat_with_ai(request: ChatRequest):
   
     api_key = os.getenv("GEMINI_API_KEY")
+    response_text = "AI service unavailable."
 
     if api_key:
         try:
@@ -118,7 +189,7 @@ async def chat_with_ai(request: ChatRequest):
             return {"response": response.text}
         except Exception as e:
             print(f"Gemini API Error: {e}")
-    return {"response": response}
+    return {"response": response_text}
 
 @app.get("/api/price/{symbol}")
 async def get_price(symbol: str):
@@ -190,6 +261,15 @@ async def create_public_post(content: str = Form(...), link_url: Optional[str] =
         session.add(db_post)
         session.commit()
         session.refresh(db_post)
+
+        # Handle mentions
+        await process_mentions_and_create_notifications(
+            session=session, content=content, author_user=user, post_id=db_post.id,
+            community_id=None, notified_user_ids=set()
+        )
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
         return db_post
     except Exception as e:
         session.rollback()
@@ -210,18 +290,212 @@ async def search_users(q: str = "", session: Session = Depends(get_session)):
 async def get_communities(session: Session = Depends(get_session)):
     return session.exec(select(Community)).all()
 
+@app.get("/api/users/me/communities", response_model=list[Community])
+async def get_my_communities(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    return session.exec(select(Community).where(Community.creator_username == user.username)).all()
+
+@app.get("/api/communities/{community_id}/members", response_model=list[CommunityMemberRead])
+async def get_community_members(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    community = session.get(Community, community_id)
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+    
+    if community.creator_username != user.username:
+        raise HTTPException(status_code=403, detail="Only the creator can view the member list.")
+
+    members = session.exec(
+        select(CommunityMember, User)
+        .join(User, CommunityMember.user_id == User.id)
+        .where(CommunityMember.community_id == community_id)
+    ).all()
+
+    return [
+        CommunityMemberRead(
+            user_id=member.User.id, username=member.User.username, avatar_url=member.User.avatar_url, joined_at=member.CommunityMember.joined_at
+        ) for member in members
+    ]
+
+@app.get("/api/users/me/joined_communities", response_model=list[int])
+async def get_joined_communities(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    members = session.exec(select(CommunityMember).where(CommunityMember.user_id == user.id)).all()
+    return [m.community_id for m in members]
+
+@app.post("/api/communities/{community_id}/join")
+async def join_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    # Check if already joined
+    existing = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
+    if existing:
+        return {"status": "already_joined"}
+    
+    member = CommunityMember(community_id=community_id, user_id=user.id)
+    session.add(member)
+    
+    # Update count
+    comm = session.get(Community, community_id)
+    if comm:
+        comm.members_count += 1
+        session.add(comm)
+    
+    session.commit()
+    return {"status": "success"}
+
+@app.post("/api/communities/{community_id}/leave")
+async def leave_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    comm = session.get(Community, community_id)
+    if not comm:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    if comm.creator_username == user.username:
+        raise HTTPException(status_code=403, detail="Creators cannot leave their own community.")
+    member = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
+    if not member:
+        raise HTTPException(status_code=400, detail="Not a member")
+    
+    session.delete(member)
+    if comm and comm.members_count > 0:
+        comm.members_count -= 1
+        session.add(comm)
+        
+    session.commit()
+    return {"status": "success"}
+
+@app.delete("/api/communities/{community_id}/members/{username_to_kick}")
+async def kick_community_member(community_id: int, username_to_kick: str, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    community = session.get(Community, community_id)
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+
+    if community.creator_username != user.username:
+        raise HTTPException(status_code=403, detail="Only the creator can kick members.")
+
+    if community.creator_username == username_to_kick:
+        raise HTTPException(status_code=400, detail="Creator cannot be kicked.")
+
+    user_to_kick = session.exec(select(User).where(User.username == username_to_kick)).first()
+    if not user_to_kick:
+        raise HTTPException(status_code=404, detail="User to kick not found.")
+
+    member_record = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user_to_kick.id)).first()
+    if not member_record:
+        raise HTTPException(status_code=404, detail="User is not a member of this community.")
+
+    session.delete(member_record)
+    if community.members_count > 0:
+        community.members_count -= 1
+        session.add(community)
+    
+    session.commit()
+    return {"status": "success"}
+
 @app.post("/api/communities", response_model=Community)
-async def create_community(community: CommunityCreate, session: Session = Depends(get_session)):
-    # Buat komunitas baru
-    db_community = Community(name=community.name, description=community.description)
-    # simulation random members and active count
-    db_community.members_count = random.randint(10, 500)
-    db_community.active_count = random.randint(1, 50)
+async def create_community(
+    name: str = Form(...),
+    description: str = Form(...),
+    bg_type: str = Form("color"),
+    bg_value: str = Form("#1f2937"),
+    text_color: str = Form("#ffffff"),
+    font_family: str = Form("sans"),
+    hover_animation: str = Form("none"),
+    hover_color: str = Form("#3b82f6"),
+    avatar_file: Optional[UploadFile] = File(None),
+    bg_image_file: Optional[UploadFile] = File(None),
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # Handle Avatar Upload
+    avatar_url = None
+    if avatar_file:
+        os.makedirs("static/avatars", exist_ok=True)
+        filename = f"comm_av_{uuid.uuid4()}_{avatar_file.filename}"
+        file_path = os.path.join("static/avatars", filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(avatar_file.file, buffer)
+        avatar_url = f"/static/avatars/{filename}"
+
+    # Handle BG Image Upload
+    final_bg_value = bg_value
+    if bg_type == "image" and bg_image_file:
+        os.makedirs("static/backgrounds", exist_ok=True)
+        filename = f"comm_bg_{uuid.uuid4()}_{bg_image_file.filename}"
+        file_path = os.path.join("static/backgrounds", filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(bg_image_file.file, buffer)
+        final_bg_value = f"/static/backgrounds/{filename}"
+
+    db_community = Community(
+        name=name,
+        description=description,
+        creator_username=user.username,
+        avatar_url=avatar_url,
+        bg_type=bg_type,
+        bg_value=final_bg_value,
+        text_color=text_color,
+        font_family=font_family,
+        hover_animation=hover_animation,
+        hover_color=hover_color,
+        members_count=1,
+        active_count=1
+    )
     
     session.add(db_community)
     session.commit()
     session.refresh(db_community)
     return db_community
+
+@app.put("/api/communities/{community_id}", response_model=Community)
+async def update_community(
+    community_id: int,
+    name: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    bg_type: Optional[str] = Form(None),
+    bg_value: Optional[str] = Form(None),
+    text_color: Optional[str] = Form(None),
+    font_family: Optional[str] = Form(None),
+    hover_animation: Optional[str] = Form(None),
+    hover_color: Optional[str] = Form(None),
+    avatar_file: Optional[UploadFile] = File(None),
+    bg_image_file: Optional[UploadFile] = File(None),
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    community = session.get(Community, community_id)
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+    if community.creator_username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    if name: community.name = name
+    if description: community.description = description
+    if bg_type: community.bg_type = bg_type
+    if text_color: community.text_color = text_color
+    if font_family: community.font_family = font_family
+    if hover_animation: community.hover_animation = hover_animation
+    if hover_color: community.hover_color = hover_color
+
+    # Handle Avatar
+    if avatar_file:
+        os.makedirs("static/avatars", exist_ok=True)
+        filename = f"comm_av_{uuid.uuid4()}_{avatar_file.filename}"
+        file_path = os.path.join("static/avatars", filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(avatar_file.file, buffer)
+        community.avatar_url = f"/static/avatars/{filename}"
+
+    # Handle BG
+    if bg_type == "image" and bg_image_file:
+        os.makedirs("static/backgrounds", exist_ok=True)
+        filename = f"comm_bg_{uuid.uuid4()}_{bg_image_file.filename}"
+        file_path = os.path.join("static/backgrounds", filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(bg_image_file.file, buffer)
+        community.bg_value = f"/static/backgrounds/{filename}"
+    elif bg_value:
+        community.bg_value = bg_value
+
+    session.add(community)
+    session.commit()
+    session.refresh(community)
+    return community
   
 @app.get("/api/communities/{community_id}/posts", response_model=list[Post])
 async def get_community_posts(community_id: int, session: Session = Depends(get_session)):
@@ -271,15 +545,43 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
 @app.post("/api/posts/{post_id}/comments", response_model=Comment)
 async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     try:
+        post = session.get(Post, post_id)
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
         # 1. make comment
         db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id)
         session.add(db_comment)
+        session.commit()
+        session.refresh(db_comment)
         
         # 2. Update Counter at post
-        post = session.get(Post, post_id)
         if post:
             post.comments_count += 1
             session.add(post)
+            
+        # 3. Handle notifications
+        notified_user_ids = set()
+        await process_mentions_and_create_notifications(
+            session=session, content=comment.content, author_user=user, post_id=post_id,
+            community_id=post.community_id, notified_user_ids=notified_user_ids, comment_id=db_comment.id
+        )
+
+        # Handle replies
+        if comment.parent_id:
+            parent_comment = session.get(Comment, comment.parent_id)
+            if parent_comment:
+                parent_owner = session.exec(select(User).where(User.username == parent_comment.username)).first()
+                if parent_owner and parent_owner.id != user.id and parent_owner.id not in notified_user_ids:
+                    reply_notif = Notification(user_id=parent_owner.id, actor_username=user.username, type='reply_comment', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                    session.add(reply_notif)
+                    notified_user_ids.add(parent_owner.id)
+        else: # It's a reply to the post itself
+            post_owner = session.exec(select(User).where(User.username == post.username)).first()
+            if post_owner and post_owner.id != user.id and post_owner.id not in notified_user_ids:
+                reply_notif = Notification(user_id=post_owner.id, actor_username=user.username, type='reply_post', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                session.add(reply_notif)
+                notified_user_ids.add(post_owner.id)
             
         session.commit()
         session.refresh(db_comment)
@@ -411,3 +713,51 @@ async def delete_comment(comment_id: int, user: User = Depends(get_current_user)
     session.delete(comment)
     session.commit()
     return {"status": "success"}
+
+# --- NOTIFICATION ENDPOINTS ---
+@app.get("/api/notifications", response_model=list[NotificationRead])
+async def get_notifications(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    notifications = session.exec(
+        select(Notification).where(Notification.user_id == user.id).order_by(Notification.created_at.desc()).limit(50)
+    ).all()
+    
+    response_data = []
+    for notif in notifications:
+        actor = session.exec(select(User).where(User.username == notif.actor_username)).first()
+        content_preview = ""
+        if notif.comment_id:
+            comment = session.get(Comment, notif.comment_id)
+            if comment: content_preview = comment.content[:75]
+        else:
+            post = session.get(Post, notif.post_id)
+            if post: content_preview = post.content[:75]
+
+        response_data.append(
+            NotificationRead(
+                id=notif.id, actor_username=notif.actor_username, actor_avatar_url=actor.avatar_url if actor else None,
+                type=notif.type, content_preview=content_preview, post_id=notif.post_id,
+                community_id=notif.community_id, is_read=notif.is_read, created_at=notif.created_at
+            )
+        )
+    return response_data
+
+@app.get("/api/notifications/unread_count", response_model=dict)
+async def get_unread_notification_count(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    results = session.exec(select(Notification).where(Notification.user_id == user.id, Notification.is_read == False)).all()
+    return {"count": len(results)}
+
+@app.post("/api/notifications/mark_as_read")
+async def mark_notifications_as_read(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    notifications = session.exec(select(Notification).where(Notification.user_id == user.id, Notification.is_read == False)).all()
+    for notif in notifications:
+        notif.is_read = True
+        session.add(notif)
+    session.commit()
+    return {"status": "success"}
+
+@app.post("/api/feedback")
+async def submit_feedback(feedback: FeedbackCreate, session: Session = Depends(get_session)):
+    db_feedback = Feedback(email=feedback.email, message=feedback.message)
+    session.add(db_feedback)
+    session.commit()
+    return {"status": "success", "message": "Feedback received"}

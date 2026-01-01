@@ -66,15 +66,40 @@ class User(SQLModel, table=True):
   email: str = SQLField(index=True, unique=True)
   hashed_password: str
   role: str = SQLField(default="user")  # roles: user, admin
+  avatar_url: Optional[str] = SQLField(default=None)
   
 class UserCreate(BaseModel):
   username: str
   email: str
   password: str
+  
+class UserRead(BaseModel):
+  id: int
+  username: str
+  email: str
+  role: str
+  avatar_url: Optional[str] = None
 
 class Token(BaseModel):
   access_token: str
   token_type: str
+  
+class Notification(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(index=True, foreign_key="user.id") # The one being notified
+    actor_username: str # The one who did the action
+    type: str # 'mention_post', 'mention_comment', 'reply_post', 'reply_comment'
+    post_id: int = SQLField(foreign_key="post.id")
+    comment_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
+    community_id: Optional[int] = SQLField(default=None, foreign_key="community.id")
+    is_read: bool = SQLField(default=False, index=True)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+  
+class CommunityMemberRead(BaseModel):
+    user_id: int
+    username: str
+    avatar_url: Optional[str] = None
+    joined_at: datetime
 
 # --- COMMUNITY MODELS ---
 class Community(SQLModel, table=True):
@@ -83,6 +108,31 @@ class Community(SQLModel, table=True):
     description: str
     members_count: int = SQLField(default=1)
     active_count: int = SQLField(default=0)
+    creator_username: str = SQLField(default="system")
+    avatar_url: Optional[str] = SQLField(default=None)
+    bg_type: str = SQLField(default="color") # 'color', 'gradient', 'image'
+    bg_value: str = SQLField(default="#1f2937") # hex, gradient string, or url
+    text_color: str = SQLField(default="#ffffff")
+    font_family: str = SQLField(default="sans") # 'sans', 'serif', 'mono'
+    hover_animation: str = SQLField(default="none") # 'scale', 'glow', 'none'
+    hover_color: str = SQLField(default="#3b82f6")
+    
+class NotificationRead(BaseModel):
+    id: int
+    actor_username: str
+    actor_avatar_url: Optional[str] = None
+    type: str
+    content_preview: str
+    post_id: int
+    community_id: Optional[int] = None
+    is_read: bool
+    created_at: datetime
+    
+class CommunityMember(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    community_id: int = SQLField(foreign_key="community.id")
+    user_id: int = SQLField(foreign_key="user.id")
+    joined_at: datetime = SQLField(default_factory=datetime.utcnow)
 
 class CommunityCreate(BaseModel):
     name: str
@@ -127,3 +177,13 @@ class Reaction(SQLModel, table=True):
 
 class ReactionCreate(BaseModel):
     type: str # 'like', 'shock', 'rocket', 'chart_up', 'clap'
+
+class Feedback(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    email: str
+    message: str
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class FeedbackCreate(BaseModel):
+    email: str
+    message: str
