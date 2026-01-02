@@ -125,8 +125,35 @@ const ResultsDashboard = ({ data }) => {
     });
   }
 
+  // What-If Projection Data
+  const ruinProb = monte_carlo && monte_carlo.ruin_probability ? parseFloat(monte_carlo.ruin_probability) : 0;
+
   return (
     <div className="space-y-6">
+      {/* What-If Simulator (Brutally Honest Projection) */}
+      {monte_carlo && (
+        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl relative overflow-hidden">
+          <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500' : 'bg-green-500'}`}></div>
+          <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+            🔮 What-If Future Projection
+          </h3>
+          
+          <div className={`p-5 rounded-lg border ${ruinProb > 20 ? 'bg-red-900/20 border-red-500/30' : 'bg-blue-900/20 border-blue-500/30'}`}>
+            <p className="text-xl font-medium text-gray-200 leading-relaxed">
+              "With your current strategy, there is a <span className={`font-bold text-2xl ${ruinProb > 0 ? 'text-red-400' : 'text-green-400'}`}>{ruinProb}% probability</span> that your account will be <span className="text-white font-bold underline decoration-red-500">DEPLETED</span> within <span className="text-white font-bold">{summary.day_simulated} days</span>."
+            </p>
+            
+            {ruinProb > 50 && (
+              <p className="mt-3 text-sm text-red-400 font-bold uppercase tracking-wider flex items-center gap-2">
+                <span className="text-xl">💀</span> Critical Warning: This is gambling, not trading.
+              </p>
+            )}
+            <p className="text-xs text-gray-500 mt-4 italic">
+              *Based on {monte_carlo.iterations} Monte Carlo simulations of your specific parameters.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
         <div className="p-3">

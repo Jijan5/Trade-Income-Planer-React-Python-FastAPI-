@@ -11,6 +11,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     challengeTargetPct: 10, // 10% target for challenge mode
     challengeMaxDrawdownPct: 10, // 10% max drawdown for challenge mode
     tradeNote: "", // optional note for each trade
+    // trading rules
+    enableRules: false,
+    maxTradesPerDay: 5,
+    maxDailyLoss: 500,
+    maxConsecutiveLosses: 2
   });
 
   const [marketState, setMarketState] = useState({
@@ -35,6 +40,24 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
   const [isSessionActive, setIsSessionActive] = useState(false);
   const pollInterval = useRef(null);
+
+  const [healthData, setHealthData] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Lockout State (Persisted in LocalStorage)
+  const [lockout, setLockout] = useState(() => {
+    const saved = localStorage.getItem('trading_lockout');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (new Date().getTime() < parsed.until) {
+        return parsed;
+      }
+      localStorage.removeItem('trading_lockout');
+    }
+    return null;
+  });
+
+  const [timeLeft, setTimeLeft] = useState("");
 
   // Fetch Price Function
   const fetchPrice = async () => {
@@ -67,6 +90,25 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
   }, [isSessionActive, activeSymbol]);
+
+  // Lockout Timer Logic
+  useEffect(() => {
+    if (lockout) {
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const diff = lockout.until - now;
+        
+        if (diff <= 0) {
+          setLockout(null);
+          localStorage.removeItem('trading_lockout');
+          clearInterval(interval);
+        } else {
+          setTimeLeft(new Date(diff).toISOString().substr(14, 5)); // MM:SS format
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [lockout]);
 
   // Update Equity & Check TP/SL Logic
   useEffect(() => {
@@ -163,8 +205,46 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     }
   };
 
+  const triggerLockout = (reason) => {
+    const until = new Date().getTime() + 30 * 60 * 1000; // 30 minutes lockout
+    const lockoutData = { active: true, until, reason };
+    setLockout(lockoutData);
+    localStorage.setItem('trading_lockout', JSON.stringify(lockoutData));
+    setIsSessionActive(false);
+  };
+
+  const checkRulesAfterClose = (updatedHistory) => {
+    if (!config.enableRules) return;
+
+    // 1. Max Daily Loss (Session Loss)
+    const todayLoss = updatedHistory.reduce((acc, trade) => trade.finalPnL < 0 ? acc + Math.abs(trade.finalPnL) : acc, 0);
+    if (todayLoss >= config.maxDailyLoss) {
+      triggerLockout(`Max Daily Loss limit ($${config.maxDailyLoss}) reached.`);
+      return;
+    }
+
+    // 2. Max Consecutive Losses
+    let consecutiveLosses = 0;
+    for (let i = 0; i < updatedHistory.length; i++) { // history is newest first
+      if (updatedHistory[i].finalPnL < 0) {
+        consecutiveLosses++;
+      } else {
+        break;
+      }
+    }
+    if (consecutiveLosses >= config.maxConsecutiveLosses) {
+      triggerLockout(`Max Consecutive Losses limit (${config.maxConsecutiveLosses}) reached.`);
+      return;
+    }
+  };
+
   const openPosition = (type) => {
     if (marketState.price === 0) return;
+
+    if (config.enableRules && account.history.length >= config.maxTradesPerDay) {
+        triggerLockout(`Max Trades Per Day limit (${config.maxTradesPerDay}) reached.`);
+        return;
+    }
 
     // Calculate TP/SL Prices
     let slPrice, tpPrice;
@@ -215,13 +295,18 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
       reason: reason // 'MANUAL', 'TP', 'SL'
     };
 
+    const newHistory = [historyItem, ...account.history];
+
     setAccount(prev => ({
       ...prev,
       balance: prev.balance + pnl,
       equity: prev.balance + pnl, // Equity resets to balance after close
       positions: prev.positions.filter(p => p.id !== id),
-      history: [historyItem, ...prev.history]
+      history: newHistory
     }));
+    if (config.enableRules) {
+        checkRulesAfterClose(newHistory);
+    }
   };
 
   const downloadCSV = () => {
@@ -257,6 +342,41 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     document.body.removeChild(link);
   };
 
+  const analyzeHealth = async () => {
+    if (account.history.length === 0) return;
+    setIsAnalyzing(true);
+    try {
+        // Prepare payload: map history to TradeItem format
+        // We need to reconstruct the balance history for the backend
+        let runningBal = config.initialCapital;
+        
+        // Account history is newest first, so we reverse it to calculate chronologically
+        const chronologicalTrades = [...account.history].reverse();
+        
+        const tradesPayload = chronologicalTrades.map(t => {
+            // Calculate approximate risk amount based on SL distance
+            // Risk = |Entry - SL| / Entry * Size
+            const riskAmt = Math.abs(t.entryPrice - t.slPrice) / t.entryPrice * t.size;
+            
+            const tradeItem = {
+                pnl: t.finalPnL,
+                risk_amount: riskAmt,
+                balance: runningBal,
+                is_win: t.finalPnL > 0
+            };
+            runningBal += t.finalPnL;
+            return tradeItem;
+        });
+
+        const res = await axios.post("http://127.0.0.1:8000/api/analyze/health", { trades: tradesPayload });
+        setHealthData(res.data);
+    } catch (error) {
+        console.error("Analysis failed", error);
+    } finally {
+        setIsAnalyzing(false);
+    }
+  };
+
   if (!isSessionActive) {
     return (
       <div className="bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-lg max-w-md mx-auto mt-10 text-center">
@@ -266,7 +386,26 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         <p className="text-gray-400 mb-8 text-sm">
           Trade {activeSymbol} with real-time market data without risking real money.
         </p>
-        <form onSubmit={startSession} className="space-y-6 text-left">
+        {/* Lockout Overlay */}
+        {lockout && (
+          <div className="absolute inset-0 z-50 bg-gray-900/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg p-8 text-center animate-fade-in">
+            <div className="text-6xl mb-4 animate-bounce">⛔</div>
+            <h2 className="text-2xl font-bold text-red-400 mb-2 uppercase tracking-wider">
+              Trading Disabled
+            </h2>
+            <p className="text-white font-bold text-lg mb-4 max-w-xs mx-auto">
+              {lockout.reason}
+            </p>
+            <div className="text-5xl font-mono font-bold text-white bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+              {timeLeft || "30:00"}
+            </div>
+            <p className="text-sm text-gray-400 max-w-xs mx-auto">
+              Discipline is key. Take a walk, drink some water, and come back later.
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={startSession} className={`space-y-6 text-left relative ${lockout ? 'opacity-20 pointer-events-none filter blur-sm' : ''}`}>
             <div>
                 <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Initial Capital ($)</label>
                 <input
@@ -310,6 +449,41 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                           className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
                       />
                    </div>
+                </div>
+              )}
+            </div>
+
+            {/* Trading Rules Toggle (Feature #4) */}
+            <div className="bg-gray-900 p-4 rounded border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-sm font-bold text-gray-300 uppercase flex items-center gap-2">
+                  👮 Enable Discipline Rules
+                </label>
+                <input 
+                  type="checkbox" 
+                  checked={config.enableRules} 
+                  onChange={(e) => setConfig({...config, enableRules: e.target.checked})}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                />
+              </div>
+              
+              {config.enableRules && (
+                <div className="space-y-3 animate-fade-in">
+                   <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Max Trades / Session</label>
+                      <input type="number" value={config.maxTradesPerDay} onChange={(e) => setConfig({...config, maxTradesPerDay: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm" />
+                   </div>
+                   <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Max Loss Limit ($)</label>
+                      <input type="number" value={config.maxDailyLoss} onChange={(e) => setConfig({...config, maxDailyLoss: parseFloat(e.target.value)})} className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm" />
+                   </div>
+                   <div>
+                      <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Max Consecutive Losses</label>
+                      <input type="number" value={config.maxConsecutiveLosses} onChange={(e) => setConfig({...config, maxConsecutiveLosses: parseInt(e.target.value)})} className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm" />
+                   </div>
+                   <p className="text-[10px] text-yellow-500 italic mt-2">
+                     *Violation will lock trading for 30 mins.
+                   </p>
                 </div>
               )}
             </div>
@@ -377,6 +551,81 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 )}
               </div>
             )}
+
+            {/* AI Trading Coach Widget (NEW FEATURE) */}
+            <div className="col-span-1 bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-5 rounded-lg border border-blue-500/30">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        🤖 AI Trading Coach
+                    </h3>
+                    <button 
+                        onClick={analyzeHealth}
+                        disabled={isAnalyzing || account.history.length < 2}
+                        className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                    >
+                        {isAnalyzing ? "Analyzing..." : "Analyze"}
+                    </button>
+                </div>
+                
+                {healthData ? (
+                    <div className="space-y-4 animate-fade-in">
+                      {/* Trading Identity Profile (Feature #5) */}
+                      <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg">🎭</span>
+                                <p className="text-[10px] text-purple-300 uppercase font-bold">Your Trading Persona</p>
+                            </div>
+                            <p className="text-sm font-bold text-white leading-tight">{healthData.trading_identity}</p>
+                            <p className="text-[10px] text-gray-400 mt-1 border-t border-purple-500/20 pt-1 italic">
+                                "{healthData.identity_insight}"
+                            </p>
+                        </div>
+                        {/* Adaptive Risk Recommendation */}
+                        <div className="bg-gray-800/80 p-3 rounded border border-gray-600 relative overflow-hidden">
+                            <p className="text-[10px] text-blue-400 uppercase mb-1 font-bold">Recommended Risk (Next Trade)</p>
+                            <div className="flex items-end gap-2">
+                                <span className="text-3xl font-bold text-white">
+                                    {healthData.recommended_risk}%
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-300 mt-1 leading-tight">{healthData.recommendation_reason}</p>
+                        </div>
+
+                        {/* Health Score Breakdown */}
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <span className="text-xs text-gray-400">Health Score</span>
+                                <span className={`text-sm font-bold ${healthData.overall_score >= 70 ? 'text-green-400' : 'text-yellow-400'}`}>{healthData.overall_score}/100</span>
+                            </div>
+                            
+                            <div className="space-y-1">
+                                <div className="flex justify-between text-[10px] text-gray-500">
+                                    <span>Risk</span>
+                                    <span>{healthData.risk_score}</span>
+                                </div>
+                                <div className="w-full bg-gray-700 h-1 rounded-full"><div className="bg-blue-500 h-1 rounded-full" style={{width: `${healthData.risk_score}%`}}></div></div>
+                                
+                                <div className="flex justify-between text-[10px] text-gray-500">
+                                    <span>Emotion</span>
+                                    <span>{healthData.emotional_score}</span>
+                                </div>
+                                <div className="w-full bg-gray-700 h-1 rounded-full"><div className="bg-purple-500 h-1 rounded-full" style={{width: `${healthData.emotional_score}%`}}></div></div>
+
+                                <div className="flex justify-between text-[10px] text-gray-500">
+                                    <span>System (Win/Loss Quality)</span>
+                                    <span>{healthData.system_score}</span>
+                                </div>
+                                <div className="w-full bg-gray-700 h-1 rounded-full"><div className="bg-green-500 h-1 rounded-full" style={{width: `${healthData.system_score}%`}}></div></div>
+                            </div>
+                            <p className="text-[10px] text-gray-400 italic mt-2">"{healthData.summary}"</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="text-center py-4 text-gray-500 text-xs">
+                        <p>Complete at least 2 trades to unlock AI analysis.</p>
+                    </div>
+                )}
+            </div>
 
             {/* Account Stats */}
             <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">

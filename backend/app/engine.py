@@ -3,8 +3,8 @@ from typing import List, Dict
 import math
 import random
 import yfinance as yf
-from .models import SimulationRequest, DailyResult
-from .models import SimulationRequest, DailyResult, GoalPlannerRequest
+import statistics
+from .models import SimulationRequest, DailyResult, GoalPlannerRequest, HealthAnalysisRequest, HealthAnalysisResponse
 
 # set precision global
 getcontext().prec = 28
@@ -156,6 +156,7 @@ def calculate_compounding(data: SimulationRequest) -> Dict:
 
 def run_monte_carlo(data: SimulationRequest, iterations: int = 500) -> Dict:
   final_balances = []
+  ruin_count = 0
   
   # Convert to float for faster processing in loop (Monte Carlo doesn't need Decimal precision)
   win_rate_float = float(data.win_rate / 100)
@@ -165,10 +166,15 @@ def run_monte_carlo(data: SimulationRequest, iterations: int = 500) -> Dict:
   fees_float = float(data.fees_per_trade)
   initial_bal_float = float(data.initial_balance)
   
+  # Define Ruin Threshold
+  # For dynamic risk, we define ruin as < 1% of initial capital (99% drawdown)
+  ruin_threshold = initial_bal_float * 0.01 if data.risk_type == "dynamic" else 0.0
+  
   total_trades = data.trades_per_day * data.simulation_days
 
   for _ in range(iterations):
     balance = initial_bal_float
+    is_ruined = False
     for _ in range(total_trades):
       # Determine Risk Amount
       if data.risk_type == "fixed":
@@ -184,18 +190,24 @@ def run_monte_carlo(data: SimulationRequest, iterations: int = 500) -> Dict:
         loss = risk_amt + fees_float
         balance -= loss
       
-      if balance <= 0:
+      if balance <= ruin_threshold:
         balance = 0
+        is_ruined = True
         break
+      
+    if is_ruined:
+      ruin_count += 1
     final_balances.append(balance)
   
   final_balances.sort()
+  ruin_probability = (ruin_count / iterations) * 100
   
   return {
     "worst_case": f"{final_balances[int(iterations * 0.05)]:.2f}", # 5th percentile
     "median": f"{final_balances[int(iterations * 0.5)]:.2f}",      # 50th percentile
     "best_case": f"{final_balances[int(iterations * 0.95)]:.2f}",  # 95th percentile
-    "iterations": iterations
+    "iterations": iterations,
+    "ruin_probability": f"{ruin_probability:.1f}"
   }
   
 def calculate_goal_plan(data: GoalPlannerRequest) -> Dict:
@@ -262,3 +274,151 @@ def get_market_price(symbol: str) -> Dict:
         return {"status": "success", "symbol": yf_symbol, "price": float(current_price)}
     except Exception as e:
         return {"status": "error", "message": str(e), "price": 0}
+      
+def analyze_trade_health(data: HealthAnalysisRequest) -> dict:
+  trades = data.trades
+  if not trades:
+    return {
+      "overall_score": 0,
+      "risk_score": 0,
+      "emotional_score": 0,
+      "system_score": 0,
+      "summary": "No trades to analyze",
+      "warnings": []
+    }
+    
+  # 1. risk consistent score (30%)
+  # calculate $ risk per trade
+  risk_pcts = []
+  for t in trades:
+    if t.balance > 0:
+      risk_pcts.append(float(t.risk_amount / t.balance) * 100)
+        
+  risk_score = 100
+  if len(risk_pcts) > 1:
+    stdev_risk = statistics.stdev(risk_pcts)
+    # penalty for high risk standard deviation
+    # if stdev 0 (very consistent) -> score 100
+    risk_score = max (0, 100 - (stdev_risk * 40))
+    
+  #2. emotional control score
+  emotional_score=100
+  warnings = []
+  
+  #detection revenge credit
+  revenge_count = 0
+  for i in range(1, len(trades)):
+    prev = trades [i-1]
+    curr = trades [i]
+    
+    if not prev.is_win: # check previously lost
+      # check risk amount is higher because emotional
+      if curr.risk_amount > (prev.risk_amount * Decimal("1.5")):
+        revenge_count += 1
+        warnings.append(f"⚠️ Terdeteksi Revenge Trade pada trade #{i+1}: Risiko naik >50% setelah Loss.")
+    
+  emotional_score -= (revenge_count * 20) # big penalty for revenge trade
+  emotional_score = max(0, emotional_score)
+  
+  # 3. System Quality Score (30%)
+  system_score = 50 # Base score
+  total_pnl = sum(t.pnl for t in trades)
+  win_count = sum(1 for t in trades if t.is_win)
+  win_rate = win_count / len(trades) if trades else 0
+  
+  if total_pnl > 0: system_score += 20
+  if win_rate > 0.4: system_score += 15 # Winrate > 40% itu sehat
+  if win_rate > 0.6: system_score += 15
+  system_score = min(100, system_score)
+      
+  # Hitung Overall Score
+  overall = int((risk_score * 0.3) + (emotional_score * 0.4) + (system_score * 0.3))
+    
+  # Generate Summary "Killer Feature"
+  summary = ""
+  if total_pnl > 0 and overall < 60:
+      summary = f"🚨 Your trading is PROFITABLE, but your HEALTH SCORE is low ({overall}%). There is a high risk of blow up in the near future due to inconsistency."
+  elif total_pnl <= 0 and overall > 70:
+      summary = f"✅ Your trading is a LOSS, but your HEALTH SCORE is good ({overall}%). Your discipline and mentality are correct, just evaluate your entry/exit strategy."
+  elif overall >= 80:
+      summary = f"🏆 Excellent! Healthy, disciplined, and profitable trading. (Score: {overall}%)."
+  else:
+      summary = f"Health Score: {overall}%. Improve risk consistency and control emotions."
+      
+  # 4. Adaptive Risk Recommendation (Feature #2)
+  rec_risk = 1.0 # Default conservative risk
+  rec_reason = "Market condition neutral. Standard risk recommended."
+  
+  # Analyze Streaks (Win/Loss)
+  current_streak = 0
+  if len(trades) > 0:
+      is_win_streak = trades[-1].is_win
+      for t in reversed(trades):
+          if t.is_win == is_win_streak:
+              current_streak += 1
+          else:
+              break
+      
+      if not is_win_streak: # Loss Streak Logic
+          if current_streak >= 2:
+              rec_risk = 0.5
+              rec_reason = f"⚠️ Loss streak detected ({current_streak}x). Risk reduced to 0.5% to preserve capital & mental state."
+          else:
+              rec_risk = 0.8
+              rec_reason = "Recent loss. Slightly reduced risk (0.8%) recommended to regain confidence."
+      else: # Win Streak Logic
+          if current_streak >= 3:
+              rec_risk = 1.0
+              rec_reason = f"🔥 Win streak ({current_streak}x). Maintain 1% risk, beware of overconfidence (House Money Effect)."
+          else:
+              rec_risk = 1.2
+              rec_reason = "✅ Momentum is good. You can slightly increase risk to 1.2%."
+
+  # Analyze Drawdown (Safety Net)
+  # Calculate current drawdown from peak balance in this session
+  if trades:
+      current_balance = trades[-1].balance + trades[-1].pnl
+      peak_balance = max([t.balance for t in trades] + [current_balance])
+      if peak_balance > 0:
+          dd_pct = (peak_balance - current_balance) / peak_balance * 100
+          if dd_pct > 5:
+              rec_risk = min(rec_risk, 0.5)
+              rec_reason = f"🚨 High Drawdown ({dd_pct:.1f}%). Risk minimized to 0.5% to halt bleeding."
+    
+  # 5. Trading Identity Profile (Feature #5)
+  identity = "Unclassified"
+  insight = "Not enough data to determine identity."
+  
+  avg_risk_pct = sum(risk_pcts) / len(risk_pcts) if risk_pcts else 0
+  
+  if overall >= 80:
+      identity = "The Disciplined Sniper"
+      insight = "You have professional-grade discipline. Your strategy and risk management are aligned. Keep it up!"
+  elif emotional_score < 50:
+      identity = "The Emotional Chaser"
+      insight = "Your main enemy is yourself. You tend to revenge trade or lose control after losses. Focus on psychology, not strategy."
+  elif risk_score < 50:
+      identity = "The Inconsistent Gunner"
+      insight = "You have skill, but your sizing is all over the place. You treat trading like gambling occasionally. Standardize your risk."
+  elif avg_risk_pct > 3.0:
+      identity = "The Daredevil (High Risk)"
+      insight = "You take massive risks. While you may win big, you are statistically likely to blow up eventually. Lower your size."
+  elif win_rate > 0.6 and overall < 60:
+      identity = "The Overconfident Scalper"
+      insight = "High win rate, but poor risk management. You rely on talent rather than system. One bad trade could wipe you out."
+  else:
+      identity = "The Developing Trader"
+      insight = "You are on the right path but need more consistency. Stick to your rules."
+        
+  return {
+      "overall_score": overall,
+      "risk_score": int(risk_score),
+      "emotional_score": int(emotional_score),
+      "system_score": int(system_score),
+      "summary": summary,
+      "warnings": warnings,
+      "recommended_risk": float(rec_risk),
+      "recommendation_reason": rec_reason,
+      "trading_identity": identity,
+      "identity_insight": insight,
+  }

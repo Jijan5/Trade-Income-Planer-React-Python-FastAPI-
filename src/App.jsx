@@ -23,7 +23,7 @@ function App() {
   const [activeSymbol, setActiveSymbol] = useState("BTCUSDT");
   const [activeCategory, setActiveCategory] = useState("Crypto");
   const [activeView, setActiveView] = useState(
-    () => localStorage.getItem("activeView") || "simulator"
+    () => localStorage.getItem("activeView") || "home"
   );
   
   // Global state for active community (shared between Home and Community pages)
@@ -114,7 +114,7 @@ function App() {
     setUnreadCount(0);
     setUserData(null);
     // Reset to home view on logout
-    setActiveView("simulator");
+    setActiveView("home");
   }, []);
 
   // Global Axios interceptor for handling 401 errors

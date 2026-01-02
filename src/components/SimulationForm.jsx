@@ -28,6 +28,10 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
     {
       name: "Swing Trader (Relaxed)",
       data: { initial_balance: 5000, capital_utilization: 30, risk_per_trade: 2, risk_reward_ratio: 3, win_rate: 40, trades_per_day: 1, simulation_days: 90, fees_per_trade: 5, risk_type: "fixed" }
+    },
+    {
+      name: "Gambler (High Risk)",
+      data: { initial_balance: 1000, capital_utilization: 100, risk_per_trade: 10, risk_reward_ratio: 1, win_rate: 40, trades_per_day: 5, simulation_days: 30, fees_per_trade: 0, risk_type: "fixed" }
     }
   ];
 
@@ -135,7 +139,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               </label>
               {renderInfoIcon(
                 "Risk Type",
-                "Dynamic (Compounding): Risk amount increases as account grows. Fixed: Risk amount stays the same based on initial capital."
+                "Dynamic: Adjusts size based on current balance (Harder to blow up). Fixed: Constant size based on initial capital (Higher risk of ruin)."
               )}
             </div>
             <div className="flex bg-gray-900 p-1 rounded border border-gray-600 w-fit">

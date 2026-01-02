@@ -187,3 +187,25 @@ class Feedback(SQLModel, table=True):
 class FeedbackCreate(BaseModel):
     email: str
     message: str
+    
+# trader health score model
+class TradeItem(BaseModel):
+  pnl: Decimal
+  risk_amount: Decimal # risk amount per trade
+  balance: Decimal # balance before execute trade
+  is_win: bool
+  
+class HealthAnalysisRequest(BaseModel):
+  trades: list[TradeItem]
+
+class HealthAnalysisResponse(BaseModel):
+  overall_score: int
+  risk_score: int
+  emotional_score: int
+  system_score: int
+  summary: str
+  warnings: list[str]
+  recommended_risk: float
+  recommendation_reason: str
+  trading_identity: str
+  identity_insight: str

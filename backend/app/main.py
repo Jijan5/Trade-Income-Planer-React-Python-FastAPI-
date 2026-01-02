@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead
-from .engine import calculate_compounding, calculate_goal_plan, get_market_price
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse
+from .engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
 from .database import create_db_and_tables, get_session
 from .auth import get_password_hash, verify_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 import os
@@ -17,6 +17,7 @@ import uuid
 import shutil
 from datetime import timedelta
 from typing import Optional
+from sqlalchemy import text
 
 load_dotenv()
 
@@ -232,6 +233,14 @@ async def run_goal_planner(request: GoalPlannerRequest):
     return result
   except Exception as e:
       raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/analyze/health", response_model=HealthAnalysisResponse)
+async def analyze_health(request: HealthAnalysisRequest):
+    try:
+        result = analyze_trade_health(request)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- GLOBAL POSTS ENDPOINTS (HOME FEED) ---
 @app.get("/api/posts", response_model=list[Post])
@@ -654,30 +663,28 @@ async def delete_post(post_id: int, user: User = Depends(get_current_user), sess
         raise HTTPException(status_code=404, detail="Post not found")
     if post.username != user.username:
         raise HTTPException(status_code=403, detail="Not authorized to delete this post")
-   
-    session.exec(select(Comment).where(Comment.post_id == post_id)) # Query check
     
     # IMPORTANT: Delete dependent objects first to satisfy foreign key constraints.
     
-    # 1. Delete all reactions that are related to the post.
+    # 1. Delete Notifications related to the post
+    notifications = session.exec(select(Notification).where(Notification.post_id == post_id)).all()
+    for n in notifications:
+        session.delete(n)
+
+    # 2. Delete all reactions that are related to the post.
     reactions = session.exec(select(Reaction).where(Reaction.post_id == post_id)).all()
     for r in reactions:
         session.delete(r)
+    
+    session.commit() # for clear references from notif/reaction
         
-    # 2. Delete all comments related to the post.
-    # handle replies carefully to avoid integrity errors.
-    all_comments = session.exec(select(Comment).where(Comment.post_id == post_id)).all()
-    # First, delete all replies (children)
-    replies = [c for c in all_comments if c.parent_id is not None]
-    for reply in replies:
-        session.delete(reply)
-    # Then, delete all top-level (parent) comments.
-    top_level_comments = [c for c in all_comments if c.parent_id is None]
-    for comment in top_level_comments:
-        session.delete(comment)
+    # 3. Delete all comments related to the post.
+    session.exec(text("DELETE FROM comment WHERE post_id = :post_id ORDER BY id DESC"), params={"post_id": post_id})
         
-    # 3. Finally, delete the post itself.
-    session.delete(post)
+    # 4. Finally, delete the post itself.
+    post_to_delete = session.get(Post, post_id)
+    if post_to_delete:
+        session.delete(post_to_delete)
     session.commit()
     return {"status": "success"}
 
