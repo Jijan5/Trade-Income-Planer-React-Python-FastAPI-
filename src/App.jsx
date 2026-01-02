@@ -272,17 +272,15 @@ function App() {
           background: #4b5563; /* gray-600 */
         }
       `}</style>
-      {/* Navbar Sederhana */}
+      {/* Navbar */}
       <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between w-full">
           <div
-            className="flex items-center space-x-3 cursor-pointer"
-            onClick={() => setActiveView("simulator")}
+            className="flex items-center cursor-pointer"
+            onClick={() => setActiveView("home")}
           >
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white"></div>
-            <h1 className="text-xl font-bold tracking-wider">
-              TRADE INCOME<span className="text-blue-500"> PLANER</span>
-            </h1>
+            <img src="/tip-brand.png" alt="Trade Income Planner" className="h-10" />
+              <span className="ml-2 text-[10px] bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30 font-mono align-top">v1.0 PRO</span>
           </div>
 
           {/* Main Navigation (Center) */}
@@ -535,14 +533,14 @@ function App() {
       <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="text-center md:text-left">
-            <h2 className="text-lg font-bold tracking-wider mb-1">
-              TRADE INCOME<span className="text-blue-500"> PLANER</span>
-            </h2>
+          <div className="flex justify-center md:justify-start mb-2">
+              <img src="/tip-brand.png" alt="Trade Income Planner" className="h-15" />
+            </div>
             <p className="text-gray-400 text-sm mb-4">
               Professional Equity Simulator & Trading Assistant
             </p>
             <div className="text-gray-500 text-xs">
-              &copy; {new Date().getFullYear()} Trade Income Planer.<br/>All rights reserved.
+            &copy; {new Date().getFullYear()} Trade Income Planner.<br/>All rights reserved.
             </div>
           </div>
 
