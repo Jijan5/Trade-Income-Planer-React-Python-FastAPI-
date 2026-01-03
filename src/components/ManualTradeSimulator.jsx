@@ -39,7 +39,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   });
 
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const pollInterval = useRef(null);
 
   const [healthData, setHealthData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -59,35 +58,62 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
   const [timeLeft, setTimeLeft] = useState("");
 
-  // Fetch Price Function
-  const fetchPrice = async () => {
-    try {
-      // Encode symbol to handle special chars like ':'
-      const encodedSymbol = encodeURIComponent(activeSymbol);
-      const response = await axios.get(`http://127.0.0.1:8000/api/price/${encodedSymbol}`);
-      
-      if (response.data.status === 'success') {
-        setMarketState(prev => ({
-          price: response.data.price,
-          isLoading: false,
-          lastUpdate: new Date()
-        }));
-      }
-    } catch (error) {
-      console.error("Error fetching price:", error);
-    }
-  };
-
-  // Start/Stop Polling when Session is Active
+  // Start/Stop Polling when Session is Active & Handle Symbol Changes
   useEffect(() => {
-    if (isSessionActive) {
-      fetchPrice(); // Initial fetch
-      pollInterval.current = setInterval(fetchPrice, 5000); // Poll every 5 seconds
-    } else {
-      if (pollInterval.current) clearInterval(pollInterval.current);
-    }
+    if (!isSessionActive) return;
+
+    let isMounted = true;
+    
+     // Reset market state completely when symbol changes
+    // This ensures we don't show the previous asset's price while loading or on error
+    setMarketState({
+      price: 0,
+      isLoading: true,
+      lastUpdate: null
+    });
+
+    const fetchPrice = async () => {
+      try {
+        // FIX: Convert USDT symbols to -USD for backend compatibility (e.g. PEPEUSDT -> PEPE-USD)
+        // This ensures assets like PEPE, FLOKI, BONK work correctly with data providers like Yahoo Finance
+        // Custom mapping for specific assets that might have issues
+        const symbolMap = {
+          "UNIUSDT": "UNI7083-USD",   // ID Uniswap
+          "PEPEUSDT": "PEPE24478-USD" // ID Pepe
+        };
+
+        let backendSymbol = symbolMap[activeSymbol] || activeSymbol.replace("BINANCE:", "");
+        
+        if (!symbolMap[activeSymbol] && backendSymbol.endsWith("USDT")) {
+           backendSymbol = backendSymbol.replace("USDT", "-USD");
+        }
+        
+        const encodedSymbol = encodeURIComponent(backendSymbol);
+        const response = await axios.get(`http://127.0.0.1:8000/api/price/${encodedSymbol}`);
+        
+        if (isMounted && response.data.status === 'success') {
+          setMarketState({
+            price: response.data.price,
+            isLoading: false,
+            lastUpdate: new Date()
+          });
+        } else if (isMounted) {
+          setMarketState(prev => ({ ...prev, isLoading: false }));
+        }
+      } catch (error) {
+        console.error("Error fetching price:", error);
+        if (isMounted) {
+          setMarketState(prev => ({ ...prev, isLoading: false }));
+        }
+      }
+    };
+
+    fetchPrice(); // Initial fetch
+    const intervalId = setInterval(fetchPrice, 2000); // Poll every 2 seconds
+
     return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
+      isMounted = false;
+      clearInterval(intervalId);
     };
   }, [isSessionActive, activeSymbol]);
 
@@ -657,7 +683,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     <h3 className="text-sm font-bold text-gray-300 uppercase">{activeSymbol}</h3>
                     <div className="text-right">
                         <p className="text-2xl font-mono font-bold text-white">
-                            {marketState.isLoading ? "..." : marketState.price.toFixed(2)}
+                        {marketState.isLoading ? "..." : (marketState.price > 0 ? (
+                            marketState.price < 1 ? marketState.price.toFixed(8) : marketState.price.toFixed(2)
+                        ) : "Unavailable")}
                         </p>
                         <p className="text-[10px] text-gray-500">
                             {marketState.isLoading ? "Fetching..." : "Live Price"}
@@ -710,7 +738,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 <div className="grid grid-cols-2 gap-4">
                     <button
                         onClick={() => openPosition('BUY')}
-                        disabled={marketState.isLoading || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
+                        disabled={marketState.isLoading || marketState.price <= 0 || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
                         className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
                     >
                         <span>BUY / LONG</span>
@@ -718,7 +746,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     </button>
                     <button
                         onClick={() => openPosition('SELL')}
-                        disabled={marketState.isLoading || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
+                        disabled={marketState.isLoading || marketState.price <= 0 || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
                         className="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
                     >
                         <span>SELL / SHORT</span>

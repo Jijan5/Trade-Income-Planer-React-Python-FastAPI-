@@ -98,7 +98,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
   };
 
   const fetchMarketPrices = async () => {
-    const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT"];
+    const symbols = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD", "PEPE24478-USD"];
     const prices = [];
     for (const sym of symbols) {
       try {
@@ -460,7 +460,9 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                   {marketPrices[currentPriceIndex].symbol.replace("-USD", "")}
                 </p>
                 <p className="text-xl text-green-400 font-mono">
-                  ${marketPrices[currentPriceIndex].price.toLocaleString()}
+                ${marketPrices[currentPriceIndex].price < 1 
+                      ? marketPrices[currentPriceIndex].price.toFixed(8) 
+                      : marketPrices[currentPriceIndex].price.toLocaleString()}
                 </p>
               </div>
             </div>
