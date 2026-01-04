@@ -67,6 +67,8 @@ class User(SQLModel, table=True):
   hashed_password: str
   role: str = SQLField(default="user")  # roles: user, admin
   avatar_url: Optional[str] = SQLField(default=None)
+  plan: str = SQLField(default="Free")
+  status: str = SQLField(default="active")  # statuses: active, banned
   
 class UserCreate(BaseModel):
   username: str
@@ -79,6 +81,15 @@ class UserRead(BaseModel):
   email: str
   role: str
   avatar_url: Optional[str] = None
+  plan: str
+  status: str
+
+class AdminUserUpdate(BaseModel):
+  username: str
+  email: str
+  role: str
+  plan: str
+  status: str
 
 class Token(BaseModel):
   access_token: str

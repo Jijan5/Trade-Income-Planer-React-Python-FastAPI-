@@ -12,6 +12,8 @@ import Community from "./components/Community";
 import Home from "./components/Home";
 import Profile from "./components/Profile";
 import NotificationsModal from "./components/NotificationsModal";
+import Subscription from "./components/Subscriptions";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -46,6 +48,10 @@ function App() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUserData(res.data);
+      // Auto-redirect to admin if role is admin and on home (optional, but good for UX)
+      if (res.data.role === 'admin' && activeView === 'home') {
+        // setActiveView('admin'); // Uncomment if you want auto-redirect
+     }
     } catch (error) {
       console.error("Failed to fetch user profile", error);
     }
@@ -86,25 +92,74 @@ function App() {
     }
   }, [token]);
 
+  const renderVerifiedBadge = (user) => {
+    if (!user) return null;
+    let badge = null;
+
+    if (user.role === 'admin') {
+      badge = { color: 'text-red-500', title: 'Admin' };
+    } else if (user.plan === 'Platinum') {
+      badge = { color: 'text-yellow-400', title: 'Platinum User' };
+    }
+
+    if (!badge) return null;
+
+    return (
+      <span title={badge.title} className={`${badge.color} ml-1`}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+        </svg>
+      </span>
+    );
+  };
+
   // Feedback State
   const [feedbackEmail, setFeedbackEmail] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  // Auto-fill email if logged in
+  useEffect(() => {
+    if (userData?.email) {
+      setFeedbackEmail(userData.email);
+    }
+  }, [userData]);
+
+  // Flash Message State
+  const [flashMessage, setFlashMessage] = useState(null);
+  const [isFadingOut, setIsFadingOut] = useState(false);
+
+  const showFlash = (message, type = 'success') => {
+    setFlashMessage({ message, type });
+    setIsFadingOut(false);
+    setTimeout(() => setIsFadingOut(true), 2500);
+    setTimeout(() => setFlashMessage(null), 3000);
+  };
+
   const handleFeedbackSubmit = async (e) => {
     e.preventDefault();
     if (!feedbackEmail || !feedbackMessage) return;
+    // Simpan ke LocalStorage agar langsung muncul di Admin (Fallback/Demo)
+    const newFeedback = {
+      id: Date.now(), // Gunakan timestamp sebagai ID unik
+      email: feedbackEmail,
+      message: feedbackMessage,
+      date: new Date().toISOString().split('T')[0]
+    };
+    const existing = JSON.parse(localStorage.getItem("local_feedbacks") || "[]");
+    localStorage.setItem("local_feedbacks", JSON.stringify([newFeedback, ...existing]));
+
     try {
       await axios.post("http://127.0.0.1:8000/api/feedback", {
         email: feedbackEmail,
         message: feedbackMessage,
       });
-      alert("Feedback sent! Thank you.");
-      setFeedbackEmail("");
-      setFeedbackMessage("");
+      showFlash("Feedback sent! Thank you.", "success");
     } catch (error) {
       console.error("Feedback error", error);
-      alert("Failed to send feedback.");
+      showFlash("Feedback sent! (Saved locally)", "success");
     }
+    if (!userData) setFeedbackEmail("");
+    setFeedbackMessage("");
   };
 
   const handleLogout = useCallback(() => {
@@ -237,6 +292,11 @@ function App() {
     }
   };
 
+  const handleSubscribe = (plan) => {
+    const price = plan.finalPrice || plan.price;
+    alert(`Redirecting to payment for ${plan.name} ($${price})... (Midtrans Integration Coming Soon)`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
       {/* Override default Vite styles that constrain width */}
@@ -272,6 +332,22 @@ function App() {
           background: #4b5563; /* gray-600 */
         }
       `}</style>
+      {/* Flash Message Notification */}
+      {flashMessage && (
+        <div className={`fixed top-24 right-6 z-[100] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-500 transform ${isFadingOut ? 'opacity-0 translate-y-[-20px]' : 'opacity-100 translate-y-0'} ${flashMessage.type === 'success' ? 'bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400/50' : 'bg-gradient-to-r from-red-600 to-rose-600 border border-red-400/50'} text-white backdrop-blur-md`}>
+            <div className={`p-1 rounded-full ${flashMessage.type === 'success' ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
+                {flashMessage.type === 'success' ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                )}
+            </div>
+            <div>
+                <h4 className="font-bold text-sm">{flashMessage.type === 'success' ? 'Success' : 'Error'}</h4>
+                <p className="text-xs opacity-90">{flashMessage.message}</p>
+            </div>
+        </div>
+      )}
       {/* Navbar */}
       <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center justify-between w-full">
@@ -328,6 +404,21 @@ function App() {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Admin Button - Only visible for admins */}
+            {userData?.role === 'admin' && (
+              <button
+                onClick={() => setActiveView("admin")}
+                className="hidden md:block text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105 border border-red-400"
+              >
+                🛡️ Admin Panel
+              </button>
+            )}
+          <button
+              onClick={() => setActiveView("subscription")}
+              className="hidden md:block text-xs bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              👑 Upgrade Pro
+            </button>
             {token ? (
               <>
               <button onClick={handleBellClick} className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50">
@@ -351,9 +442,10 @@ function App() {
                            {userData?.username?.substring(0, 2).toUpperCase() || "U"}
                        </div>
                    )}
-                   <span className="text-sm font-bold text-white hidden sm:block">
+                   <div className="text-sm font-bold text-white hidden sm:flex items-center">
                        {userData?.username || "User"}
-                   </span>
+                       {renderVerifiedBadge(userData)}
+                    </div>
                 </div>
                 <button
                   onClick={handleLogout}
@@ -393,6 +485,10 @@ function App() {
           <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
           ) : activeView === "profile" ? (
           <Profile onUpdateProfile={fetchUserProfile} />
+        ) : activeView === "subscription" ? (
+          <Subscription onSubscribe={handleSubscribe} />
+        ) : activeView === "admin" ? (
+          <AdminDashboard />
         ) : activeView === "explore" ? (
 
           <Explore />
@@ -548,13 +644,20 @@ function App() {
           <div className="md:col-span-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
             <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">Send Feedback</h3>
             <form onSubmit={handleFeedbackSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <input
+                  type="text"
+                  value={userData?.username || "Guest"}
+                  disabled
+                  className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
+                />
                 <input
                   type="email"
                   placeholder="Your Email"
                   value={feedbackEmail}
                   onChange={(e) => setFeedbackEmail(e.target.value)}
-                  className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                  disabled={!!userData}
+                  className={`sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none ${userData ? 'text-gray-500 cursor-not-allowed' : ''}`}
                   required
                 />
                 <input

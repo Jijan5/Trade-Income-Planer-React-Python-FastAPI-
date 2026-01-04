@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHighlightedPost }) => {
+const Community = ({
+  activeCommunity,
+  setActiveCommunity,
+  highlightedPost,
+  setHighlightedPost,
+}) => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,9 +89,12 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/users/me/joined_communities", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await axios.get(
+        "http://127.0.0.1:8000/api/users/me/joined_communities",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setJoinedCommunityIds(res.data);
     } catch (e) {
       console.error("Failed to fetch joined communities", e);
@@ -141,6 +149,36 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [mentionState.active, activeMenu]);
+
+  const renderVerifiedBadge = (item) => {
+    if (!item) return null;
+    let badge = null;
+
+    if (item.user_role === "admin") {
+      badge = { color: "text-red-500", title: "Admin" };
+    } else if (item.user_plan === "Platinum") {
+      badge = { color: "text-yellow-400", title: "Platinum User" };
+    }
+
+    if (!badge) return null;
+
+    return (
+      <span title={badge.title} className={`${badge.color} ml-1`}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-4 h-4"
+        >
+          <path
+            fillRule="evenodd"
+            d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </span>
+    );
+  };
 
   const fetchPosts = async (communityId) => {
     try {
@@ -228,11 +266,19 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
     if (!token) return alert("Please login to join.");
 
     try {
-      await axios.post(`http://127.0.0.1:8000/api/communities/${comm.id}/join`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(
+        `http://127.0.0.1:8000/api/communities/${comm.id}/join`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setJoinedCommunityIds([...joinedCommunityIds, comm.id]);
-      setCommunities(communities.map(c => c.id === comm.id ? {...c, members_count: c.members_count + 1} : c));
+      setCommunities(
+        communities.map((c) =>
+          c.id === comm.id ? { ...c, members_count: c.members_count + 1 } : c
+        )
+      );
       // Optional: Auto enter after join
       setActiveCommunity(comm);
     } catch (error) {
@@ -252,11 +298,23 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
     if (!communityToExit) return;
     const token = localStorage.getItem("token");
     try {
-      await axios.post(`http://127.0.0.1:8000/api/communities/${communityToExit.id}/leave`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setJoinedCommunityIds(joinedCommunityIds.filter(id => id !== communityToExit.id));
-      setCommunities(communities.map(c => c.id === communityToExit.id ? {...c, members_count: Math.max(0, c.members_count - 1)} : c));
+      await axios.post(
+        `http://127.0.0.1:8000/api/communities/${communityToExit.id}/leave`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setJoinedCommunityIds(
+        joinedCommunityIds.filter((id) => id !== communityToExit.id)
+      );
+      setCommunities(
+        communities.map((c) =>
+          c.id === communityToExit.id
+            ? { ...c, members_count: Math.max(0, c.members_count - 1) }
+            : c
+        )
+      );
       setShowExitModal(false);
       setCommunityToExit(null);
     } catch (error) {
@@ -755,7 +813,7 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
           : comm.font_family === "mono"
           ? "monospace"
           : "sans-serif",
-          "--glow-color": comm.hover_color || "#3b82f6",
+      "--glow-color": comm.hover_color || "#3b82f6",
     };
 
     if (comm.bg_type === "image" && comm.bg_value) {
@@ -780,32 +838,34 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
     return (
       <div className="animate-fade-in space-y-6 max-w-4xl mx-auto">
         {/* Header Feed */}
-        <div 
+        <div
           style={getCardStyle(activeCommunity)}
           className="p-6 rounded-lg border border-gray-700 flex items-center justify-between relative overflow-hidden transition-all shadow-xl"
         >
           <div className="relative z-10 flex items-center gap-4">
             {activeCommunity.avatar_url ? (
-              <img src={`http://127.0.0.1:8000${activeCommunity.avatar_url}`} alt={activeCommunity.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
+              <img
+                src={`http://127.0.0.1:8000${activeCommunity.avatar_url}`}
+                alt={activeCommunity.name}
+                className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+              />
             ) : (
               <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold border-2 border-white/20">
                 {activeCommunity.name.substring(0, 2).toUpperCase()}
               </div>
             )}
             <div>
-            <button
-              onClick={() => setActiveCommunity(null)}
-              className="opacity-70 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold"
-            >
-              ← Back to Communities
-            </button>
-            <h2 className="text-2xl font-bold">
-              {activeCommunity.name}
-            </h2>
-            <p className="opacity-80 text-sm">
-              {activeCommunity.description}
-            </p>
-          </div>
+              <button
+                onClick={() => setActiveCommunity(null)}
+                className="opacity-70 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold"
+              >
+                ← Back to Communities
+              </button>
+              <h2 className="text-2xl font-bold">{activeCommunity.name}</h2>
+              <p className="opacity-80 text-sm">
+                {activeCommunity.description}
+              </p>
+            </div>
           </div>
           <div className="text-right">
             <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
@@ -916,12 +976,21 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                 {/* Post Header & Menu */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                      {post.username.substring(0, 2).toUpperCase()}
-                    </div>
+                    {post.user_avatar_url ? (
+                      <img
+                        src={`http://127.0.0.1:8000${post.user_avatar_url}`}
+                        alt={post.username}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        {post.username.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
                     <div>
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-sm font-bold text-white flex items-center">
                         {post.username}
+                        {renderVerifiedBadge(post)}
                       </p>
                       <p className="text-[10px] text-gray-500">
                         {new Date(post.created_at).toLocaleString()}
@@ -1194,12 +1263,15 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                               </div>
                             ) : (
                               <div className="pr-6">
-                                <span className="font-bold text-blue-400 mr-2">
-                                  {comment.username}
-                                </span>
-                                <span className="text-gray-300">
+                                <div className="flex items-center">
+                                  <span className="font-bold text-blue-400 mr-1">
+                                    {comment.username}
+                                  </span>
+                                  {renderVerifiedBadge(comment)}
+                                </div>
+                                <p className="text-gray-300">
                                   {renderWithMentions(comment.content)}
-                                </span>
+                                </p>
                                 {comment.is_edited && (
                                   <span className="ml-2 text-[10px] text-gray-500 italic">
                                     (edited)
@@ -1428,15 +1500,15 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
           {filteredCommunities.map((comm) => {
             const isCreator = currentUser === comm.creator_username;
             return (
-            <div
-              key={comm.id}
-              style={getCardStyle(comm)}
-              onClick={() => {
-                if (isCreator || joinedCommunityIds.includes(comm.id)) {
-                  setActiveCommunity(comm);
-                }
-              }}
-              className={`rounded-xl border border-gray-700 p-6 transition-all group relative overflow-hidden cursor-pointer
+              <div
+                key={comm.id}
+                style={getCardStyle(comm)}
+                onClick={() => {
+                  if (isCreator || joinedCommunityIds.includes(comm.id)) {
+                    setActiveCommunity(comm);
+                  }
+                }}
+                className={`rounded-xl border border-gray-700 p-6 transition-all group relative overflow-hidden cursor-pointer
                 ${comm.hover_animation === "scale" ? "hover:scale-105" : ""}
                 ${
                   comm.hover_animation === "glow"
@@ -1445,82 +1517,89 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                 }
                 ${comm.hover_animation === "none" ? "hover:-translate-y-1" : ""}
               `}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                {comm.avatar_url ? (
-                  <img
-                    src={`http://127.0.0.1:8000${comm.avatar_url}`}
-                    alt={comm.name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
-                    {comm.name.substring(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className="text-xl font-bold truncate"
-                    style={{ color: comm.text_color }}
-                  >
-                    {comm.name}
-                  </h3>
-                  <p className="text-xs opacity-70">
-                    by {comm.creator_username}
-                  </p>
-                </div>
-                <span className="bg-green-900/30 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                  {comm.active_count} Online
-                </span>
-              </div>
-
-              <p
-                className="text-sm mb-6 line-clamp-2 h-10 opacity-80"
-                style={{ color: comm.text_color }}
               >
-                {comm.description}
-              </p>
+                <div className="flex items-center gap-3 mb-4">
+                  {comm.avatar_url ? (
+                    <img
+                      src={`http://127.0.0.1:8000${comm.avatar_url}`}
+                      alt={comm.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                      {comm.name.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3
+                      className="text-xl font-bold truncate"
+                      style={{ color: comm.text_color }}
+                    >
+                      {comm.name}
+                    </h3>
+                    <p className="text-xs opacity-70">
+                      by {comm.creator_username}
+                    </p>
+                  </div>
+                  <span className="bg-green-900/30 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                    {comm.active_count} Online
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between border-t border-gray-700 pt-4">
-                <div
-                  className="flex items-center gap-2 text-sm opacity-80"
+                <p
+                  className="text-sm mb-6 line-clamp-2 h-10 opacity-80"
                   style={{ color: comm.text_color }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 opacity-70"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                  </svg>
-                  <span className="font-mono font-bold">
-                    {comm.members_count.toLocaleString()}
-                  </span>{" "}
-                  Members
-                </div>
-                {isCreator ? (
-                  <span className="text-sm font-bold opacity-70" style={{ color: comm.text_color }}>
-                    Creator
-                  </span>
-                ) : joinedCommunityIds.includes(comm.id) ? (
-                  <button
-                    onClick={(e) => requestExitCommunity(e, comm)}
-                    className="text-sm font-bold hover:underline opacity-80 hover:opacity-100"
+                  {comm.description}
+                </p>
+
+                <div className="flex items-center justify-between border-t border-gray-700 pt-4">
+                  <div
+                    className="flex items-center gap-2 text-sm opacity-80"
                     style={{ color: comm.text_color }}
                   >
-                    Exit Group
-                  </button>
-                ) : (
-                  <button onClick={(e) => handleJoinCommunity(e, comm)} className="text-sm font-bold hover:underline" style={{ color: comm.text_color }}>
-                    Join Group →
-                  </button>
-                )}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 opacity-70"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    </svg>
+                    <span className="font-mono font-bold">
+                      {comm.members_count.toLocaleString()}
+                    </span>{" "}
+                    Members
+                  </div>
+                  {isCreator ? (
+                    <span
+                      className="text-sm font-bold opacity-70"
+                      style={{ color: comm.text_color }}
+                    >
+                      Creator
+                    </span>
+                  ) : joinedCommunityIds.includes(comm.id) ? (
+                    <button
+                      onClick={(e) => requestExitCommunity(e, comm)}
+                      className="text-sm font-bold hover:underline opacity-80 hover:opacity-100"
+                      style={{ color: comm.text_color }}
+                    >
+                      Exit Group
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => handleJoinCommunity(e, comm)}
+                      className="text-sm font-bold hover:underline"
+                      style={{ color: comm.text_color }}
+                    >
+                      Join Group →
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       )}
 
@@ -1651,32 +1730,68 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                         <div className="space-y-2">
                           <div className="flex gap-2">
                             <div className="flex-1">
-                              <label className="text-[10px] text-gray-500 uppercase">Start Color</label>
+                              <label className="text-[10px] text-gray-500 uppercase">
+                                Start Color
+                              </label>
                               <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
-                                <input type="color" value={newComm.gradientStart} onChange={(e) => {
-                                  const newVal = e.target.value;
-                                  setNewComm(prev => ({ ...prev, gradientStart: newVal, bgValue: `linear-gradient(${prev.gradientDir}, ${newVal}, ${prev.gradientEnd})` }));
-                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
-                                <span className="text-xs text-gray-400">{newComm.gradientStart}</span>
+                                <input
+                                  type="color"
+                                  value={newComm.gradientStart}
+                                  onChange={(e) => {
+                                    const newVal = e.target.value;
+                                    setNewComm((prev) => ({
+                                      ...prev,
+                                      gradientStart: newVal,
+                                      bgValue: `linear-gradient(${prev.gradientDir}, ${newVal}, ${prev.gradientEnd})`,
+                                    }));
+                                  }}
+                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                                />
+                                <span className="text-xs text-gray-400">
+                                  {newComm.gradientStart}
+                                </span>
                               </div>
                             </div>
                             <div className="flex-1">
-                              <label className="text-[10px] text-gray-500 uppercase">End Color</label>
+                              <label className="text-[10px] text-gray-500 uppercase">
+                                End Color
+                              </label>
                               <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
-                                <input type="color" value={newComm.gradientEnd} onChange={(e) => {
-                                  const newVal = e.target.value;
-                                  setNewComm(prev => ({ ...prev, gradientEnd: newVal, bgValue: `linear-gradient(${prev.gradientDir}, ${prev.gradientStart}, ${newVal})` }));
-                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
-                                <span className="text-xs text-gray-400">{newComm.gradientEnd}</span>
+                                <input
+                                  type="color"
+                                  value={newComm.gradientEnd}
+                                  onChange={(e) => {
+                                    const newVal = e.target.value;
+                                    setNewComm((prev) => ({
+                                      ...prev,
+                                      gradientEnd: newVal,
+                                      bgValue: `linear-gradient(${prev.gradientDir}, ${prev.gradientStart}, ${newVal})`,
+                                    }));
+                                  }}
+                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                                />
+                                <span className="text-xs text-gray-400">
+                                  {newComm.gradientEnd}
+                                </span>
                               </div>
                             </div>
                           </div>
                           <div>
-                            <label className="text-[10px] text-gray-500 uppercase">Direction</label>
-                            <select value={newComm.gradientDir} onChange={(e) => {
+                            <label className="text-[10px] text-gray-500 uppercase">
+                              Direction
+                            </label>
+                            <select
+                              value={newComm.gradientDir}
+                              onChange={(e) => {
                                 const newVal = e.target.value;
-                                setNewComm(prev => ({ ...prev, gradientDir: newVal, bgValue: `linear-gradient(${newVal}, ${prev.gradientStart}, ${prev.gradientEnd})` }));
-                            }} className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs">
+                                setNewComm((prev) => ({
+                                  ...prev,
+                                  gradientDir: newVal,
+                                  bgValue: `linear-gradient(${newVal}, ${prev.gradientStart}, ${prev.gradientEnd})`,
+                                }));
+                              }}
+                              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs"
+                            >
                               <option value="to right">To Right →</option>
                               <option value="to left">To Left ←</option>
                               <option value="to bottom">To Bottom ↓</option>
@@ -1687,20 +1802,23 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                           </div>
                         </div>
                       ) : (
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={newComm.bgValue}
-                          onChange={(e) =>
-                            setNewComm({ ...newComm, bgValue: e.target.value })
-                          }
-                          className={`bg-gray-900 border border-gray-600 rounded text-white p-1 h-9 ${
-                            newComm.bgType === "color"
-                              ? "w-16"
-                              : "w-full text-xs"
-                          }`}
-                        />
-                      </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="color"
+                            value={newComm.bgValue}
+                            onChange={(e) =>
+                              setNewComm({
+                                ...newComm,
+                                bgValue: e.target.value,
+                              })
+                            }
+                            className={`bg-gray-900 border border-gray-600 rounded text-white p-1 h-9 ${
+                              newComm.bgType === "color"
+                                ? "w-16"
+                                : "w-full text-xs"
+                            }`}
+                          />
+                        </div>
                       )}
                     </div>
                   )}
@@ -1761,7 +1879,7 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                     >
                       <option value="none">None (Lift)</option>
                       <option value="scale">Scale Up</option>
-                      <option value="glow">Blue Glow</option>
+                      <option value="glow">Glow</option>
                     </select>
                   </div>
                   {newComm.hoverAnimation === "glow" && (
@@ -1770,8 +1888,20 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                         Glow Color
                       </label>
                       <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
-                        <input type="color" value={newComm.hoverColor} onChange={(e) => setNewComm({...newComm, hoverColor: e.target.value})} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
-                        <span className="text-xs text-gray-400">{newComm.hoverColor}</span>
+                        <input
+                          type="color"
+                          value={newComm.hoverColor}
+                          onChange={(e) =>
+                            setNewComm({
+                              ...newComm,
+                              hoverColor: e.target.value,
+                            })
+                          }
+                          className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                        />
+                        <span className="text-xs text-gray-400">
+                          {newComm.hoverColor}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -1809,7 +1939,11 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
                       ? "hover:shadow-[0_0_20px_var(--glow-color)]"
                       : "hover:shadow-xl"
                   }
-                  ${newComm.hoverAnimation === "none" ? "hover:-translate-y-1" : ""}
+                  ${
+                    newComm.hoverAnimation === "none"
+                      ? "hover:-translate-y-1"
+                      : ""
+                  }
                 `}
                 >
                   <div className="flex items-center gap-3 mb-4">
@@ -1865,13 +1999,29 @@ const Community = ({ activeCommunity, setActiveCommunity, highlightedPost, setHi
       {showExitModal && communityToExit && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full animate-fade-in text-center">
-            <h3 className="text-lg font-bold text-white mb-2">Exit Community?</h3>
+            <h3 className="text-lg font-bold text-white mb-2">
+              Exit Community?
+            </h3>
             <p className="text-gray-400 text-sm mb-6">
-              Are you sure you want to leave <span className="text-white font-bold">{communityToExit.name}</span>?
+              Are you sure you want to leave{" "}
+              <span className="text-white font-bold">
+                {communityToExit.name}
+              </span>
+              ?
             </p>
             <div className="flex gap-3 justify-center">
-              <button onClick={() => setShowExitModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">No, Cancel</button>
-              <button onClick={confirmExitCommunity} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Yes, Exit</button>
+              <button
+                onClick={() => setShowExitModal(false)}
+                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold"
+              >
+                No, Cancel
+              </button>
+              <button
+                onClick={confirmExitCommunity}
+                className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold"
+              >
+                Yes, Exit
+              </button>
             </div>
           </div>
         </div>

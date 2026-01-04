@@ -34,6 +34,27 @@ const Profile = ({ onUpdateProfile }) => {
     fetchMyCommunities();
   }, []);
 
+  const renderVerifiedBadge = (user) => {
+    if (!user) return null;
+    let badge = null;
+
+    if (user.role === 'admin') {
+      badge = { color: 'text-red-500', title: 'Admin' };
+    } else if (user.plan === 'Platinum') {
+      badge = { color: 'text-yellow-400', title: 'Platinum User' };
+    }
+
+    if (!badge) return null;
+
+    return (
+      <span title={badge.title} className={`${badge.color} ml-2`}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+        </svg>
+      </span>
+    );
+  };
+
   useEffect(() => {
     if (editingComm && activeEditTab === 'members') {
         fetchCommMembers(editingComm.id);
@@ -198,8 +219,9 @@ const Profile = ({ onUpdateProfile }) => {
       
       {/* PROFILE EDIT SECTION */}
       <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 shadow-xl animate-fade-in">
-      <h2 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4">
+      <h2 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4 flex items-center">
         Edit Profile
+        {renderVerifiedBadge(user)}
       </h2>
 
       {message.text && (
@@ -340,7 +362,7 @@ const Profile = ({ onUpdateProfile }) => {
                     <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Avatar (Optional)</label>
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600">
-                        {previewEditCommAvatar ? <img src={previewEditCommAvatar} className="w-full h-full object-cover" alt="Preview" /> : <span className="flex items-center justify-center h-full text-gray-500 text-xs">No Img</span>}
+                      {previewEditCommAvatar ? <img src={previewEditCommAvatar} className="w-full h-full object-cover" alt="Preview" /> : <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">No Img</div>}
                       </div>
                       <input type="file" accept="image/*" onChange={(e) => {
                         const file = e.target.files[0];
@@ -388,13 +410,83 @@ const Profile = ({ onUpdateProfile }) => {
                       </label>
                       {editingComm.bg_type === 'gradient' ? (
                           <div className="space-y-2">
-                            {/* Gradient Pickers */}
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <label className="text-[10px] text-gray-500 uppercase">Start Color</label>
+                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                                <input type="color" value={editingComm.gradientStart || "#4facfe"} onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setEditingComm(prev => ({ ...prev, gradientStart: newVal, bg_value: `linear-gradient(${prev.gradientDir || "to right"}, ${newVal}, ${prev.gradientEnd || "#00f2fe"})` }));
+                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                                <span className="text-xs text-gray-400">{editingComm.gradientStart || "#4facfe"}</span>
+                              </div>
+                            </div>
+                            <div className="flex-1">
+                              <label className="text-[10px] text-gray-500 uppercase">End Color</label>
+                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                                <input type="color" value={editingComm.gradientEnd || "#00f2fe"} onChange={(e) => {
+                                  const newVal = e.target.value;
+                                  setEditingComm(prev => ({ ...prev, gradientEnd: newVal, bg_value: `linear-gradient(${prev.gradientDir || "to right"}, ${prev.gradientStart || "#4facfe"}, ${newVal})` }));
+                                }} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                                <span className="text-xs text-gray-400">{editingComm.gradientEnd || "#00f2fe"}</span>
+                              </div>
+                            </div>
                           </div>
+                          <div>
+                            <label className="text-[10px] text-gray-500 uppercase">Direction</label>
+                            <select value={editingComm.gradientDir || "to right"} onChange={(e) => {
+                                const newVal = e.target.value;
+                                setEditingComm(prev => ({ ...prev, gradientDir: newVal, bg_value: `linear-gradient(${newVal}, ${prev.gradientStart || "#4facfe"}, ${prev.gradientEnd || "#00f2fe"})` }));
+                            }} className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs">
+                              <option value="to right">To Right →</option>
+                              <option value="to left">To Left ←</option>
+                              <option value="to bottom">To Bottom ↓</option>
+                              <option value="to top">To Top ↑</option>
+                              <option value="45deg">Diagonal ↗</option>
+                              <option value="135deg">Diagonal ↘</option>
+                            </select>
+                          </div>
+                        </div>
                       ) : (
                         <div className="flex gap-2">
                           <input type="color" value={editingComm.bg_value} onChange={(e) => setEditingComm({...editingComm, bg_value: e.target.value})} className="bg-gray-900 border border-gray-600 rounded text-white p-1 h-9 w-16" />
                         </div>
                       )}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Text Color</label>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={editingComm.text_color} onChange={(e) => setEditingComm({...editingComm, text_color: e.target.value})} className="h-8 w-8 bg-transparent border-0 cursor-pointer" />
+                        <span className="text-xs text-gray-400">{editingComm.text_color}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Font</label>
+                      <select value={editingComm.font_family} onChange={(e) => setEditingComm({...editingComm, font_family: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs">
+                        <option value="sans">Sans Serif</option>
+                        <option value="serif">Serif</option>
+                        <option value="mono">Monospace</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Hover Animation</label>
+                    <select value={editingComm.hover_animation} onChange={(e) => setEditingComm({...editingComm, hover_animation: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 text-sm">
+                      <option value="none">None (Lift)</option>
+                      <option value="scale">Scale Up</option>
+                      <option value="glow">Glow</option>
+                    </select>
+                  </div>
+                  {editingComm.hover_animation === "glow" && (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">Glow Color</label>
+                      <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                        <input type="color" value={editingComm.hover_color} onChange={(e) => setEditingComm({...editingComm, hover_color: e.target.value})} className="h-6 w-6 bg-transparent border-0 cursor-pointer" />
+                        <span className="text-xs text-gray-400">{editingComm.hover_color}</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -412,8 +504,29 @@ const Profile = ({ onUpdateProfile }) => {
                     backgroundPosition: 'center',
                     "--glow-color": editingComm.hover_color,
                   }}
-                  className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto`}>
-                  {/* Preview content... */}
+                  className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
+                    ${editingComm.hover_animation === "scale" ? "hover:scale-105" : ""}
+                    ${editingComm.hover_animation === "glow" ? "hover:shadow-[0_0_20px_var(--glow-color)]" : "hover:shadow-xl"}
+                    ${editingComm.hover_animation === "none" ? "hover:-translate-y-1" : ""}
+                  `}>
+                  <div className="flex items-center gap-3 mb-4">
+                    {previewEditCommAvatar ? (
+                      <img src={previewEditCommAvatar} className="w-12 h-12 rounded-full object-cover border-2 border-white/20" alt="Preview" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                        {editingComm.name ? editingComm.name.substring(0, 2).toUpperCase() : "NA"}
+                      </div>
+                    )}
+                    <div>
+                      <h3 className="text-xl font-bold">{editingComm.name || "Community Name"}</h3>
+                      <p className="text-xs opacity-70">by You</p>
+                    </div>
+                  </div>
+                  <p className="text-sm mb-6 opacity-80">{editingComm.description || "Community description will appear here..."}</p>
+                  <div className="flex items-center justify-between border-t border-white/10 pt-4 opacity-80">
+                    <span className="text-sm">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 1} Members</span>
+                    <span className="text-sm font-bold">Join Group →</span>
+                  </div>
                 </div>
               </div>
 

@@ -1,9 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends, status, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, AdminUserUpdate, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
 from .database import create_db_and_tables, get_session
 from .auth import get_password_hash, verify_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -15,9 +16,32 @@ import requests
 import random
 import uuid
 import shutil
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Optional
 from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+# --- Pydantic Response Models ---
+class PostResponse(BaseModel):
+    id: int
+    community_id: Optional[int]
+    username: str
+    content: str
+    image_url: Optional[str]
+    link_url: Optional[str]
+    created_at: datetime
+    likes: int
+    comments_count: int
+    shares_count: int
+    is_edited: bool
+    user_role: str
+    user_plan: str
+    user_avatar_url: Optional[str]
+
+class CommentResponse(Comment):
+    user_role: str
+    user_plan: str
+    user_avatar_url: Optional[str]
 
 load_dotenv()
 
@@ -48,6 +72,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
+
+async def get_current_admin_user(current_user: User = Depends(get_current_user)):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+    return current_user
 
 # db startup
 @app.on_event("startup")
@@ -243,10 +272,30 @@ async def analyze_health(request: HealthAnalysisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- GLOBAL POSTS ENDPOINTS (HOME FEED) ---
-@app.get("/api/posts", response_model=list[Post])
+@app.get("/api/posts", response_model=list[PostResponse])
 async def get_all_posts(session: Session = Depends(get_session)):
-    # take all post (community or globe)
-    return session.exec(select(Post).order_by(Post.created_at.desc())).all()
+    posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
+    if not posts:
+        return []
+    
+    usernames = {p.username for p in posts}
+    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    user_map = {u.username: u for u in users}
+
+    results = []
+    for post in posts:
+        user = user_map.get(post.username)
+        post_dict = post.dict()
+        # Manually add fields for the response model
+        post_dict['user_role'] = user.role if user else "user"
+        post_dict['user_plan'] = user.plan if user else "Free"
+        post_dict['user_avatar_url'] = user.avatar_url if user else None
+        
+        # This part is for compatibility if user_reaction is added later dynamically
+        if 'user_reaction' not in post_dict:
+            post_dict['user_reaction'] = None
+        results.append(PostResponse(**post_dict))
+    return results
 
 @app.post("/api/posts", response_model=Post)
 async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -506,9 +555,27 @@ async def update_community(
     session.refresh(community)
     return community
   
-@app.get("/api/communities/{community_id}/posts", response_model=list[Post])
+@app.get("/api/communities/{community_id}/posts", response_model=list[PostResponse])
 async def get_community_posts(community_id: int, session: Session = Depends(get_session)):
-    return session.exec(select(Post).where(Post.community_id == community_id).order_by(Post.created_at.desc())).all()
+    posts = session.exec(select(Post).where(Post.community_id == community_id).order_by(Post.created_at.desc())).all()
+    if not posts:
+        return []
+
+    usernames = {p.username for p in posts}
+    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    user_map = {u.username: u for u in users}
+
+    results = []
+    for post in posts:
+        user = user_map.get(post.username)
+        post_dict = post.dict()
+        post_dict['user_role'] = user.role if user else "user"
+        post_dict['user_plan'] = user.plan if user else "Free"
+        post_dict['user_avatar_url'] = user.avatar_url if user else None
+        if 'user_reaction' not in post_dict:
+            post_dict['user_reaction'] = None
+        results.append(PostResponse(**post_dict))
+    return results
 
 @app.post("/api/communities/{community_id}/posts", response_model=Post)
 async def create_community_post(community_id: int, content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -547,9 +614,25 @@ async def create_community_post(community_id: int, content: str = Form(...), lin
   
 # --- INTERACTION ENDPOINTS ---
 
-@app.get("/api/posts/{post_id}/comments", response_model=list[Comment])
+@app.get("/api/posts/{post_id}/comments", response_model=list[CommentResponse])
 async def get_post_comments(post_id: int, session: Session = Depends(get_session)):
-    return session.exec(select(Comment).where(Comment.post_id == post_id).order_by(Comment.created_at.asc())).all()
+    comments = session.exec(select(Comment).where(Comment.post_id == post_id).order_by(Comment.created_at.asc())).all()
+    if not comments:
+        return []
+
+    usernames = {c.username for c in comments}
+    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    user_map = {u.username: u for u in users}
+
+    results = []
+    for comment in comments:
+        user = user_map.get(comment.username)
+        comment_dict = comment.dict()
+        comment_dict['user_role'] = user.role if user else "user"
+        comment_dict['user_plan'] = user.plan if user else "Free"
+        comment_dict['user_avatar_url'] = user.avatar_url if user else None
+        results.append(CommentResponse(**comment_dict))
+    return results
 
 @app.post("/api/posts/{post_id}/comments", response_model=Comment)
 async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -759,6 +842,46 @@ async def mark_notifications_as_read(user: User = Depends(get_current_user), ses
     for notif in notifications:
         notif.is_read = True
         session.add(notif)
+    session.commit()
+    return {"status": "success"}
+
+# --- ADMIN ENDPOINTS ---
+
+@app.get("/api/admin/users", response_model=list[UserRead])
+async def get_all_users(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    return session.exec(select(User)).all()
+
+@app.get("/api/admin/feedbacks", response_model=list[Feedback])
+async def get_all_feedbacks(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    return session.exec(select(Feedback).order_by(Feedback.created_at.desc())).all()
+
+@app.put("/api/admin/users/{user_id}", response_model=UserRead)
+async def admin_update_user(
+    user_id: int, 
+    user_update: AdminUserUpdate, 
+    admin_user: User = Depends(get_current_admin_user), 
+    session: Session = Depends(get_session)
+):
+    user_to_update = session.get(User, user_id)
+    if not user_to_update:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update fields from the request
+    user_data = user_update.model_dump(exclude_unset=True)
+    for key, value in user_data.items():
+        setattr(user_to_update, key, value)
+    
+    session.add(user_to_update)
+    session.commit()
+    session.refresh(user_to_update)
+    return user_to_update
+
+@app.delete("/api/admin/feedbacks/{feedback_id}")
+async def delete_feedback(feedback_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    feedback = session.get(Feedback, feedback_id)
+    if not feedback:
+        raise HTTPException(status_code=404, detail="Feedback not found")
+    session.delete(feedback)
     session.commit()
     return {"status": "success"}
 

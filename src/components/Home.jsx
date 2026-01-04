@@ -88,6 +88,27 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
     };
   }, []);
 
+  const renderVerifiedBadge = (item) => {
+    if (!item) return null;
+    let badge = null;
+
+    if (item.user_role === 'admin') {
+      badge = { color: 'text-red-500', title: 'Admin' };
+    } else if (item.user_plan === 'Platinum') {
+      badge = { color: 'text-yellow-400', title: 'Platinum User' };
+    }
+
+    if (!badge) return null;
+
+    return (
+      <span title={badge.title} className={`${badge.color} ml-1`}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+        </svg>
+      </span>
+    );
+  };
+
   const fetchGlobalPosts = async () => {
     try {
       const res = await axios.get("http://127.0.0.1:8000/api/posts");
@@ -578,12 +599,17 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
               <div key={post.id} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                      {post.username.substring(0, 2).toUpperCase()}
-                    </div>
+                  {post.user_avatar_url ? (
+                      <img src={`http://127.0.0.1:8000${post.user_avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                        {post.username.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
                     <div>
                       <p className="text-sm font-bold text-white flex items-center gap-1">
                         {post.username}
+                        {renderVerifiedBadge(post)}
                         {community && (
                           <span className="text-gray-400 font-normal text-xs">
                             posted at <span 
@@ -692,8 +718,11 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                               </div>
                             ) : (
                               <div className="pr-6">
-                                <span className="font-bold text-blue-400 mr-2">{comment.username}</span>
-                                <span className="text-gray-300">{renderWithMentions(comment.content)}</span>
+                                <div className="flex items-center">
+                                  <span className="font-bold text-blue-400 mr-1">{comment.username}</span>
+                                  {renderVerifiedBadge(comment)}
+                                </div>
+                                <p className="text-gray-300">{renderWithMentions(comment.content)}</p>
                                 {comment.is_edited && (
                                   <span className="ml-2 text-[10px] text-gray-500 italic">(edited)</span>
                                 )}
