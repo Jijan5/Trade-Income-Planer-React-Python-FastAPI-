@@ -100,8 +100,9 @@ class Notification(SQLModel, table=True):
     user_id: int = SQLField(index=True, foreign_key="user.id") # The one being notified
     actor_username: str # The one who did the action
     type: str # 'mention_post', 'mention_comment', 'reply_post', 'reply_comment'
-    post_id: int = SQLField(foreign_key="post.id")
+    post_id: Optional[int] = SQLField(default=None, foreign_key="post.id")
     comment_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
+    content: Optional[str] = SQLField(default=None, max_length=512) # For broadcasts
     community_id: Optional[int] = SQLField(default=None, foreign_key="community.id")
     is_read: bool = SQLField(default=False, index=True)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
@@ -132,9 +133,11 @@ class NotificationRead(BaseModel):
     id: int
     actor_username: str
     actor_avatar_url: Optional[str] = None
+    actor_role: str = "user"
+    actor_plan: str = "Free"
     type: str
     content_preview: str
-    post_id: int
+    post_id: Optional[int]
     community_id: Optional[int] = None
     is_read: bool
     created_at: datetime
@@ -197,6 +200,9 @@ class Feedback(SQLModel, table=True):
 
 class FeedbackCreate(BaseModel):
     email: str
+    message: str
+    
+class BroadcastRequest(BaseModel):
     message: str
     
 # trader health score model

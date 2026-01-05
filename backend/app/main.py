@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, AdminUserUpdate, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, AdminUserUpdate, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse, BroadcastRequest
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
 from .database import create_db_and_tables, get_session
 from .auth import get_password_hash, verify_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -554,6 +554,39 @@ async def update_community(
     session.commit()
     session.refresh(community)
     return community
+
+@app.delete("/api/communities/{community_id}")
+async def delete_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    community = session.get(Community, community_id)
+    if not community:
+        raise HTTPException(status_code=404, detail="Community not found")
+    
+    # Allow Creator or Admin to delete
+    if community.creator_username != user.username and user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this community")
+
+    # 1. Get all post IDs in the community to delete their children first
+    post_ids = session.exec(select(Post.id).where(Post.community_id == community_id)).all()
+
+    if post_ids:
+        # 2. Delete all dependencies of the posts (Reactions, Comments, Notifications)
+        session.exec(text("DELETE FROM reaction WHERE post_id IN :pids"), params={"pids": post_ids})
+        session.exec(text("DELETE FROM comment WHERE post_id IN :pids"), params={"pids": post_ids})
+        session.exec(text("DELETE FROM notification WHERE post_id IN :pids"), params={"pids": post_ids})
+        
+        # 3. Delete the posts themselves
+        session.exec(text("DELETE FROM post WHERE id IN :pids"), params={"pids": post_ids})
+
+    # 4. Delete Community Members
+    session.exec(text("DELETE FROM communitymember WHERE community_id = :cid"), params={"cid": community_id})
+
+    # 5. Delete Notifications linked directly to the community (if any)
+    session.exec(text("DELETE FROM notification WHERE community_id = :cid"), params={"cid": community_id})
+
+    # 6. Finally, delete the community
+    session.delete(community)
+    session.commit()
+    return {"status": "success"}
   
 @app.get("/api/communities/{community_id}/posts", response_model=list[PostResponse])
 async def get_community_posts(community_id: int, session: Session = Depends(get_session)):
@@ -634,7 +667,7 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
         results.append(CommentResponse(**comment_dict))
     return results
 
-@app.post("/api/posts/{post_id}/comments", response_model=Comment)
+@app.post("/api/posts/{post_id}/comments", response_model=CommentResponse)
 async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     try:
         post = session.get(Post, post_id)
@@ -677,7 +710,13 @@ async def create_comment(post_id: int, comment: CommentCreate, user: User = Depe
             
         session.commit()
         session.refresh(db_comment)
-        return db_comment
+        
+        # Return full response with user info for badge rendering
+        comment_dict = db_comment.dict()
+        comment_dict['user_role'] = user.role
+        comment_dict['user_plan'] = user.plan
+        comment_dict['user_avatar_url'] = user.avatar_url
+        return CommentResponse(**comment_dict)
     except Exception as e:
         session.rollback()
         if "1054" in str(e) and "comment" in str(e):
@@ -707,6 +746,14 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
         session.add(new_reaction)
         # Update total likes count
         post.likes += 1
+        # Create notification for post owner
+        post_owner = session.exec(select(User).where(User.username == post.username)).first()
+        if post_owner and post_owner.id != user.id:
+            notif = Notification(
+                user_id=post_owner.id, actor_username=user.username, type='react_post',
+                post_id=post_id, community_id=post.community_id
+            )
+            session.add(notif)
     session.add(post)
     session.commit()
     return {"status": "success"}
@@ -815,16 +862,20 @@ async def get_notifications(user: User = Depends(get_current_user), session: Ses
     for notif in notifications:
         actor = session.exec(select(User).where(User.username == notif.actor_username)).first()
         content_preview = ""
-        if notif.comment_id:
+        if notif.type == "system_broadcast":
+            content_preview = notif.content if notif.content else "System Announcement"
+        elif notif.comment_id:
             comment = session.get(Comment, notif.comment_id)
             if comment: content_preview = comment.content[:75]
-        else:
+        elif notif.post_id:
             post = session.get(Post, notif.post_id)
             if post: content_preview = post.content[:75]
 
         response_data.append(
             NotificationRead(
                 id=notif.id, actor_username=notif.actor_username, actor_avatar_url=actor.avatar_url if actor else None,
+                actor_role=actor.role if actor else "user",
+                actor_plan=actor.plan if actor else "Free",
                 type=notif.type, content_preview=content_preview, post_id=notif.post_id,
                 community_id=notif.community_id, is_read=notif.is_read, created_at=notif.created_at
             )
@@ -854,6 +905,49 @@ async def get_all_users(user: User = Depends(get_current_admin_user), session: S
 @app.get("/api/admin/feedbacks", response_model=list[Feedback])
 async def get_all_feedbacks(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     return session.exec(select(Feedback).order_by(Feedback.created_at.desc())).all()
+
+@app.get("/api/admin/posts", response_model=list[PostResponse])
+async def get_admin_posts(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
+    if not posts:
+        return []
+    
+    usernames = {p.username for p in posts}
+    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    user_map = {u.username: u for u in users}
+
+    results = []
+    for post in posts:
+        user = user_map.get(post.username)
+        post_dict = post.dict()
+        post_dict['user_role'] = user.role if user else "user"
+        post_dict['user_plan'] = user.plan if user else "Free"
+        post_dict['user_avatar_url'] = user.avatar_url if user else None
+        if 'user_reaction' not in post_dict:
+            post_dict['user_reaction'] = None
+        results.append(PostResponse(**post_dict))
+    return results
+
+@app.post("/api/admin/broadcast")
+async def broadcast_message(request: BroadcastRequest, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    users = session.exec(select(User)).all()
+    count = 0
+    for u in users:
+        # Don't notify self
+        if u.id == user.id: continue
+        
+        # Create system notification
+        notif = Notification(
+            user_id=u.id, 
+            actor_username="System", 
+            type="system_broadcast", 
+            content=request.message,
+            post_id=None, 
+            community_id=None)
+        session.add(notif)
+        count += 1
+    session.commit()
+    return {"status": "success", "count": count}
 
 @app.put("/api/admin/users/{user_id}", response_model=UserRead)
 async def admin_update_user(

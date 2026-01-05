@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { formatDistanceToNow } from "date-fns";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart, Pie, Cell 
@@ -12,7 +13,10 @@ const AdminDashboard = () => {
   const [userSearch, setUserSearch] = useState("");
   const [editingUser, setEditingUser] = useState(null);
   const [subscriptions, setSubscriptions] = useState([]);
+  const [communities, setCommunities] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [broadcastMsg, setBroadcastMsg] = useState("");
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeSubs: 0,
@@ -72,12 +76,16 @@ const AdminDashboard = () => {
       // prepare data holders
       let fetchedUsers = mockUsers;
       let fetchedFeedbacks = mockFeedbacks;
+      let fetchedCommunities = [];
+      let fetchedPosts = [];
 
       //try fetching read data (feedbacks & users)
       try {
-        const [usersRes, feedRes] = await Promise.allSettled([
+        const [usersRes, feedRes, commRes, postsRes] = await Promise.allSettled([
           axios.get("http://127.0.0.1:8000/api/admin/users", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://127.0.0.1:8000/api/admin/feedbacks", { headers: { Authorization: `Bearer ${token}` } })
+          axios.get("http://127.0.0.1:8000/api/admin/feedbacks", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("http://127.0.0.1:8000/api/communities"),
+          axios.get("http://127.0.0.1:8000/api/admin/posts", { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (usersRes.status === 'fulfilled' && usersRes.value.data) {
@@ -85,6 +93,12 @@ const AdminDashboard = () => {
         }
         if (feedRes.status === 'fulfilled' && feedRes.value.data) {
             fetchedFeedbacks = feedRes.value.data;
+        }
+        if (commRes.status === 'fulfilled' && commRes.value.data) {
+            fetchedCommunities = commRes.value.data;
+        }
+        if (postsRes.status === 'fulfilled' && postsRes.value.data) {
+            fetchedPosts = postsRes.value.data;
         }
       } catch (err) {
         console.log("Backend endpoints not ready, using mock data.");
@@ -102,6 +116,8 @@ const AdminDashboard = () => {
       setUsers(fetchedUsers);
       setSubscriptions(mockSubscriptions);
       setFeedbacks(uniqueFeedbacks);
+      setCommunities(fetchedCommunities);
+      setPosts(fetchedPosts);
 
     } catch (error) {
       console.error("Failed to fetch admin data", error);
@@ -113,9 +129,18 @@ const AdminDashboard = () => {
 
   const handleSuspendUser = async (userId) => {
     if(!window.confirm("Are you sure you want to suspend this user?")) return;
-    // Logic call API suspend
-    alert(`User ${userId} suspended (Simulated)`);
-    setUsers(users.map(u => u.id === userId ? {...u, status: "suspended"} : u));
+    const userToSuspend = users.find(u => u.id === userId);
+    if (!userToSuspend) return;
+
+    const token = localStorage.getItem("token");
+    try {
+        const updatedUser = { ...userToSuspend, status: "suspended" };
+        await axios.put(`http://127.0.0.1:8000/api/admin/users/${userId}`, updatedUser, { headers: { Authorization: `Bearer ${token}` } });
+        setUsers(users.map(u => u.id === userId ? {...u, status: "suspended"} : u));
+        alert(`User ${userToSuspend.username} has been suspended.`);
+    } catch (error) {
+        alert("Failed to suspend user.");
+    }
   };
 
   const handleSaveUser = async () => {
@@ -135,6 +160,49 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Failed to update user", error);
       alert(error.response?.data?.detail || "Failed to update user.");
+    }
+  };
+
+  const handleDeleteCommunity = async (communityId) => {
+    if (!window.confirm("Are you sure you want to delete this community? This will remove all posts and members permanently.")) return;
+    const token = localStorage.getItem("token");
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/communities/${communityId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setCommunities(communities.filter(c => c.id !== communityId));
+        alert("Community deleted successfully.");
+    } catch (error) {
+        console.error("Delete failed", error);
+        alert(error.response?.data?.detail || "Failed to delete community.");
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Delete this post permanently?")) return;
+    const token = localStorage.getItem("token");
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/posts/${postId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setPosts(posts.filter(p => p.id !== postId));
+    } catch (error) {
+        alert("Failed to delete post.");
+    }
+  };
+
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!broadcastMsg.trim()) return;
+    if (!window.confirm("Send this message to ALL users?")) return;
+
+    const token = localStorage.getItem("token");
+    try {
+        await axios.post("http://127.0.0.1:8000/api/admin/broadcast", { message: broadcastMsg }, { headers: { Authorization: `Bearer ${token}` } });
+        alert("Broadcast sent successfully!");
+        setBroadcastMsg("");
+    } catch (error) {
+        alert("Failed to send broadcast.");
     }
   };
 
@@ -194,6 +262,24 @@ const AdminDashboard = () => {
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "subscriptions" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             💳 Subscriptions
+            </button>
+          <button 
+            onClick={() => setActiveTab("communities")}
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "communities" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
+          >
+            🏘️ Communities
+          </button>
+          <button 
+            onClick={() => setActiveTab("content")}
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "content" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
+          >
+            📝 Content
+          </button>
+          <button 
+            onClick={() => setActiveTab("broadcast")}
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
+          >
+            📢 Broadcast
           </button>
           <button 
             onClick={() => setActiveTab("feedback")}
@@ -305,7 +391,7 @@ const AdminDashboard = () => {
                     <div key={item.id} className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors">
                       <div className="flex justify-between items-start mb-3">
                         <h4 className="font-bold text-blue-400 text-sm">{item.email}</h4>
-                        <span className="text-xs text-gray-500">{item.date}</span>
+                        <span className="text-xs text-gray-500">{formatDistanceToNow(new Date(item.created_at || item.date), { addSuffix: true })}</span>
                       </div>
                       <p className="text-gray-300 text-sm leading-relaxed">"{item.message}"</p>
                     </div>
@@ -435,6 +521,102 @@ const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+            {/* COMMUNITIES TAB */}
+            {activeTab === "communities" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-white">Community Management</h3>
+                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead className="bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Creator</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Members</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-gray-800 divide-y divide-gray-700">
+                      {communities.map((comm) => (
+                        <tr key={comm.id} className="hover:bg-gray-700/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{comm.id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{comm.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{comm.creator_username}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-mono">{comm.members_count}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button 
+                              onClick={() => handleDeleteCommunity(comm.id)} 
+                              className="text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/40 px-3 py-1 rounded transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {communities.length === 0 && (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-8 text-center text-gray-500">No communities found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {/* CONTENT TAB */}
+            {activeTab === "content" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-white">Content Moderation (All Posts)</h3>
+                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead className="bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Author</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Content Preview</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-gray-800 divide-y divide-gray-700">
+                      {posts.map((post) => (
+                        <tr key={post.id} className="hover:bg-gray-700/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{post.username}</td>
+                          <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">{post.content}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onClick={() => handleDeletePost(post.id)} className="text-red-400 hover:text-red-300">Delete</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* BROADCAST TAB */}
+            {activeTab === "broadcast" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-white">System Broadcast</h3>
+                <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    <p className="text-gray-400 mb-4 text-sm">Send a notification to ALL registered users. Use this for important announcements.</p>
+                    <form onSubmit={handleBroadcast}>
+                        <textarea 
+                            value={broadcastMsg}
+                            onChange={(e) => setBroadcastMsg(e.target.value)}
+                            className="w-full bg-gray-900 border border-gray-600 rounded-lg p-4 text-white focus:border-blue-500 outline-none h-32 resize-none"
+                            placeholder="Type your announcement here..."
+                            required
+                        />
+                        <div className="mt-4 flex justify-end">
+                            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
+                                <span>📢</span> Send Broadcast
+                            </button>
+                        </div>
+                    </form>
                 </div>
               </div>
             )}

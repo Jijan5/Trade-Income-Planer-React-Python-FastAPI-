@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { formatDistanceToNow } from 'date-fns';
 
 const Community = ({
   activeCommunity,
   setActiveCommunity,
   highlightedPost,
   setHighlightedPost,
+  userData,
 }) => {
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -319,6 +321,24 @@ const Community = ({
       setCommunityToExit(null);
     } catch (error) {
       alert("Failed to leave community.");
+    }
+  };
+
+  // Handle Delete Community (Admin/Creator)
+  const handleDeleteCommunity = async (e, communityId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this community? This action cannot be undone and will delete all posts and members.")) return;
+    
+    const token = localStorage.getItem("token");
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/communities/${communityId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setCommunities(communities.filter(c => c.id !== communityId));
+        alert("Community deleted successfully.");
+    } catch (error) {
+        console.error("Delete failed", error);
+        alert(error.response?.data?.detail || "Failed to delete community.");
     }
   };
 
@@ -993,7 +1013,7 @@ const Community = ({
                         {renderVerifiedBadge(post)}
                       </p>
                       <p className="text-[10px] text-gray-500">
-                        {new Date(post.created_at).toLocaleString()}
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         {post.is_edited && (
                           <span className="ml-1 italic opacity-75">
                             (edited)
@@ -1280,7 +1300,10 @@ const Community = ({
                               </div>
                             )}
 
-                            <div className="flex items-center gap-4 mt-2">
+                            <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-400">
+                              <span>
+                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                              </span>
                               <button
                                 onClick={() => {
                                   setReplyingTo({
@@ -1289,7 +1312,7 @@ const Community = ({
                                   });
                                   setReplyContent("");
                                 }}
-                                className="text-[10px] text-gray-400 hover:text-white font-bold"
+                                className="hover:text-white font-bold"
                               >
                                 Reply
                               </button>
@@ -1499,12 +1522,13 @@ const Community = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCommunities.map((comm) => {
             const isCreator = currentUser === comm.creator_username;
+            const isAdmin = userData?.role === 'admin';
             return (
               <div
                 key={comm.id}
                 style={getCardStyle(comm)}
                 onClick={() => {
-                  if (isCreator || joinedCommunityIds.includes(comm.id)) {
+                  if (isAdmin || isCreator || joinedCommunityIds.includes(comm.id)) {
                     setActiveCommunity(comm);
                   }
                 }}
@@ -1572,7 +1596,25 @@ const Community = ({
                     </span>{" "}
                     Members
                   </div>
-                  {isCreator ? (
+                  {isAdmin ? (
+                    <div className="flex items-center gap-2">
+                    <span
+                      className="text-sm font-bold opacity-70"
+                      style={{ color: comm.text_color }}
+                    >
+                      Admin Oversight
+                    </span>
+                    <button
+                      onClick={(e) => handleDeleteCommunity(e, comm.id)}
+                      className="text-red-500 hover:text-red-400 p-1.5 rounded hover:bg-red-900/30 transition-colors"
+                      title="Delete Community"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                  ) : isCreator ? (
                     <span
                       className="text-sm font-bold opacity-70"
                       style={{ color: comm.text_color }}

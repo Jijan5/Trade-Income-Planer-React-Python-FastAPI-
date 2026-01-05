@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { formatDistanceToNow } from 'date-fns';
 
 const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost, setHighlightedPost }) => {
   const [posts, setPosts] = useState([]);
@@ -622,7 +623,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                         )}
                       </p>
                       <p className="text-[10px] text-gray-500">
-                        {new Date(post.created_at).toLocaleString()}
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         {post.is_edited && (
                           <span className="ml-1 italic opacity-75">(edited)</span>
                         )}

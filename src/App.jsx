@@ -86,6 +86,14 @@ function App() {
     if (token) {
       fetchUserProfile();
       fetchUnreadCount();
+
+      // Set up polling for unread count every 15 seconds
+      const intervalId = setInterval(() => {
+        fetchUnreadCount();
+      }, 15000);
+
+      // Cleanup interval on component unmount or token change
+      return () => clearInterval(intervalId);
     } else {
       setUserData(null);
       setUnreadCount(0);
@@ -297,6 +305,45 @@ function App() {
     alert(`Redirecting to payment for ${plan.name} ($${price})... (Midtrans Integration Coming Soon)`);
   };
 
+  const navItems = [
+    {
+      view: "home",
+      title: "Home",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+        </svg>
+      ),
+    },
+    {
+      view: "explore",
+      title: "Explore",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18V6.375c0-.621.504-1.125 1.125-1.125H9.75" />
+        </svg>
+      ),
+    },
+    {
+      view: "community",
+      title: "Community",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.51.056 1.02.083 1.531.083s1.02-.027 1.531-.083m-3.062 0c.203.18.45.33.712.453m-7.5 0a9.094 9.094 0 013.741-.479 3 3 0 014.682-2.72M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7.5 3.75h15a9.094 9.094 0 00-15 0z" />
+        </svg>
+      ),
+    },
+    {
+      view: "simulator",
+      title: "Simulation",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
       {/* Override default Vite styles that constrain width */}
@@ -360,47 +407,21 @@ function App() {
           </div>
 
           {/* Main Navigation (Center) */}
-          <div className="hidden md:flex items-center space-x-2 bg-gray-900/50 p-1 rounded-lg border border-gray-700/50">
-            <button
-            onClick={() => setActiveView("home")}
-            className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
-              activeView === "home"
-                ? "bg-blue-600 text-white shadow-lg"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Home
-          </button>
-          <button
-              onClick={() => setActiveView("explore")}
-              className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
-                activeView === "explore"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Explore
-            </button>
-            <button
-              onClick={() => setActiveView("community")}
-              className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
-                activeView === "community"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Community
-            </button>
-            <button
-              onClick={() => setActiveView("simulator")}
-              className={`px-6 py-1.5 text-sm font-bold rounded transition-all ${
-                activeView === "simulator"
-                  ? "bg-blue-600 text-white shadow-lg"
-                  : "text-gray-400 hover:text-white"
-              }`}
-            >
-              Simulation
-            </button>
+          <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
+            {navItems.map((item) => (
+              <button
+                key={item.view}
+                onClick={() => setActiveView(item.view)}
+                title={item.title}
+                className={`p-2.5 rounded-full transition-colors custom-icon ${
+                  activeView === item.view
+                    ? "text-white"
+                    : "text-gray-400 hover:bg-blue-600 hover:text-white"
+                }`}
+              >
+                {item.icon}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-4">
@@ -493,7 +514,7 @@ function App() {
 
           <Explore />
         ) : activeView === "community" ? (
-          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
+          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} userData={userData} />
         ) : (
           <>
             {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
