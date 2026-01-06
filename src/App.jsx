@@ -14,6 +14,8 @@ import Profile from "./components/Profile";
 import NotificationsModal from "./components/NotificationsModal";
 import Subscription from "./components/Subscriptions";
 import AdminDashboard from "./components/AdminDashboard";
+import TradeHistory from "./components/TradeHistory";
+import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -175,6 +177,10 @@ function App() {
     localStorage.removeItem("activeView");
     setToken(null);
     setUnreadCount(0);
+    // delete data session manual trade from localstorage while logout
+    if (userData?.id) {
+      localStorage.removeItem(`manual_trade_session_${userData.id}`);
+    }
     setUserData(null);
     // Reset to home view on logout
     setActiveView("home");
@@ -303,6 +309,34 @@ function App() {
   const handleSubscribe = (plan) => {
     const price = plan.finalPrice || plan.price;
     alert(`Redirecting to payment for ${plan.name} ($${price})... (Midtrans Integration Coming Soon)`);
+  };
+
+  const handleExportSimulationCSV = (data) => {
+    if (!data || !data.daily_breakdown) return;
+    
+    const headers = ["Day", "Start Balance", "Profit/Loss", "End Balance", "ROI"];
+    const csvRows = [headers.join(",")];
+
+    data.daily_breakdown.forEach(day => {
+      const row = [
+        day.day,
+        day.start_balance,
+        day.profit_loss,
+        day.end_balance,
+        day.roi
+      ];
+      csvRows.push(row.join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `simulation_results_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const navItems = [
@@ -502,6 +536,7 @@ function App() {
       </nav>
 
       <div className="w-full p-6 space-y-8 pt-24">
+      <ManualTradeProvider userData={userData} activeSymbol={activeSymbol}>
         {activeView === "home" ? (
           <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
           ) : activeView === "profile" ? (
@@ -601,50 +636,73 @@ function App() {
                 >
                   Manual Trade
                 </button>
+                <button
+                  onClick={() => setActiveView("trade_history")}
+                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+                    activeView === "trade_history"
+                      ? "text-gray-500 border-b-2 border-blue-500"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  History
+                </button>
               </div>
-              {activeView === "simulator" && (
-                <div className="space-y-6">
-                  <SimulationForm
-                    onSimulate={handleSimulate}
-                    isLoading={loading}
-                  />
-                  {error && (
-                    <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm">
-                      <p>{error}</p>
-                    </div>
-                  )}
-                  {simulationData ? (
-                    <ResultsDashboard data={simulationData} />
-                  ) : (
-                    <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
-                      <svg
-                        className="w-16 h-16 mb-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                        />
-                      </svg>
-                      <p className="text-lg">
-                        Masukkan parameter di atas dan klik "Jalankan Simulasi"
-                        untuk melihat hasil.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-              {activeView === "planner" && <GoalPlanner />}
-              {activeView === "manual" && (
-                <ManualTradeSimulator activeSymbol={activeSymbol} />
-              )}
+                {activeView === "simulator" && (
+                  <div className="space-y-6">
+                    <SimulationForm
+                      onSimulate={handleSimulate}
+                      isLoading={loading}
+                    />
+                    {error && (
+                      <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm">
+                        <p>{error}</p>
+                      </div>
+                    )}
+                    {simulationData ? (
+                      <>
+                        <ResultsDashboard data={simulationData} />
+                        <div className="flex justify-end">
+                          <button 
+                            onClick={() => handleExportSimulationCSV(simulationData)}
+                            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                            Export Results (CSV)
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
+                        <svg
+                          className="w-16 h-16 mb-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                        <p className="text-lg">
+                          Masukkan parameter di atas dan klik "Jalankan Simulasi"
+                          untuk melihat hasil.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {activeView === "planner" && <GoalPlanner />}
+                {activeView === "manual" && (
+                  <ManualTradeSimulator activeSymbol={activeSymbol} />
+                )}
+                {activeView === "trade_history" && <TradeHistory />}
             </div>
           </>
         )}
+      </ManualTradeProvider>
       </div>
       {/* Footer */}
       <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative">

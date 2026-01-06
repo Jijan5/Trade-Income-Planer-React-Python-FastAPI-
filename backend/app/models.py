@@ -202,8 +202,40 @@ class FeedbackCreate(BaseModel):
     email: str
     message: str
     
+class ManualTrade(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    symbol: str
+    entry_price: Decimal = Field(default=0, max_digits=20, decimal_places=8)
+    exit_price: Decimal = Field(default=0, max_digits=20, decimal_places=8)
+    pnl: Decimal = Field(default=0, max_digits=20, decimal_places=2)
+    is_win: bool
+    trade_date: datetime = SQLField(default_factory=datetime.utcnow)
+    notes: Optional[str] = None
+
+class ManualTradeCreate(BaseModel):
+    symbol: str
+    entry_price: float
+    exit_price: float
+    pnl: float
+    is_win: bool
+    notes: Optional[str] = None
+    
 class BroadcastRequest(BaseModel):
     message: str
+    
+class Report(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    reporter_username: str
+    post_id: Optional[int] = SQLField(default=None, foreign_key="post.id")
+    comment_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
+    reason: str
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class ReportCreate(BaseModel):
+    post_id: Optional[int] = None
+    comment_id: Optional[int] = None
+    reason: str
     
 # trader health score model
 class TradeItem(BaseModel):

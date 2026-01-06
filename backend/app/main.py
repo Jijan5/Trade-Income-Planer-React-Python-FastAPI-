@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlmodel import Session, select
-from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, AdminUserUpdate, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse, BroadcastRequest
+from .models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, ChatRequest, ChatResponse, User, UserCreate, Token, UserRead, AdminUserUpdate, Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostCreate, Comment, CommentCreate, Reaction, ReactionCreate, Feedback, FeedbackCreate, Notification, NotificationRead, HealthAnalysisRequest, HealthAnalysisResponse, BroadcastRequest, ManualTrade, ManualTradeCreate, Report, ReportCreate
 from .engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
 from .database import create_db_and_tables, get_session
 from .auth import get_password_hash, verify_password, create_access_token, decode_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
@@ -849,6 +849,52 @@ async def delete_comment(comment_id: int, user: User = Depends(get_current_user)
 
     session.delete(comment)
     session.commit()
+    return {"status": "success"}
+
+# --- MANUAL TRADE HISTORY ENDPOINTS ---
+
+@app.get("/api/manual-trades", response_model=list[ManualTrade])
+async def get_manual_trades(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    return session.exec(select(ManualTrade).where(ManualTrade.user_id == user.id).order_by(ManualTrade.trade_date.desc())).all()
+
+@app.post("/api/manual-trades", response_model=ManualTrade)
+async def create_manual_trade(trade: ManualTradeCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    db_trade = ManualTrade(
+        user_id=user.id,
+        symbol=trade.symbol,
+        entry_price=trade.entry_price,
+        exit_price=trade.exit_price,
+        pnl=trade.pnl,
+        is_win=trade.is_win,
+        notes=trade.notes
+    )
+    session.add(db_trade)
+    session.commit()
+    session.refresh(db_trade)
+    return db_trade
+
+@app.post("/api/reports")
+async def create_report(report: ReportCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    db_report = Report(
+        reporter_username=user.username,
+        post_id=report.post_id,
+        comment_id=report.comment_id,
+        reason=report.reason
+    )
+    session.add(db_report)
+    session.commit()
+    return {"status": "success"}
+
+@app.get("/api/admin/reports", response_model=list[Report])
+async def get_admin_reports(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    return session.exec(select(Report).order_by(Report.created_at.desc())).all()
+
+@app.delete("/api/admin/reports/{report_id}")
+async def delete_report(report_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    report = session.get(Report, report_id)
+    if report:
+        session.delete(report)
+        session.commit()
     return {"status": "success"}
 
 # --- NOTIFICATION ENDPOINTS ---

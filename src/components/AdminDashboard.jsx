@@ -16,6 +16,7 @@ const AdminDashboard = () => {
   const [communities, setCommunities] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [reports, setReports] = useState([]);
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -78,14 +79,16 @@ const AdminDashboard = () => {
       let fetchedFeedbacks = mockFeedbacks;
       let fetchedCommunities = [];
       let fetchedPosts = [];
+      let fetchedReports = [];
 
       //try fetching read data (feedbacks & users)
       try {
-        const [usersRes, feedRes, commRes, postsRes] = await Promise.allSettled([
+        const [usersRes, feedRes, commRes, postsRes, reportsRes] = await Promise.allSettled([
           axios.get("http://127.0.0.1:8000/api/admin/users", { headers: { Authorization: `Bearer ${token}` } }),
           axios.get("http://127.0.0.1:8000/api/admin/feedbacks", { headers: { Authorization: `Bearer ${token}` } }),
           axios.get("http://127.0.0.1:8000/api/communities"),
-          axios.get("http://127.0.0.1:8000/api/admin/posts", { headers: { Authorization: `Bearer ${token}` } })
+          axios.get("http://127.0.0.1:8000/api/admin/posts", { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get("http://127.0.0.1:8000/api/admin/reports", { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (usersRes.status === 'fulfilled' && usersRes.value.data) {
@@ -100,6 +103,9 @@ const AdminDashboard = () => {
         if (postsRes.status === 'fulfilled' && postsRes.value.data) {
             fetchedPosts = postsRes.value.data;
         }
+        if (reportsRes.status === 'fulfilled' && reportsRes.value.data) {
+          fetchedReports = reportsRes.value.data;
+      }
       } catch (err) {
         console.log("Backend endpoints not ready, using mock data.");
       }
@@ -118,6 +124,7 @@ const AdminDashboard = () => {
       setFeedbacks(uniqueFeedbacks);
       setCommunities(fetchedCommunities);
       setPosts(fetchedPosts);
+      setReports(fetchedReports);
 
     } catch (error) {
       console.error("Failed to fetch admin data", error);
@@ -206,6 +213,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDismissReport = async (reportId) => {
+    const token = localStorage.getItem("token");
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/admin/reports/${reportId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        setReports(reports.filter(r => r.id !== reportId));
+        alert("Report dismissed.");
+    } catch (error) {
+        alert("Failed to dismiss report.");
+    }
+  };
+
   const renderVerifiedBadge = (user) => {
     let badge = null;
 
@@ -280,6 +300,12 @@ const AdminDashboard = () => {
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             📢 Broadcast
+          </button>
+          <button 
+            onClick={() => setActiveTab("reports")}
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "reports" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
+          >
+            🚨 Reports
           </button>
           <button 
             onClick={() => setActiveTab("feedback")}
@@ -591,6 +617,43 @@ const AdminDashboard = () => {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* REPORTS TAB */}
+            {activeTab === "reports" && (
+              <div className="space-y-6">
+                <h3 className="text-2xl font-bold text-white">User Reports</h3>
+                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead className="bg-gray-900">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reporter</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Target ID</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-gray-800 divide-y divide-gray-700">
+                      {reports.map((report) => (
+                        <tr key={report.id} className="hover:bg-gray-700/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{report.reporter_username}</td>
+                          <td className="px-6 py-4 text-sm text-red-300">{report.reason}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {report.post_id ? `Post #${report.post_id}` : `Comment #${report.comment_id}`}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            {report.post_id && (
+                                <button onClick={() => handleDeletePost(report.post_id)} className="text-red-400 hover:text-red-300 bg-red-900/20 px-2 py-1 rounded">Delete Post</button>
+                            )}
+                            <button onClick={() => handleDismissReport(report.id)} className="text-gray-400 hover:text-white bg-gray-700 px-2 py-1 rounded">Dismiss</button>
+                          </td>
+                        </tr>
+                      ))}
+                      {reports.length === 0 && <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">No reports found.</td></tr>}
                     </tbody>
                   </table>
                 </div>

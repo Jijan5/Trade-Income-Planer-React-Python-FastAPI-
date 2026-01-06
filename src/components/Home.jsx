@@ -363,6 +363,20 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
     }
   };
 
+  const handleReportPost = async (postId) => {
+    const reason = prompt("Why are you reporting this post? (e.g., Spam, Harassment)");
+    if (!reason) return;
+
+    const token = localStorage.getItem("token");
+    try {
+        await axios.post("http://127.0.0.1:8000/api/reports", { post_id: postId, reason }, { headers: { Authorization: `Bearer ${token}` } });
+        alert("Report submitted. Thank you for helping keep the community safe.");
+        setActiveMenu(null);
+    } catch (error) {
+        alert("Failed to submit report.");
+    }
+  };
+
   const toggleMenu = (type, id) => {
     if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
       setActiveMenu(null);
@@ -630,7 +644,6 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                       </p>
                     </div>
                   </div>
-                  {currentUser === post.username && (
                     <div className="relative">
                       <button onClick={() => toggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -639,12 +652,17 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                       </button>
                       {activeMenu?.type === "post" && activeMenu?.id === post.id && (
                         <div ref={menuRef} className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
-                          <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
-                          <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
+                          {currentUser === post.username ? (
+                            <>
+                              <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
+                              <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
+                            </>
+                          ) : (
+                            <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300">Report</button>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
                 </div>
                 {editingItem?.type === "post" && editingItem?.id === post.id ? (
                   <div className="space-y-2">
