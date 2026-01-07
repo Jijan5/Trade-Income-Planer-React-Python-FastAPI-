@@ -570,9 +570,18 @@ async def delete_community(community_id: int, user: User = Depends(get_current_u
 
     if post_ids:
         # 2. Delete all dependencies of the posts (Reactions, Comments, Notifications)
+        # Get comment IDs to clean up dependencies on comments
+        comment_ids = session.exec(select(Comment.id).where(Comment.post_id.in_(post_ids))).all()
+
+        # Delete Notifications first (references Post and Comment)
+        session.exec(text("DELETE FROM notification WHERE post_id IN :pids"), params={"pids": post_ids})
+        if comment_ids:
+             session.exec(text("DELETE FROM notification WHERE comment_id IN :cids"), params={"cids": comment_ids})
+             session.exec(text("DELETE FROM report WHERE comment_id IN :cids"), params={"cids": comment_ids})
+
+        session.exec(text("DELETE FROM report WHERE post_id IN :pids"), params={"pids": post_ids})
         session.exec(text("DELETE FROM reaction WHERE post_id IN :pids"), params={"pids": post_ids})
         session.exec(text("DELETE FROM comment WHERE post_id IN :pids"), params={"pids": post_ids})
-        session.exec(text("DELETE FROM notification WHERE post_id IN :pids"), params={"pids": post_ids})
         
         # 3. Delete the posts themselves
         session.exec(text("DELETE FROM post WHERE id IN :pids"), params={"pids": post_ids})
