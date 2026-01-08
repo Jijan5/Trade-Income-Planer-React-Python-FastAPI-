@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import VerifiedBadge from "./VerifiedBadge";
 
-const Profile = ({ onUpdateProfile }) => {
+const Profile = () => {
+  const { fetchUserProfile } = useAuth();
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -33,27 +36,6 @@ const Profile = ({ onUpdateProfile }) => {
     fetchProfile();
     fetchMyCommunities();
   }, []);
-
-  const renderVerifiedBadge = (user) => {
-    if (!user) return null;
-    let badge = null;
-
-    if (user.role === 'admin') {
-      badge = { color: 'text-red-500', title: 'Admin' };
-    } else if (user.plan === 'Platinum') {
-      badge = { color: 'text-yellow-400', title: 'Platinum User' };
-    }
-
-    if (!badge) return null;
-
-    return (
-      <span title={badge.title} className={`${badge.color} ml-2`}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
-        </svg>
-      </span>
-    );
-  };
 
   useEffect(() => {
     if (editingComm && activeEditTab === 'members') {
@@ -137,7 +119,7 @@ const Profile = ({ onUpdateProfile }) => {
       setMessage({ type: "success", text: "Profile updated successfully!" });
       
       // Notify parent (App.jsx) to update navbar
-      if (onUpdateProfile) onUpdateProfile();
+      fetchUserProfile();
       
     } catch (error) {
       console.error("Update failed", error);
@@ -221,7 +203,7 @@ const Profile = ({ onUpdateProfile }) => {
       <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 shadow-xl animate-fade-in">
       <h2 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4 flex items-center">
         Edit Profile
-        {renderVerifiedBadge(user)}
+        <VerifiedBadge user={user} className="ml-2" />
       </h2>
 
       {message.text && (

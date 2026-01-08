@@ -1,20 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { formatDistanceToNow } from 'date-fns';
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import VerifiedBadge from "./VerifiedBadge";
 
 const Community = ({
-  activeCommunity,
-  setActiveCommunity,
+  communities: propCommunities, // Receive communities from Ap
   highlightedPost,
   setHighlightedPost,
-  userData,
 }) => {
+  const { userData } = useAuth();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [joinedCommunityIds, setJoinedCommunityIds] = useState([]);
+
+  // Determine active community based on URL param
+  const activeCommunity = id ? communities.find(c => c.id === parseInt(id)) : null;
 
   // Community Creation State
   const [newComm, setNewComm] = useState({
@@ -108,6 +115,13 @@ const Community = ({
     fetchJoinedCommunities();
   }, []);
 
+  // Sync with prop communities if provided (optional, but good for consistency)
+  useEffect(() => {
+    if (propCommunities && propCommunities.length > 0) {
+        setCommunities(propCommunities);
+    }
+  }, [propCommunities]);
+
   // Get Current User from Token
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -151,36 +165,6 @@ const Community = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [mentionState.active, activeMenu]);
-
-  const renderVerifiedBadge = (item) => {
-    if (!item) return null;
-    let badge = null;
-
-    if (item.user_role === "admin") {
-      badge = { color: "text-red-500", title: "Admin" };
-    } else if (item.user_plan === "Platinum") {
-      badge = { color: "text-yellow-400", title: "Platinum User" };
-    }
-
-    if (!badge) return null;
-
-    return (
-      <span title={badge.title} className={`${badge.color} ml-1`}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-4 h-4"
-        >
-          <path
-            fillRule="evenodd"
-            d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </span>
-    );
-  };
 
   const fetchPosts = async (communityId) => {
     try {
@@ -238,7 +222,7 @@ const Community = ({
       setCommBgImage(null);
       setPreviewCommAvatar(null);
       setPreviewCommBg(null);
-      fetchCommunities(); // Refresh list
+      window.location.reload(); // Simple reload to refresh list in App and here
     } catch (error) {
       // Reset form
       setNewComm({
@@ -282,7 +266,7 @@ const Community = ({
         )
       );
       // Optional: Auto enter after join
-      setActiveCommunity(comm);
+      navigate(`/community/${comm.id}`);
     } catch (error) {
       alert("Failed to join community.");
     }
@@ -876,7 +860,7 @@ const Community = ({
             )}
             <div>
               <button
-                onClick={() => setActiveCommunity(null)}
+                onClick={() => navigate("/communities")}
                 className="opacity-70 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold"
               >
                 ← Back to Communities
@@ -1010,7 +994,7 @@ const Community = ({
                     <div>
                       <p className="text-sm font-bold text-white flex items-center">
                         {post.username}
-                        {renderVerifiedBadge(post)}
+                        <VerifiedBadge user={post} />
                       </p>
                       <p className="text-[10px] text-gray-500">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
@@ -1287,7 +1271,7 @@ const Community = ({
                                   <span className="font-bold text-blue-400 mr-1">
                                     {comment.username}
                                   </span>
-                                  {renderVerifiedBadge(comment)}
+                                  <VerifiedBadge user={comment} />
                                 </div>
                                 <p className="text-gray-300">
                                   {renderWithMentions(comment.content)}
@@ -1529,7 +1513,7 @@ const Community = ({
                 style={getCardStyle(comm)}
                 onClick={() => {
                   if (isAdmin || isCreator || joinedCommunityIds.includes(comm.id)) {
-                    setActiveCommunity(comm);
+                    navigate(`/community/${comm.id}`);
                   }
                 }}
                 className={`rounded-xl border border-gray-700 p-6 transition-all group relative overflow-hidden cursor-pointer

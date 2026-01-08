@@ -1,0 +1,246 @@
+import os
+import uuid
+import shutil
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
+from sqlmodel import Session, select
+from sqlalchemy import text
+from ..database import get_session
+from ..models import Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User
+from ..dependencies import get_current_user
+from ..utils import process_mentions_and_create_notifications
+
+router = APIRouter()
+
+@router.get("/api/posts", response_model=list[PostResponse])
+async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, limit: int = 10):
+    query = (
+        select(Post, User)
+        .join(User, Post.username == User.username)
+        .order_by(Post.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    results = session.exec(query).all()
+
+    response_list = []
+    for post, user in results:
+        post_dict = post.dict()
+        post_dict['user_role'] = user.role
+        post_dict['user_plan'] = user.plan
+        post_dict['user_avatar_url'] = user.avatar_url
+        if 'user_reaction' not in post_dict:
+            post_dict['user_reaction'] = None
+        response_list.append(PostResponse(**post_dict))
+    return response_list
+
+@router.post("/api/posts", response_model=Post)
+async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    try:
+        image_url_to_save = None
+        if image_file:
+            os.makedirs("static/images", exist_ok=True)
+            filename = f"{uuid.uuid4()}-{image_file.filename}"
+            file_path = os.path.join("static/images", filename)
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image_file.file, buffer)
+            image_url_to_save = f"/static/images/{filename}"
+            
+        db_post = Post(
+            community_id=None, 
+            username=user.username, 
+            content=content,
+            image_url=image_url_to_save,
+            link_url=link_url
+        )
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
+
+        await process_mentions_and_create_notifications(
+            session=session, content=content, author_user=user, post_id=db_post.id,
+            community_id=None, notified_user_ids=set()
+        )
+        session.add(db_post)
+        session.commit()
+        session.refresh(db_post)
+        return db_post
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/api/posts/{post_id}/comments", response_model=list[CommentResponse])
+async def get_post_comments(post_id: int, session: Session = Depends(get_session)):
+    comments = session.exec(select(Comment).where(Comment.post_id == post_id).order_by(Comment.created_at.asc())).all()
+    if not comments:
+        return []
+
+    usernames = {c.username for c in comments}
+    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    user_map = {u.username: u for u in users}
+
+    results = []
+    for comment in comments:
+        user = user_map.get(comment.username)
+        comment_dict = comment.dict()
+        comment_dict['user_role'] = user.role if user else "user"
+        comment_dict['user_plan'] = user.plan if user else "Free"
+        comment_dict['user_avatar_url'] = user.avatar_url if user else None
+        results.append(CommentResponse(**comment_dict))
+    return results
+
+@router.post("/api/posts/{post_id}/comments", response_model=CommentResponse)
+async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    try:
+        post = session.get(Post, post_id)
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        
+        db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id)
+        session.add(db_comment)
+        session.commit()
+        session.refresh(db_comment)
+        
+        if post:
+            post.comments_count += 1
+            session.add(post)
+            
+        notified_user_ids = set()
+        await process_mentions_and_create_notifications(
+            session=session, content=comment.content, author_user=user, post_id=post_id,
+            community_id=post.community_id, notified_user_ids=notified_user_ids, comment_id=db_comment.id
+        )
+
+        if comment.parent_id:
+            parent_comment = session.get(Comment, comment.parent_id)
+            if parent_comment:
+                parent_owner = session.exec(select(User).where(User.username == parent_comment.username)).first()
+                if parent_owner and parent_owner.id != user.id and parent_owner.id not in notified_user_ids:
+                    reply_notif = Notification(user_id=parent_owner.id, actor_username=user.username, type='reply_comment', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                    session.add(reply_notif)
+                    notified_user_ids.add(parent_owner.id)
+        else:
+            post_owner = session.exec(select(User).where(User.username == post.username)).first()
+            if post_owner and post_owner.id != user.id and post_owner.id not in notified_user_ids:
+                reply_notif = Notification(user_id=post_owner.id, actor_username=user.username, type='reply_post', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                session.add(reply_notif)
+                notified_user_ids.add(post_owner.id)
+            
+        session.commit()
+        session.refresh(db_comment)
+        
+        comment_dict = db_comment.dict()
+        comment_dict['user_role'] = user.role
+        comment_dict['user_plan'] = user.plan
+        comment_dict['user_avatar_url'] = user.avatar_url
+        return CommentResponse(**comment_dict)
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/posts/{post_id}/react")
+async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    existing_reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == user.username)).first()
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    if existing_reaction:
+        if existing_reaction.type == reaction.type:
+            session.delete(existing_reaction)
+            post.likes -= 1
+        else:
+            existing_reaction.type = reaction.type
+            session.add(existing_reaction)
+    else:
+        new_reaction = Reaction(post_id=post_id, username=user.username, type=reaction.type)
+        session.add(new_reaction)
+        post.likes += 1
+        post_owner = session.exec(select(User).where(User.username == post.username)).first()
+        if post_owner and post_owner.id != user.id:
+            notif = Notification(
+                user_id=post_owner.id, actor_username=user.username, type='react_post',
+                post_id=post_id, community_id=post.community_id
+            )
+            session.add(notif)
+    session.add(post)
+    session.commit()
+    return {"status": "success"}
+
+@router.post("/api/posts/{post_id}/share")
+async def share_post(post_id: int, session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if post:
+        post.shares_count += 1
+        session.add(post)
+        session.commit()
+    return {"status": "success"}
+
+@router.put("/api/posts/{post_id}", response_model=Post)
+async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this post")
+    
+    post.content = post_data.content
+    post.image_url = post_data.image_url
+    post.link_url = post_data.link_url
+    post.is_edited = True
+    session.add(post)
+    session.commit()
+    session.refresh(post)
+    return post
+
+@router.delete("/api/posts/{post_id}")
+async def delete_post(post_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this post")
+    
+    notifications = session.exec(select(Notification).where(Notification.post_id == post_id)).all()
+    for n in notifications: session.delete(n)
+
+    reactions = session.exec(select(Reaction).where(Reaction.post_id == post_id)).all()
+    for r in reactions: session.delete(r)
+    
+    session.commit()
+    session.exec(text("DELETE FROM comment WHERE post_id = :post_id ORDER BY id DESC"), params={"post_id": post_id})
+    session.delete(post)
+    session.commit()
+    return {"status": "success"}
+
+@router.put("/api/comments/{comment_id}", response_model=Comment)
+async def update_comment(comment_id: int, comment_data: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    comment = session.get(Comment, comment_id)
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this comment")
+    
+    comment.content = comment_data.content
+    comment.is_edited = True
+    session.add(comment)
+    session.commit()
+    session.refresh(comment)
+    return comment
+
+@router.delete("/api/comments/{comment_id}")
+async def delete_comment(comment_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    comment = session.get(Comment, comment_id)
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    if comment.username != user.username:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    post = session.get(Post, comment.post_id)
+    if post:
+        post.comments_count = max(0, post.comments_count - 1)
+        session.add(post)
+
+    session.delete(comment)
+    session.commit()
+    return {"status": "success"}

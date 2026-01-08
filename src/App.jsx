@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Routes, Route, useNavigate, useLocation, Navigate, Outlet, Link } from "react-router-dom";
 import axios from "axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
@@ -16,9 +17,13 @@ import Subscription from "./components/Subscriptions";
 import AdminDashboard from "./components/AdminDashboard";
 import TradeHistory from "./components/TradeHistory";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
+import { useAuth } from "./contexts/AuthContext";
+import VerifiedBadge from "./components/VerifiedBadge";
 
 function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { token, userData, unreadCount, setUnreadCount, login, logout } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
   const [simulationData, setSimulationData] = useState(null);
@@ -26,50 +31,12 @@ function App() {
   const [error, setError] = useState(null);
   const [activeSymbol, setActiveSymbol] = useState("BTCUSDT");
   const [activeCategory, setActiveCategory] = useState("Crypto");
-  const [activeView, setActiveView] = useState(
-    () => localStorage.getItem("activeView") || "home"
-  );
-  
-  // Global state for active community (shared between Home and Community pages)
-  const [activeCommunity, setActiveCommunity] = useState(null);
   const [communities, setCommunities] = useState([]);
 
   // Notification State
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [highlightedPost, setHighlightedPost] = useState(null);
-
-  // User Profile State (for Navbar)
-  const [userData, setUserData] = useState(null);
-
-  const fetchUserProfile = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get("http://127.0.0.1:8000/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUserData(res.data);
-      // Auto-redirect to admin if role is admin and on home (optional, but good for UX)
-      if (res.data.role === 'admin' && activeView === 'home') {
-        // setActiveView('admin'); // Uncomment if you want auto-redirect
-     }
-    } catch (error) {
-      console.error("Failed to fetch user profile", error);
-    }
-  };
-
-  const fetchUnreadCount = async () => {
-    if (!token) return;
-    try {
-        const res = await axios.get("http://127.0.0.1:8000/api/notifications/unread_count", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        setUnreadCount(res.data.count);
-    } catch (error) {
-        console.error("Failed to fetch unread count", error);
-    }
-  };
 
   const fetchCommunities = async () => {
     try {
@@ -83,45 +50,6 @@ function App() {
   useEffect(() => {
     fetchCommunities();
   }, []);
-
-  useEffect(() => {
-    if (token) {
-      fetchUserProfile();
-      fetchUnreadCount();
-
-      // Set up polling for unread count every 15 seconds
-      const intervalId = setInterval(() => {
-        fetchUnreadCount();
-      }, 15000);
-
-      // Cleanup interval on component unmount or token change
-      return () => clearInterval(intervalId);
-    } else {
-      setUserData(null);
-      setUnreadCount(0);
-    }
-  }, [token]);
-
-  const renderVerifiedBadge = (user) => {
-    if (!user) return null;
-    let badge = null;
-
-    if (user.role === 'admin') {
-      badge = { color: 'text-red-500', title: 'Admin' };
-    } else if (user.plan === 'Platinum') {
-      badge = { color: 'text-yellow-400', title: 'Platinum User' };
-    }
-
-    if (!badge) return null;
-
-    return (
-      <span title={badge.title} className={`${badge.color} ml-1`}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
-        </svg>
-      </span>
-    );
-  };
 
   // Feedback State
   const [feedbackEmail, setFeedbackEmail] = useState("");
@@ -172,41 +100,6 @@ function App() {
     setFeedbackMessage("");
   };
 
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("activeView");
-    setToken(null);
-    setUnreadCount(0);
-    // delete data session manual trade from localstorage while logout
-    if (userData?.id) {
-      localStorage.removeItem(`manual_trade_session_${userData.id}`);
-    }
-    setUserData(null);
-    setActiveCommunity(null);
-    // Reset to home view on logout
-    setActiveView("home");
-  }, [userData]);
-
-  // Global Axios interceptor for handling 401 errors
-  useEffect(() => {
-    const responseInterceptor = axios.interceptors.response.use(
-      response => response,
-      error => {
-        // Check if it's a 401 Unauthorized error and not a login attempt
-        if (error.response && error.response.status === 401 && !error.config.url.endsWith('/api/token')) {
-          console.error("Sesi tidak valid atau telah berakhir. Logout otomatis.");
-          handleLogout();
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    // Cleanup interceptor on component unmount
-    return () => {
-      axios.interceptors.response.eject(responseInterceptor);
-    };
-  }, [handleLogout]);
-
   const handleBellClick = async () => {
     setShowNotifications(!showNotifications);
     if (!showNotifications) { // If we are opening it
@@ -233,25 +126,17 @@ function App() {
       setHighlightedPost({ postId: notification.post_id });
 
       if (notification.community_id) {
-          const targetCommunity = communities.find(c => c.id === notification.community_id);
-          if (targetCommunity) {
-              setActiveCommunity(targetCommunity);
-              setActiveView("community");
-          }
+          navigate(`/community/${notification.community_id}`);
       } else {
-          setActiveView("home");
+          navigate("/");
       }
   };
-
-  useEffect(() => {
-    localStorage.setItem("activeView", activeView);
-  }, [activeView]);
 
   if (showAuth) {
     return (
       <Auth
         onLogin={(newToken) => {
-          setToken(newToken);
+          login(newToken);
           setShowAuth(false);
         }}
         initialIsLogin={authInitialLogin}
@@ -342,7 +227,7 @@ function App() {
 
   const navItems = [
     {
-      view: "home",
+      path: "/",
       title: "Home",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -351,7 +236,7 @@ function App() {
       ),
     },
     {
-      view: "explore",
+      path: "/explore",
       title: "Explore",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -360,7 +245,7 @@ function App() {
       ),
     },
     {
-      view: "community",
+      path: "/community",
       title: "Community",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -369,7 +254,7 @@ function App() {
       ),
     },
     {
-      view: "simulator",
+      path: "/simulation",
       title: "Simulation",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -378,6 +263,68 @@ function App() {
       ),
     },
   ];
+
+  // Layout for Simulation Section (Chart + Sub-nav)
+  const SimulationLayout = () => (
+    <>
+      {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
+      <div className="space-y-6 mb-8">
+        {/* Asset Selection Dropdowns */}
+        <div className="flex flex-col sm:flex-row gap-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <div className="w-full sm:w-1/4">
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              Market Category
+            </label>
+            <select
+              value={activeCategory}
+              onChange={(e) => {
+                const newCategory = e.target.value;
+                setActiveCategory(newCategory);
+                setActiveSymbol(assetCategories[newCategory][0].symbol);
+              }}
+              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {Object.keys(assetCategories).map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full sm:w-1/4">
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              Select Asset
+            </label>
+            <select
+              value={activeSymbol}
+              onChange={(e) => setActiveSymbol(e.target.value)}
+              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {assetCategories[activeCategory].map((asset) => (
+                <option key={asset.symbol} value={asset.symbol}>{asset.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Chart Container */}
+        <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
+          <BinanceChartWidget symbol={activeSymbol} />
+        </div>
+      </div>
+
+      {/* SECTION 2: SIMULATION TOOLS */}
+      <div className="space-y-8">
+        {/* View Switcher */}
+        <div className="flex justify-center border-b border-gray-700">
+          <Link to="/simulation/strategy" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/strategy") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Strategy Simulator</Link>
+          <Link to="/simulation/planner" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/planner") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Goal Planner</Link>
+          <Link to="/simulation/manual" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/manual") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Manual Trade</Link>
+          <Link to="/simulation/history" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/history") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>History</Link>
+        </div>
+        <Outlet />
+      </div>
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
@@ -435,7 +382,7 @@ function App() {
         <div className="flex items-center justify-between w-full">
           <div
             className="flex items-center cursor-pointer"
-            onClick={() => setActiveView("home")}
+            onClick={() => navigate("/")}
           >
             <img src="/tip-brand.png" alt="Trade Income Planner" className="h-10" />
               <span className="ml-2 text-[10px] bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30 font-mono align-top">v1.0 PRO</span>
@@ -445,11 +392,11 @@ function App() {
           <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
             {navItems.map((item) => (
               <button
-                key={item.view}
-                onClick={() => setActiveView(item.view)}
+                key={item.path}
+                onClick={() => navigate(item.path)}
                 title={item.title}
                 className={`p-2.5 rounded-full transition-colors custom-icon ${
-                  activeView === item.view
+                  (item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path))
                     ? "text-white"
                     : "text-gray-400 hover:bg-blue-600 hover:text-white"
                 }`}
@@ -463,14 +410,14 @@ function App() {
             {/* Admin Button - Only visible for admins */}
             {userData?.role === 'admin' && (
               <button
-                onClick={() => setActiveView("admin")}
+                onClick={() => navigate("/admin")}
                 className="hidden md:block text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105 border border-red-400"
               >
                 🛡️ Admin Panel
               </button>
             )}
           <button
-              onClick={() => setActiveView("subscription")}
+              onClick={() => navigate("/subscription")}
               className="hidden md:block text-xs bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105"
             >
               👑 Upgrade Pro
@@ -489,7 +436,7 @@ function App() {
                 </button>
                 <div 
                   className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
-                  onClick={() => setActiveView("profile")}
+                  onClick={() => navigate("/profile")}
                 >
                    {userData?.avatar_url ? (
                        <img src={`http://127.0.0.1:8000${userData.avatar_url}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-500" />
@@ -500,11 +447,11 @@ function App() {
                    )}
                    <div className="text-sm font-bold text-white hidden sm:flex items-center">
                        {userData?.username || "User"}
-                       {renderVerifiedBadge(userData)}
+                       <VerifiedBadge user={userData} />
                     </div>
                 </div>
                 <button
-                  onClick={handleLogout}
+                  onClick={logout}
                   className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
                 >
                   Logout
@@ -537,172 +484,44 @@ function App() {
       </nav>
 
       <div className="w-full p-6 space-y-8 pt-24">
-      <ManualTradeProvider userData={userData} activeSymbol={activeSymbol}>
-        {activeView === "home" ? (
-          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} userData={userData} />
-          ) : activeView === "profile" ? (
-          <Profile onUpdateProfile={fetchUserProfile} />
-        ) : activeView === "subscription" ? (
-          <Subscription onSubscribe={handleSubscribe} />
-        ) : activeView === "admin" ? (
-          <AdminDashboard />
-        ) : activeView === "explore" ? (
-
-          <Explore />
-        ) : activeView === "community" ? (
-          <Community activeCommunity={activeCommunity} setActiveCommunity={setActiveCommunity} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} userData={userData} />
-        ) : (
-          <>
-            {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
-            <div className="space-y-6">
-              {/* Asset Selection Dropdowns */}
-              <div className="flex flex-col sm:flex-row gap-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
-                <div className="w-full sm:w-1/4">
-                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                    Market Category
-                  </label>
-                  <select
-                    value={activeCategory}
-                    onChange={(e) => {
-                      const newCategory = e.target.value;
-                      setActiveCategory(newCategory);
-                      // Otomatis pilih aset pertama saat kategori berubah
-                      setActiveSymbol(assetCategories[newCategory][0].symbol);
-                    }}
-                    className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                  >
-                    {Object.keys(assetCategories).map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="w-full sm:w-1/4">
-                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                    Select Asset
-                  </label>
-                  <select
-                    value={activeSymbol}
-                    onChange={(e) => setActiveSymbol(e.target.value)}
-                    className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                  >
-                    {assetCategories[activeCategory].map((asset) => (
-                      <option key={asset.symbol} value={asset.symbol}>
-                        {asset.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Chart Container (Wide & Tall) */}
-              <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
-                <BinanceChartWidget symbol={activeSymbol} />
-              </div>
-            </div>
-
-            {/* SECTION 2: SIMULATION TOOLS */}
-            <div className="space-y-8">
-              {/* View Switcher */}
-              <div className="flex justify-center border-b border-gray-700">
-                <button
-                  onClick={() => setActiveView("simulator")}
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-                    activeView === "simulator"
-                      ? "text-gray-500 border-b-2 border-blue-500"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  Strategy Simulator
-                </button>
-                <button
-                  onClick={() => setActiveView("planner")}
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-                    activeView === "planner"
-                      ? "text-gray-500 border-b-2 border-blue-500"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  Goal Planner
-                </button>
-                <button
-                  onClick={() => setActiveView("manual")}
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-                    activeView === "manual"
-                      ? "text-gray-500 border-b-2 border-blue-500"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  Manual Trade
-                </button>
-                <button
-                  onClick={() => setActiveView("trade_history")}
-                  className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
-                    activeView === "trade_history"
-                      ? "text-gray-500 border-b-2 border-blue-500"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  History
-                </button>
-              </div>
-                {activeView === "simulator" && (
-                  <div className="space-y-6">
-                    <SimulationForm
-                      onSimulate={handleSimulate}
-                      isLoading={loading}
-                    />
-                    {error && (
-                      <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm">
-                        <p>{error}</p>
-                      </div>
-                    )}
-                    {simulationData ? (
-                      <>
-                        <ResultsDashboard data={simulationData} />
-                        <div className="flex justify-end">
-                          <button 
-                            onClick={() => handleExportSimulationCSV(simulationData)}
-                            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                            Export Results (CSV)
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
-                        <svg
-                          className="w-16 h-16 mb-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                          />
-                        </svg>
-                        <p className="text-lg">
-                          Masukkan parameter di atas dan klik "Jalankan Simulasi"
-                          untuk melihat hasil.
-                        </p>
-                      </div>
-                    )}
+      <ManualTradeProvider activeSymbol={activeSymbol}>
+        <Routes>
+          <Route path="/" element={<Home communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/community" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
+          <Route path="/community/:id" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
+          <Route path="/simulation" element={<SimulationLayout />}>
+            <Route index element={<Navigate to="strategy" replace />} />
+            <Route path="strategy" element={
+              <div className="space-y-6">
+                <SimulationForm onSimulate={handleSimulate} isLoading={loading} />
+                {error && <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm"><p>{error}</p></div>}
+                {simulationData ? (
+                  <>
+                    <ResultsDashboard data={simulationData} />
+                    <div className="flex justify-end">
+                      <button onClick={() => handleExportSimulationCSV(simulationData)} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        Export Results (CSV)
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
+                    <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <p className="text-lg">Masukkan parameter di atas dan klik "Jalankan Simulasi" untuk melihat hasil.</p>
                   </div>
                 )}
-                {activeView === "planner" && <GoalPlanner />}
-                {activeView === "manual" && (
-                  <ManualTradeSimulator activeSymbol={activeSymbol} />
-                )}
-                {activeView === "trade_history" && <TradeHistory />}
-            </div>
-          </>
-        )}
+              </div>
+            } />
+            <Route path="planner" element={<GoalPlanner />} />
+            <Route path="manual" element={<ManualTradeSimulator activeSymbol={activeSymbol} />} />
+            <Route path="history" element={<TradeHistory />} />
+          </Route>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/subscription" element={<Subscription onSubscribe={handleSubscribe} />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
       </ManualTradeProvider>
       </div>
       {/* Footer */}

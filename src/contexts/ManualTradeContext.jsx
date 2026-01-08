@@ -1,11 +1,13 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
+import { useAuth } from './AuthContext';
 
 const ManualTradeContext = createContext();
 
 export const useManualTrade = () => useContext(ManualTradeContext);
 
-export const ManualTradeProvider = ({ children, activeSymbol, userData }) => {
+export const ManualTradeProvider = ({ children, activeSymbol }) => {
+    const { userData } = useAuth();
     const storageKey = userData ? `manual_trade_session_${userData.id}` : null;
 
     const loadState = () => {

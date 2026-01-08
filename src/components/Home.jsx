@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import VerifiedBadge from "./VerifiedBadge";
 
-const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost, setHighlightedPost, userData }) => {
+const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
+  const { userData } = useAuth();
+  const navigate = useNavigate();
+  const [postsPage, setPostsPage] = useState(0);
   const [posts, setPosts] = useState([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(false);
   const [marketPrices, setMarketPrices] = useState([]);
   const [loadingPrices, setLoadingPrices] = useState(true);
   const [news, setNews] = useState([]);
@@ -55,7 +63,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
   }, [reactionModalPostId, mentionState.active, activeMenu]);
 
   useEffect(() => {
-    fetchGlobalPosts();
+    fetchGlobalPosts(0, true); //initial load
     fetchMarketPrices();
     fetchNews();
   }, []);
@@ -108,34 +116,26 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
     };
   }, []);
 
-  const renderVerifiedBadge = (item) => {
-    if (!item) return null;
-    let badge = null;
-
-    if (item.user_role === 'admin') {
-      badge = { color: 'text-red-500', title: 'Admin' };
-    } else if (item.user_plan === 'Platinum') {
-      badge = { color: 'text-yellow-400', title: 'Platinum User' };
-    }
-
-    if (!badge) return null;
-
-    return (
-      <span title={badge.title} className={`${badge.color} ml-1`}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-          <path fillRule="evenodd" d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.491 4.491 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
-        </svg>
-      </span>
-    );
-  };
-
-  const fetchGlobalPosts = async () => {
+  const fetchGlobalPosts = async (page = 0, initialLoad = false) => {
+    if (loadingPosts && !initialLoad) return;
+    setLoadingPosts(true);
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/posts");
-      setPosts(res.data);
+      const res = await axios.get(`http://127.0.0.1:8000/api/posts?skip=${page * 10}&limit=10`);
+      if (res.data.length > 0) {
+        setPosts(prev => (page === 0 || initialLoad) ? res.data : [...prev, ...res.data]);
+        setPostsPage(page + 1);
+      }
+      if (res.data.length < 10) {
+        setHasMorePosts(false);
+      } else {
+        setHasMorePosts(true);
+      }
     } catch (error) {
       console.error("Failed to fetch posts", error);
+    } finally {
+      setLoadingPosts(false);
     }
+  };
   };
 
   const fetchMarketPrices = async () => {
@@ -649,12 +649,12 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                     <div>
                       <p className="text-sm font-bold text-white flex items-center gap-1">
                         {post.username}
-                        {renderVerifiedBadge(post)}
+                        <VerifiedBadge user={post} />
                         {community && (
                           <span className="text-gray-400 font-normal text-xs ml-1">
                             - posted in community <span 
                               className="text-blue-400 cursor-pointer hover:underline"
-                              onClick={() => { setActiveCommunity(community); setActiveView("community"); }}
+                              onClick={() => navigate(`/community/${community.id}`)}
                             >
                               {community.name}
                             </span>
@@ -764,7 +764,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                               <div className="pr-6">
                                 <div className="flex items-center">
                                   <span className="font-bold text-blue-400 mr-1">{comment.username}</span>
-                                  {renderVerifiedBadge(comment)}
+                                  <VerifiedBadge user={comment} />
                                 </div>
                                 <p className="text-gray-300">{renderWithMentions(comment.content)}</p>
                                 {comment.is_edited && (
@@ -813,6 +813,17 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
             );
           })}
         </div>
+        {hasMorePosts && (
+          <div className="text-center mt-4">
+            <button
+              onClick={() => fetchGlobalPosts(postsPage)}
+              disabled={loadingPosts}
+              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-bold text-sm disabled:opacity-50"
+            >
+              {loadingPosts ? "Loading..." : "Load More"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Mention Box */}
@@ -849,8 +860,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                   <div
                     key={comm.id}
                     onClick={() => {
-                      setActiveCommunity(comm);
-                      setActiveView("community");
+                      navigate(`/community/${comm.id}`);
                     }}
                     className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
                   >
