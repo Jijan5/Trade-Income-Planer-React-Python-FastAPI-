@@ -182,9 +182,10 @@ function App() {
       localStorage.removeItem(`manual_trade_session_${userData.id}`);
     }
     setUserData(null);
+    setActiveCommunity(null);
     // Reset to home view on logout
     setActiveView("home");
-  }, []);
+  }, [userData]);
 
   // Global Axios interceptor for handling 401 errors
   useEffect(() => {
@@ -538,7 +539,7 @@ function App() {
       <div className="w-full p-6 space-y-8 pt-24">
       <ManualTradeProvider userData={userData} activeSymbol={activeSymbol}>
         {activeView === "home" ? (
-          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />
+          <Home setActiveView={setActiveView} setActiveCommunity={setActiveCommunity} communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} userData={userData} />
           ) : activeView === "profile" ? (
           <Profile onUpdateProfile={fetchUserProfile} />
         ) : activeView === "subscription" ? (

@@ -222,12 +222,12 @@ async def chat_with_ai(request: ChatRequest):
     return {"response": response_text}
 
 @app.get("/api/price/{symbol}")
-async def get_price(symbol: str):
+def get_price(symbol: str):
     result = get_market_price(symbol)
     return result
 
 @app.get("/api/klines/{symbol}")
-async def get_klines(symbol: str, interval: str = "1d"):
+def get_klines(symbol: str, interval: str = "1d"):
     try:
         # Proxy request ke Binance untuk menghindari masalah CORS di frontend
         # Mengambil data candle harian (1d) sebanyak 150 candle terakhir
@@ -241,11 +241,12 @@ async def get_klines(symbol: str, interval: str = "1d"):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/news")
-async def get_crypto_news():
+def get_crypto_news():
     try:
         # get news from cryptocompare
         url = "https://min-api.cryptocompare.com/data/v2/news/?lang=EN"
-        response = requests.get(url)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
             return response.json()
         else:

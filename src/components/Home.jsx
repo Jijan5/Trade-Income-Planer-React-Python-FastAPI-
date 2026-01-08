@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { formatDistanceToNow } from 'date-fns';
 
-const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost, setHighlightedPost }) => {
+const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost, setHighlightedPost, userData }) => {
   const [posts, setPosts] = useState([]);
   const [marketPrices, setMarketPrices] = useState([]);
+  const [loadingPrices, setLoadingPrices] = useState(true);
   const [news, setNews] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
+  const currentUser = userData?.username;
+  const [joinedCommunityIds, setJoinedCommunityIds] = useState([]);
 
   // Post State
   const [newPostContent, setNewPostContent] = useState("");
@@ -53,17 +55,34 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
   }, [reactionModalPostId, mentionState.active, activeMenu]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setCurrentUser(payload.sub);
-      } catch (error) {}
-    }
     fetchGlobalPosts();
     fetchMarketPrices();
     fetchNews();
   }, []);
+
+  useEffect(() => {
+    const fetchJoinedCommunities = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setJoinedCommunityIds([]);
+        return;
+      }
+      try {
+        const res = await axios.get("http://127.0.0.1:8000/api/users/me/joined_communities", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setJoinedCommunityIds(res.data);
+      } catch (error) {
+        console.error("Failed to fetch joined communities", error);
+      }
+    };
+
+    if (userData) {
+      fetchJoinedCommunities();
+    } else {
+      setJoinedCommunityIds([]);
+    }
+  }, [userData]);
 
   // Carousel Auto-scroll
   useEffect(() => {
@@ -120,6 +139,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
   };
 
   const fetchMarketPrices = async () => {
+  setLoadingPrices(true);
     const symbols = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD", "PEPE24478-USD"];
     const prices = [];
     for (const sym of symbols) {
@@ -131,6 +151,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
       } catch (e) {}
     }
     setMarketPrices(prices);
+    setLoadingPrices(false);
   };
 
   const fetchNews = async () => {
@@ -479,6 +500,8 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
     </form>
   );
 
+  const myCommunities = communities.filter(c => joinedCommunityIds.includes(c.id));
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
       {/* LEFT SIDEBAR (Widgets) */}
@@ -489,7 +512,9 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
           <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
             Market Watch
           </h3>
-          {marketPrices.length > 0 ? (
+          {loadingPrices ? (
+            <p className="text-xs text-gray-500 text-center mt-4">Loading...</p>
+          ) : marketPrices.length > 0 ? (
             <div className="absolute inset-0 flex items-center justify-center pt-6">
               <div className="text-center animate-fade-in key={currentPriceIndex}">
                 <p className="text-2xl font-bold text-white">
@@ -503,7 +528,7 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
               </div>
             </div>
           ) : (
-            <p className="text-xs text-gray-500 text-center mt-4">Loading...</p>
+            <p className="text-xs text-gray-500 text-center mt-4">Unavailable</p>
           )}
         </div>
 
@@ -626,8 +651,8 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
                         {post.username}
                         {renderVerifiedBadge(post)}
                         {community && (
-                          <span className="text-gray-400 font-normal text-xs">
-                            posted at <span 
+                          <span className="text-gray-400 font-normal text-xs ml-1">
+                            - posted in community <span 
                               className="text-blue-400 cursor-pointer hover:underline"
                               onClick={() => { setActiveCommunity(community); setActiveView("community"); }}
                             >
@@ -810,41 +835,43 @@ const Home = ({ setActiveView, setActiveCommunity, communities, highlightedPost,
       )}
 
       {/* RIGHT SIDEBAR (Communities) */}
-      <div className="hidden lg:block lg:col-span-1">
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg sticky top-24">
-          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <span className="text-blue-500">👥</span> Your Communities
-          </h3>
-          <div className="space-y-3">
-            {communities.length === 0 ? (
-              <p className="text-xs text-gray-500">No communities yet.</p>
-            ) : (
-              communities.map((comm) => (
-                <div
-                  key={comm.id}
-                  onClick={() => {
-                    setActiveCommunity(comm);
-                    setActiveView("community");
-                  }}
-                  className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
-                >
-                  <div>
-                    <p className="text-sm font-bold text-gray-300 group-hover:text-white">
-                      {comm.name}
-                    </p>
-                    <p className="text-[10px] text-gray-500">
-                      {comm.members_count} Members
-                    </p>
+      {userData && (
+        <div className="hidden lg:block lg:col-span-1">
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg sticky top-24">
+            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <span className="text-blue-500">👥</span> Your Communities
+            </h3>
+            <div className="space-y-3">
+            {myCommunities.length === 0 ? (
+                <p className="text-xs text-gray-500">You haven't joined any communities yet.</p>
+              ) : (
+                myCommunities.map((comm) => (
+                  <div
+                    key={comm.id}
+                    onClick={() => {
+                      setActiveCommunity(comm);
+                      setActiveView("community");
+                    }}
+                    className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-gray-300 group-hover:text-white">
+                        {comm.name}
+                      </p>
+                      <p className="text-[10px] text-gray-500">
+                        {comm.members_count} Members
+                      </p>
+                    </div>
+                    <span className="text-gray-500 group-hover:text-blue-400">
+                      →
+                    </span>
                   </div>
-                  <span className="text-gray-500 group-hover:text-blue-400">
-                    →
-                  </span>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
