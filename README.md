@@ -1,5 +1,5 @@
 # Trade Income Planner (TIP) 📈
-
+![brand-name](https://github.com/user-attachments/assets/d0384d4c-22af-46a1-96dd-65b6589d5caf)
 **Trade Income Planner** is a comprehensive platform designed to help traders simulate equity growth, plan financial goals, practice trading (paper trading), and interact within a community. The application features an **AI Trading Coach** for performance analysis and an **Admin Panel** for system management.
 
 ## 🚀 Key Features
