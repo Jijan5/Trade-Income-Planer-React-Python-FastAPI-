@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 
 const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
   const [isLogin, setIsLogin] = useState(initialIsLogin);
@@ -22,13 +22,13 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
         formData.append("username", username);
         formData.append("password", password);
 
-        response = await axios.post(
-          "http://127.0.0.1:8000/api/token",
+        response = await api.post(
+          "/token",
           formData
         );
       } else {
         // Register Request (JSON format)
-        response = await axios.post("http://127.0.0.1:8000/api/register", {
+        response = await api.post("/register", {
           username,
           email,
           password,

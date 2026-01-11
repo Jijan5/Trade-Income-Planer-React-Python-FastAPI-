@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 
 const Explore = () => {
   const [news, setNews] = useState([]);
@@ -7,19 +7,28 @@ const Explore = () => {
   const [error, setError] = useState(null);
   const tickerContainer = useRef();
 
+  // Track mounted state
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
   // --- 1. Fetch News Logic ---
   const fetchNews = async () => {
     try {
       // Panggil endpoint proxy backend kita
-      const response = await axios.get("http://127.0.0.1:8000/api/news");
-      if (response.data && response.data.Data) {
+      const response = await api.get("/news");
+      if (isMounted.current && response.data && response.data.Data) {
         setNews(response.data.Data);
       }
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     } catch (err) {
-      console.error("News Fetch Error:", err);
-      setError("Gagal memuat berita pasar.");
-      setLoading(false);
+      if (isMounted.current) {
+        console.error("News Fetch Error:", err);
+        setError("Gagal memuat berita pasar.");
+        setLoading(false);
+      }
     }
   };
 

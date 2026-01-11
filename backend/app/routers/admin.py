@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from ..database import get_session
@@ -9,6 +10,65 @@ router = APIRouter()
 @router.get("/api/admin/users", response_model=list[UserRead])
 async def get_all_users(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     return session.exec(select(User)).all()
+
+@router.get("/api/admin/stats")
+async def get_dashboard_stats(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    users = session.exec(select(User)).all()
+    
+    total_users = len(users)
+    active_subs = len([u for u in users if u.plan != "Free"])
+    
+    # Calculate MRR (Monthly Recurring Revenue) based on active plans
+    plan_prices = {"Basic": 12, "Premium": 19, "Platinum": 28, "Free": 0}
+    mrr = sum(plan_prices.get(u.plan, 0) for u in users)
+    
+    # Subscription Distribution
+    dist_map = {"Basic": 0, "Premium": 0, "Platinum": 0}
+    for u in users:
+        if u.plan in dist_map:
+            dist_map[u.plan] += 1
+            
+    subs_distribution = [
+        {"name": k, "value": v} for k, v in dist_map.items() if v > 0
+    ]
+    
+    # User Growth (Simple grouping by month based on created_at)
+    # Note: Assuming User model has created_at, otherwise fallback to now
+    growth_map = {}
+    for u in users:
+        # Use created_at if available, else fallback
+        joined_date = getattr(u, "created_at", datetime.now())
+        if isinstance(joined_date, str):
+            try:
+                joined_date = datetime.fromisoformat(joined_date)
+            except:
+                joined_date = datetime.now()
+        
+        month_key = joined_date.strftime("%b") # e.g., "Jan", "Feb"
+        growth_map[month_key] = growth_map.get(month_key, 0) + 1
+        
+    user_growth = [{"name": k, "users": v} for k, v in growth_map.items()]
+
+    return {
+        "totalUsers": total_users,
+        "activeSubs": active_subs,
+        "mrr": mrr,
+        "userGrowth": user_growth,
+        "subsDistribution": subs_distribution
+    }
+
+@router.get("/api/admin/subscriptions")
+async def get_admin_subscriptions(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    # Generate subscription list from users with paid plans
+    # In a real app with payment gateway, this would query a 'Transaction' table
+    users = session.exec(select(User).where(User.plan != "Free")).all()
+    plan_prices = {"Basic": 12, "Premium": 19, "Platinum": 28}
+    
+    return [{
+        "id": f"SUB-{u.id}", "user": u.username, "plan": u.plan, 
+        "amount": plan_prices.get(u.plan, 0), "status": "paid", 
+        "date": getattr(u, "created_at", datetime.now()), "billing": "Monthly"
+    } for u in users]
 
 @router.get("/api/admin/feedbacks", response_model=list[Feedback])
 async def get_all_feedbacks(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):

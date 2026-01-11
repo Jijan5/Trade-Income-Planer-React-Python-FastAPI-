@@ -234,25 +234,25 @@ def get_market_price(symbol):
     return {"status": "error", "price": 0}
 
 def analyze_trade_health(request):
-  trades = request.trades
-  if not trades:
-      return HealthAnalysisResponse(
-          overall_score=0, risk_score=0, emotional_score=0, system_score=0,
-          summary="Not enough data.", warnings=[], recommended_risk=1.0,
-          recommendation_reason="Start trading to get analysis.",
-          trading_identity="Newcomer", identity_insight="The journey begins."
-      )
-  # 1. Calculate Basic Metrics
-  total_trades = len(trades)
-  wins = [t for t in trades if t.is_win]
-  losses = [t for t in trades if not t.is_win]
-  win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
-  
-  # 2. Risk Analysis
-  # Check if any single loss > 3% of balance (Aggressive/Reckless) // uncomment if use this
-  # high_risk_trades = [t for t in losses if abs(float(t.pnl)) > float(t.balance) * 0.03] // uncomment if use this
-  
-  # Calculate risk percentage for each trade based on intended risk (SL distance)
+    trades = request.trades
+    if not trades:
+        return HealthAnalysisResponse(
+            overall_score=0, risk_score=0, emotional_score=0, system_score=0,
+            summary="Not enough data.", warnings=[], recommended_risk=1.0,
+            recommendation_reason="Start trading to get analysis.",
+            trading_identity="Newcomer", identity_insight="The journey begins."
+        )
+    # 1. Calculate Basic Metrics
+    total_trades = len(trades)
+    wins = [t for t in trades if t.is_win]
+    losses = [t for t in trades if not t.is_win]
+    win_rate = (len(wins) / total_trades) * 100 if total_trades > 0 else 0
+    
+    # 2. Risk Analysis
+    # Check if any single loss > 3% of balance (Aggressive/Reckless) // uncomment if use this
+    # high_risk_trades = [t for t in losses if abs(float(t.pnl)) > float(t.balance) * 0.03] // uncomment if use this
+    
+    # Calculate risk percentage for each trade based on intended risk (SL distance)
     risk_percents = []
     for t in trades:
         bal = float(t.balance)
@@ -261,108 +261,107 @@ def analyze_trade_health(request):
             risk_percents.append((risk / bal) * 100)
         else:
             risk_percents.append(0)
-  
-  # Check consistency of risk amount (Standard Deviation)
-  risk_amounts = [float(t.risk_amount) for t in trades]
-  avg_risk = sum(risk_amounts) / len(risk_amounts) if risk_amounts else 0
-  risk_variance = sum((r - avg_risk) ** 2 for r in risk_amounts) / len(risk_amounts) if risk_amounts else 0
-  risk_std_dev = math.sqrt(risk_variance)
-  
-  risk_score = 100
-  # if high_risk_trades: risk_score -= 30 // uncomment if use this
-  # if avg_risk > 0 and risk_std_dev > avg_risk * 0.5: risk_score -= 20 // uncomment if use this
-  
-  # Penalize for high risk bets (> 3% of balance) - Gambler behavior
+    
+    # Check consistency of risk amount (Standard Deviation)
+    risk_amounts = [float(t.risk_amount) for t in trades]
+    avg_risk = sum(risk_amounts) / len(risk_amounts) if risk_amounts else 0
+    risk_variance = sum((r - avg_risk) ** 2 for r in risk_amounts) / len(risk_amounts) if risk_amounts else 0
+    risk_std_dev = math.sqrt(risk_variance)
+    
+    risk_score = 100
+    # if high_risk_trades: risk_score -= 30 // uncomment if use this
+    # if avg_risk > 0 and risk_std_dev > avg_risk * 0.5: risk_score -= 20 // uncomment if use this
+    
+    # Penalize for high risk bets (> 3% of balance) - Gambler behavior
     if any(rp > 3.0 for rp in risk_percents): 
         risk_score -= 30 
     
     # Penalize for generally high average risk (> 2%) - Aggressive behavior
     avg_risk_pct = sum(risk_percents) / len(risk_percents) if risk_percents else 0
     if avg_risk_pct > 2.0:
-        risk_score -= 20
-
+        risk_score -= 20    
     # Penalize for inconsistent sizing (Standard Deviation > 50% of Average)
     if avg_risk > 0 and risk_std_dev > avg_risk * 0.5: 
         risk_score -= 20
-  
-  risk_score = max(0, min(100, risk_score))
-  # 3. Emotional Analysis (Revenge Trading & Tilt)
-  emotional_score = 100
-  consecutive_losses = 0
-  max_consecutive_losses = 0
-  revenge_trading_detected = False
-  
-  for i in range(len(trades)):
-      if not trades[i].is_win:
-          consecutive_losses += 1
-          # Check if next trade risk increased significantly (> 20%) after a loss
-          if i + 1 < len(trades):
-              if float(trades[i+1].risk_amount) > float(trades[i].risk_amount) * 1.2:
-                  revenge_trading_detected = True
-      else:
-          consecutive_losses = 0
-      max_consecutive_losses = max(max_consecutive_losses, consecutive_losses)
-  if max_consecutive_losses >= 3: emotional_score -= 20
-  if max_consecutive_losses >= 5: emotional_score -= 20
-  if revenge_trading_detected: emotional_score -= 40
-  emotional_score = max(0, min(100, emotional_score))
-  # 4. System Analysis (Performance)
-  system_score = 100
-  gross_profit = sum(float(t.pnl) for t in wins)
-  gross_loss = abs(sum(float(t.pnl) for t in losses))
-  profit_factor = gross_profit / gross_loss if gross_loss > 0 else (10 if gross_profit > 0 else 0)
-  
-  if win_rate < 30: system_score -= 30
-  elif win_rate < 40: system_score -= 10
-  
-  if profit_factor < 1.0: system_score -= 40
-  elif profit_factor < 1.5: system_score -= 10
-  
-  system_score = max(0, min(100, system_score))
-  # 5. Overall & Identity Logic
-  overall_score = int((risk_score + emotional_score + system_score) / 3)
-  
-  # CRITICAL FIX: Cap score if unprofitable (Profit Factor < 1)
-  # This ensures a losing trader never gets a "Good" score
-  if profit_factor < 1.0:
-      overall_score = min(overall_score, 45)
-  identity = "Disciplined Trader"
-  insight = "You are following a consistent plan."
-  rec_risk = 1.0
-  rec_reason = "Maintain current sizing."
-  
-  if revenge_trading_detected:
-      identity = "Revenge Trader"
-      insight = "Increasing size after losses is dangerous."
-      rec_risk = 0.5
-      rec_reason = "Reduce size to regain control."
-  elif max_consecutive_losses >= 3 and emotional_score < 60:
-      identity = "Tilting Trader"
-      insight = "Consecutive losses are affecting you."
-      rec_risk = 0.5
-      rec_reason = "Take a break."
-  elif risk_score < 60:
-      identity = "Gunslinger"
-      insight = "Risk sizing is too erratic or high."
-      rec_risk = 1.0
-      rec_reason = "Standardize risk."
-  elif system_score < 50:
-      identity = "Strategist in Training"
-      insight = "Strategy is not yet profitable."
-      rec_risk = 0.5
-      rec_reason = "Focus on setup quality."
-  elif total_trades < 5:
-      identity = "Novice Trader"
-      insight = "Building data history."
-  return HealthAnalysisResponse(
-      overall_score=overall_score,
-      risk_score=int(risk_score),
-      emotional_score=int(emotional_score),
-      system_score=int(system_score),
-      summary=f"Win Rate: {win_rate:.1f}%, PF: {profit_factor:.2f}. {insight}",
-      warnings=["Stop trading if tilted."] if emotional_score < 50 else [],
-      recommended_risk=rec_risk,
-      recommendation_reason=rec_reason,
-      trading_identity=identity,
-      identity_insight=insight
-  )
+    
+    risk_score = max(0, min(100, risk_score))
+    # 3. Emotional Analysis (Revenge Trading & Tilt)
+    emotional_score = 100
+    consecutive_losses = 0
+    max_consecutive_losses = 0
+    revenge_trading_detected = False
+    
+    for i in range(len(trades)):
+        if not trades[i].is_win:
+            consecutive_losses += 1
+            # Check if next trade risk increased significantly (> 20%) after a loss
+            if i + 1 < len(trades):
+                if float(trades[i+1].risk_amount) > float(trades[i].risk_amount) * 1.2:
+                    revenge_trading_detected = True
+        else:
+            consecutive_losses = 0
+        max_consecutive_losses = max(max_consecutive_losses, consecutive_losses)
+    if max_consecutive_losses >= 3: emotional_score -= 20
+    if max_consecutive_losses >= 5: emotional_score -= 20
+    if revenge_trading_detected: emotional_score -= 40
+    emotional_score = max(0, min(100, emotional_score))
+    # 4. System Analysis (Performance)
+    system_score = 100
+    gross_profit = sum(float(t.pnl) for t in wins)
+    gross_loss = abs(sum(float(t.pnl) for t in losses))
+    profit_factor = gross_profit / gross_loss if gross_loss > 0 else (10 if gross_profit > 0 else 0)
+    
+    if win_rate < 30: system_score -= 30
+    elif win_rate < 40: system_score -= 10
+    
+    if profit_factor < 1.0: system_score -= 40
+    elif profit_factor < 1.5: system_score -= 10
+    
+    system_score = max(0, min(100, system_score))
+    # 5. Overall & Identity Logic
+    overall_score = int((risk_score + emotional_score + system_score) / 3)
+    
+    # CRITICAL FIX: Cap score if unprofitable (Profit Factor < 1)
+    # This ensures a losing trader never gets a "Good" score
+    if profit_factor < 1.0:
+        overall_score = min(overall_score, 45)
+    identity = "Disciplined Trader"
+    insight = "You are following a consistent plan."
+    rec_risk = 1.0
+    rec_reason = "Maintain current sizing."
+    
+    if revenge_trading_detected:
+        identity = "Revenge Trader"
+        insight = "Increasing size after losses is dangerous."
+        rec_risk = 0.5
+        rec_reason = "Reduce size to regain control."
+    elif max_consecutive_losses >= 3 and emotional_score < 60:
+        identity = "Tilting Trader"
+        insight = "Consecutive losses are affecting you."
+        rec_risk = 0.5
+        rec_reason = "Take a break."
+    elif risk_score < 60:
+        identity = "Gunslinger"
+        insight = "Risk sizing is too erratic or high."
+        rec_risk = 1.0
+        rec_reason = "Standardize risk."
+    elif system_score < 50:
+        identity = "Strategist in Training"
+        insight = "Strategy is not yet profitable."
+        rec_risk = 0.5
+        rec_reason = "Focus on setup quality."
+    elif total_trades < 5:
+        identity = "Novice Trader"
+        insight = "Building data history."
+    return HealthAnalysisResponse(
+        overall_score=overall_score,
+        risk_score=int(risk_score),
+        emotional_score=int(emotional_score),
+        system_score=int(system_score),
+        summary=f"Win Rate: {win_rate:.1f}%, PF: {profit_factor:.2f}. {insight}",
+        warnings=["Stop trading if tilted."] if emotional_score < 50 else [],
+        recommended_risk=rec_risk,
+        recommendation_reason=rec_reason,
+        trading_identity=identity,
+        identity_insight=insight
+    )

@@ -17,6 +17,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     user = session.exec(select(User).where(User.username == username)).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    # OPTIMIZATION: Block access if user is suspended
+    if getattr(user, "status", "active") == "suspended":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account suspended. Contact support.")
     return user
 
 async def get_current_admin_user(current_user: User = Depends(get_current_user)):

@@ -170,6 +170,23 @@ class PostCreate(BaseModel):
     image_url: Optional[str] = None
     link_url: Optional[str] = None
 
+class PostResponse(BaseModel):
+    id: int
+    community_id: Optional[int] = None
+    username: str
+    content: str
+    image_url: Optional[str] = None
+    link_url: Optional[str] = None
+    created_at: datetime
+    likes: int
+    comments_count: int
+    shares_count: int
+    is_edited: bool
+    user_role: str
+    user_plan: str
+    user_avatar_url: Optional[str] = None
+    user_reaction: Optional[str] = None
+
 class Comment(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
     post_id: int = SQLField(foreign_key="post.id")
@@ -182,6 +199,18 @@ class Comment(SQLModel, table=True):
 class CommentCreate(BaseModel):
     content: str
     parent_id: Optional[int] = None
+
+class CommentResponse(BaseModel):
+    id: int
+    post_id: int
+    parent_id: Optional[int] = None
+    username: str
+    content: str
+    created_at: datetime
+    is_edited: bool
+    user_role: str
+    user_plan: str
+    user_avatar_url: Optional[str] = None
 
 class Reaction(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)

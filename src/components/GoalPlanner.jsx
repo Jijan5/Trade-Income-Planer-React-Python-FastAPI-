@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 
 const GoalPlanner = () => {
   const [params, setParams] = useState({
@@ -22,7 +22,7 @@ const GoalPlanner = () => {
     setError(null);
     setResult(null);
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/plan", params);
+      const response = await api.post("/plan", params);
       setResult(response.data);
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to calculate plan.");

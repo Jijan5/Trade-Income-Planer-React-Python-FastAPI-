@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/axios'; // Import instance axios
 
@@ -10,16 +10,23 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem("token"));
     const [userData, setUserData] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     const fetchUserProfile = useCallback(async () => {
-        if (!token) return;
+        if (!token) {
+            setLoading(false);
+            return;
+        }
         try {
             // don't need URL manual header
             const res = await api.get("/users/me");
             setUserData(res.data);
         } catch (error) {
             console.error("Failed to fetch user profile", error);
+            setUserData(null);
+        } finally {
+            setLoading(false);
         }
     }, [token]);
 
@@ -43,12 +50,15 @@ export const AuthProvider = ({ children }) => {
         } else {
             setUserData(null);
             setUnreadCount(0);
+            setLoading(false);
         }
     }, [token, fetchUserProfile, fetchUnreadCount]);
 
     const login = (newToken) => {
         localStorage.setItem("token", newToken);
         setToken(newToken);
+        setLoading(true);
+        fetchUserProfile();
     };
 
     const logout = useCallback(() => {
@@ -80,9 +90,10 @@ export const AuthProvider = ({ children }) => {
         };
     }, [logout]);
 
-    const value = {
+    const value = useMemo(() => ({
         token,
         userData,
+        loading,
         setUserData,
         unreadCount,
         setUnreadCount,
@@ -90,7 +101,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         fetchUserProfile,
         fetchUnreadCount
-    };
+    }), [token, userData, loading, unreadCount, login, logout, fetchUserProfile, fetchUnreadCount]);
 
     return (
         <AuthContext.Provider value={value}>

@@ -1,9 +1,206 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import api from "../lib/axios";
 import { formatDistanceToNow } from 'date-fns';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+// Memoized Single Post Item for Community
+const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu, activeMenu, menuRef, startEditPost, handleDeletePost, handleReportPost, editingItem, setEditingItem, handleUpdatePost, handlePressStart, handlePressEnd, handleReaction, reactionModalPostId, getReactionEmoji, reactions, toggleComments, handleShare, isExpanded, comments, buildCommentTree, renderWithMentions, handleUpdateComment, handleDeleteComment, startEditComment, setReplyingTo, replyingTo, setReplyContent, replyContent, handleMentionableInputChange, submitComment, commentText, setNewCommentText, setPreviewImage }) => {
+  // Local state for UI toggles specific to this post
+  const [visibleLimit, setVisibleLimit] = useState(3);
+  const [expandedReplies, setExpandedReplies] = useState({});
+
+  // Reset visible limit when comments are collapsed
+  useEffect(() => { if (!isExpanded) setVisibleLimit(3); }, [isExpanded]);
+
+  return (
+    <div key={post.id} id={`post-${post.id}`} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            {/* Post Header & Menu */}
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-3">
+                {post.user_avatar_url ? (
+                  <img src={`${API_BASE_URL}${post.user_avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                    {post.username.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-bold text-white flex items-center">
+                    {post.username}
+                    <VerifiedBadge user={post} />
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    {(() => {
+                      try { return formatDistanceToNow(new Date(post.created_at), { addSuffix: true }); } catch (e) { return ""; }
+                    })()}
+                    {post.is_edited && <span className="ml-1 italic opacity-75">(edited)</span>}
+                  </p>
+                </div>
+              </div>
+              {/* Post Menu */}
+              {(currentUser === post.username || userData?.role === 'admin') && (
+                <div className="relative">
+                  <button onClick={() => toggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                    </svg>
+                  </button>
+                  {activeMenu?.type === "post" && activeMenu?.id === post.id && (
+                    <div ref={menuRef} className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
+                      {currentUser === post.username && (
+                        <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
+                      )}
+                      <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Post Content */}
+            {editingItem?.type === "post" && editingItem?.id === post.id ? (
+              <div className="space-y-2">
+                <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none" rows={3} />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-3 py-1">Cancel</button>
+                  <button onClick={handleUpdatePost} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Save</button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{renderWithMentions(post.content)}</p>
+            )}
+            {post.image_url && (
+              <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
+                <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)} />
+              </div>
+            )}
+            {post.link_url && (
+              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-3 p-3 bg-gray-900/50 border border-gray-700 rounded text-blue-400 text-sm hover:underline truncate">🔗 {post.link_url}</a>
+            )}
+            {/* Actions */}
+            <div className="flex items-center gap-6 mt-4 pt-4">
+              <div className="relative group">
+              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={() => handlePressEnd(post)} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={() => handlePressEnd(post)} className={`flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
+                  {post.user_reaction ? <span className="text-xl">{getReactionEmoji(post.user_reaction)}</span> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6" /></svg>}
+                  <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
+                </button>
+                {reactionModalPostId === post.id && (
+                  <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+                    {reactions.map((r) => (
+                      <button key={r.type} onClick={() => handleReaction(post.id, r.type, post.user_reaction)} className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => toggleComments(post.id)} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                <span className="text-sm font-bold">{post.comments_count > 0 ? post.comments_count : ""}</span>
+              </button>
+              <button onClick={() => handleShare(post.id)} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.287.696.287 1.093 0 .397-.107.769-.287 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                <span className="text-sm font-bold">{post.shares_count > 0 ? post.shares_count : ""}</span>
+              </button>
+            </div>
+            {/* Comments Section */}
+            {isExpanded && (
+              <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
+                {(() => {
+                  const commentTree = buildCommentTree(comments || []);
+                  const visibleComments = commentTree.slice(0, visibleLimit); // Use local state
+                  const renderComment = (comment) => {
+                    const hasReplies = comment.children && comment.children.length > 0;
+                    const isRepliesExpanded = expandedReplies[comment.id];
+                    return (
+                      <div key={comment.id} className="mt-3" style={{ borderLeft: comment.parent_id ? "2px solid #374151" : "none", paddingLeft: comment.parent_id ? "1rem" : "0" }}>
+                        <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
+                          {editingItem?.type === "comment" && editingItem?.id === comment.id ? (
+                            <div className="space-y-2">
+                              <input type="text" value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none" />
+                              <div className="flex justify-end gap-2">
+                                <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-2 py-0.5">Cancel</button>
+                                <button onClick={handleUpdateComment} className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500">Save</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="pr-6">
+                              <div className="flex items-center"><span className="font-bold text-blue-400 mr-1">{comment.username}</span><VerifiedBadge user={comment} /></div>
+                              <p className="text-gray-300">{renderWithMentions(comment.content)}</p>
+                              {comment.is_edited && <span className="ml-2 text-[10px] text-gray-500 italic">(edited)</span>}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-400">
+                            <span>{(() => { try { return formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }); } catch (e) { return ""; } })()}</span>
+                            <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="hover:text-white font-bold">Reply</button>
+                            {(currentUser === comment.username || userData?.role === 'admin') && (
+                              <div className="relative">
+                                <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
+                                {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
+                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20">
+                                    {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700">Edit</button>}
+                                    <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700">Delete</button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {replyingTo?.commentId === comment.id && (
+                          <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-2 ml-8 flex gap-2">
+                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => { setReplyContent(e.target.value); handleMentionableInputChange(e); }} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none" autoFocus />
+                            <button type="submit" className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500">Reply</button>
+                            <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-gray-400 hover:text-white">Cancel</button>
+                          </form>
+                        )}
+                        {hasReplies && !isRepliesExpanded && (
+                          <button onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))} className="text-[11px] text-gray-400 hover:text-blue-400 font-bold mt-2 flex items-center gap-1 ml-2"><span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}</button>
+                        )}
+                        {hasReplies && isRepliesExpanded && <div className="mt-3">{comment.children.map(renderComment)}</div>}
+                      </div>
+                    )
+                  };
+                  return (
+                    <>
+                      {visibleComments.length > 0 ? visibleComments.map(renderComment) : <p className="text-xs text-gray-500 italic">No comments yet.</p>}
+                      {commentTree.length > visibleLimit && <button onClick={() => setVisibleLimit(prev => prev + 10)} className="text-xs text-gray-400 hover:text-white font-bold mt-4 w-full text-left pl-1">View more comments ({commentTree.length - visibleLimit})</button>}
+                    </>
+                  )
+                })()}
+                <div className="flex gap-2 mt-3">
+                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => { setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value })); handleMentionableInputChange(e); }} className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
+                <button onClick={() => submitComment(post.id, commentText)} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold">Send</button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      });
+      
+      // Memoized Post Feed for Community
+      const CommunityPostFeed = React.memo(({ posts, expandedComments, commentsData, newCommentText, ...actions }) => {
+        return (
+          <div className="space-y-4">
+            {posts.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">
+                No posts yet. Be the first to share!
+              </div>
+            ) : (
+              posts.map((post) => (
+                  <CommunityPostItem 
+                      key={post.id} 
+                      post={post}
+                      isExpanded={!!expandedComments[post.id]}
+                      comments={commentsData[post.id]}
+                      commentText={newCommentText[post.id]}
+                      {...actions} 
+                  />
+              ))
+      )}
+    </div>
+  );
+});
 
 const Community = ({
   communities: propCommunities, // Receive communities from Ap
@@ -85,7 +282,7 @@ const Community = ({
   // Fetch Communities
   const fetchCommunities = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/communities");
+      const response = await api.get("/communities");
       setCommunities(response.data);
     } catch (error) {
       console.error("Failed to fetch communities", error);
@@ -98,12 +295,7 @@ const Community = ({
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get(
-        "http://127.0.0.1:8000/api/users/me/joined_communities",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await api.get("/users/me/joined_communities");
       setJoinedCommunityIds(res.data);
     } catch (e) {
       console.error("Failed to fetch joined communities", e);
@@ -140,6 +332,21 @@ const Community = ({
     }
   }, [activeCommunity]);
 
+  // Scroll to highlighted post
+  useEffect(() => {
+    if (highlightedPost && posts.length > 0) {
+      const element = document.getElementById(`post-${highlightedPost.postId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        element.classList.add("ring-2", "ring-blue-500", "transition-all", "duration-500");
+        setTimeout(() => {
+          element.classList.remove("ring-2", "ring-blue-500");
+          setHighlightedPost(null);
+        }, 2000);
+      }
+    }
+  }, [highlightedPost, posts, setHighlightedPost]);
+
   // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -168,9 +375,8 @@ const Community = ({
 
   const fetchPosts = async (communityId) => {
     try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/communities/${communityId}/posts`
-      );
+      const response = await api.get(`/communities/${communityId}/posts`);
+
       setPosts(response.data);
     } catch (error) {
       console.error("Failed to fetch posts", error);
@@ -197,11 +403,8 @@ const Community = ({
     if (commBgImage && newComm.bgType === "image")
       formData.append("bg_image_file", commBgImage);
     try {
-      await axios.post("http://127.0.0.1:8000/api/communities", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      await api.post("/communities", formData, {
+        headers: { "Content-Type": undefined },
       });
       setShowModal(false);
       // Reset form
@@ -222,7 +425,8 @@ const Community = ({
       setCommBgImage(null);
       setPreviewCommAvatar(null);
       setPreviewCommBg(null);
-      window.location.reload(); // Simple reload to refresh list in App and here
+      fetchCommunities(); // Refresh list without reload
+      fetchJoinedCommunities();
     } catch (error) {
       // Reset form
       setNewComm({
@@ -252,13 +456,7 @@ const Community = ({
     if (!token) return alert("Please login to join.");
 
     try {
-      await axios.post(
-        `http://127.0.0.1:8000/api/communities/${comm.id}/join`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.post(`/communities/${comm.id}/join`);
       setJoinedCommunityIds([...joinedCommunityIds, comm.id]);
       setCommunities(
         communities.map((c) =>
@@ -284,13 +482,7 @@ const Community = ({
     if (!communityToExit) return;
     const token = localStorage.getItem("token");
     try {
-      await axios.post(
-        `http://127.0.0.1:8000/api/communities/${communityToExit.id}/leave`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.post(`/communities/${communityToExit.id}/leave`);
       setJoinedCommunityIds(
         joinedCommunityIds.filter((id) => id !== communityToExit.id)
       );
@@ -315,9 +507,7 @@ const Community = ({
     
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/communities/${communityId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      await api.delete(`/communities/${communityId}`);
         setCommunities(communities.filter(c => c.id !== communityId));
         alert("Community deleted successfully.");
     } catch (error) {
@@ -359,16 +549,9 @@ const Community = ({
     }
 
     try {
-      await axios.post(
-        `http://127.0.0.1:8000/api/communities/${activeCommunity.id}/posts`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await api.post(`/communities/${activeCommunity.id}/posts`, formData, {
+        headers: { "Content-Type": undefined },
+      });
       setNewPostContent("");
       setPostImage({ file: null, preview: "" });
       setNewPostLink("");
@@ -388,13 +571,13 @@ const Community = ({
 
   // --- INTERACTION HANDLERS ---
 
-  const handleReaction = async (postId, type) => {
+  const handleReaction = useCallback(async (postId, type, currentReaction) => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Please login to react.");
 
     // Optimistic UI Update
-    setPosts(
-      posts.map((p) => {
+    setPosts(prevPosts =>
+      prevPosts.map((p) => {
         if (p.id === postId) {
           const isSame = p.user_reaction === type;
           const isNew = !p.user_reaction;
@@ -419,11 +602,11 @@ const Community = ({
     );
 
     try {
-      await axios.post(
-        `http://127.0.0.1:8000/api/posts/${postId}/react`,
-        { type },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (currentReaction === type) {
+        await api.delete(`/posts/${postId}/react`);
+      } else {
+        await api.post(`/posts/${postId}/react`, { type });
+      }
     } catch (error) {
       console.error("Reaction failed", error);
       if (error.response && error.response.status === 401) {
@@ -432,37 +615,30 @@ const Community = ({
       fetchPosts(activeCommunity.id); // Revert on error
     }
     setReactionModalPostId(null); // Close modal after reaction
-  };
+  }, [activeCommunity]);
 
-  const toggleComments = async (postId) => {
+  const toggleComments = useCallback(async (postId) => {
     const isExpanded = !!expandedComments[postId];
     setExpandedComments({ ...expandedComments, [postId]: !isExpanded });
 
     if (!isExpanded && !commentsData[postId]) {
       // Fetch comments if opening and not loaded yet
       try {
-        const res = await axios.get(
-          `http://127.0.0.1:8000/api/posts/${postId}/comments`
-        );
+        const res = await api.get(`/posts/${postId}/comments`);
         setCommentsData({ ...commentsData, [postId]: res.data });
       } catch (error) {
         console.error("Fetch comments failed", error);
       }
     }
-  };
+  }, [expandedComments, commentsData]);
 
-  const submitComment = async (postId, content, parentId = null) => {
+  const submitComment = useCallback(async (postId, content, parentId = null) => {
     const token = localStorage.getItem("token");
     if (!content || !content.trim()) return;
     if (!token) return alert("Please login to comment.");
 
     try {
-      const res = await axios.post(
-        `http://127.0.0.1:8000/api/posts/${postId}/comments`,
-        { content, parent_id: parentId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const res = await api.post(`/posts/${postId}/comments`, { content, parent_id: parentId });
       // Update local state
       const currentComments = commentsData[postId] || [];
       setCommentsData({
@@ -477,21 +653,21 @@ const Community = ({
       }
 
       // Update comment count on post
-      setPosts(
-        posts.map((p) =>
+      setPosts(prevPosts =>
+        prevPosts.map((p) =>
           p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
         )
       );
     } catch (error) {
       console.error("Comment failed", error);
     }
-  };
+  }, [commentsData, newCommentText]);
 
-  const handleShare = async (postId) => {
+  const handleShare = useCallback(async (postId) => {
     try {
-      await axios.post(`http://127.0.0.1:8000/api/posts/${postId}/share`);
-      setPosts(
-        posts.map((p) =>
+      await api.post(`/posts/${postId}/share`);
+      setPosts(prevPosts =>
+        prevPosts.map((p) =>
           p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p
         )
       );
@@ -499,25 +675,22 @@ const Community = ({
     } catch (error) {
       console.error("Share failed", error);
     }
-  };
+  }, []);
 
-  const handlePressStart = (postId) => {
+  const handlePressStart = useCallback((postId) => {
     isLongPress.current = false;
     longPressTimer.current = setTimeout(() => {
       isLongPress.current = true;
       setReactionModalPostId(postId);
     }, 100);
-  };
+  }, []);
 
-  const handlePressEnd = (postId) => {
+  const handlePressEnd = useCallback((post) => {
     clearTimeout(longPressTimer.current);
     if (!isLongPress.current) {
-      const post = posts.find((p) => p.id === postId);
-      if (post) {
-        handleReaction(postId, post.user_reaction || "like");
-      }
+      handleReaction(post.id, post.user_reaction || "like", post.user_reaction);
     }
-  };
+  }, [handleReaction]);
 
   const reactions = [
     { emoji: "👍", label: "Like", type: "like" },
@@ -533,7 +706,7 @@ const Community = ({
   };
 
   // --- MENTION HANDLERS ---
-  const handleMentionableInputChange = (e) => {
+  const handleMentionableInputChange = useCallback((e) => {
     const input = e.target;
     const text = input.value;
     const cursorPosition = input.selectionStart;
@@ -557,7 +730,7 @@ const Community = ({
     } else {
       setMentionState((prev) => ({ ...prev, active: false }));
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (mentionState.active) {
@@ -566,9 +739,7 @@ const Community = ({
         if (mentionState.query.trim() === "" && mentionState.query !== "")
           return; // Don't search for empty string after @
         try {
-          const res = await axios.get(
-            `http://127.0.0.1:8000/api/users/search?q=${mentionState.query}`
-          );
+          const res = await api.get(`/users/search?q=${mentionState.query}`);
           setMentionState((prev) => ({ ...prev, suggestions: res.data }));
         } catch (error) {
           console.error("Failed to search users", error);
@@ -609,7 +780,7 @@ const Community = ({
     setTimeout(() => target.focus(), 0); // Refocus the input
   };
 
-  const renderWithMentions = (text) => {
+  const renderWithMentions = useCallback((text) => {
     return text.split(/(@\w+)/g).map((part, i) =>
       part.startsWith("@") ? (
         <strong key={i} className="text-blue-500 font-normal">
@@ -619,60 +790,46 @@ const Community = ({
         part
       )
     );
-  };
+  }, []);
 
   // --- EDIT & DELETE HANDLERS ---
-  const handleDeletePost = async (postId) => {
+  const handleDeletePost = useCallback(async (postId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://127.0.0.1:8000/api/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPosts(posts.filter((p) => p.id !== postId));
+      await api.delete(`/posts/${postId}`);
+      setPosts(prevPosts => prevPosts.filter((p) => p.id !== postId));
       setActiveMenu(null);
     } catch (error) {
       alert("Failed to delete post");
     }
-  };
+  }, []);
 
-  const handleUpdatePost = async () => {
+  const handleUpdatePost = useCallback(async () => {
     if (!editingItem || !editingItem.content.trim()) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(
-        `http://127.0.0.1:8000/api/posts/${editingItem.id}`,
-        {
+      const res = await api.put(`/posts/${editingItem.id}`, {
           content: editingItem.content,
           image_url: editingItem.image_url,
           link_url: editingItem.link_url,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      setPosts(
-        posts.map((p) => (p.id === editingItem.id ? { ...p, ...res.data } : p))
+      setPosts(prevPosts =>
+        prevPosts.map((p) => (p.id === editingItem.id ? { ...p, ...res.data } : p))
       );
       setEditingItem(null);
     } catch (error) {
       alert("Failed to update post");
     }
-  };
+  }, [editingItem]);
 
-  const handleUpdateComment = async () => {
+  const handleUpdateComment = useCallback(async () => {
     if (!editingItem || !editingItem.content.trim()) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.put(
-        `http://127.0.0.1:8000/api/comments/${editingItem.id}`,
-        {
-          content: editingItem.content,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const res = await api.put(`/comments/${editingItem.id}`, { content: editingItem.content }
       );
 
       // Update local state
@@ -686,15 +843,13 @@ const Community = ({
     } catch (error) {
       alert("Failed to update comment");
     }
-  };
+  }, [editingItem, commentsData]);
 
-  const handleDeleteComment = async (commentId, postId) => {
+  const handleDeleteComment = useCallback(async (commentId, postId) => {
     if (!window.confirm("Delete this comment?")) return;
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://127.0.0.1:8000/api/comments/${commentId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/comments/${commentId}`);
 
       // Update local comments
       const updatedComments = commentsData[postId].filter(
@@ -703,8 +858,8 @@ const Community = ({
       setCommentsData({ ...commentsData, [postId]: updatedComments });
 
       // Update post comment count
-      setPosts(
-        posts.map((p) =>
+      setPosts(prevPosts =>
+        prevPosts.map((p) =>
           p.id === postId
             ? { ...p, comments_count: Math.max(0, p.comments_count - 1) }
             : p
@@ -714,21 +869,35 @@ const Community = ({
     } catch (error) {
       alert("Failed to delete comment");
     }
-  };
+  }, [commentsData]);
+
+  const handleReportPost = useCallback(async (postId) => {
+    const reason = prompt("Why are you reporting this post? (e.g., Spam, Harassment)");
+    if (!reason) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await api.post("/reports", { post_id: postId, reason });
+        alert("Report submitted. Thank you for helping keep the community safe.");
+        setActiveMenu(null);
+    } catch (error) {
+        alert("Failed to submit report.");
+    }
+  }, []);
 
   // Note: Edit comment logic is simpler (no image/link) but backend supports content update
   // For brevity, I'll implement delete first as requested, and basic edit structure.
   // Since backend update_comment exists, let's add it.
 
-  const toggleMenu = (type, id) => {
+  const toggleMenu = useCallback((type, id) => {
     if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
       setActiveMenu(null);
     } else {
       setActiveMenu({ type, id });
     }
-  };
+  }, [activeMenu]);
 
-  const startEditPost = (post) => {
+  const startEditPost = useCallback((post) => {
     setEditingItem({
       type: "post",
       id: post.id,
@@ -737,19 +906,19 @@ const Community = ({
       link_url: post.link_url,
     });
     setActiveMenu(null);
-  };
+  }, []);
 
-  const startEditComment = (comment) => {
+  const startEditComment = useCallback((comment) => {
     setEditingItem({
       type: "comment",
       id: comment.id,
       content: comment.content,
     });
     setActiveMenu(null);
-  };
+  }, []);
 
   // --- RECURSIVE COMMENT RENDERING ---
-  const buildCommentTree = (comments) => {
+  const buildCommentTree = useCallback((comments) => {
     const commentMap = {};
     const topLevelComments = [];
     comments.forEach((c) => {
@@ -763,49 +932,7 @@ const Community = ({
       }
     });
     return topLevelComments;
-  };
-
-  // Reply Form Component
-  const ReplyForm = ({ parentComment }) => {
-    return (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submitComment(parentComment.post_id, replyContent, parentComment.id);
-        }}
-        className="mt-2 ml-8 flex gap-2"
-      >
-        <input
-          type="text"
-          name="replyInput"
-          value={replyContent}
-          onChange={(e) => {
-            setReplyContent(e.target.value);
-            handleMentionableInputChange(e);
-          }}
-          placeholder={`Replying to ${parentComment.username}...`}
-          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none"
-          autoFocus
-        />
-        <button
-          type="submit"
-          className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500"
-        >
-          Reply
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setReplyingTo(null);
-            setReplyContent("");
-          }}
-          className="text-xs text-gray-400 hover:text-white"
-        >
-          Cancel
-        </button>
-      </form>
-    );
-  };
+  }, []);
 
   // Helper for Community Card Styles
   const getCardStyle = (comm) => {
@@ -821,7 +948,7 @@ const Community = ({
     };
 
     if (comm.bg_type === "image" && comm.bg_value) {
-      style.backgroundImage = `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(http://127.0.0.1:8000${comm.bg_value})`;
+      style.backgroundImage = `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${API_BASE_URL}${comm.bg_value})`;
       style.backgroundSize = "cover";
       style.backgroundPosition = "center";
     } else if (comm.bg_type === "gradient") {
@@ -849,8 +976,8 @@ const Community = ({
           <div className="relative z-10 flex items-center gap-4">
             {activeCommunity.avatar_url ? (
               <img
-                src={`http://127.0.0.1:8000${activeCommunity.avatar_url}`}
-                alt={activeCommunity.name}
+              src={`${API_BASE_URL}${activeCommunity.avatar_url}`}
+              alt={activeCommunity.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
               />
             ) : (
@@ -966,449 +1093,44 @@ const Community = ({
         </div>
 
         {/* Posts Feed */}
-        <div className="space-y-4">
-          {posts.length === 0 ? (
-            <div className="text-center text-gray-500 py-10">
-              No posts yet. Be the first to share!
-            </div>
-          ) : (
-            posts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-gray-800 p-5 rounded-lg border border-gray-700"
-              >
-                {/* Post Header & Menu */}
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    {post.user_avatar_url ? (
-                      <img
-                        src={`http://127.0.0.1:8000${post.user_avatar_url}`}
-                        alt={post.username}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                        {post.username.substring(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-bold text-white flex items-center">
-                        {post.username}
-                        <VerifiedBadge user={post} />
-                      </p>
-                      <p className="text-[10px] text-gray-500">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                        {post.is_edited && (
-                          <span className="ml-1 italic opacity-75">
-                            (edited)
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  {/* Post Menu (Only for owner) */}
-                  {currentUser === post.username && (
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleMenu("post", post.id)}
-                        className="text-gray-400 hover:text-white p-1"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                          />
-                        </svg>
-                      </button>
-                      {activeMenu?.type === "post" &&
-                        activeMenu?.id === post.id && (
-                          <div
-                            ref={menuRef}
-                            className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
-                          >
-                            <button
-                              onClick={() => startEditPost(post)}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </div>
-                {/* Post Content */}
-                {editingItem?.type === "post" && editingItem?.id === post.id ? (
-                  <div className="space-y-2">
-                    <textarea
-                      value={editingItem.content}
-                      onChange={(e) =>
-                        setEditingItem({
-                          ...editingItem,
-                          content: e.target.value,
-                        })
-                      }
-                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
-                      rows={3}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setEditingItem(null)}
-                        className="text-xs text-gray-400 hover:text-white px-3 py-1"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleUpdatePost}
-                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {renderWithMentions(post.content)}
-                  </p>
-                )}
-
-                {/* Post Media */}
-                {post.image_url && (
-                  <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
-                    <img
-                      src={`http://127.0.0.1:8000${post.image_url}`}
-                      alt="Post attachment"
-                      className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() =>
-                        setPreviewImage(
-                          `http://127.0.0.1:8000${post.image_url}`
-                        )
-                      }
-                    />
-                  </div>
-                )}
-                {post.link_url && (
-                  <a
-                    href={post.link_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block mt-3 p-3 bg-gray-900/50 border border-gray-700 rounded text-blue-400 text-sm hover:underline truncate"
-                  >
-                    🔗 {post.link_url}
-                  </a>
-                )}
-
-                {/* Post Actions (Like, Comment, Share) */}
-                <div className="flex items-center gap-6 mt-4 pt-4">
-                  {/* Like / Reaction Button with Hover Menu */}
-                  <div className="relative group">
-                    <button
-                      onMouseDown={() => handlePressStart(post.id)}
-                      onMouseUp={() => handlePressEnd(post.id)}
-                      onTouchStart={() => handlePressStart(post.id)}
-                      onTouchEnd={() => handlePressEnd(post.id)}
-                      className={`flex items-center gap-2 transition-colors ${
-                        post.user_reaction
-                          ? "text-blue-400"
-                          : "text-gray-400 hover:text-blue-400"
-                      }`}
-                    >
-                      {post.user_reaction ? (
-                        <span className="text-xl">
-                          {getReactionEmoji(post.user_reaction)}
-                        </span>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="w-5 h-5"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6"
-                          />
-                        </svg>
-                      )}
-                      <span className="text-sm font-bold">
-                        {post.likes > 0 ? post.likes : ""}
-                      </span>
-                    </button>
-
-                    {/* Reaction Popup */}
-                    {reactionModalPostId === post.id && (
-                      <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
-                        {reactions.map((r) => (
-                          <button
-                            key={r.type}
-                            onClick={() => handleReaction(post.id, r.type)}
-                            className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl"
-                            title={r.label}
-                          >
-                            {r.emoji}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => toggleComments(post.id)}
-                    className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
-                      />
-                    </svg>
-                    <span className="text-sm font-bold">
-                      {post.comments_count > 0 ? post.comments_count : ""}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={() => handleShare(post.id)}
-                    className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.287.696.287 1.093 0 .397-.107.769-.287 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
-                      />
-                    </svg>
-                    <span className="text-sm font-bold">
-                      {post.shares_count > 0 ? post.shares_count : ""}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Comments Section */}
-                {expandedComments[post.id] && (
-                  <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
-                    {(() => {
-                      const commentTree = buildCommentTree(
-                        commentsData[post.id] || []
-                      );
-
-                      const renderComment = (comment) => (
-                        <div
-                          key={comment.id}
-                          className="mt-3"
-                          style={{
-                            borderLeft: comment.parent_id
-                              ? "2px solid #374151"
-                              : "none",
-                            paddingLeft: comment.parent_id ? "1rem" : "0",
-                          }}
-                        >
-                          <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
-                            {editingItem?.type === "comment" &&
-                            editingItem?.id === comment.id ? (
-                              <div className="space-y-2">
-                                <input
-                                  type="text"
-                                  value={editingItem.content}
-                                  onChange={(e) =>
-                                    setEditingItem({
-                                      ...editingItem,
-                                      content: e.target.value,
-                                    })
-                                  }
-                                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none"
-                                />
-                                <div className="flex justify-end gap-2">
-                                  <button
-                                    onClick={() => setEditingItem(null)}
-                                    className="text-xs text-gray-400 hover:text-white px-2 py-0.5"
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    onClick={handleUpdateComment}
-                                    className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500"
-                                  >
-                                    Save
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="pr-6">
-                                <div className="flex items-center">
-                                  <span className="font-bold text-blue-400 mr-1">
-                                    {comment.username}
-                                  </span>
-                                  <VerifiedBadge user={comment} />
-                                </div>
-                                <p className="text-gray-300">
-                                  {renderWithMentions(comment.content)}
-                                </p>
-                                {comment.is_edited && (
-                                  <span className="ml-2 text-[10px] text-gray-500 italic">
-                                    (edited)
-                                  </span>
-                                )}
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-400">
-                              <span>
-                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  setReplyingTo({
-                                    commentId: comment.id,
-                                    username: comment.username,
-                                  });
-                                  setReplyContent("");
-                                }}
-                                className="hover:text-white font-bold"
-                              >
-                                Reply
-                              </button>
-                              {currentUser === comment.username && (
-                                <div className="relative">
-                                  <button
-                                    onClick={() =>
-                                      toggleMenu("comment", comment.id)
-                                    }
-                                    className="text-gray-500 hover:text-white"
-                                  >
-                                    <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      strokeWidth={2}
-                                      stroke="currentColor"
-                                      className="w-3 h-3"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                                      />
-                                    </svg>
-                                  </button>
-                                  {activeMenu?.type === "comment" &&
-                                    activeMenu?.id === comment.id && (
-                                      <div
-                                        ref={menuRef}
-                                        className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20"
-                                      >
-                                        <button
-                                          onClick={() =>
-                                            startEditComment(comment)
-                                          }
-                                          className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700"
-                                        >
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleDeleteComment(
-                                              comment.id,
-                                              post.id
-                                            )
-                                          }
-                                          className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
-                                        >
-                                          Delete
-                                        </button>
-                                      </div>
-                                    )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {replyingTo?.commentId === comment.id && (
-                            <ReplyForm parentComment={comment} />
-                          )}
-                          {comment.children.length > 0 && (
-                            <div className="mt-3">
-                              {comment.children.map(renderComment)}
-                            </div>
-                          )}
-                        </div>
-                      );
-
-                      return commentTree.length > 0 ? (
-                        commentTree.map(renderComment)
-                      ) : (
-                        <p className="text-xs text-gray-500 italic">
-                          No comments yet.
-                        </p>
-                      );
-                    })()}
-
-                    {/* Add Comment Input */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Write a comment..."
-                        name={`commentInput-${post.id}`}
-                        value={newCommentText[post.id] || ""}
-                        onChange={(e) => {
-                          setNewCommentText({
-                            ...newCommentText,
-                            [post.id]: e.target.value,
-                          });
-                          handleMentionableInputChange(e);
-                        }}
-                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                        onKeyPress={(e) =>
-                          e.key === "Enter" &&
-                          submitComment(post.id, newCommentText[post.id])
-                        }
-                      />
-                      <button
-                        onClick={() =>
-                          submitComment(post.id, newCommentText[post.id])
-                        }
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold"
-                      >
-                        Send
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+        <CommunityPostFeed 
+          posts={posts} 
+          currentUser={currentUser} 
+          userData={userData} 
+          toggleMenu={toggleMenu} 
+          activeMenu={activeMenu} 
+          menuRef={menuRef} 
+          startEditPost={startEditPost} 
+          handleDeletePost={handleDeletePost} 
+          handleReportPost={handleReportPost} 
+        editingItem={editingItem} 
+          setEditingItem={setEditingItem} 
+          handleUpdatePost={handleUpdatePost} 
+          handlePressStart={handlePressStart} 
+          handlePressEnd={handlePressEnd} 
+          handleReaction={handleReaction} 
+          reactionModalPostId={reactionModalPostId} 
+          getReactionEmoji={getReactionEmoji} 
+          reactions={reactions} 
+          toggleComments={toggleComments} 
+          handleShare={handleShare} 
+          expandedComments={expandedComments} 
+          commentsData={commentsData} 
+          buildCommentTree={buildCommentTree} 
+          renderWithMentions={renderWithMentions} 
+          handleUpdateComment={handleUpdateComment} 
+          handleDeleteComment={handleDeleteComment} 
+          startEditComment={startEditComment} 
+          setReplyingTo={setReplyingTo} 
+          replyingTo={replyingTo} 
+          setReplyContent={setReplyContent} 
+          replyContent={replyContent} 
+          handleMentionableInputChange={handleMentionableInputChange} 
+          submitComment={submitComment} 
+          newCommentText={newCommentText} 
+          setNewCommentText={setNewCommentText} 
+          setPreviewImage={setPreviewImage} 
+        />
         {/* Mention Box */}
         {mentionState.active && mentionState.suggestions.length > 0 && (
           <div
@@ -1529,8 +1251,8 @@ const Community = ({
                 <div className="flex items-center gap-3 mb-4">
                   {comm.avatar_url ? (
                     <img
-                      src={`http://127.0.0.1:8000${comm.avatar_url}`}
-                      alt={comm.name}
+                    src={`${API_BASE_URL}${comm.avatar_url}`}
+                    alt={comm.name}
                       className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
                     />
                   ) : (

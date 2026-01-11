@@ -1,10 +1,17 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useEffect, useContext, useCallback, useMemo  } from 'react';
+import api from '../lib/axios';
 import { useAuth } from './AuthContext';
 
 const ManualTradeContext = createContext();
 
 export const useManualTrade = () => useContext(ManualTradeContext);
+
+const defaultState = {
+    config: { initialCapital: 10000, tradeAmount: 1000, stopLossPct: 1, takeProfitPct: 2, isChallengeMode: false, challengeTargetPct: 10, challengeMaxDrawdownPct: 10, tradeNote: "", enableRules: false, maxTradesPerDay: 5, maxDailyLoss: 500, maxConsecutiveLosses: 2 },
+    account: { balance: 10000, equity: 10000, positions: [], history: [] },
+    challengeState: { status: 'IDLE', startTime: null, endTime: null, reason: '' },
+    isSessionActive: false
+};
 
 export const ManualTradeProvider = ({ children, activeSymbol }) => {
     const { userData } = useAuth();
@@ -19,13 +26,6 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
             console.error("Failed to parse saved state", e);
             return null;
         }
-    };
-
-    const defaultState = {
-        config: { initialCapital: 10000, tradeAmount: 1000, stopLossPct: 1, takeProfitPct: 2, isChallengeMode: false, challengeTargetPct: 10, challengeMaxDrawdownPct: 10, tradeNote: "", enableRules: false, maxTradesPerDay: 5, maxDailyLoss: 500, maxConsecutiveLosses: 2 },
-        account: { balance: 10000, equity: 10000, positions: [], history: [] },
-        challengeState: { status: 'IDLE', startTime: null, endTime: null, reason: '' },
-        isSessionActive: false
     };
 
     const [config, setConfig] = useState(() => loadState()?.config || defaultState.config);
@@ -44,9 +44,14 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
     const [lockout, setLockout] = useState(() => {
         const saved = localStorage.getItem('trading_lockout');
         if (saved) {
-            const parsed = JSON.parse(saved);
-            if (new Date().getTime() < parsed.until) return parsed;
-            localStorage.removeItem('trading_lockout');
+            try {
+                const parsed = JSON.parse(saved);
+                if (new Date().getTime() < parsed.until) return parsed;
+                localStorage.removeItem('trading_lockout');
+            } catch (e) {
+                console.error("Failed to parse lockout data", e);
+                localStorage.removeItem('trading_lockout');
+            }
         }
         return null;
     });
@@ -92,15 +97,13 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         const token = localStorage.getItem("token");
         if (!token) return;
         try {
-            await axios.post("http://127.0.0.1:8000/api/manual-trades", {
+            await api.post("/manual-trades", {
                 symbol: tradeData.symbol,
                 entry_price: tradeData.entryPrice,
                 exit_price: tradeData.exitPrice,
                 pnl: tradeData.finalPnL,
                 is_win: tradeData.finalPnL > 0,
                 notes: tradeData.note
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
         } catch (error) {
             console.error("Failed to save trade to DB", error);
@@ -142,8 +145,12 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
     useEffect(() => {
         if (!isSessionActive) return;
         let isMounted = true;
-        setMarketState({ price: 0, isLoading: true, lastUpdate: null });
+        // setMarketState({ price: 0, isLoading: true, lastUpdate: null });
+        
+        let isFetching = false; 
         const fetchPrice = async () => {
+            if (isFetching) return; 
+            isFetching = true;
             try {
                 const symbolMap = { "UNIUSDT": "UNI7083-USD", "PEPEUSDT": "PEPE24478-USD" };
                 let backendSymbol = symbolMap[activeSymbol] || activeSymbol.replace("BINANCE:", "");
@@ -151,19 +158,22 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
                     backendSymbol = backendSymbol.replace("USDT", "-USD");
                 }
                 const encodedSymbol = encodeURIComponent(backendSymbol);
-                const response = await axios.get(`http://127.0.0.1:8000/api/price/${encodedSymbol}`);
+                // use api.get with path relatif and timeout fetch with interval
+                const response = await api.get(`/price/${encodedSymbol}`, { timeout: 5000 });
                 if (isMounted && response.data.status === 'success') {
                     setMarketState({ price: response.data.price, isLoading: false, lastUpdate: new Date() });
                 } else if (isMounted) {
                     setMarketState(prev => ({ ...prev, isLoading: false }));
                 }
             } catch (error) {
-                console.error("Error fetching price:", error);
+                if (isMounted) console.error("Error fetching price:", error);
                 if (isMounted) setMarketState(prev => ({ ...prev, isLoading: false }));
+            } finally {
+                isFetching = false;
             }
         };
         fetchPrice();
-        const intervalId = setInterval(fetchPrice, 1000);
+        const intervalId = setInterval(fetchPrice, 5000);
         return () => { isMounted = false; clearInterval(intervalId); };
     }, [isSessionActive, activeSymbol]);
 
@@ -200,7 +210,10 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
                 }
             });
             const newEquity = account.balance + totalFloatingPnL;
-            setAccount(prev => ({ ...prev, equity: newEquity }));
+            setAccount(prev => {
+                if (Math.abs(prev.equity - newEquity) < 0.0001) return prev; // Prevent re-render if change is negligible
+                return { ...prev, equity: newEquity };
+            });
 
             if (config.isChallengeMode && challengeState.status === 'ACTIVE') {
                 const maxDrawdownLimit = config.initialCapital * (1 - config.challengeMaxDrawdownPct / 100);
@@ -220,11 +233,14 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
                 });
             }
         } else {
-            setAccount(prev => ({ ...prev, equity: prev.balance }));
+            setAccount(prev => {
+                if (prev.equity === prev.balance) return prev; // Prevent re-render if already synced
+                return { ...prev, equity: prev.balance };
+            });
         }
     }, [marketState.price, account.balance, account.positions, config, challengeState.status, closePosition]);
 
-    const startSession = (e) => {
+    const startSession = useCallback((e) => {
         e.preventDefault();
         setAccount({ balance: config.initialCapital, equity: config.initialCapital, positions: [], history: [] });
         setIsSessionActive(true);
@@ -233,18 +249,18 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         } else {
             setChallengeState({ status: 'IDLE', startTime: null, endTime: null, reason: '' });
         }
-    };
+    }, [config.initialCapital, config.isChallengeMode]);
 
-    const resetSession = () => {
+    const resetSession = useCallback(() => {
         setIsSessionActive(false);
         setAccount(defaultState.account);
         setChallengeState(defaultState.challengeState);
         if (storageKey) {
             localStorage.removeItem(storageKey);
         }
-    };
+    }, [storageKey]);
 
-    const openPosition = (type) => {
+    const openPosition = useCallback((type) => {
         if (marketState.price === 0) return;
         if (config.enableRules && account.history.length >= config.maxTradesPerDay) {
             triggerLockout(`Max Trades Per Day limit (${config.maxTradesPerDay}) reached.`);
@@ -261,9 +277,9 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         const newPosition = { id: Date.now(), type, entryPrice: marketState.price, size: config.tradeAmount, symbol: activeSymbol, openTime: new Date(), slPrice, tpPrice, note: config.tradeNote || "-" };
         setAccount(prev => ({ ...prev, positions: [newPosition, ...prev.positions] }));
         setConfig(prev => ({ ...prev, tradeNote: '' }));
-    };
+    }, [marketState.price, config, account.history.length, activeSymbol, triggerLockout]);
 
-    const value = {
+    const value = useMemo(() => ({
         config, setConfig,
         marketState,
         account, setAccount,
@@ -276,7 +292,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         openPosition,
         closePosition,
         resetSession,
-    };
+    }), [config, marketState, account, challengeState, isSessionActive, healthData, lockout, timeLeft, startSession, openPosition, closePosition, resetSession]);
 
     return (
         <ManualTradeContext.Provider value={value}>

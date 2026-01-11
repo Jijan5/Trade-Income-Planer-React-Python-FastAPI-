@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 import { format } from "date-fns";
 
 const TradeHistory = () => {
@@ -16,9 +16,7 @@ const TradeHistory = () => {
     if (!token) return;
 
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/manual-trades", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/manual-trades");
       setTrades(res.data);
       calculateStats(res.data);
     } catch (error) {

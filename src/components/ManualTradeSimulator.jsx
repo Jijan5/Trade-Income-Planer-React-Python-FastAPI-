@@ -1,6 +1,51 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/axios';
 import { useManualTrade } from "../contexts/ManualTradeContext";
+
+// Memoized History Table to prevent re-renders on price ticks
+const TradeHistoryTable = React.memo(({ history }) => (
+    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+        <div className="p-3 border-b border-gray-700 bg-gray-900">
+            <h3 className="text-xs font-bold text-gray-400 uppercase">Trade History</h3>
+        </div>
+        <div className="max-h-[300px] overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-700">
+                <thead className="bg-gray-900/50 sticky top-0">
+                    <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Exit</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">PnL</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                    {history.map((trade) => (
+                        <tr key={trade.id} className="hover:bg-gray-700/30">
+                            <td className="px-4 py-2">
+                                <span className={`text-xs font-bold ${trade.type === 'BUY' ? 'text-green-500' : 'text-red-500'}`}>
+                                    {trade.type}
+                                </span>
+                            </td>
+                            <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.entryPrice.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.exitPrice.toFixed(2)}</td>
+                            <td className="px-4 py-2 text-xs">
+                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.reason === 'TP' ? 'bg-green-900 text-green-400' : trade.reason === 'SL' ? 'bg-red-900 text-red-400' : 'bg-gray-700 text-gray-300'}`}>
+                                    {trade.reason}
+                                </span>
+                            </td>
+                            <td className="px-4 py-2 text-xs text-gray-400 italic max-w-[150px] truncate">{trade.note}</td>
+                            <td className={`px-4 py-2 text-xs font-mono font-bold ${trade.finalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {trade.finalPnL >= 0 ? '+' : ''}{trade.finalPnL.toFixed(2)}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </div>
+));
 
 const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   const {
@@ -78,7 +123,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             return tradeItem;
         });
 
-        const res = await axios.post("http://127.0.0.1:8000/api/analyze/health", { trades: tradesPayload });
+        const res = await api.post("/analyze/health", { trades: tradesPayload });
         setHealthData(res.data);
     } catch (error) {
         console.error("Analysis failed", error);
@@ -529,49 +574,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             </div>
 
             {/* Trade History */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-                <div className="p-3 border-b border-gray-700 bg-gray-900">
-                    <h3 className="text-xs font-bold text-gray-400 uppercase">Trade History</h3>
-                </div>
-                <div className="max-h-[300px] overflow-y-auto">
-                    <table className="min-w-full divide-y divide-gray-700">
-                        <thead className="bg-gray-900/50 sticky top-0">
-                            <tr>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Exit</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Note</th>
-                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">PnL</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-700">
-                            {account.history.map((trade) => (
-                                <tr key={trade.id} className="hover:bg-gray-700/30">
-                                    <td className="px-4 py-2">
-                                        <span className={`text-xs font-bold ${trade.type === 'BUY' ? 'text-green-500' : 'text-red-500'}`}>
-                                            {trade.type}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.entryPrice.toFixed(2)}</td>
-                                    <td className="px-4 py-2 text-xs font-mono text-gray-400">{trade.exitPrice.toFixed(2)}</td>
-                                    <td className="px-4 py-2 text-xs">
-                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.reason === 'TP' ? 'bg-green-900 text-green-400' : trade.reason === 'SL' ? 'bg-red-900 text-red-400' : 'bg-gray-700 text-gray-300'}`}>
-                                            {trade.reason}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2 text-xs text-gray-400 italic max-w-[150px] truncate">
-                                        {trade.note}
-                                    </td>
-                                    <td className={`px-4 py-2 text-xs font-mono font-bold ${trade.finalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                        {trade.finalPnL >= 0 ? '+' : ''}{trade.finalPnL.toFixed(2)}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <TradeHistoryTable history={account.history} />
         </div>
     </div>
   );

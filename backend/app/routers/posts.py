@@ -34,6 +34,22 @@ async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, 
         response_list.append(PostResponse(**post_dict))
     return response_list
 
+@router.get("/api/posts/{post_id}", response_model=PostResponse)
+async def get_post(post_id: int, session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    user = session.exec(select(User).where(User.username == post.username)).first()
+    
+    post_dict = post.dict()
+    post_dict['user_role'] = user.role if user else "user"
+    post_dict['user_plan'] = user.plan if user else "Free"
+    post_dict['user_avatar_url'] = user.avatar_url if user else None
+    if 'user_reaction' not in post_dict:
+        post_dict['user_reaction'] = None
+    return PostResponse(**post_dict)
+
 @router.post("/api/posts", response_model=Post)
 async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     try:
@@ -181,7 +197,7 @@ async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post.username != user.username:
+    if post.username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to edit this post")
     
     post.content = post_data.content
@@ -218,7 +234,7 @@ async def update_comment(comment_id: int, comment_data: CommentCreate, user: Use
     comment = session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    if comment.username != user.username:
+    if comment.username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to edit this comment")
     
     comment.content = comment_data.content

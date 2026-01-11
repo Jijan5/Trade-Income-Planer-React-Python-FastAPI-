@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Routes, Route, useNavigate, useLocation, Navigate, Outlet, Link } from "react-router-dom";
-import axios from "axios";
+import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
 import BinanceChartWidget from "./components/BinanceChartWidget";
@@ -15,10 +15,143 @@ import Profile from "./components/Profile";
 import NotificationsModal from "./components/NotificationsModal";
 import Subscription from "./components/Subscriptions";
 import AdminDashboard from "./components/AdminDashboard";
+import PostDetail from "./components/PostDetail";
 import TradeHistory from "./components/TradeHistory";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import VerifiedBadge from "./components/VerifiedBadge";
+
+// 🛡️ SECURITY: Protected Route for Admin
+const AdminRoute = ({ children }) => {
+  const { userData, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading Security Check...</div>;
+  
+  if (!userData || userData.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+const assetCategories = {
+  Crypto: [
+    { label: "Bitcoin (BTC)", symbol: "BTCUSDT" },
+    { label: "Ethereum (ETH)", symbol: "ETHUSDT" },
+    { label: "Binance Coin (BNB)", symbol: "BNBUSDT" },
+    { label: "Solana (SOL)", symbol: "SOLUSDT" },
+    { label: "Ripple (XRP)", symbol: "XRPUSDT" },
+    { label: "Cardano (ADA)", symbol: "ADAUSDT" },
+    { label: "Dogecoin (DOGE)", symbol: "DOGEUSDT" },
+    { label: "Shiba Inu (SHIB)", symbol: "SHIBUSDT" },
+    { label: "Polkadot (DOT)", symbol: "DOTUSDT" },
+    { label: "Litecoin (LTC)", symbol: "LTCUSDT" },
+    { label: "Chainlink (LINK)", symbol: "LINKUSDT" },
+    { label: "Tron (TRX)", symbol: "TRXUSDT" },
+    { label: "Avalanche (AVAX)", symbol: "AVAXUSDT" },
+    { label: "Uniswap (UNI)", symbol: "UNIUSDT" },
+    { label: "Cosmos (ATOM)", symbol: "ATOMUSDT" },
+    { label: "Near Protocol (NEAR)", symbol: "NEARUSDT" },
+    { label: "Pepe (PEPE)", symbol: "PEPEUSDT" },
+  ],
+  "Meme Coins": [
+    { label: "DOGE", symbol: "DOGEUSDT" },
+    { label: "SHIB", symbol: "SHIBUSDT" },
+    { label: "PEPE", symbol: "PEPEUSDT" },
+    { label: "FLOKI", symbol: "FLOKIUSDT" },
+    { label: "BONK", symbol: "BONKUSDT" },
+  ],
+};
+
+// Layout for Simulation Section (Chart + Sub-nav) - Moved OUTSIDE App component
+const SimulationLayout = ({ activeCategory, setActiveCategory, activeSymbol, setActiveSymbol }) => {
+  const location = useLocation();
+  return (
+    <ManualTradeProvider activeSymbol={activeSymbol}>
+      <>
+      {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
+      <div className="space-y-6 mb-8">
+        {/* Asset Selection Dropdowns */}
+        <div className="flex flex-col sm:flex-row gap-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <div className="w-full sm:w-1/4">
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              Market Category
+            </label>
+            <select
+              value={activeCategory}
+              onChange={(e) => {
+                const newCategory = e.target.value;
+                setActiveCategory(newCategory);
+                setActiveSymbol(assetCategories[newCategory][0].symbol);
+              }}
+              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {Object.keys(assetCategories).map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full sm:w-1/4">
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              Select Asset
+            </label>
+            <select
+              value={activeSymbol}
+              onChange={(e) => setActiveSymbol(e.target.value)}
+              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              {assetCategories[activeCategory].map((asset) => (
+                <option key={asset.symbol} value={asset.symbol}>{asset.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Chart Container */}
+        <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
+          <BinanceChartWidget symbol={activeSymbol} />
+        </div>
+      </div>
+
+      {/* SECTION 2: SIMULATION TOOLS */}
+      <div className="space-y-8">
+        {/* View Switcher */}
+        <div className="flex justify-center border-b border-gray-700">
+          <Link to="/simulation/strategy" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/strategy") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Strategy Simulator</Link>
+          <Link to="/simulation/planner" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/planner") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Goal Planner</Link>
+          <Link to="/simulation/manual" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/manual") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Manual Trade</Link>
+          <Link to="/simulation/history" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/history") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>History</Link>
+        </div>
+        <Outlet />
+      </div>
+      </>
+    </ManualTradeProvider>
+  );
+};
+
+// Extracted Strategy View Component to clean up App.jsx
+const StrategyView = ({ onSimulate, isLoading, error, simulationData, onExport }) => (
+  <div className="space-y-6">
+    <SimulationForm onSimulate={onSimulate} isLoading={isLoading} />
+    {error && <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm"><p>{error}</p></div>}
+    {simulationData ? (
+      <>
+        <ResultsDashboard data={simulationData} />
+        <div className="flex justify-end">
+          <button onClick={() => onExport(simulationData)} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+            Export Results (CSV)
+          </button>
+        </div>
+      </>
+    ) : (
+      <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
+        <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+        <p className="text-lg">Masukkan parameter di atas dan klik "Jalankan Simulasi" untuk melihat hasil.</p>
+      </div>
+    )}
+  </div>
+);
 
 function App() {
   const navigate = useNavigate();
@@ -40,7 +173,7 @@ function App() {
 
   const fetchCommunities = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/communities");
+      const res = await api.get("/communities");
       setCommunities(res.data);
     } catch (error) {
       console.error("Failed to fetch communities", error);
@@ -87,7 +220,7 @@ function App() {
     localStorage.setItem("local_feedbacks", JSON.stringify([newFeedback, ...existing]));
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/feedback", {
+      await api.post("/feedback", {
         email: feedbackEmail,
         message: feedbackMessage,
       });
@@ -104,15 +237,12 @@ function App() {
     setShowNotifications(!showNotifications);
     if (!showNotifications) { // If we are opening it
         try {
-            const res = await axios.get("http://127.0.0.1:8000/api/notifications", {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            // Token header handled automatically by api interceptor
+            const res = await api.get("/notifications");
             setNotifications(res.data);
 
             if (unreadCount > 0) {
-                await axios.post("http://127.0.0.1:8000/api/notifications/mark_as_read", {}, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                await api.post("/notifications/mark_as_read", {});
                 setUnreadCount(0);
             }
         } catch (error) {
@@ -125,7 +255,9 @@ function App() {
       setShowNotifications(false);
       setHighlightedPost({ postId: notification.post_id });
 
-      if (notification.community_id) {
+      if (['react_post', 'mention_post', 'reply_post', 'reply_comment', 'mention_comment'].includes(notification.type)) {
+        navigate(`/post/${notification.post_id}`);
+      } else if (notification.community_id) {
           navigate(`/community/${notification.community_id}`);
       } else {
           navigate("/");
@@ -145,44 +277,12 @@ function App() {
     );
   }
 
-  const assetCategories = {
-    Crypto: [
-      { label: "Bitcoin (BTC)", symbol: "BTCUSDT" },
-      { label: "Ethereum (ETH)", symbol: "ETHUSDT" },
-      { label: "Binance Coin (BNB)", symbol: "BNBUSDT" },
-      { label: "Solana (SOL)", symbol: "SOLUSDT" },
-      { label: "Ripple (XRP)", symbol: "XRPUSDT" },
-      { label: "Cardano (ADA)", symbol: "ADAUSDT" },
-      { label: "Dogecoin (DOGE)", symbol: "DOGEUSDT" },
-      { label: "Shiba Inu (SHIB)", symbol: "SHIBUSDT" },
-      { label: "Polkadot (DOT)", symbol: "DOTUSDT" },
-      { label: "Litecoin (LTC)", symbol: "LTCUSDT" },
-      { label: "Chainlink (LINK)", symbol: "LINKUSDT" },
-      { label: "Tron (TRX)", symbol: "TRXUSDT" },
-      { label: "Avalanche (AVAX)", symbol: "AVAXUSDT" },
-      { label: "Uniswap (UNI)", symbol: "UNIUSDT" },
-      { label: "Cosmos (ATOM)", symbol: "ATOMUSDT" },
-      { label: "Near Protocol (NEAR)", symbol: "NEARUSDT" },
-      { label: "Pepe (PEPE)", symbol: "PEPEUSDT" },
-    ],
-    "Meme Coins": [
-      { label: "DOGE", symbol: "DOGEUSDT" },
-      { label: "SHIB", symbol: "SHIBUSDT" },
-      { label: "PEPE", symbol: "PEPEUSDT" },
-      { label: "FLOKI", symbol: "FLOKIUSDT" },
-      { label: "BONK", symbol: "BONKUSDT" },
-    ],
-  };
-
   const handleSimulate = async (params) => {
     setLoading(true);
     setError(null);
     try {
       // Pastikan backend berjalan di port 8000
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/simulate",
-        params
-      );
+      const response = await api.post("/simulate", params);
       setSimulationData(response.data);
     } catch (err) {
       console.error("Simulation Error:", err);
@@ -263,69 +363,7 @@ function App() {
       ),
     },
   ];
-
-  // Layout for Simulation Section (Chart + Sub-nav)
-  const SimulationLayout = () => (
-    <>
-      {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
-      <div className="space-y-6 mb-8">
-        {/* Asset Selection Dropdowns */}
-        <div className="flex flex-col sm:flex-row gap-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
-          <div className="w-full sm:w-1/4">
-            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
-              Market Category
-            </label>
-            <select
-              value={activeCategory}
-              onChange={(e) => {
-                const newCategory = e.target.value;
-                setActiveCategory(newCategory);
-                setActiveSymbol(assetCategories[newCategory][0].symbol);
-              }}
-              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            >
-              {Object.keys(assetCategories).map((category) => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="w-full sm:w-1/4">
-            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
-              Select Asset
-            </label>
-            <select
-              value={activeSymbol}
-              onChange={(e) => setActiveSymbol(e.target.value)}
-              className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-            >
-              {assetCategories[activeCategory].map((asset) => (
-                <option key={asset.symbol} value={asset.symbol}>{asset.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Chart Container */}
-        <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
-          <BinanceChartWidget symbol={activeSymbol} />
-        </div>
-      </div>
-
-      {/* SECTION 2: SIMULATION TOOLS */}
-      <div className="space-y-8">
-        {/* View Switcher */}
-        <div className="flex justify-center border-b border-gray-700">
-          <Link to="/simulation/strategy" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/strategy") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Strategy Simulator</Link>
-          <Link to="/simulation/planner" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/planner") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Goal Planner</Link>
-          <Link to="/simulation/manual" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/manual") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Manual Trade</Link>
-          <Link to="/simulation/history" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/history") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>History</Link>
-        </div>
-        <Outlet />
-      </div>
-    </>
-  );
-
+  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
       {/* Override default Vite styles that constrain width */}
@@ -483,36 +521,30 @@ function App() {
         </div>
       </nav>
 
-      <div className="w-full p-6 space-y-8 pt-24">
-      <ManualTradeProvider activeSymbol={activeSymbol}>
+      <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
         <Routes>
           <Route path="/" element={<Home communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/community" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
           <Route path="/community/:id" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
-          <Route path="/simulation" element={<SimulationLayout />}>
+          <Route path="/simulation" element={
+            <SimulationLayout 
+            activeCategory={activeCategory} 
+            setActiveCategory={setActiveCategory} 
+            activeSymbol={activeSymbol} 
+            setActiveSymbol={setActiveSymbol} 
+            />
+          }>
             <Route index element={<Navigate to="strategy" replace />} />
             <Route path="strategy" element={
-              <div className="space-y-6">
-                <SimulationForm onSimulate={handleSimulate} isLoading={loading} />
-                {error && <div className="p-4 bg-red-900/30 border border-red-500/50 rounded text-red-200 text-sm"><p>{error}</p></div>}
-                {simulationData ? (
-                  <>
-                    <ResultsDashboard data={simulationData} />
-                    <div className="flex justify-end">
-                      <button onClick={() => handleExportSimulationCSV(simulationData)} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-                        Export Results (CSV)
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
-                    <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                    <p className="text-lg">Masukkan parameter di atas dan klik "Jalankan Simulasi" untuk melihat hasil.</p>
-                  </div>
-                )}
-              </div>
+              <StrategyView 
+              onSimulate={handleSimulate} 
+              isLoading={loading} 
+              error={error} 
+              simulationData={simulationData} 
+              onExport={handleExportSimulationCSV} 
+            />
             } />
             <Route path="planner" element={<GoalPlanner />} />
             <Route path="manual" element={<ManualTradeSimulator activeSymbol={activeSymbol} />} />
@@ -520,12 +552,32 @@ function App() {
           </Route>
           <Route path="/profile" element={<Profile />} />
           <Route path="/subscription" element={<Subscription onSubscribe={handleSubscribe} />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } />
         </Routes>
-      </ManualTradeProvider>
+      </div>
+      {/* 📱 MOBILE BOTTOM NAVIGATION */}
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
+        {navItems.map((item) => (
+          <button
+            key={item.path}
+            onClick={() => navigate(item.path)}
+            className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-colors w-full ${
+              (item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path))
+                ? "text-blue-400"
+                : "text-gray-500 hover:text-gray-300"
+            }`}
+          >
+            {item.icon}
+            <span className="text-[10px] font-bold">{item.title}</span>
+          </button>
+        ))}
       </div>
       {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative">
+      <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative hidden md:block">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="text-center md:text-left">
           <div className="flex justify-center md:justify-start mb-2">

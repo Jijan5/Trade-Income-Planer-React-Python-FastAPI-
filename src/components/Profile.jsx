@@ -1,7 +1,32 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+// Memoized Community List
+const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
+  if (myCommunities.length === 0) {
+    return <p className="text-gray-500 text-center py-4">You haven't created any communities yet.</p>;
+  }
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {myCommunities.map(comm => (
+        <div key={comm.id} className="bg-gray-900 border border-gray-700 p-4 rounded-lg flex justify-between items-center">
+          <div className="flex items-center gap-3">
+          {comm.avatar_url ? <img src={`${API_BASE_URL}${comm.avatar_url}`} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs">{comm.name.substring(0,2).toUpperCase()}</div>}
+          <div>
+              <h4 className="font-bold text-white text-sm">{comm.name}</h4>
+              <p className="text-xs text-gray-500">{comm.members_count} Members</p>
+            </div>
+          </div>
+          <button onClick={() => openEditModal(comm)} className="text-xs bg-gray-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors">Edit</button>
+        </div>
+      ))}
+    </div>
+  );
+});
 
 const Profile = () => {
   const { fetchUserProfile } = useAuth();
@@ -47,9 +72,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/users/me");
       setUser(res.data);
     } catch (error) {
       console.error("Failed to fetch profile", error);
@@ -60,9 +83,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/users/me/communities", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/users/me/communities");
       setMyCommunities(res.data);
     } catch (error) {
       console.error("Failed to fetch my communities", error);
@@ -81,9 +102,7 @@ const Profile = () => {
     setMembersLoading(true);
     const token = localStorage.getItem("token");
     try {
-        const res = await axios.get(`http://127.0.0.1:8000/api/communities/${communityId}/members`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      const res = await api.get(`/communities/${communityId}/members`);
         setCommMembers(res.data);
     } catch (error) {
         console.error("Failed to fetch members", error);
@@ -106,11 +125,8 @@ const Profile = () => {
     if (avatarFile) formData.append("avatar_file", avatarFile);
 
     try {
-      const res = await axios.put("http://127.0.0.1:8000/api/users/me", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
+      const res = await api.put("/users/me", formData, {
+        headers: { "Content-Type": undefined },
       });
       
       setUser(res.data);
@@ -132,7 +148,7 @@ const Profile = () => {
     }
   };
 
-  const openEditModal = (comm) => {
+  const openEditModal = useCallback((comm) => {
     setEditingComm({
       ...comm,
       // Initialize gradient helpers if needed, though we mainly edit bg_value directly
@@ -142,11 +158,11 @@ const Profile = () => {
     });
     setActiveEditTab('appearance'); // Default to appearance tab
     setCommMembers([]); // Clear previous members list
-    setPreviewEditCommAvatar(comm.avatar_url ? `http://127.0.0.1:8000${comm.avatar_url}` : null);
-    setPreviewEditCommBg(comm.bg_type === 'image' && comm.bg_value ? `http://127.0.0.1:8000${comm.bg_value}` : null);
+    setPreviewEditCommAvatar(comm.avatar_url ? `${API_BASE_URL}${comm.avatar_url}` : null);
+    setPreviewEditCommBg(comm.bg_type === 'image' && comm.bg_value ? `${API_BASE_URL}${comm.bg_value}` : null);
     setEditCommAvatar(null);
     setEditCommBgImage(null);
-  };
+  }, []);
 
   // Edit Community Handler (Reusing logic from Community.jsx but simplified for update)
   const handleUpdateCommunity = async (e) => {
@@ -166,9 +182,7 @@ const Profile = () => {
     if (editCommBgImage && editingComm.bg_type === "image") formData.append("bg_image_file", editCommBgImage);
 
     try {
-      await axios.put(`http://127.0.0.1:8000/api/communities/${editingComm.id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put(`/communities/${editingComm.id}`, formData, { headers: { "Content-Type": undefined } });
       alert("Community updated!");
       setEditingComm(null);
       fetchMyCommunities();
@@ -183,9 +197,7 @@ const Profile = () => {
 
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/communities/${editingComm.id}/members/${usernameToKick}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.delete(`/communities/${editingComm.id}/members/${usernameToKick}`);
         alert(`${usernameToKick} has been kicked.`);
         // Refresh member list
         fetchCommMembers(editingComm.id);
@@ -220,7 +232,7 @@ const Profile = () => {
               {previewAvatar ? (
                 <img src={previewAvatar} alt="Preview" className="w-full h-full object-cover" />
               ) : user.avatar_url ? (
-                <img src={`http://127.0.0.1:8000${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
+                <img src={`${API_BASE_URL}${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gray-600 flex items-center justify-center text-4xl font-bold text-gray-400">
                   {user.username ? user.username.substring(0, 2).toUpperCase() : "U"}
@@ -293,36 +305,7 @@ const Profile = () => {
         <h2 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-4 flex items-center gap-2">
           <span className="text-blue-500">👥</span> Your Communities
         </h2>
-        
-        {myCommunities.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">You haven't created any communities yet.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {myCommunities.map(comm => (
-              <div key={comm.id} className="bg-gray-900 border border-gray-700 p-4 rounded-lg flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  {comm.avatar_url ? (
-                    <img src={`http://127.0.0.1:8000${comm.avatar_url}`} className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs">
-                      {comm.name.substring(0,2).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <h4 className="font-bold text-white text-sm">{comm.name}</h4>
-                    <p className="text-xs text-gray-500">{comm.members_count} Members</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => openEditModal(comm)}
-                  className="text-xs bg-gray-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition-colors"
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <MyCommunitiesList myCommunities={myCommunities} openEditModal={openEditModal} />
     </div>
 
     {/* EDIT COMMUNITY MODAL */}
@@ -525,7 +508,7 @@ const Profile = () => {
                 <div key={member.user_id} className="flex items-center justify-between bg-gray-900 p-3 rounded-lg border border-gray-700">
                   <div className="flex items-center gap-3">
                     {member.avatar_url ? (
-                      <img src={`http://127.0.0.1:8000${member.avatar_url}`} alt={member.username} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-bold">{member.username.substring(0,2).toUpperCase()}</div>
                     )}

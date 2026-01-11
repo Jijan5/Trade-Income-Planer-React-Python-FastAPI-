@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../lib/axios";
 import { formatDistanceToNow } from "date-fns";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -26,46 +26,7 @@ const AdminDashboard = () => {
     userGrowth: [],
     subsDistribution: []
   });
-
-  // Mock Data Generator (Untuk visualisasi sebelum backend siap)
-  const mockStats = {
-    totalUsers: 1250,
-    activeSubs: 145,
-    mrr: 2450,
-    userGrowth: [
-      { name: 'Jan', users: 400 },
-      { name: 'Feb', users: 600 },
-      { name: 'Mar', users: 800 },
-      { name: 'Apr', users: 1000 },
-      { name: 'May', users: 1250 },
-    ],
-    subsDistribution: [
-      { name: 'Basic', value: 80 },
-      { name: 'Premium', value: 45 },
-      { name: 'Platinum', value: 20 },
-    ]
-  };
-
-  const mockUsers = [
-    { id: 1, username: "trader_pro", email: "pro@example.com", role: "user", status: "active", plan: "Premium", joined: "2023-01-15" },
-    { id: 2, username: "newbie_01", email: "new@example.com", role: "user", status: "active", plan: "Free", joined: "2023-05-20" },
-    { id: 3, username: "spammer_bot", email: "bot@spam.com", role: "user", status: "suspended", plan: "Free", joined: "2023-06-01" },
-    { id: 4, username: "admin_master", email: "admin@tip.com", role: "admin", status: "active", plan: "Platinum", joined: "2022-11-01" },
-  ];
-
-  const mockSubscriptions = [
-    { id: "TX-8821", user: "trader_pro", plan: "Premium", amount: 19, status: "paid", date: "2023-10-25", billing: "Monthly" },
-    { id: "TX-8822", user: "admin_master", plan: "Platinum", amount: 279, status: "paid", date: "2023-10-24", billing: "Yearly" },
-    { id: "TX-8823", user: "newbie_01", plan: "Basic", amount: 12, status: "pending", date: "2023-10-26", billing: "Monthly" },
-    { id: "TX-8824", user: "spammer_bot", plan: "Basic", amount: 12, status: "failed", date: "2023-10-20", billing: "Monthly" },
-    { id: "TX-8825", user: "whale_007", plan: "Platinum", amount: 28, status: "paid", date: "2023-10-26", billing: "Monthly" },
-  ];
-
-  const mockFeedbacks = [
-    { id: 1, email: "user1@example.com", message: "Great app! Love the simulation feature.", date: "2023-10-20" },
-    { id: 2, email: "trader_pro@example.com", message: "Can you add more indicators to the chart?", date: "2023-10-22" },
-    { id: 3, email: "newbie@test.com", message: "I found a bug in the profile page.", date: "2023-10-25" },
-  ];
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchAdminData();
@@ -76,20 +37,24 @@ const AdminDashboard = () => {
     const token = localStorage.getItem("token");
     try {
       // prepare data holders
-      let fetchedUsers = mockUsers;
-      let fetchedFeedbacks = mockFeedbacks;
+      let fetchedUsers = [];
+      let fetchedFeedbacks = [];
       let fetchedCommunities = [];
       let fetchedPosts = [];
       let fetchedReports = [];
+      let fetchedStats = null;
+      let fetchedSubs = [];
 
       //try fetching read data (feedbacks & users)
       try {
-        const [usersRes, feedRes, commRes, postsRes, reportsRes] = await Promise.allSettled([
-          axios.get("http://127.0.0.1:8000/api/admin/users", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://127.0.0.1:8000/api/admin/feedbacks", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://127.0.0.1:8000/api/communities"),
-          axios.get("http://127.0.0.1:8000/api/admin/posts", { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get("http://127.0.0.1:8000/api/admin/reports", { headers: { Authorization: `Bearer ${token}` } })
+        const [usersRes, feedRes, commRes, postsRes, reportsRes, statsRes, subsRes] = await Promise.allSettled([
+          api.get("/admin/users"),
+          api.get("/admin/feedbacks"),
+          api.get("/communities"),
+          api.get("/admin/posts"),
+          api.get("/admin/reports"),
+          api.get("/admin/stats"),
+          api.get("/admin/subscriptions")
         ]);
 
         if (usersRes.status === 'fulfilled' && usersRes.value.data) {
@@ -106,9 +71,15 @@ const AdminDashboard = () => {
         }
         if (reportsRes.status === 'fulfilled' && reportsRes.value.data) {
           fetchedReports = reportsRes.value.data;
-      }
+        }
+        if (statsRes.status === 'fulfilled' && statsRes.value.data) {
+          fetchedStats = statsRes.value.data;
+        }
+        if (subsRes.status === 'fulfilled' && subsRes.value.data) {
+          fetchedSubs = subsRes.value.data;
+        }
       } catch (err) {
-        console.log("Backend endpoints not ready, using mock data.");
+        console.log("Error fetching admin data", err);
       }
 
       // Gabungkan feedback dari LocalStorage dengan data fetch/mock
@@ -119,9 +90,11 @@ const AdminDashboard = () => {
         .sort((a, b) => new Date(b.date) - new Date(a.date));
       
       // Set all states
-      setStats(mockStats); // Stats still mock for now
+      if (fetchedStats) {
+        setStats(fetchedStats);
+      }
       setUsers(fetchedUsers);
-      setSubscriptions(mockSubscriptions);
+      setSubscriptions(fetchedSubs);
       setFeedbacks(uniqueFeedbacks);
       setCommunities(fetchedCommunities);
       setPosts(fetchedPosts);
@@ -143,7 +116,7 @@ const AdminDashboard = () => {
     const token = localStorage.getItem("token");
     try {
         const updatedUser = { ...userToSuspend, status: "suspended" };
-        await axios.put(`http://127.0.0.1:8000/api/admin/users/${userId}`, updatedUser, { headers: { Authorization: `Bearer ${token}` } });
+        await api.put(`/admin/users/${userId}`, updatedUser);
         setUsers(users.map(u => u.id === userId ? {...u, status: "suspended"} : u));
         alert(`User ${userToSuspend.username} has been suspended.`);
     } catch (error) {
@@ -155,10 +128,9 @@ const AdminDashboard = () => {
     if (!editingUser) return;
     const token = localStorage.getItem("token");
     try {
-      const res = await axios.put(
-        `http://127.0.0.1:8000/api/admin/users/${editingUser.id}`,
-        editingUser, // The state object matches the required payload
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await api.put(
+        `/admin/users/${editingUser.id}`,
+        editingUser // The state object matches the required payload
       );
       
       // Update local state with the confirmed data from backend
@@ -175,9 +147,7 @@ const AdminDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this community? This will remove all posts and members permanently.")) return;
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/communities/${communityId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      await api.delete(`/communities/${communityId}`);
         setCommunities(communities.filter(c => c.id !== communityId));
         alert("Community deleted successfully.");
     } catch (error) {
@@ -190,9 +160,7 @@ const AdminDashboard = () => {
     if (!window.confirm("Delete this post permanently?")) return;
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/posts/${postId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      await api.delete(`/posts/${postId}`);
         setPosts(posts.filter(p => p.id !== postId));
     } catch (error) {
         alert("Failed to delete post.");
@@ -206,7 +174,7 @@ const AdminDashboard = () => {
 
     const token = localStorage.getItem("token");
     try {
-        await axios.post("http://127.0.0.1:8000/api/admin/broadcast", { message: broadcastMsg }, { headers: { Authorization: `Bearer ${token}` } });
+        await api.post("/admin/broadcast", { message: broadcastMsg });
         alert("Broadcast sent successfully!");
         setBroadcastMsg("");
     } catch (error) {
@@ -217,9 +185,7 @@ const AdminDashboard = () => {
   const handleDismissReport = async (reportId) => {
     const token = localStorage.getItem("token");
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/admin/reports/${reportId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.delete(`/admin/reports/${reportId}`);
         setReports(reports.filter(r => r.id !== reportId));
         alert("Report dismissed.");
     } catch (error) {
@@ -236,9 +202,21 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-100px)] bg-gray-900 text-gray-100 overflow-hidden rounded-xl border border-gray-700 shadow-2xl animate-fade-in">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] bg-gray-900 text-gray-100 overflow-hidden rounded-xl border border-gray-700 shadow-2xl animate-fade-in relative">
+      
+      {/* 📱 Mobile Sidebar Toggle */}
+      <div className="md:hidden p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <span className="text-red-500">🛡️</span> Admin Panel
+        </h2>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-300 hover:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+        </button>
+      </div>
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+      <div className={`absolute md:relative z-20 inset-y-0 left-0 w-64 bg-gray-800 border-r border-gray-700 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         <div className="p-6 border-b border-gray-700">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <span className="text-red-500">🛡️</span> Admin Panel
@@ -247,49 +225,49 @@ const AdminDashboard = () => {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <button 
-            onClick={() => setActiveTab("overview")}
+            onClick={() => { setActiveTab("overview"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "overview" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             📊 Overview
           </button>
           <button 
-            onClick={() => setActiveTab("users")}
+            onClick={() => { setActiveTab("users"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "users" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             👥 User Management
           </button>
           <button 
-            onClick={() => setActiveTab("subscriptions")}
+            onClick={() => { setActiveTab("subscriptions"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "subscriptions" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             💳 Subscriptions
             </button>
           <button 
-            onClick={() => setActiveTab("communities")}
+            onClick={() => { setActiveTab("communities"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "communities" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             🏘️ Communities
           </button>
           <button 
-            onClick={() => setActiveTab("content")}
+            onClick={() => { setActiveTab("content"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "content" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             📝 Content
           </button>
           <button 
-            onClick={() => setActiveTab("broadcast")}
+            onClick={() => { setActiveTab("broadcast"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             📢 Broadcast
           </button>
           <button 
-            onClick={() => setActiveTab("reports")}
+            onClick={() => { setActiveTab("reports"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "reports" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             🚨 Reports
           </button>
           <button 
-            onClick={() => setActiveTab("feedback")}
+            onClick={() => { setActiveTab("feedback"); setIsSidebarOpen(false); }}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
           >
             💬 Feedback
@@ -302,6 +280,9 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-10 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto bg-gray-900 p-8">
@@ -398,7 +379,13 @@ const AdminDashboard = () => {
                     <div key={item.id} className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors">
                       <div className="flex justify-between items-start mb-3">
                         <h4 className="font-bold text-blue-400 text-sm">{item.email}</h4>
-                        <span className="text-xs text-gray-500">{formatDistanceToNow(new Date(item.created_at || item.date), { addSuffix: true })}</span>
+                        <span className="text-xs text-gray-500">
+                          {(() => {
+                            try {
+                              return formatDistanceToNow(new Date(item.created_at || item.date), { addSuffix: true });
+                            } catch (e) { return ""; }
+                          })()}
+                        </span>
                       </div>
                       <p className="text-gray-300 text-sm leading-relaxed">"{item.message}"</p>
                     </div>

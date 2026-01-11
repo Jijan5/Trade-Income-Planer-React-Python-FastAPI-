@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import VerifiedBadge from './VerifiedBadge';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
 const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => {
   const [expanded, setExpanded] = useState({});
 
@@ -14,7 +16,7 @@ const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => 
     const actor = (
       <strong className="text-white inline-flex items-center">
         {notification.actor_username}
-        {renderVerifiedBadge(notification.actor_role, notification.actor_plan)}
+        <VerifiedBadge user={{ role: notification.actor_role, plan: notification.actor_plan }} />
       </strong>
     );
     const preview = <em className="text-gray-400">"{notification.content_preview}..."</em>;
@@ -70,7 +72,7 @@ const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => 
                           📢
                         </div>
                       ) : notif.actor_avatar_url ? (
-                        <img src={`http://127.0.0.1:8000${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={`${API_BASE_URL}${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-8 h-8 rounded-full object-cover" />
                       ) : (
                         <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs font-bold">
                           {notif.actor_username.substring(0, 2).toUpperCase()}
@@ -98,7 +100,11 @@ const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => 
                         ) : getNotificationMessage(notif)}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        {formatDistanceToNow(new Date(notif.created_at), { addSuffix: true })}
+                        {(() => {
+                          try {
+                            return formatDistanceToNow(new Date(notif.created_at), { addSuffix: true });
+                          } catch (e) { return ""; }
+                        })()}
                       </p>
                     </div>
                   </div>
