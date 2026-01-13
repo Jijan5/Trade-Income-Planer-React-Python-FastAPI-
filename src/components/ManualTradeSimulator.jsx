@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import api from '../lib/axios';
 import { useManualTrade } from "../contexts/ManualTradeContext";
+import { useAuth } from "../contexts/AuthContext";
+import { getPlanLevel } from "../utils/permissions";
 
 // Memoized History Table to prevent re-renders on price ticks
 const TradeHistoryTable = React.memo(({ history }) => (
@@ -63,8 +65,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     resetSession,
   } = useManualTrade();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { userData } = useAuth();
+  const planLevel = getPlanLevel(userData?.plan);
 
   const downloadCSV = () => {
+    if (planLevel < 1) return alert("Upgrade to Basic Plan to export CSV.");
     if (!account.history || account.history.length === 0) return;
 
     const headers = ["ID", "Symbol", "Type", "Entry Price", "Exit Price", "Size", "PnL", "Reason", "Note", "Time"];
@@ -98,6 +103,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   };
 
   const analyzeHealth = async () => {
+    if (planLevel < 2) return alert("Upgrade to Premium Plan to use AI Coach.");
     if (account.history.length === 0) return;
     setIsAnalyzing(true);
     try {
@@ -176,12 +182,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             <div className="bg-gray-900 p-4 rounded border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <label className="text-sm font-bold text-gray-300 uppercase">Enable Prop Firm Challenge</label>
-                <input 
-                  type="checkbox" 
-                  checked={config.isChallengeMode} 
-                  onChange={(e) => setConfig({...config, isChallengeMode: e.target.checked})}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                />
+                {planLevel >= 1 ? (
+                  <input type="checkbox" checked={config.isChallengeMode} onChange={(e) => setConfig({...config, isChallengeMode: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
+                ) : (
+                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                    🔒 Basic+
+                  </span>
+                )}
               </div>
               
               {config.isChallengeMode && (
@@ -214,12 +221,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 <label className="text-sm font-bold text-gray-300 uppercase flex items-center gap-2">
                   👮 Enable Discipline Rules
                 </label>
-                <input 
-                  type="checkbox" 
-                  checked={config.enableRules} 
-                  onChange={(e) => setConfig({...config, enableRules: e.target.checked})}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                />
+                {planLevel >= 2 ? (
+                  <input type="checkbox" checked={config.enableRules} onChange={(e) => setConfig({...config, enableRules: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
+                ) : (
+                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                    🔒 Premium
+                  </span>
+                )}
               </div>
               
               {config.enableRules && (
@@ -313,13 +321,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                         🤖 AI Trading Coach
                     </h3>
-                    <button 
-                        onClick={analyzeHealth}
-                        disabled={isAnalyzing || account.history.length < 2}
-                        className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
-                    >
-                        {isAnalyzing ? "Analyzing..." : "Analyze"}
-                    </button>
+                    {planLevel >= 2 ? (
+                      <button 
+                          onClick={analyzeHealth}
+                          disabled={isAnalyzing || account.history.length < 2}
+                          className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                      >
+                          {isAnalyzing ? "Analyzing..." : "Analyze"}
+                      </button>
+                    ) : (
+                      <span className="text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">🔒 Premium</span>
+                    )}
                 </div>
                 
                 {healthData ? (
@@ -491,13 +503,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 >
                     Reset Session
                 </button>
-                <button 
-                    onClick={downloadCSV}
-                    disabled={account.history.length === 0}
-                    className="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-white border border-blue-900 hover:bg-blue-900/50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Export CSV
-                </button>
+                {planLevel >= 1 ? (
+                  <button 
+                      onClick={downloadCSV}
+                      disabled={account.history.length === 0}
+                      className="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-white border border-blue-900 hover:bg-blue-900/50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                      Export CSV
+                  </button>
+                ) : (
+                  <button disabled className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-700 rounded cursor-not-allowed">Export CSV 🔒</button>
+                )}
             </div>
         </div>
 

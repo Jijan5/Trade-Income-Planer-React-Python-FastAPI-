@@ -11,6 +11,7 @@ import Auth from "./components/Auth";
 import Explore from "./components/Explore";
 import Community from "./components/Community";
 import Home from "./components/Home";
+import LandingPage from "./components/LandingPage";
 import Profile from "./components/Profile";
 import NotificationsModal from "./components/NotificationsModal";
 import Subscription from "./components/Subscriptions";
@@ -20,6 +21,7 @@ import TradeHistory from "./components/TradeHistory";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import VerifiedBadge from "./components/VerifiedBadge";
+import { getPlanLevel } from "./utils/permissions";
 
 // 🛡️ SECURITY: Protected Route for Admin
 const AdminRoute = ({ children }) => {
@@ -30,6 +32,13 @@ const AdminRoute = ({ children }) => {
   if (!userData || userData.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
+  return children;
+};
+
+// 🛡️ SECURITY: Protected Route for Authenticated Users
+const ProtectedRoute = ({ children }) => {
+  const { token } = useAuth();
+  if (!token) return <Navigate to="/" replace />;
   return children;
 };
 
@@ -65,6 +74,8 @@ const assetCategories = {
 // Layout for Simulation Section (Chart + Sub-nav) - Moved OUTSIDE App component
 const SimulationLayout = ({ activeCategory, setActiveCategory, activeSymbol, setActiveSymbol }) => {
   const location = useLocation();
+  const { userData } = useAuth();
+  const planLevel = getPlanLevel(userData?.plan);
   return (
     <ManualTradeProvider activeSymbol={activeSymbol}>
       <>
@@ -117,8 +128,12 @@ const SimulationLayout = ({ activeCategory, setActiveCategory, activeSymbol, set
       <div className="space-y-8">
         {/* View Switcher */}
         <div className="flex justify-center border-b border-gray-700">
-          <Link to="/simulation/strategy" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/strategy") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Strategy Simulator</Link>
-          <Link to="/simulation/planner" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/planner") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Goal Planner</Link>
+        <Link to="/simulation/strategy" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/strategy") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>
+            Strategy Simulator {planLevel < 2 && "🔒"}
+          </Link>
+          <Link to="/simulation/planner" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/planner") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>
+            Goal Planner {planLevel < 2 && "🔒"}
+          </Link>
           <Link to="/simulation/manual" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/manual") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>Manual Trade</Link>
           <Link to="/simulation/history" className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${location.pathname.includes("/simulation/history") ? "text-gray-500 border-b-2 border-blue-500" : "text-gray-500 hover:text-gray-300"}`}>History</Link>
         </div>
@@ -170,6 +185,19 @@ function App() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [highlightedPost, setHighlightedPost] = useState(null);
+  const planLevel = getPlanLevel(userData?.plan);
+
+  // #sandbox mode - Midtrans Integration
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", "SB-Mid-client-po0vaah-531nIOz5");
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const fetchCommunities = async () => {
     try {
@@ -256,11 +284,13 @@ function App() {
       setHighlightedPost({ postId: notification.post_id });
 
       if (['react_post', 'mention_post', 'reply_post', 'reply_comment', 'mention_comment'].includes(notification.type)) {
+        navigate(`/home/post/${notification.post_id}`); // Adjusted path if needed, but usually post detail is root level or nested. Let's keep post detail at root /post/:id but protected.
+        // Actually, let's keep /post/:id as is, just protect it.
         navigate(`/post/${notification.post_id}`);
       } else if (notification.community_id) {
           navigate(`/community/${notification.community_id}`);
       } else {
-          navigate("/");
+          navigate("/home");
       }
   };
 
@@ -292,9 +322,37 @@ function App() {
     }
   };
 
-  const handleSubscribe = (plan) => {
-    const price = plan.finalPrice || plan.price;
-    alert(`Redirecting to payment for ${plan.name} ($${price})... (Midtrans Integration Coming Soon)`);
+  const handleSubscribe = async (plan) => {
+    if (!token) {
+      setAuthInitialLogin(true);
+      setShowAuth(true);
+      return;
+    }
+
+    try {
+      // Request Snap Token from Backend
+      // Note: Backend must use Server Key: SB-Mid-server-waDxbRj709dcZvEP6iH6kIVx
+      const response = await api.post("/payment/create_transaction", {
+        plan_id: plan.id,
+        amount: plan.finalPrice,
+        billing_cycle: plan.billingCycle
+      });
+
+      if (window.snap && response.data.token) {
+        window.snap.pay(response.data.token, {
+          onSuccess: (result) => {
+            alert("Payment success! Your plan will be updated shortly.");
+            window.location.reload();
+          },
+          onPending: (result) => alert("Waiting for payment..."),
+          onError: (result) => alert("Payment failed!"),
+          onClose: () => console.log("Customer closed the popup without finishing the payment")
+        });
+      }
+    } catch (error) {
+      console.error("Payment Error:", error);
+      alert("Failed to initiate payment. Please try again.");
+    }
   };
 
   const handleExportSimulationCSV = (data) => {
@@ -327,7 +385,7 @@ function App() {
 
   const navItems = [
     {
-      path: "/",
+      path: "/home",
       title: "Home",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -420,7 +478,7 @@ function App() {
         <div className="flex items-center justify-between w-full">
           <div
             className="flex items-center cursor-pointer"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(token ? "/home" : "/")}
           >
             <img src="/tip-brand.png" alt="Trade Income Planner" className="h-10" />
               <span className="ml-2 text-[10px] bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full border border-blue-500/30 font-mono align-top">v1.0 PRO</span>
@@ -428,13 +486,13 @@ function App() {
 
           {/* Main Navigation (Center) */}
           <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
-            {navItems.map((item) => (
+            {token && navItems.map((item) => (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 title={item.title}
                 className={`p-2.5 rounded-full transition-colors custom-icon ${
-                  (item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path))
+                  location.pathname.startsWith(item.path)
                     ? "text-white"
                     : "text-gray-400 hover:bg-blue-600 hover:text-white"
                 }`}
@@ -523,35 +581,52 @@ function App() {
 
       <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
         <Routes>
-          <Route path="/" element={<Home communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/post/:id" element={<PostDetail />} />
-          <Route path="/community" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
-          <Route path="/community/:id" element={<Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} />} />
+        <Route path="/" element={token ? <Navigate to="/home" replace /> : <LandingPage onLogin={() => {setAuthInitialLogin(true); setShowAuth(true)}} onRegister={() => {setAuthInitialLogin(false); setShowAuth(true)}} />} />
+          <Route path="/home" element={<ProtectedRoute><Home communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} /></ProtectedRoute>} />
+          <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+          <Route path="/post/:id" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} /></ProtectedRoute>} />
+          <Route path="/community/:id" element={<ProtectedRoute><Community communities={communities} highlightedPost={highlightedPost} setHighlightedPost={setHighlightedPost} /></ProtectedRoute>} />
           <Route path="/simulation" element={
-            <SimulationLayout 
+            <ProtectedRoute><SimulationLayout 
             activeCategory={activeCategory} 
             setActiveCategory={setActiveCategory} 
             activeSymbol={activeSymbol} 
             setActiveSymbol={setActiveSymbol} 
-            />
+            /></ProtectedRoute>
           }>
-            <Route index element={<Navigate to="strategy" replace />} />
+            <Route index element={<Navigate to="manual" replace />} />
             <Route path="strategy" element={
-              <StrategyView 
-              onSimulate={handleSimulate} 
-              isLoading={loading} 
-              error={error} 
-              simulationData={simulationData} 
-              onExport={handleExportSimulationCSV} 
-            />
+              planLevel >= 2 ? (
+                <StrategyView 
+                  onSimulate={handleSimulate} 
+                  isLoading={loading} 
+                  error={error} 
+                  simulationData={simulationData} 
+                  onExport={handleExportSimulationCSV} 
+                />
+              ) : (
+                <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
+                  <h3 className="text-2xl font-bold text-white mb-4">Feature Locked 🔒</h3>
+                  <p className="text-gray-400 mb-6">Upgrade to Premium to access Strategy Simulator.</p>
+                  <button onClick={() => navigate("/subscription")} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold">Upgrade Now</button>
+                </div>
+              )
             } />
-            <Route path="planner" element={<GoalPlanner />} />
+            <Route path="planner" element={
+              planLevel >= 2 ? <GoalPlanner /> : (
+                <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
+                  <h3 className="text-2xl font-bold text-white mb-4">Feature Locked 🔒</h3>
+                  <p className="text-gray-400 mb-6">Upgrade to Premium to access Goal Planner.</p>
+                  <button onClick={() => navigate("/subscription")} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold">Upgrade Now</button>
+                </div>
+              )
+            } />
             <Route path="manual" element={<ManualTradeSimulator activeSymbol={activeSymbol} />} />
             <Route path="history" element={<TradeHistory />} />
           </Route>
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/subscription" element={<Subscription onSubscribe={handleSubscribe} />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/subscription" element={<ProtectedRoute><Subscription onSubscribe={handleSubscribe} /></ProtectedRoute>} />
           <Route path="/admin" element={
             <AdminRoute>
               <AdminDashboard />
@@ -560,13 +635,13 @@ function App() {
         </Routes>
       </div>
       {/* 📱 MOBILE BOTTOM NAVIGATION */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
-        {navItems.map((item) => (
+      {token && <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
+        {token && navItems.map((item) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
             className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-colors w-full ${
-              (item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path))
+              location.pathname.startsWith(item.path)
                 ? "text-blue-400"
                 : "text-gray-500 hover:text-gray-300"
             }`}
@@ -575,7 +650,7 @@ function App() {
             <span className="text-[10px] font-bold">{item.title}</span>
           </button>
         ))}
-      </div>
+      </div>}
       {/* Footer */}
       <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative hidden md:block">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">

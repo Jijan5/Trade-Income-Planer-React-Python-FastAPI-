@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/axios";
 import { format } from "date-fns";
+import { useAuth } from "../contexts/AuthContext";
+import { getPlanLevel } from "../utils/permissions";
 
 const TradeHistory = () => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalPnl: 0, winRate: 0, totalTrades: 0 });
+  const { userData } = useAuth();
+  const planLevel = getPlanLevel(userData?.plan);
 
   useEffect(() => {
     fetchTrades();
@@ -45,6 +49,7 @@ const TradeHistory = () => {
   }, {});
 
   const handleExportCSV = () => {
+    if (planLevel < 1) return alert("Upgrade to Basic Plan to export CSV.");
     if (trades.length === 0) return alert("No trades to export.");
 
     const headers = ["Date", "Time", "Symbol", "Entry Price", "Exit Price", "PnL", "Result", "Notes"];
@@ -81,15 +86,19 @@ const TradeHistory = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-end">
-        <button 
-          onClick={handleExportCSV}
-          className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition-colors"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          Export CSV
-        </button>
+      {planLevel >= 1 ? (
+          <button 
+            onClick={handleExportCSV}
+            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Export CSV
+          </button>
+        ) : (
+          <button disabled className="bg-gray-700 text-gray-500 px-4 py-2 rounded text-sm font-bold flex items-center gap-2 cursor-not-allowed">Export CSV 🔒</button>
+        )}
       </div>
       {/* Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

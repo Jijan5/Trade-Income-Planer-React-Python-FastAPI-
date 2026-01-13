@@ -100,7 +100,7 @@ const PostDetail = () => {
     if (!window.confirm("Delete this post?")) return;
     try {
       await api.delete(`/posts/${post.id}`);
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       alert("Failed to delete post.");
     }

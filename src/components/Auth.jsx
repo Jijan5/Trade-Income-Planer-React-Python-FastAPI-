@@ -18,13 +18,14 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
       let response;
       if (isLogin) {
         // Login Request (Form Data format required by OAuth2PasswordRequestForm)
-        const formData = new FormData();
-        formData.append("username", username);
-        formData.append("password", password);
+        const params = new URLSearchParams();
+        params.append("username", username);
+        params.append("password", password);
 
         response = await api.post(
           "/token",
-          formData
+          params,
+          { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
         );
       } else {
         // Register Request (JSON format)

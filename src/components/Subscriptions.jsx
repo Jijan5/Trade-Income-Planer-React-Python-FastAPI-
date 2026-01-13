@@ -12,8 +12,8 @@ const Subscription = ({ onSubscribe }) => {
       description: "For traders who want more data and control.",
       features: [
         "Unlock All Assets (Meme Coins & Alts)",
-        "Export Trade History (CSV)",
-        "Create Your Own Community",
+        "Export Trade History (CSV) ✅",
+        "Prop Firm Challenge Simulator ✅",
         "Ad-Free Experience"
       ],
       color: "blue",
@@ -29,8 +29,8 @@ const Subscription = ({ onSubscribe }) => {
         "Everything in Basic",
         "🤖 AI Trading Coach Analysis",
         "👮 Discipline Mode (Trading Rules)",
-        "🏆 Prop Firm Challenge Simulator",
-        "Unlimited Community Creation"
+        "Strategy Simulator & Goal Planner ✅",
+        "Create up to 3 Communities"
       ],
       color: "purple",
       recommended: true,
@@ -46,6 +46,7 @@ const Subscription = ({ onSubscribe }) => {
         "✨ VIP Community Styles (Animated)",
         "🎨 Custom Gradient Backgrounds",
         "✅ Verified User Badge",
+        "Unlimited Community Creation",
         "Priority Support"
       ],
       color: "yellow",

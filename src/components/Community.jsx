@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+import { getPlanLevel } from "../utils/permissions";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -234,6 +235,7 @@ const Community = ({
     gradientEnd: "#00f2fe",
     gradientDir: "to right",
   });
+  const [isVip, setIsVip] = useState(false);
   const [commAvatar, setCommAvatar] = useState(null);
   const [commBgImage, setCommBgImage] = useState(null);
   const [previewCommAvatar, setPreviewCommAvatar] = useState(null);
@@ -387,6 +389,12 @@ const Community = ({
   const handleCreate = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
+    const planLevel = getPlanLevel(userData?.plan);
+
+    if (planLevel < 2) return alert("Upgrade to Premium to create communities.");
+    // Premium limit: 3 communities. Platinum: Unlimited.
+    const myOwnedCommunities = communities.filter(c => c.creator_username === currentUser);
+    if (planLevel === 2 && myOwnedCommunities.length >= 3) return alert("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.");
     if (!token) return alert("Please login first");
 
     const formData = new FormData();
@@ -398,6 +406,7 @@ const Community = ({
     formData.append("font_family", newComm.fontFamily);
     formData.append("hover_animation", newComm.hoverAnimation);
     formData.append("hover_color", newComm.hoverColor);
+    if (isVip && planLevel >= 3) formData.append("is_vip", "true");
 
     if (commAvatar) formData.append("avatar_file", commAvatar);
     if (commBgImage && newComm.bgType === "image")
@@ -421,6 +430,7 @@ const Community = ({
         gradientEnd: "#00f2fe",
         gradientDir: "to right",
       });
+      setIsVip(false);
       setCommAvatar(null);
       setCommBgImage(null);
       setPreviewCommAvatar(null);
@@ -956,6 +966,9 @@ const Community = ({
     } else {
       style.backgroundColor = comm.bg_value || "#1f2937";
     }
+    if (comm.is_vip) {
+      style.border = "2px solid #fbbf24"; // Gold border
+    }
     return style;
   };
 
@@ -1248,6 +1261,11 @@ const Community = ({
                 ${comm.hover_animation === "none" ? "hover:-translate-y-1" : ""}
               `}
               >
+                {comm.is_vip && (
+                  <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg z-10 flex items-center gap-1">
+                    <span>✨</span> VIP
+                  </div>
+                )}
                 <div className="flex items-center gap-3 mb-4">
                   {comm.avatar_url ? (
                     <img
@@ -1653,6 +1671,17 @@ const Community = ({
                       </div>
                     </div>
                   )}
+                  {/* VIP Style Toggle (Platinum Only) */}
+                  {getPlanLevel(userData?.plan) >= 3 && (
+                    <div className="pt-2 border-t border-gray-700">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500" />
+                        <span className="text-xs font-bold text-yellow-400 uppercase flex items-center gap-1">
+                          ✨ Enable VIP Style (Animated)
+                        </span>
+                      </label>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1679,6 +1708,7 @@ const Community = ({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     "--glow-color": newComm.hoverColor,
+                    border: isVip ? "2px solid #fbbf24" : "1px solid #4b5563",
                   }}
                   className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
                   ${newComm.hoverAnimation === "scale" ? "hover:scale-105" : ""}
@@ -1692,6 +1722,7 @@ const Community = ({
                       ? "hover:-translate-y-1"
                       : ""
                   }
+                  ${isVip ? "animate-pulse-slow shadow-[0_0_30px_rgba(251,191,36,0.2)]" : ""}
                 `}
                 >
                   <div className="flex items-center gap-3 mb-4">
