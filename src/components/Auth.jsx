@@ -76,7 +76,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
             <p className="text-gray-400 mt-2">
               {isLogin
                 ? "Login to access your trading plan"
-                : "Start your journey to financial freedom"}
+                : "Start your journey to trading mastery"}
             </p>
           </div>
 

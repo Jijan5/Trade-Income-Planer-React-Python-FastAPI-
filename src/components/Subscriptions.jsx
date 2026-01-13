@@ -67,10 +67,10 @@ const Subscription = ({ onSubscribe }) => {
       `}</style>
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-white mb-4">
-          Upgrade Your Trading Journey
+          Upgrade Your Trading Simulation Journey
         </h2>
         <p className="text-gray-400 max-w-2xl mx-auto">
-          Unlock advanced tools, AI analysis, and exclusive community features to accelerate your path to profitability.
+        Unlock advanced tools, AI analysis, and exclusive community features to accelerate your learning curve.
         </p>
 
         {/* Billing Toggle */}
