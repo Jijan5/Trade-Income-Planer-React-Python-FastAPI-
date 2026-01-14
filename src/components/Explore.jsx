@@ -36,7 +36,10 @@ const Explore = () => {
     fetchNews();
     // Auto-update setiap 5 menit (300000 ms)
     const interval = setInterval(fetchNews, 300000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      isMounted.current = false;
+    }
   }, []);
 
   // --- 2. TradingView Ticker Widget ---

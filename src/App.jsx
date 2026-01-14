@@ -28,6 +28,7 @@ import PostDetail from "./components/PostDetail";
 import TradeHistory from "./components/TradeHistory";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
+import { PostInteractionProvider } from "./contexts/PostInteractionContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
 
@@ -589,8 +590,10 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
+    <PostInteractionProvider showFlash={showFlash}>
       {/* Override default Vite styles that constrain width */}
+      <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
+        {/* Override default Vite styles that constrain width */}
       <style>{`
         body { display: block !important; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
@@ -1118,7 +1121,8 @@ function App() {
           onNotificationClick={handleNotificationClick}
         />
       )}
-    </div>
+      </div>
+    </PostInteractionProvider>
   );
 }
 

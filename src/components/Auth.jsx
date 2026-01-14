@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { countryCodes } from "../utils/countryCodes";
 import api from "../lib/axios";
 
@@ -17,6 +17,21 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Country Dropdown State
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const countryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,6 +107,11 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
       setLoading(false);
     }
   };
+
+  const filteredCountries = useMemo(() => countryCodes.filter(c => 
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()) || 
+    c.code.includes(countrySearch)
+  ), [countrySearch]);
 
   return (
     <>
@@ -200,21 +220,50 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                 )}
                 {!isLogin && (
                   <div className="grid grid-cols-2 gap-2">
-                    <div>
+                    <div ref={countryDropdownRef} className="relative">
                       <label className="block text-sm font-medium text-gray-400 mb-1">
                         Country Code
                       </label>
-                      <select
-                        value={countryCode}
-                        onChange={(e) => setCountryCode(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                      <div 
+                        className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 cursor-pointer flex justify-between items-center"
+                        onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                       >
-                        {countryCodes.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country.name} ({country.code})
-                          </option>
-                        ))}
-                      </select>
+                        <span>{countryCode}</span>
+                        <span className="text-xs text-gray-500">▼</span>
+                      </div>
+                      
+                      {isCountryDropdownOpen && (
+                        <div className="absolute top-full left-0 w-full bg-gray-800 border border-gray-600 rounded mt-1 z-50 max-h-60 overflow-y-auto shadow-xl">
+                          <div className="p-2 sticky top-0 bg-gray-800 border-b border-gray-700">
+                            <input 
+                              type="text" 
+                              placeholder="Search country..." 
+                              className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                              autoFocus
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                          {filteredCountries.map((country, idx) => (
+                            <div 
+                              key={`${country.name}-${idx}`}
+                              className="px-3 py-2 hover:bg-gray-700 cursor-pointer text-sm text-gray-300 flex justify-between items-center"
+                              onClick={() => {
+                                setCountryCode(country.code);
+                                setIsCountryDropdownOpen(false);
+                                setCountrySearch("");
+                              }}
+                            >
+                              <span className="truncate mr-2">{country.name}</span>
+                              <span className="text-gray-500 whitespace-nowrap">{country.code}</span>
+                            </div>
+                          ))}
+                          {filteredCountries.length === 0 && (
+                            <div className="px-3 py-2 text-sm text-gray-500 text-center">No results</div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-1">

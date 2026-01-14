@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../lib/axios'; // Import instance axios
+import api from '../lib/axios';
 
 const AuthContext = createContext();
 
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
             fetchUnreadCount();
             // Polling unread count every 15 seconds
             const intervalId = setInterval(fetchUnreadCount, 15000);
-            return () => clearInterval(intervalId);
+            return () => { clearInterval(intervalId) };
         } else {
             setUserData(null);
             setUnreadCount(0);

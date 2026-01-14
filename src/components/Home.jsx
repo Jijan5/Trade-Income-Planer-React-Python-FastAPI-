@@ -1,12 +1,25 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import api from "../lib/axios";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+import { usePostInteractions } from "../contexts/PostInteractionContext";
 
 // Base URL for resource statis (img/avatar)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+
+// Remove if no longer needed
+  /*useEffect(() => {
+    return () => clearTimeout(timeoutId);
+  }, [timeoutId]);*/
 
 // --- Sub-components to prevent Home re-renders ---
 const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
@@ -20,8 +33,12 @@ const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
     return () => clearInterval(interval);
   }, [marketPrices.length]);
 
-  if (loadingPrices) return <p className="text-xs text-gray-500 text-center mt-4">Loading...</p>;
-  if (marketPrices.length === 0) return <p className="text-xs text-gray-500 text-center mt-4">Unavailable</p>;
+  if (loadingPrices)
+    return <p className="text-xs text-gray-500 text-center mt-4">Loading...</p>;
+  if (marketPrices.length === 0)
+    return (
+      <p className="text-xs text-gray-500 text-center mt-4">Unavailable</p>
+    );
 
   const item = marketPrices[currentIndex];
   if (!item) return null;
@@ -33,7 +50,8 @@ const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
           {item.symbol.replace("-USD", "")}
         </p>
         <p className="text-xl text-green-400 font-mono">
-          ${item.price < 1 ? item.price.toFixed(8) : item.price.toLocaleString()}
+          $
+          {item.price < 1 ? item.price.toFixed(8) : item.price.toLocaleString()}
         </p>
       </div>
     </div>
@@ -51,7 +69,10 @@ const NewsWidget = React.memo(({ news }) => {
     return () => clearInterval(interval);
   }, [news.length]);
 
-  if (news.length === 0) return <p className="text-xs text-gray-500 text-center mt-10">Loading News...</p>;
+  if (news.length === 0)
+    return (
+      <p className="text-xs text-gray-500 text-center mt-10">Loading News...</p>
+    );
 
   const item = news[currentIndex];
   if (!item) return null;
@@ -72,278 +93,636 @@ const NewsWidget = React.memo(({ news }) => {
         >
           {item.title}
         </a>
-        <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-          {item.body}
-        </p>
+        <p className="text-xs text-gray-400 mt-1 line-clamp-2">{item.body}</p>
       </div>
     </div>
   );
 });
 
-// Memoized Single Post Item
-const PostItem = React.memo(({ post, community, currentUser, userData, navigate, toggleMenu, activeMenu, menuRef, startEditPost, handleDeletePost, handleReportPost, editingItem, setEditingItem, handleUpdatePost, handlePressStart, handlePressEnd, handleReaction, reactionModalPostId, getReactionEmoji, reactions, toggleComments, handleShare, isExpanded, comments, buildCommentTree, renderWithMentions, handleUpdateComment, handleDeleteComment, startEditComment, setReplyingTo, replyingTo, setReplyContent, replyContent, handleMentionableInputChange, submitComment, commentText, setNewCommentText, setPreviewImage }) => {
+const PostItem = React.memo(({ post, community, onPostUpdate }) => {
+  const navigate = useNavigate();
+  const {
+    currentUser,
+    userData,
+    reactions,
+    getReactionEmoji,
+    handleReaction,
+    handlePressStart,
+    handlePressEnd,
+    reactionModalPostId,
+    toggleComments,
+    expandedComments,
+    commentsData,
+    submitComment,
+    newCommentText,
+    setNewCommentText,
+    handleShare,
+    handleDeletePost,
+    handleUpdatePost,
+    handleDeleteComment,
+    handleUpdateComment,
+    handleReportPost,
+    toggleMenu,
+    activeMenu,
+    menuRef,
+    editingItem,
+    setEditingItem,
+    startEditPost,
+    startEditComment,
+    replyingTo,
+    setReplyingTo,
+    replyContent,
+    setReplyContent,
+    setPreviewImage,
+  } = usePostInteractions();
+
+  const isExpanded = !!expandedComments[post.id];
+  const comments = commentsData[post.id];
+  const commentText = newCommentText[post.id];
+
+  const handleLocalReaction = async (type) => {
+    const result = await handleReaction(post, type);
+    if (result.success)
+      onPostUpdate(result.postId, {
+        user_reaction: post.user_reaction === type ? null : type,
+      });
+  };
+
+  const handleLocalPressEnd = async () => {
+    const result = await handlePressEnd(post);
+    if (result.success)
+      onPostUpdate(result.postId, {
+        user_reaction:
+          post.user_reaction === result.reactionType
+            ? null
+            : result.reactionType,
+      });
+  };
   // Local state for UI toggles specific to this post
   const [visibleLimit, setVisibleLimit] = useState(3);
   const [expandedReplies, setExpandedReplies] = useState({});
 
   // Reset visible limit when comments are collapsed
-  useEffect(() => { if (!isExpanded) setVisibleLimit(3); }, [isExpanded]);
-    return (
-      <div key={post.id} id={`post-${post.id}`} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                  {post.user_avatar_url ? (
-                      <img src={`${API_BASE_URL}${post.user_avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                        {post.username.substring(0, 2).toUpperCase()}
+  useEffect(() => {
+    if (!isExpanded) setVisibleLimit(3);
+  }, [isExpanded]);
+  return (
+    <div
+      key={post.id}
+      id={`post-${post.id}`}
+      className="bg-gray-800 p-5 rounded-lg border border-gray-700"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-3">
+          {post.user_avatar_url ? (
+            <img
+              src={`${API_BASE_URL}${post.user_avatar_url}`}
+              alt={post.username}
+              className="w-8 h-8 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              {post.username.substring(0, 2).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-bold text-white flex items-center gap-1">
+              {post.username}
+              <VerifiedBadge user={post} />
+              {community && (
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  - posted in community{" "}
+                  <span
+                    className="text-blue-400 cursor-pointer hover:underline"
+                    onClick={() => navigate(`/community/${community.id}`)}
+                  >
+                    {community.name}
+                  </span>
+                </span>
+              )}
+            </p>
+            <p className="text-[10px] text-gray-500">
+              {(() => {
+                try {
+                  return formatDistanceToNow(new Date(post.created_at), {
+                    addSuffix: true,
+                  });
+                } catch (e) {
+                  return "";
+                }
+              })()}
+              {post.is_edited && (
+                <span className="ml-1 italic opacity-75">(edited)</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="relative">
+          <button
+            onClick={() => toggleMenu("post", post.id)}
+            className="text-gray-400 hover:text-white p-1"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+              />
+            </svg>
+          </button>
+          {activeMenu?.type === "post" && activeMenu?.id === post.id && (
+            <div
+              ref={menuRef}
+              className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
+            >
+              {currentUser === post.username || userData?.role === "admin" ? (
+                <>
+                  {currentUser === post.username && (
+                    <button
+                      onClick={() => startEditPost(post)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeletePost(post.id)}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300"
+                  >
+                    Delete
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => handleReportPost(post.id)}
+                  className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300"
+                >
+                  Report
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      {editingItem?.type === "post" && editingItem?.id === post.id ? (
+        <div className="space-y-2">
+          <textarea
+            value={editingItem.content}
+            onChange={(e) =>
+              setEditingItem({ ...editingItem, content: e.target.value })
+            }
+            className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+            rows={3}
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setEditingItem(null)}
+              className="text-xs text-gray-400 hover:text-white px-3 py-1"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpdatePost}
+              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+          {post.content.split(/(@\w+)/g).map((part, i) =>
+            part.startsWith("@") ? (
+              <strong key={i} className="text-blue-500 font-normal">
+                {part}
+              </strong>
+            ) : (
+              part
+            )
+          )}
+        </p>
+      )}
+      {post.image_url && (
+        <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
+          <img
+            src={`${API_BASE_URL}${post.image_url}`}
+            alt="Post attachment"
+            className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90"
+            onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)}
+          />
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-700/50">
+        <div className="relative group">
+          <button
+            onMouseDown={() => handlePressStart(post.id)} // This just opens the modal
+            onMouseUp={handleLocalPressEnd}
+            onTouchStart={() => handlePressStart(post.id)}
+            onTouchEnd={handleLocalPressEnd}
+            className={`flex items-center gap-2 transition-colors ${
+              post.user_reaction
+                ? "text-blue-400"
+                : "text-gray-400 hover:text-blue-400"
+            }`}
+          >
+            {post.user_reaction ? (
+              <span className="text-xl">
+                {getReactionEmoji(post.user_reaction)}
+              </span>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6"
+                />
+              </svg>
+            )}
+            <span className="text-sm font-bold">
+              {post.likes > 0 ? post.likes : ""}
+            </span>
+          </button>
+          {reactionModalPostId === post.id && (
+            <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+              {reactions.map((r) => (
+                <button
+                  key={r.type}
+                  onClick={() => handleLocalReaction(r.type)}
+                  className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl"
+                  title={r.label}
+                >
+                  {r.emoji}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => toggleComments(post.id)}
+          className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
+            />
+          </svg>
+          <span className="text-sm font-bold">
+            {post.comments_count > 0 ? post.comments_count : ""}
+          </span>
+        </button>
+        <button
+          onClick={() => handleShare(post.id)}
+          className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.287.696.287 1.093 0 .397-.107.769-.287 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
+            />
+          </svg>
+          <span className="text-sm font-bold">
+            {post.shares_count > 0 ? post.shares_count : ""}
+          </span>
+        </button>
+      </div>
+      {/* Comments Section */}
+      {isExpanded && (
+        <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
+          {(() => {
+            const buildCommentTree = (comments) => {
+              const commentMap = {};
+              const topLevelComments = [];
+              if (!comments) return [];
+              comments.forEach((c) => {
+                commentMap[c.id] = { ...c, children: [] };
+              });
+              comments.forEach((c) => {
+                if (c.parent_id && commentMap[c.parent_id])
+                  commentMap[c.parent_id].children.push(commentMap[c.id]);
+                else topLevelComments.push(commentMap[c.id]);
+              });
+              return topLevelComments;
+            };
+            const visibleComments = commentTree.slice(0, visibleLimit); // Use local state
+
+            const renderComment = (comment) => {
+              const hasReplies =
+                comment.children && comment.children.length > 0;
+              const isRepliesExpanded = expandedReplies[comment.id];
+              return (
+                <div
+                  key={comment.id}
+                  className="mt-3"
+                  style={{
+                    borderLeft: comment.parent_id
+                      ? "2px solid #374151"
+                      : "none",
+                    paddingLeft: comment.parent_id ? "1rem" : "0",
+                  }}
+                >
+                  <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
+                    {editingItem?.type === "comment" &&
+                    editingItem?.id === comment.id ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editingItem.content}
+                          onChange={(e) =>
+                            setEditingItem({
+                              ...editingItem,
+                              content: e.target.value,
+                            })
+                          }
+                          className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => setEditingItem(null)}
+                            className="text-xs text-gray-400 hover:text-white px-2 py-0.5"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleUpdateComment}
+                            className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500"
+                          >
+                            Save
+                          </button>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-bold text-white flex items-center gap-1">
-                        {post.username}
-                        <VerifiedBadge user={post} />
-                        {community && (
-                          <span className="text-gray-400 font-normal text-xs ml-1">
-                            - posted in community <span 
-                              className="text-blue-400 cursor-pointer hover:underline"
-                              onClick={() => navigate(`/community/${community.id}`)}
-                            >
-                              {community.name}
-                            </span>
+                    ) : (
+                      <div className="pr-6">
+                        <div className="flex items-center">
+                          <span className="font-bold text-blue-400 mr-1">
+                            {comment.username}
+                          </span>
+                          <VerifiedBadge user={comment} />
+                        </div>
+                        <p className="text-gray-300">
+                          {comment.content.split(/(@\w+)/g).map((part, i) =>
+                            part.startsWith("@") ? (
+                              <strong
+                                key={i}
+                                className="text-blue-500 font-normal"
+                              >
+                                {part}
+                              </strong>
+                            ) : (
+                              part
+                            )
+                          )}
+                        </p>
+                        {comment.is_edited && (
+                          <span className="ml-2 text-[10px] text-gray-500 italic">
+                            (edited)
                           </span>
                         )}
-                      </p>
-                      <p className="text-[10px] text-gray-500">
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 mt-2">
+                      <button
+                        onClick={() => {
+                          setReplyingTo({
+                            commentId: comment.id,
+                            username: comment.username,
+                          });
+                          setReplyContent("");
+                        }}
+                        className="text-[10px] text-gray-400 hover:text-white font-bold"
+                      >
+                        Reply
+                      </button>
+                      <span className="text-[10px] text-gray-500">
                         {(() => {
                           try {
-                            return formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
-                          } catch (e) { return ""; }
+                            return formatDistanceToNow(
+                              new Date(comment.created_at),
+                              { addSuffix: true }
+                            );
+                          } catch (e) {
+                            return "";
+                          }
                         })()}
-                        {post.is_edited && (
-                          <span className="ml-1 italic opacity-75">(edited)</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                    <div className="relative">
-                      <button onClick={() => toggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                        </svg>
-                      </button>
-                      {activeMenu?.type === "post" && activeMenu?.id === post.id && (
-                        <div ref={menuRef} className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
-                          {currentUser === post.username || userData?.role === 'admin' ? (
-                            <>
-                              {currentUser === post.username && (
-                                <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
-                              )}
-                              <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
-                            </>
-                          ) : (
-                            <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300">Report</button>
-                          )}
+                      </span>
+                      {(currentUser === comment.username ||
+                        userData?.role === "admin") && (
+                        <div className="relative">
+                          <button
+                            onClick={() => toggleMenu("comment", comment.id)}
+                            className="text-gray-500 hover:text-white"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                              className="w-3 h-3"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                              />
+                            </svg>
+                          </button>
+                          {activeMenu?.type === "comment" &&
+                            activeMenu?.id === comment.id && (
+                              <div
+                                ref={menuRef}
+                                className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20"
+                              >
+                                <button
+                                  onClick={() => startEditComment(comment)}
+                                  className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteComment(comment.id, post.id)
+                                  }
+                                  className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
                         </div>
                       )}
                     </div>
-                </div>
-                {editingItem?.type === "post" && editingItem?.id === post.id ? (
-                  <div className="space-y-2">
-                    <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none" rows={3} />
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-3 py-1">Cancel</button>
-                      <button onClick={handleUpdatePost} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Save</button>
-                    </div>
                   </div>
+                  {replyingTo?.commentId === comment.id && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        submitComment(
+                          comment.post_id,
+                          replyContent,
+                          comment.id
+                        );
+                      }}
+                      className="mt-2 ml-8 flex gap-2"
+                    >
+                      <input
+                        type="text"
+                        name="replyInput"
+                        value={replyContent}
+                        onChange={(e) => setReplyContent(e.target.value)}
+                        placeholder={`Replying to ${comment.username}...`}
+                        className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500"
+                      >
+                        Reply
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplyingTo(null);
+                          setReplyContent("");
+                        }}
+                        className="text-xs text-gray-400 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  )}
+                  {/* Show More Replies CTA */}
+                  {hasReplies && !isRepliesExpanded && (
+                    <button
+                      onClick={() =>
+                        setExpandedReplies((prev) => ({
+                          ...prev,
+                          [comment.id]: true,
+                        }))
+                      }
+                      className="text-[11px] text-gray-400 hover:text-blue-400 font-bold mt-2 flex items-center gap-1 ml-2"
+                    >
+                      <span className="transform rotate-90">↳</span> View{" "}
+                      {comment.children.length}{" "}
+                      {comment.children.length === 1 ? "reply" : "replies"}
+                    </button>
+                  )}
+
+                  {/* Render Replies */}
+                  {hasReplies && isRepliesExpanded && (
+                    <div className="mt-3">
+                      {comment.children.map(renderComment)}
+                    </div>
+                  )}
+                </div>
+              );
+            };
+            return (
+              <>
+                {visibleComments.length > 0 ? (
+                  visibleComments.map(renderComment)
                 ) : (
-                  <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                    {renderWithMentions(post.content)}
+                  <p className="text-xs text-gray-500 italic">
+                    No comments yet.
                   </p>
                 )}
-                {post.image_url && (
-                  <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
-                    <img
-                      src={`${API_BASE_URL}${post.image_url}`}
-                      alt="Post attachment"
-                      className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90"
-                      onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)}
-                    />
-                  </div>
-                )}
-                
-                {/* Actions */}
-                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-700/50">
-                  <div className="relative group">
-                    <button
-                      onMouseDown={() => handlePressStart(post.id)}
-                      onMouseUp={() => handlePressEnd(post)}
-                      onTouchStart={() => handlePressStart(post.id)}
-                      onTouchEnd={() => handlePressEnd(post)}
-                      className={`flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}
-                    >
-                      {post.user_reaction ? <span className="text-xl">{getReactionEmoji(post.user_reaction)}</span> : 
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6" /></svg>}
-                      <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
-                    </button>
-                    {reactionModalPostId === post.id && (
-                      <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
-                        {reactions.map((r) => (
-                          <button key={r.type} onClick={() => handleReaction(post.id, r.type, post.user_reaction)} className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button onClick={() => toggleComments(post.id)} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                    <span className="text-sm font-bold">{post.comments_count > 0 ? post.comments_count : ""}</span>
+                {commentTree.length > visibleLimit && (
+                  <button
+                    onClick={() => setVisibleLimit((prev) => prev + 10)}
+                    className="text-xs text-gray-400 hover:text-white font-bold mt-4 w-full text-left pl-1"
+                  >
+                    View more comments ({commentTree.length - visibleLimit})
                   </button>
-                  <button onClick={() => handleShare(post.id)} className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.287.696.287 1.093 0 .397-.107.769-.287 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
-                    <span className="text-sm font-bold">{post.shares_count > 0 ? post.shares_count : ""}</span>
-                  </button>
-                </div>
-                {/* Comments Section */}
-                {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
-                    {(() => {
-                      const commentTree = buildCommentTree(comments || []);
-                      const visibleComments = commentTree.slice(0, visibleLimit); // Use local state
-
-                      const renderComment = (comment) => {
-                        const hasReplies = comment.children && comment.children.length > 0;
-                        const isRepliesExpanded = expandedReplies[comment.id];
-                        return (
-                        <div key={comment.id} className="mt-3" style={{ borderLeft: comment.parent_id ? "2px solid #374151" : "none", paddingLeft: comment.parent_id ? "1rem" : "0" }}>
-                          <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
-                          {editingItem?.type === "comment" && editingItem?.id === comment.id ? (
-                              <div className="space-y-2">
-                                <input type="text" value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none" />
-                                <div className="flex justify-end gap-2">
-                                  <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-2 py-0.5">Cancel</button>
-                                  <button onClick={handleUpdateComment} className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500">Save</button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="pr-6">
-                                <div className="flex items-center">
-                                  <span className="font-bold text-blue-400 mr-1">{comment.username}</span>
-                                  <VerifiedBadge user={comment} />
-                                </div>
-                                <p className="text-gray-300">{renderWithMentions(comment.content)}</p>
-                                {comment.is_edited && (
-                                  <span className="ml-2 text-[10px] text-gray-500 italic">(edited)</span>
-                                )}
-                              </div>
-                            )}
-                            <div className="flex items-center gap-4 mt-2">
-                              <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="text-[10px] text-gray-400 hover:text-white font-bold">Reply</button>
-                              <span className="text-[10px] text-gray-500">
-                                {(() => {
-                                  try { return formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }); } catch (e) { return ""; }
-                                })()}
-                              </span>
-                              {(currentUser === comment.username || userData?.role === 'admin') && (
-                                <div className="relative">
-                                  <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                                    </svg>
-                                  </button>
-                                  {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                    <div ref={menuRef} className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20">
-                                      <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700">Edit</button>
-                                      <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700">Delete</button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {replyingTo?.commentId === comment.id && (
-                            <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-2 ml-8 flex gap-2">
-                              <input
-                                type="text" name="replyInput" value={replyContent}
-                                onChange={(e) => { setReplyContent(e.target.value); handleMentionableInputChange(e); }}
-                                placeholder={`Replying to ${comment.username}...`}
-                                className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none" autoFocus
-                              />
-                              <button type="submit" className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500">Reply</button>
-                              <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-gray-400 hover:text-white">Cancel</button>
-                            </form>
-                          )}
-                          {/* Show More Replies CTA */}
-                          {hasReplies && !isRepliesExpanded && (
-                            <button 
-                              onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))}
-                              className="text-[11px] text-gray-400 hover:text-blue-400 font-bold mt-2 flex items-center gap-1 ml-2"
-                            >
-                              <span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}
-                            </button>
-                          )}
-
-                          {/* Render Replies */}
-                          {hasReplies && isRepliesExpanded && (
-                            <div className="mt-3">{comment.children.map(renderComment)}</div>
-                          )}
-                        </div>
-                      )};
-                      return (
-                        <>
-                          {visibleComments.length > 0 ? visibleComments.map(renderComment) : <p className="text-xs text-gray-500 italic">No comments yet.</p>}
-                          {commentTree.length > visibleLimit && (
-                            <button 
-                            onClick={() => setVisibleLimit(prev => prev + 10)}
-                              className="text-xs text-gray-400 hover:text-white font-bold mt-4 w-full text-left pl-1"
-                            >
-                              View more comments ({commentTree.length - visibleLimit})
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                    <div className="flex gap-2 mt-3">
-                      <input
-                        type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`}
-                        value={commentText || ""}
-                        onChange={(e) => { setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value })); handleMentionableInputChange(e); }}
-                        className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                        onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)}
-                      />
-                      <button onClick={() => submitComment(post.id, commentText)} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold">Send</button>
-                    </div>
-                  </div>
                 )}
-              </div>
-        );
-      });
-      
-      // Memoized Post Feed to prevent re-renders when typing in Create Post form
-      const PostFeed = React.memo(({ posts, communities, expandedComments, commentsData, newCommentText, ...actions }) => {
+              </>
+            );
+          })()}
+          <div className="flex gap-2 mt-3">
+            <input
+              type="text"
+              placeholder="Write a comment..."
+              name={`commentInput-${post.id}`}
+              value={commentText || ""}
+              onChange={(e) =>
+                setNewCommentText((prev) => ({
+                  ...prev,
+                  [post.id]: e.target.value,
+                }))
+              }
+              className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+              onKeyPress={(e) =>
+                e.key === "Enter" && submitComment(post.id, commentText)
+              }
+            />
+            <button
+              onClick={() => submitComment(post.id, commentText)}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+// Memoized Post Feed to prevent re-renders when typing in Create Post form
+const PostFeed = React.memo(({ posts, communitiesMap, onPostUpdate }) => {
+  return (
+    <div className="space-y-4">
+      {posts.map((post) => {
+        const community = post.community_id
+          ? communitiesMap[post.community_id]
+          : null;
         return (
-          <div className="space-y-4">
-            {posts.map((post) => {
-              const community = post.community_id ? communities.find(c => c.id === post.community_id) : null;
-              return (
-                  <PostItem 
-                      key={post.id} 
-                      post={post} 
-                      community={community}
-                     // Pass specific data, NOT the whole objects
-                     isExpanded={!!expandedComments[post.id]}
-                     comments={commentsData[post.id]}
-                     commentText={newCommentText[post.id]}
-                     // Pass all action handlers (functions are stable thanks to useCallback)
-                     {...actions}
-                  />
-              )
-            })}
+          <PostItem
+            key={post.id}
+            post={post}
+            community={community}
+            onPostUpdate={onPostUpdate}
+          />
+        );
+      })}
     </div>
   );
 });
 
 const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
-  const { userData } = useAuth();
+  const { userData, showFlash } = useAuth();
   const navigate = useNavigate();
   const [postsPage, setPostsPage] = useState(0);
   const [posts, setPosts] = useState([]);
@@ -354,47 +733,12 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
   const [news, setNews] = useState([]);
   const currentUser = userData?.username;
   const [joinedCommunityIds, setJoinedCommunityIds] = useState([]);
-  const [mobileView, setMobileView] = useState('feed'); // 'feed' | 'widgets'
+  const [mobileView, setMobileView] = useState("feed"); // 'feed' | 'widgets'
 
   // Post State
   const [newPostContent, setNewPostContent] = useState("");
   const [postImage, setPostImage] = useState({ file: null, preview: "" });
   const fileInputRef = useRef(null);
-
-  // Interaction States
-  const [reactionModalPostId, setReactionModalPostId] = useState(null);
-  const longPressTimer = useRef(null);
-  const isLongPress = useRef(false);
-  const [expandedComments, setExpandedComments] = useState({});
-  const [commentsData, setCommentsData] = useState({});
-  const [newCommentText, setNewCommentText] = useState({});
-  const [previewImage, setPreviewImage] = useState(null);
-
-  // Reply & Mention States
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyContent, setReplyContent] = useState("");
-  const [mentionState, setMentionState] = useState({ active: false, query: "", suggestions: [], target: null, position: { top: 0, left: 0 } });
-  const mentionDebounceTimer = useRef(null);
-  const [activeMenu, setActiveMenu] = useState(null);
-  const [editingItem, setEditingItem] = useState(null);
-  const menuRef = useRef(null);
-
-  // Close popups when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (reactionModalPostId && !event.target.closest(".reaction-modal")) {
-        setReactionModalPostId(null);
-      }
-      if (mentionState.active && !event.target.closest(".mention-box")) {
-        setMentionState((prev) => ({ ...prev, active: false }));
-      }
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setActiveMenu(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [reactionModalPostId, mentionState.active, activeMenu]);
 
   useEffect(() => {
     fetchGlobalPosts(0, true); //initial load
@@ -434,7 +778,12 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
       const element = document.getElementById(`post-${highlightedPost.postId}`);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
-        element.classList.add("ring-2", "ring-blue-500", "transition-all", "duration-500");
+        element.classList.add(
+          "ring-2",
+          "ring-blue-500",
+          "transition-all",
+          "duration-500"
+        );
         setTimeout(() => {
           element.classList.remove("ring-2", "ring-blue-500");
           setHighlightedPost(null);
@@ -447,22 +796,28 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   // Refs for interval access to avoid stale closures without re-renders
   const marketPricesRef = useRef(marketPrices);
   const isFetchingPrices = useRef(false);
 
-  useEffect(() => { marketPricesRef.current = marketPrices; }, [marketPrices]);
-  
+  useEffect(() => {
+    marketPricesRef.current = marketPrices;
+  }, [marketPrices]);
+
   const fetchGlobalPosts = async (page = 0, initialLoad = false) => {
     if (loadingPosts && !initialLoad) return;
     setLoadingPosts(true);
     try {
       const res = await api.get(`/posts?skip=${page * 10}&limit=10`);
       if (isMounted.current && res.data.length > 0) {
-        setPosts(prev => (page === 0 || initialLoad) ? res.data : [...prev, ...res.data]);
+        setPosts((prev) =>
+          page === 0 || initialLoad ? res.data : [...prev, ...res.data]
+        );
         setPostsPage(page + 1);
       }
       if (isMounted.current && res.data.length < 10) {
@@ -481,20 +836,30 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
     if (isFetchingPrices.current) return;
     isFetchingPrices.current = true;
     // Only show loading indicator on initial fetch if no data exists
-    if (isMounted.current && marketPricesRef.current.length === 0) setLoadingPrices(true);
-    const symbols = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD", "PEPE24478-USD"];
-    const requests = symbols.map(sym => api.get(`/price/${sym}`, { timeout: 5000 }).catch((err) => {
-      if (isMounted.current) {
-        console.warn(`Failed to fetch price for ${sym}`, err);
-      }
-      return null;
-  }));
+    if (isMounted.current && marketPricesRef.current.length === 0)
+      setLoadingPrices(true);
+    const symbols = [
+      "BTC-USD",
+      "ETH-USD",
+      "SOL-USD",
+      "BNB-USD",
+      "XRP-USD",
+      "PEPE24478-USD",
+    ];
+    const requests = symbols.map((sym) =>
+      api.get(`/price/${sym}`, { timeout: 5000 }).catch((err) => {
+        if (isMounted.current) {
+          console.warn(`Failed to fetch price for ${sym}`, err);
+        }
+        return null;
+      })
+    );
     const responses = await Promise.all(requests);
-    
+
     const prices = responses
-      .filter(res => res && res.data && res.data.status === "success")
-      .map(res => res.data);
-      
+      .filter((res) => res && res.data && res.data.status === "success")
+      .map((res) => res.data);
+
     if (isMounted.current) {
       if (prices.length > 0) {
         setMarketPrices(prices);
@@ -541,11 +906,9 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
 
     try {
       await api.post("/posts", formData, {
-
         headers: {
           "Content-Type": undefined,
         },
-
       });
       setNewPostContent("");
       setPostImage({ file: null, preview: "" });
@@ -555,325 +918,90 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
     }
   };
 
-  // --- INTERACTION HANDLERS ---
-  const reactions = [
-    { emoji: "👍", label: "Like", type: "like" },
-    { emoji: "❤️", label: "Love", type: "love" },
-    { emoji: "😮", label: "Shock", type: "shock" },
-    { emoji: "🚀", label: "Rocket", type: "rocket" },
-    { emoji: "📈", label: "Bullish", type: "chart_up" },
-    { emoji: "👏", label: "Clap", type: "clap" },
-  ];
-
-  const getReactionEmoji = (type) => reactions.find((r) => r.type === type)?.emoji || "👍";
-
-  const handleReaction = useCallback(async (postId, type, currentReaction) => {
-    const token = localStorage.getItem("token");
-    if (!token) return alert("Please login to react.");
-
-    setPosts(prevPosts => prevPosts.map((p) => {
-      if (p.id === postId) {
-        const isSame = p.user_reaction === type;
-        const isNew = !p.user_reaction;
-        let newLikes = p.likes;
-        let newReaction = type;
-        if (isSame) { newLikes = Math.max(0, newLikes - 1); newReaction = null; }
-        else if (isNew) { newLikes += 1; }
-        return { ...p, likes: newLikes, user_reaction: newReaction };
-      }
-      return p;
-    }));
-
-    try {
-      if (currentReaction === type) {
-        await api.delete(`/posts/${postId}/react`);
-      } else {
-        await api.post(`/posts/${postId}/react`, { type });
-      }
-    } catch (error) {
-      console.error("Reaction failed", error);
-      fetchGlobalPosts();
-    }
-    setReactionModalPostId(null);
+  const onPostUpdate = useCallback((postId, updatedFields) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((p) => (p.id === postId ? { ...p, ...updatedFields } : p))
+    );
   }, []);
 
-  const handlePressStart = useCallback((postId) => {
-    isLongPress.current = false;
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      setReactionModalPostId(postId);
-    }, 300);
-  }, []);
+  const myCommunities = communities.filter((c) =>
+    joinedCommunityIds.includes(c.id)
+  );
 
-  const handlePressEnd = useCallback((post) => {
-    clearTimeout(longPressTimer.current);
-    if (!isLongPress.current) {
-      handleReaction(post.id, post.user_reaction || "like", post.user_reaction);
-    }
-  }, [handleReaction]);
-
-  const toggleComments = useCallback(async (postId) => {
-    const isExpanded = !!expandedComments[postId];
-    setExpandedComments({ ...expandedComments, [postId]: !isExpanded });
-    if (!isExpanded && !commentsData[postId]) {
-      try {
-        const res = await api.get(`/posts/${postId}/comments`);
-        setCommentsData({ ...commentsData, [postId]: res.data });
-      } catch (error) { console.error("Fetch comments failed", error); }
-    }
-  }, [expandedComments, commentsData]);
-
-  const submitComment = useCallback(async (postId, content, parentId = null) => {
-    const token = localStorage.getItem("token");
-    if (!content || !content.trim()) return;
-    if (!token) return alert("Please login to comment.");
-
-    try {
-      const res = await api.post(`/posts/${postId}/comments`, { content, parent_id: parentId });
-      const currentComments = commentsData[postId] || [];
-      setCommentsData({ ...commentsData, [postId]: [...currentComments, res.data] });
-      if (parentId) { setReplyingTo(null); setReplyContent(""); }
-      else { setNewCommentText({ ...newCommentText, [postId]: "" }); }
-      setPosts(prevPosts => prevPosts.map((p) => p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p));
-    } catch (error) { console.error("Comment failed", error); }
-  }, [commentsData, newCommentText]);
-
-  const handleShare = useCallback(async (postId) => {
-    try {
-      await api.post(`/posts/${postId}/share`);
-      setPosts(prevPosts => prevPosts.map((p) => p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p));
-      alert("Post shared!");
-    } catch (error) { console.error("Share failed", error); }
-  }, []);
-
-  // --- EDIT & DELETE HANDLERS ---
-  const handleDeletePost = useCallback(async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-    try {
-      await api.delete(`/posts/${postId}`);
-      setPosts(prevPosts => prevPosts.filter((p) => p.id !== postId));
-      setActiveMenu(null);
-    } catch (error) {
-      alert("Failed to delete post");
-    }
-  }, [activeMenu]);
-
-  const handleUpdatePost = useCallback(async () => {
-    if (!editingItem || !editingItem.content.trim()) return;
-    try {
-      const res = await api.put(
-        `/posts/${editingItem.id}`,
-        {
-          content: editingItem.content,
-          image_url: editingItem.image_url,
-          link_url: editingItem.link_url,
-        }
-      );
-
-      setPosts(prevPosts =>
-        prevPosts.map((p) => (p.id === editingItem.id ? { ...p, ...res.data } : p))
-      );
-      setEditingItem(null);
-    } catch (error) {
-      alert("Failed to update post");
-    }
-  }, [editingItem]);
-
-  const handleUpdateComment = useCallback(async () => {
-    if (!editingItem || !editingItem.content.trim()) return;
-    try {
-      const res = await api.put(
-        `/comments/${editingItem.id}`,
-        {
-          content: editingItem.content,
-        }
-      );
-
-      const postId = res.data.post_id;
-      const updatedComments = commentsData[postId].map((c) =>
-        c.id === editingItem.id ? res.data : c
-      );
-      setCommentsData({ ...commentsData, [postId]: updatedComments });
-
-      setEditingItem(null);
-    } catch (error) {
-      alert("Failed to update comment");
-    }
-  }, [editingItem, commentsData]);
-
-  const handleDeleteComment = useCallback(async (commentId, postId) => {
-    if (!window.confirm("Delete this comment?")) return;
-    try {
-      await api.delete(`/comments/${commentId}`);
-
-      const updatedComments = commentsData[postId].filter(
-        (c) => c.id !== commentId
-      );
-      setCommentsData({ ...commentsData, [postId]: updatedComments });
-
-      setPosts(prevPosts =>
-        prevPosts.map((p) =>
-          p.id === postId
-            ? { ...p, comments_count: Math.max(0, p.comments_count - 1) }
-            : p
-        )
-      );
-      setActiveMenu(null);
-    } catch (error) {
-      alert("Failed to delete comment");
-    }
-  }, [commentsData]);
-
-  const handleReportPost = useCallback(async (postId) => {
-    const reason = prompt("Why are you reporting this post? (e.g., Spam, Harassment)");
-    if (!reason) return;
-
-    try {
-      await api.post("/reports", { post_id: postId, reason });
-        alert("Report submitted. Thank you for helping keep the community safe.");
-        setActiveMenu(null);
-    } catch (error) {
-        alert("Failed to submit report.");
-    }
-  }, []);
-
-  const toggleMenu = useCallback((type, id) => {
-    if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
-      setActiveMenu(null);
-    } else {
-      setActiveMenu({ type, id });
-    }
-  }, [activeMenu]);
-
-  const startEditPost = useCallback((post) => {
-    setEditingItem({
-      type: "post",
-      id: post.id,
-      content: post.content,
-      image_url: post.image_url,
-      link_url: post.link_url,
-    });
-    setActiveMenu(null);
-  }, []);
-
-  const startEditComment = useCallback((comment) => {
-    setEditingItem({
-      type: "comment",
-      id: comment.id,
-      content: comment.content,
-    });
-    setActiveMenu(null);
-  }, []);
-
-  // Mention Logic
-  const handleMentionableInputChange = useCallback((e) => {
-    const input = e.target;
-    const text = input.value;
-    const cursorPosition = input.selectionStart;
-    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
-    const lastSpace = text.lastIndexOf(" ", cursorPosition - 1);
-
-    if (lastAt > lastSpace) {
-      const query = text.substring(lastAt + 1, cursorPosition);
-      const rect = input.getBoundingClientRect();
-      setMentionState({ active: true, query, suggestions: [], target: input, position: { top: rect.bottom + window.scrollY, left: rect.left + window.scrollX } });
-    } else {
-      setMentionState((prev) => ({ ...prev, active: false }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mentionState.active) {
-      clearTimeout(mentionDebounceTimer.current);
-      mentionDebounceTimer.current = setTimeout(async () => {
-        if (mentionState.query.trim() === "") return;
-        try {
-          const res = await api.get(`/users/search?q=${mentionState.query}`);
-          setMentionState((prev) => ({ ...prev, suggestions: res.data }));
-        } catch (error) {}
-      }, 300);
-    }
-  }, [mentionState.query, mentionState.active]);
-
-  const insertMention = (username) => {
-    const { target } = mentionState;
-    if (!target) return;
-    const text = target.value;
-    const cursorPosition = target.selectionStart;
-    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
-    const newText = `${text.substring(0, lastAt)}@${username} ${text.substring(cursorPosition)}`;
-
-    if (target.name === "mainPostContent") setNewPostContent(newText);
-    else if (target.name.startsWith("commentInput-")) {
-      const postId = target.name.split("-")[1];
-      setNewCommentText({ ...newCommentText, [postId]: newText });
-    } else if (target.name === "replyInput") setReplyContent(newText);
-
-    setMentionState({ active: false, query: "", suggestions: [], target: null, position: { top: 0, left: 0 } });
-    setTimeout(() => target.focus(), 0);
-  };
-
-  const renderWithMentions = useCallback((text) => text.split(/(@\w+)/g).map((part, i) => part.startsWith("@") ? <strong key={i} className="text-blue-500 font-normal">{part}</strong> : part), []);
-
-  const buildCommentTree = useCallback((comments) => {
-    const commentMap = {};
-    const topLevelComments = [];
-    comments.forEach((c) => { commentMap[c.id] = { ...c, children: [] }; });
-    comments.forEach((c) => {
-      if (c.parent_id && commentMap[c.parent_id]) commentMap[c.parent_id].children.push(commentMap[c.id]);
-      else topLevelComments.push(commentMap[c.id]);
-    });
-    return topLevelComments;
-  }, []);
-
-  const myCommunities = communities.filter(c => joinedCommunityIds.includes(c.id));
+  const communitiesMap = useMemo(() => {
+    if (!communities) return {};
+    return communities.reduce((acc, comm) => {
+      acc[comm.id] = comm;
+      return acc;
+    }, {});
+  }, [communities]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
       {/* 📱 Mobile View Switcher */}
-      <div className="lg:hidden col-span-1 flex bg-gray-800 p-1 rounded-lg mb-2 border border-gray-700 sticky top-24 z-30 shadow-lg">
-         <button 
-            onClick={() => setMobileView('feed')} 
-            className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${mobileView === 'feed' ? 'bg-blue-600 text-white shadow' : 'text-gray-400'}`}
-         >Feed</button>
-         <button 
-            onClick={() => setMobileView('widgets')} 
-            className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${mobileView === 'widgets' ? 'bg-blue-600 text-white shadow' : 'text-gray-400'}`}
-         >Market & Groups</button>
+      <div className="lg:hidden col-span-1 flex bg-gray-800 p-1 rounded-lg border border-gray-700 sticky top-24 z-30 shadow-lg">
+        <button
+          onClick={() => setMobileView("feed")}
+          className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
+            mobileView === "feed"
+              ? "bg-blue-600 text-white shadow"
+              : "text-gray-400"
+          }`}
+        >
+          Feed
+        </button>
+        <button
+          onClick={() => setMobileView("widgets")}
+          className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
+            mobileView === "widgets"
+              ? "bg-blue-600 text-white shadow"
+              : "text-gray-400"
+          }`}
+        >
+          Market & Groups
+        </button>
       </div>
       {/* LEFT SIDEBAR (Widgets) */}
-      <div className={`${mobileView === 'widgets' ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-6`}>
+      <div
+        className={`${
+          mobileView === "widgets" ? "block" : "hidden"
+        } lg:block lg:col-span-1 space-y-6`}
+      >
         <div className="space-y-6 sticky top-24">
-        {/* Market Price Widget */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg overflow-hidden relative h-32">
-          <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
-            Market Watch
-          </h3>
-          <MarketWidget marketPrices={marketPrices} loadingPrices={loadingPrices} />
-        </div>
+          {/* Market Price Widget */}
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg overflow-hidden relative h-32">
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
+              Market Watch
+            </h3>
+            <MarketWidget
+              marketPrices={marketPrices}
+              loadingPrices={loadingPrices}
+            />
+          </div>
 
-        {/* News Widget */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg h-64 relative overflow-hidden">
-          <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
-            Crypto News
-          </h3>
-          <NewsWidget news={news} />
-        </div>
+          {/* News Widget */}
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg h-64 relative overflow-hidden">
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
+              Crypto News
+            </h3>
+            <NewsWidget news={news} />
+          </div>
         </div>
       </div>
 
       {/* CENTER (Main Feed) */}
-      <div className={`${mobileView === 'feed' ? 'block' : 'hidden'} lg:block lg:col-span-2 space-y-6`}>
+      <div
+        className={`${
+          mobileView === "feed" ? "block" : "hidden"
+        } lg:block lg:col-span-2 space-y-6`}
+      >
         {/* Create Post Box */}
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
           <form onSubmit={handlePostSubmit}>
             <textarea
               value={newPostContent}
               name="mainPostContent"
-              onChange={(e) => {
-                setNewPostContent(e.target.value);
-                handleMentionableInputChange(e);
-              }}
+              onChange={(e) => setNewPostContent(e.target.value)}
               onPaste={handlePaste}
               placeholder={`What's happening, ${currentUser || "Guest"}?`}
               className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[80px]"
@@ -926,45 +1054,10 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
         </div>
 
         {/* Feed */}
-        <PostFeed 
-          posts={posts} 
-          communities={communities} 
-          currentUser={currentUser} 
-          userData={userData} 
-          navigate={navigate} 
-          toggleMenu={toggleMenu} 
-          activeMenu={activeMenu} 
-          menuRef={menuRef} 
-          startEditPost={startEditPost} 
-          handleDeletePost={handleDeletePost} 
-          handleReportPost={handleReportPost} 
-          editingItem={editingItem} 
-          setEditingItem={setEditingItem} 
-          handleUpdatePost={handleUpdatePost} 
-          handlePressStart={handlePressStart} 
-          handlePressEnd={handlePressEnd} 
-          handleReaction={handleReaction} 
-          reactionModalPostId={reactionModalPostId} 
-          getReactionEmoji={getReactionEmoji} 
-          reactions={reactions} 
-          toggleComments={toggleComments} 
-          handleShare={handleShare} 
-          expandedComments={expandedComments} 
-          commentsData={commentsData} 
-          buildCommentTree={buildCommentTree} 
-          renderWithMentions={renderWithMentions} 
-          handleUpdateComment={handleUpdateComment} 
-          handleDeleteComment={handleDeleteComment} 
-          startEditComment={startEditComment} 
-          setReplyingTo={setReplyingTo} 
-          replyingTo={replyingTo}
-          setReplyContent={setReplyContent} 
-          replyContent={replyContent} 
-          handleMentionableInputChange={handleMentionableInputChange} 
-          submitComment={submitComment} 
-          newCommentText={newCommentText} 
-          setNewCommentText={setNewCommentText} 
-          setPreviewImage={setPreviewImage} 
+        <PostFeed
+          posts={posts}
+          communitiesMap={communitiesMap}
+          onPostUpdate={onPostUpdate}
         />
         {hasMorePosts && (
           <div className="text-center mt-4">
@@ -979,35 +1072,22 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
         )}
       </div>
 
-      {/* Mention Box */}
-      {mentionState.active && mentionState.suggestions.length > 0 && (
-        <div className="mention-box absolute z-30 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden" style={{ top: mentionState.position.top, left: mentionState.position.left }}>
-          {mentionState.suggestions.map((user) => (
-            <button key={user.username} onClick={() => insertMention(user.username)} className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-600">{user.username}</button>
-          ))}
-        </div>
-      )}
-
-      {/* Image Preview Modal */}
-      {previewImage && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4" onClick={() => setPreviewImage(null)}>
-          <button className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors" onClick={() => setPreviewImage(null)}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
-          <img src={previewImage} alt="Full Preview" className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
-
       {/* RIGHT SIDEBAR (Communities) */}
       {userData && (
-        <div className={`${mobileView === 'widgets' ? 'block' : 'hidden'} lg:block lg:col-span-1`}>
+        <div
+          className={`${
+            mobileView === "widgets" ? "block" : "hidden"
+          } lg:block lg:col-span-1`}
+        >
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg sticky top-24">
             <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
               <span className="text-blue-500">👥</span> Your Communities
             </h3>
             <div className="space-y-3">
-            {myCommunities.length === 0 ? (
-                <p className="text-xs text-gray-500">You haven't joined any communities yet.</p>
+              {myCommunities.length === 0 ? (
+                <p className="text-xs text-gray-500">
+                  You haven't joined any communities yet.
+                </p>
               ) : (
                 myCommunities.map((comm) => (
                   <div

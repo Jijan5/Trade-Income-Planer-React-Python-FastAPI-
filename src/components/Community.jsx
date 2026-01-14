@@ -1709,7 +1709,7 @@ const Community = ({
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     "--glow-color": newComm.hoverColor,
-                    border: isVip ? "2px solid #fbbf24" : "1px solid #4b5563",
+                    border: isVip ? "3px solid #fbbf24" : "1px solid #4b5563",
                   }}
                   className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
                   ${newComm.hoverAnimation === "scale" ? "hover:scale-105" : ""}
