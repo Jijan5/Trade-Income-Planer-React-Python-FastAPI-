@@ -3,14 +3,18 @@ import time
 from fastapi import APIRouter, Depends, HTTPException
 import httpx
 from pydantic import BaseModel
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter()
 
 # --- config Midtrans payment gateway---
 snap = midtransclient.Snap(
     is_production=False,
-    server_key='SB-Mid-server-waDxbRj709dcZvEP6iH6kIVx',
-    client_key='SB-Mid-client-po0vaah-531nIOz5'
+    SERVER_KEY = os.getenv("MIDTRANS_SERVER_KEY"),
+    CLIENT_KEY = os.getenv("MIDTRANS_CLIENT_KEY")
 )
 
 # Model untuk data yang dikirim dari Frontend
