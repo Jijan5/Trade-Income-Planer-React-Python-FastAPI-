@@ -7,7 +7,7 @@ import VerifiedBadge from "./VerifiedBadge";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-const PostDetail = () => {
+const PostDetail = ({ showFlash }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { userData } = useAuth();
@@ -92,7 +92,7 @@ const PostDetail = () => {
       else { setNewComment(""); }
       setPost({ ...post, comments_count: post.comments_count + 1 });
     } catch (error) {
-      alert("Failed to comment.");
+      showFlash("Failed to comment.", "error");
     }
   };
 
@@ -102,7 +102,7 @@ const PostDetail = () => {
       await api.delete(`/posts/${post.id}`);
       navigate("/home");
     } catch (error) {
-      alert("Failed to delete post.");
+      showFlash("Failed to delete post.", "error");
     }
   };
 
@@ -113,7 +113,7 @@ const PostDetail = () => {
       setComments(comments.filter(c => c.id !== commentId));
       setPost({ ...post, comments_count: Math.max(0, post.comments_count - 1) });
     } catch (error) {
-      alert("Failed to delete comment.");
+      showFlash("Failed to delete comment.", "error");
     }
   };
 

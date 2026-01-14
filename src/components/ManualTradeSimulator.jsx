@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../lib/axios';
+import { useOutletContext } from "react-router-dom";
 import { useManualTrade } from "../contexts/ManualTradeContext";
 import { useAuth } from "../contexts/AuthContext";
 import { getPlanLevel } from "../utils/permissions";
@@ -65,11 +66,12 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     resetSession,
   } = useManualTrade();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { showFlash } = useOutletContext();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
 
   const downloadCSV = () => {
-    if (planLevel < 1) return alert("Upgrade to Basic Plan to export CSV.");
+    if (planLevel < 1) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
     if (!account.history || account.history.length === 0) return;
 
     const headers = ["ID", "Symbol", "Type", "Entry Price", "Exit Price", "Size", "PnL", "Reason", "Note", "Time"];
@@ -103,7 +105,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   };
 
   const analyzeHealth = async () => {
-    if (planLevel < 2) return alert("Upgrade to Premium Plan to use AI Coach.");
+    if (planLevel < 2) return showFlash("Upgrade to Premium Plan to use AI Coach.", "error");
     if (account.history.length === 0) return;
     setIsAnalyzing(true);
     try {

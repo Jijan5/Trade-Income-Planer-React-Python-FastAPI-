@@ -207,6 +207,7 @@ const Community = ({
   communities: propCommunities, // Receive communities from Ap
   highlightedPost,
   setHighlightedPost,
+  showFlash,
 }) => {
   const { userData } = useAuth();
   const { id } = useParams();
@@ -391,11 +392,11 @@ const Community = ({
     const token = localStorage.getItem("token");
     const planLevel = getPlanLevel(userData?.plan);
 
-    if (planLevel < 2) return alert("Upgrade to Premium to create communities.");
+    if (planLevel < 2) return showFlash("Upgrade to Premium to create communities.", "error");
     // Premium limit: 3 communities. Platinum: Unlimited.
     const myOwnedCommunities = communities.filter(c => c.creator_username === currentUser);
-    if (planLevel === 2 && myOwnedCommunities.length >= 3) return alert("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.");
-    if (!token) return alert("Please login first");
+    if (planLevel === 2 && myOwnedCommunities.length >= 3) return showFlash("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.", "error");
+    if (!token) return showFlash("Please login first", "error");
 
     const formData = new FormData();
     formData.append("name", newComm.name);
@@ -463,7 +464,7 @@ const Community = ({
   const handleJoinCommunity = async (e, comm) => {
     e.stopPropagation(); // Prevent entering card immediately
     const token = localStorage.getItem("token");
-    if (!token) return alert("Please login to join.");
+    if (!token) return showFlash("Please login to join.", "error");
 
     try {
       await api.post(`/communities/${comm.id}/join`);
@@ -476,7 +477,7 @@ const Community = ({
       // Optional: Auto enter after join
       navigate(`/community/${comm.id}`);
     } catch (error) {
-      alert("Failed to join community.");
+      showFlash("Failed to join community.", "error");
     }
   };
 
@@ -506,7 +507,7 @@ const Community = ({
       setShowExitModal(false);
       setCommunityToExit(null);
     } catch (error) {
-      alert("Failed to leave community.");
+      showFlash("Failed to leave community.", "error");
     }
   };
 
@@ -519,10 +520,10 @@ const Community = ({
     try {
       await api.delete(`/communities/${communityId}`);
         setCommunities(communities.filter(c => c.id !== communityId));
-        alert("Community deleted successfully.");
+        showFlash("Community deleted successfully.", "success");
     } catch (error) {
         console.error("Delete failed", error);
-        alert(error.response?.data?.detail || "Failed to delete community.");
+        showFlash(error.response?.data?.detail || "Failed to delete community.", "error");
     }
   };
 
@@ -545,7 +546,7 @@ const Community = ({
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert("Please login to post.");
+      showFlash("Please login to post.", "error");
       return;
     }
 
@@ -575,7 +576,7 @@ const Community = ({
         if (error.response.status === 401)
           msg = "Session expired. Please login again.";
       }
-      alert(msg);
+      showFlash(msg, "error");
     }
   };
 
@@ -583,7 +584,7 @@ const Community = ({
 
   const handleReaction = useCallback(async (postId, type, currentReaction) => {
     const token = localStorage.getItem("token");
-    if (!token) return alert("Please login to react.");
+    if (!token) return showFlash("Please login to react.", "error");
 
     // Optimistic UI Update
     setPosts(prevPosts =>
@@ -620,7 +621,7 @@ const Community = ({
     } catch (error) {
       console.error("Reaction failed", error);
       if (error.response && error.response.status === 401) {
-        alert("Session expired. Please login again.");
+        showFlash("Session expired. Please login again.", "error");
       }
       fetchPosts(activeCommunity.id); // Revert on error
     }
@@ -645,7 +646,7 @@ const Community = ({
   const submitComment = useCallback(async (postId, content, parentId = null) => {
     const token = localStorage.getItem("token");
     if (!content || !content.trim()) return;
-    if (!token) return alert("Please login to comment.");
+    if (!token) return showFlash("Please login to comment.", "error");
 
     try {
       const res = await api.post(`/posts/${postId}/comments`, { content, parent_id: parentId });
@@ -681,7 +682,7 @@ const Community = ({
           p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p
         )
       );
-      alert("Post shared to your timeline! (Simulated)");
+      showFlash("Post shared to your timeline! (Simulated)", "success");
     } catch (error) {
       console.error("Share failed", error);
     }
@@ -811,7 +812,7 @@ const Community = ({
       setPosts(prevPosts => prevPosts.filter((p) => p.id !== postId));
       setActiveMenu(null);
     } catch (error) {
-      alert("Failed to delete post");
+      showFlash("Failed to delete post", "error");
     }
   }, []);
 
@@ -831,7 +832,7 @@ const Community = ({
       );
       setEditingItem(null);
     } catch (error) {
-      alert("Failed to update post");
+      showFlash("Failed to update post", "error");
     }
   }, [editingItem]);
 
@@ -851,7 +852,7 @@ const Community = ({
 
       setEditingItem(null);
     } catch (error) {
-      alert("Failed to update comment");
+      showFlash("Failed to update comment", "error");
     }
   }, [editingItem, commentsData]);
 
@@ -877,7 +878,7 @@ const Community = ({
       );
       setActiveMenu(null);
     } catch (error) {
-      alert("Failed to delete comment");
+      showFlash("Failed to delete comment", "error");
     }
   }, [commentsData]);
 
@@ -888,10 +889,10 @@ const Community = ({
     try {
       const token = localStorage.getItem("token");
       await api.post("/reports", { post_id: postId, reason });
-        alert("Report submitted. Thank you for helping keep the community safe.");
-        setActiveMenu(null);
+      showFlash("Report submitted. Thank you for helping keep the community safe.", "success");
+      setActiveMenu(null);
     } catch (error) {
-        alert("Failed to submit report.");
+      showFlash("Failed to submit report.", "error");
     }
   }, []);
 

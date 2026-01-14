@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/axios";
+import { useOutletContext } from "react-router-dom";
 import { format } from "date-fns";
 import { useAuth } from "../contexts/AuthContext";
 import { getPlanLevel } from "../utils/permissions";
@@ -8,6 +9,7 @@ const TradeHistory = () => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ totalPnl: 0, winRate: 0, totalTrades: 0 });
+  const { showFlash } = useOutletContext();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
 
@@ -49,8 +51,8 @@ const TradeHistory = () => {
   }, {});
 
   const handleExportCSV = () => {
-    if (planLevel < 1) return alert("Upgrade to Basic Plan to export CSV.");
-    if (trades.length === 0) return alert("No trades to export.");
+    if (planLevel < 1) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
+    if (trades.length === 0) return showFlash("No trades to export.", "info");
 
     const headers = ["Date", "Time", "Symbol", "Entry Price", "Exit Price", "PnL", "Result", "Notes"];
     const csvRows = [headers.join(",")];

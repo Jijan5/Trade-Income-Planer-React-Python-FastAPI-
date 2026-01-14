@@ -64,16 +64,24 @@ class User(SQLModel, table=True):
   id: Optional[int] = SQLField(default=None, primary_key=True)
   username: str = SQLField(index=True, unique=True)
   email: str = SQLField(index=True, unique=True)
+  country_code: str
+  phone_number: str
+  full_name: str
   hashed_password: str
   role: str = SQLField(default="user")  # roles: user, admin
   avatar_url: Optional[str] = SQLField(default=None)
   plan: str = SQLField(default="Free")
+  reset_token: Optional[str] = SQLField(default=None, index=True)
+  reset_token_expires: Optional[datetime] = SQLField(default=None)
   status: str = SQLField(default="active")  # statuses: active, banned
   
 class UserCreate(BaseModel):
   username: str
   email: str
   password: str
+  full_name: str
+  country_code: str
+  phone_number: str
   
 class UserRead(BaseModel):
   id: int

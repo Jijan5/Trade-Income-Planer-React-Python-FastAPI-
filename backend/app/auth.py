@@ -15,17 +15,21 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def verify_password(plain_password, hashed_password):
+  # Pre-hash the provided plain password with SHA256, then base64 encode it
   password_bytes = plain_password.encode('utf-8')
   pre_hashed_password = base64.b64encode(hashlib.sha256(password_bytes).digest())
+  
+  # Compare it with the stored bcrypt hash
   return bcrypt.checkpw(pre_hashed_password, hashed_password.encode('utf-8'))
 
 def get_password_hash(password):
+  # Pre-hash the password with SHA256 to ensure it's not longer than 72 bytes for bcrypt
   password_bytes = password.encode('utf-8')
   sha256_hash = hashlib.sha256(password_bytes).digest()
   pre_hashed_password = base64.b64encode(sha256_hash)
+  
+  # Generate the bcrypt hash from the pre-hashed password
   return bcrypt.hashpw(pre_hashed_password, bcrypt.gensalt()).decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
