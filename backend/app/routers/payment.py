@@ -5,6 +5,7 @@ import httpx
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+from ..dependencies import get_current_user
 
 load_dotenv()
 
@@ -13,8 +14,8 @@ router = APIRouter()
 # --- config Midtrans payment gateway---
 snap = midtransclient.Snap(
     is_production=False,
-    SERVER_KEY = os.getenv("MIDTRANS_SERVER_KEY"),
-    CLIENT_KEY = os.getenv("MIDTRANS_CLIENT_KEY")
+    server_key=os.getenv("MIDTRANS_SERVER_KEY"),
+    client_key=os.getenv("MIDTRANS_CLIENT_KEY")
 )
 
 # Model untuk data yang dikirim dari Frontend
@@ -24,7 +25,7 @@ class PaymentRequest(BaseModel):
     billing_cycle: str
 
 @router.post("/api/payment/create_transaction")
-async def create_transaction(req: PaymentRequest, current_user: dict = Depends(get_current_user)):
+async def create_transaction(req: PaymentRequest, current_user=Depends(get_current_user)):
     try:
         # 1. convert currency to IDR (PENTING)
         # USD = IDR (auto updated)
@@ -42,7 +43,7 @@ async def create_transaction(req: PaymentRequest, current_user: dict = Depends(g
 
         # 2. make Order ID Unique
         # Format: TIP-{user_id}-{timestamp}
-        order_id = f"TIP-{current_user['id']}-{int(time.time())}"
+        order_id = f"TIP-{current_user.id}-{int(time.time())}"
 
         # 3. ready for midtrans params
         param = {
@@ -54,8 +55,8 @@ async def create_transaction(req: PaymentRequest, current_user: dict = Depends(g
                 "secure": True
             },
             "customer_details": {
-                "first_name": current_user.get('username', 'Trader'),
-                "email": current_user.get('email', 'user@example.com'),
+                "first_name": current_user.username,
+                "email": current_user.email,
             },
             "item_details": [{
                 "id": req.plan_id,
