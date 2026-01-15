@@ -436,6 +436,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
               });
               return topLevelComments;
             };
+            const commentTree = buildCommentTree(comments || []);
             const visibleComments = commentTree.slice(0, visibleLimit); // Use local state
 
             const renderComment = (comment) => {

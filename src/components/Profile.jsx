@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+import { countryCodes } from "../utils/countryCodes";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -33,6 +34,9 @@ const Profile = () => {
   const [user, setUser] = useState({
     username: "",
     email: "",
+    full_name: "",
+    country_code: "",
+    phone_number: "",
     avatar_url: null,
   });
   const [password, setPassword] = useState("");
@@ -56,6 +60,21 @@ const Profile = () => {
   const [editCommBgImage, setEditCommBgImage] = useState(null);
   const [previewEditCommAvatar, setPreviewEditCommAvatar] = useState(null);
   const [previewEditCommBg, setPreviewEditCommBg] = useState(null);
+
+  // Country Dropdown State
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const countryDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
+        setIsCountryDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     fetchProfile();
@@ -121,6 +140,9 @@ const Profile = () => {
     const formData = new FormData();
     formData.append("username", user.username);
     formData.append("email", user.email);
+    formData.append("full_name", user.full_name || "");
+    formData.append("country_code", user.country_code || "");
+    formData.append("phone_number", user.phone_number || "");
     if (password) formData.append("password", password);
     if (avatarFile) formData.append("avatar_file", avatarFile);
 
@@ -208,6 +230,11 @@ const Profile = () => {
     }
   };
 
+  const filteredCountries = useMemo(() => countryCodes.filter(c => 
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()) || 
+    c.code.includes(countrySearch)
+  ), [countrySearch]);
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       
@@ -273,6 +300,71 @@ const Profile = () => {
               onChange={(e) => setUser({ ...user, email: e.target.value })}
               className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:border-blue-500 outline-none"
               required
+            />
+          </div>
+        </div>
+        
+        <div>
+          <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Full Name</label>
+          <input
+            type="text"
+            value={user.full_name || ""}
+            onChange={(e) => setUser({ ...user, full_name: e.target.value })}
+            className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:border-blue-500 outline-none"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div ref={countryDropdownRef} className="relative">
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Country Code</label>
+            <div 
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:outline-none focus:border-blue-500 cursor-pointer flex justify-between items-center"
+              onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+            >
+              <span>{user.country_code || "+1"}</span>
+              <span className="text-xs text-gray-500">▼</span>
+            </div>
+            
+            {isCountryDropdownOpen && (
+              <div className="absolute top-full left-0 w-full bg-gray-800 border border-gray-600 rounded mt-1 z-50 max-h-60 overflow-y-auto shadow-xl">
+                <div className="p-2 sticky top-0 bg-gray-800 border-b border-gray-700">
+                  <input 
+                    type="text" 
+                    placeholder="Search country..." 
+                    className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                {filteredCountries.map((country, idx) => (
+                  <div 
+                    key={`${country.name}-${idx}`}
+                    className="px-3 py-2 hover:bg-gray-700 cursor-pointer text-sm text-gray-300 flex justify-between items-center"
+                    onClick={() => {
+                      setUser({ ...user, country_code: country.code });
+                      setIsCountryDropdownOpen(false);
+                      setCountrySearch("");
+                    }}
+                  >
+                    <span className="truncate mr-2">{country.name}</span>
+                    <span className="text-gray-500 whitespace-nowrap">{country.code}</span>
+                  </div>
+                ))}
+                {filteredCountries.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-gray-500 text-center">No results</div>
+                )}
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">WhatsApp Number</label>
+            <input
+              type="tel"
+              value={user.phone_number || ""}
+              onChange={(e) => setUser({ ...user, phone_number: e.target.value })}
+              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:border-blue-500 outline-none"
             />
           </div>
         </div>

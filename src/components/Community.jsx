@@ -4,18 +4,75 @@ import { formatDistanceToNow } from 'date-fns';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 // Memoized Single Post Item for Community
-const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu, activeMenu, menuRef, startEditPost, handleDeletePost, handleReportPost, editingItem, setEditingItem, handleUpdatePost, handlePressStart, handlePressEnd, handleReaction, reactionModalPostId, getReactionEmoji, reactions, toggleComments, handleShare, isExpanded, comments, buildCommentTree, renderWithMentions, handleUpdateComment, handleDeleteComment, startEditComment, setReplyingTo, replyingTo, setReplyContent, replyContent, handleMentionableInputChange, submitComment, commentText, setNewCommentText, setPreviewImage }) => {
+const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
+  const { 
+    currentUser, userData, reactions, getReactionEmoji, handleReaction, handlePressStart, handlePressEnd, 
+    reactionModalPostId, toggleComments, expandedComments, commentsData, submitComment, newCommentText, 
+    setNewCommentText, handleShare, handleDeletePost, handleUpdatePost, handleDeleteComment, handleUpdateComment, 
+    handleReportPost, toggleMenu, activeMenu, setActiveMenu, menuRef, editingItem, setEditingItem, startEditPost, 
+    startEditComment, replyingTo, setReplyingTo, replyContent, setReplyContent, setPreviewImage 
+  } = usePostInteractions();
+
+  const isExpanded = !!expandedComments[post.id];
+  const comments = commentsData[post.id];
+  const commentText = newCommentText[post.id];
   // Local state for UI toggles specific to this post
   const [visibleLimit, setVisibleLimit] = useState(3);
   const [expandedReplies, setExpandedReplies] = useState({});
 
   // Reset visible limit when comments are collapsed
   useEffect(() => { if (!isExpanded) setVisibleLimit(3); }, [isExpanded]);
+
+  const handleLocalReaction = async (type) => {
+    // 1. Optimized UI Update
+    const oldReaction = post.user_reaction;
+    const oldLikes = post.likes;
+    const isSame = oldReaction === type;
+    const newReaction = isSame ? null : type;
+    
+    let newLikes = oldLikes;
+    if (isSame) newLikes = Math.max(0, newLikes - 1);
+    else if (!oldReaction) newLikes += 1;
+
+    onPostUpdate(post.id, { user_reaction: newReaction, likes: newLikes });
+
+    // 2. send request to server
+    const result = await handleReaction(post, type);
+    // (Revert)
+    if (!result.success) onPostUpdate(post.id, { user_reaction: oldReaction, likes: oldLikes });
+  };
+
+  const handleLocalPressEnd = async () => {
+    const result = await handlePressEnd(post);
+    if (result.success) {
+      const isSame = post.user_reaction === result.reactionType;
+      const newReaction = isSame ? null : result.reactionType;
+      let newLikes = post.likes;
+      if (isSame) newLikes = Math.max(0, newLikes - 1);
+      else if (!post.user_reaction) newLikes += 1;
+      onPostUpdate(result.postId, { user_reaction: newReaction, likes: newLikes });
+    }
+  };
+
+  const handleLocalDeletePost = async () => {
+    const result = await handleDeletePost(post.id);
+    if (result.success) onPostUpdate(result.postId, { _deleted: true });
+  };
+
+  const handleLocalUpdatePost = async () => {
+    const result = await handleUpdatePost(editingItem);
+    if (result.success) onPostUpdate(result.updatedPost.id, result.updatedPost);
+  };
+
+  const handleLocalToggleMenu = (type, id) => {
+    setActiveMenu(activeMenu?.type === type && activeMenu?.id === id ? null : { type, id });
+  };
 
   return (
     <div key={post.id} id={`post-${post.id}`} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
@@ -45,8 +102,8 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
               {/* Post Menu */}
               {(currentUser === post.username || userData?.role === 'admin') && (
                 <div className="relative">
-                  <button onClick={() => toggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <button onClick={() => handleLocalToggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                     </svg>
                   </button>
@@ -55,7 +112,7 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
                       {currentUser === post.username && (
                         <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
                       )}
-                      <button onClick={() => handleDeletePost(post.id)} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
+                      <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
                     </div>
                   )}
                 </div>
@@ -67,11 +124,15 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
                 <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none" rows={3} />
                 <div className="flex justify-end gap-2">
                   <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-3 py-1">Cancel</button>
-                  <button onClick={handleUpdatePost} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Save</button>
+                  <button onClick={handleLocalUpdatePost} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Save</button>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{renderWithMentions(post.content)}</p>
+              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {post.content.split(/(@\w+)/g).map((part, i) =>
+                  part.startsWith("@") ? (<strong key={i} className="text-blue-500 font-normal">{part}</strong>) : (part)
+                )}
+              </p>
             )}
             {post.image_url && (
               <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
@@ -84,7 +145,7 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
               <div className="relative group">
-              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={() => handlePressEnd(post)} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={() => handlePressEnd(post)} className={`flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
+              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={handleLocalPressEnd} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={handleLocalPressEnd} className={`flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
                   {post.user_reaction ? <span className="text-xl">{getReactionEmoji(post.user_reaction)}</span> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6" /></svg>}
                   <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
                 </button>
@@ -109,6 +170,14 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
             {isExpanded && (
               <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
                 {(() => {
+                  const buildCommentTree = (comments) => {
+                    const commentMap = {};
+                    const topLevelComments = [];
+                    if (!comments) return [];
+                    comments.forEach((c) => { commentMap[c.id] = { ...c, children: [] }; });
+                    comments.forEach((c) => { if (c.parent_id && commentMap[c.parent_id]) commentMap[c.parent_id].children.push(commentMap[c.id]); else topLevelComments.push(commentMap[c.id]); });
+                    return topLevelComments;
+                  };
                   const commentTree = buildCommentTree(comments || []);
                   const visibleComments = commentTree.slice(0, visibleLimit); // Use local state
                   const renderComment = (comment) => {
@@ -128,7 +197,11 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
                           ) : (
                             <div className="pr-6">
                               <div className="flex items-center"><span className="font-bold text-blue-400 mr-1">{comment.username}</span><VerifiedBadge user={comment} /></div>
-                              <p className="text-gray-300">{renderWithMentions(comment.content)}</p>
+                              <p className="text-gray-300">
+                                {(comment.content || "").split(/(@\w+)/g).map((part, i) =>
+                                  part.startsWith("@") ? (<strong key={i} className="text-blue-500 font-normal">{part}</strong>) : (part)
+                                )}
+                              </p>
                               {comment.is_edited && <span className="ml-2 text-[10px] text-gray-500 italic">(edited)</span>}
                             </div>
                           )}
@@ -150,7 +223,7 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
                         </div>
                         {replyingTo?.commentId === comment.id && (
                           <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-2 ml-8 flex gap-2">
-                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => { setReplyContent(e.target.value); handleMentionableInputChange(e); }} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none" autoFocus />
+                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none" autoFocus />
                             <button type="submit" className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500">Reply</button>
                             <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-gray-400 hover:text-white">Cancel</button>
                           </form>
@@ -170,7 +243,7 @@ const CommunityPostItem = React.memo(({ post, currentUser, userData, toggleMenu,
                   )
                 })()}
                 <div className="flex gap-2 mt-3">
-                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => { setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value })); handleMentionableInputChange(e); }} className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
+                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
                 <button onClick={() => submitComment(post.id, commentText)} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold">Send</button>
                 </div>
               </div>
@@ -215,7 +288,6 @@ const Community = ({
   const [communities, setCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [joinedCommunityIds, setJoinedCommunityIds] = useState([]);
 
@@ -223,6 +295,7 @@ const Community = ({
   const activeCommunity = id ? communities.find(c => c.id === parseInt(id)) : null;
 
   // Community Creation State
+  const [showModal, setShowModal] = useState(false);
   const [newComm, setNewComm] = useState({
     name: "",
     description: "",
@@ -249,34 +322,7 @@ const Community = ({
   const [newPostLink, setNewPostLink] = useState("");
   const [showLinkInput, setShowLinkInput] = useState(false);
 
-  // Reaction Modal State
-  const [reactionModalPostId, setReactionModalPostId] = useState(null);
-  const longPressTimer = useRef(null);
-  const isLongPress = useRef(false);
   const fileInputRef = useRef(null);
-
-  // Interaction States
-  const [expandedComments, setExpandedComments] = useState({}); // { postId: boolean }
-  const [commentsData, setCommentsData] = useState({}); // { postId: [comments] }
-  const [newCommentText, setNewCommentText] = useState({}); // { postId: string }
-
-  // Reply & Mention States
-  const [replyingTo, setReplyingTo] = useState(null); // { commentId, username }
-  const [mentionState, setMentionState] = useState({
-    active: false,
-    query: "",
-    suggestions: [],
-    target: null,
-    position: { top: 0, left: 0 },
-  });
-  const [replyContent, setReplyContent] = useState(""); // State for the reply input
-  const mentionDebounceTimer = useRef(null);
-
-  // Edit & Menu States
-  const [activeMenu, setActiveMenu] = useState(null); // { type: 'post'|'comment', id: number }
-  const [editingItem, setEditingItem] = useState(null); // { type: 'post'|'comment', id: number, content: string, ... }
-  const menuRef = useRef(null);
-  const [previewImage, setPreviewImage] = useState(null);
 
   // Exit Modal State
   const [showExitModal, setShowExitModal] = useState(false);
@@ -350,32 +396,6 @@ const Community = ({
     }
   }, [highlightedPost, posts, setHighlightedPost]);
 
-  // Close modal when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (reactionModalPostId && !event.target.closest(".reaction-modal")) {
-        setReactionModalPostId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [reactionModalPostId]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Close mention box
-      if (mentionState.active && !event.target.closest(".mention-box")) {
-        setMentionState((prev) => ({ ...prev, active: false }));
-      }
-
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setActiveMenu(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [mentionState.active, activeMenu]);
-
   const fetchPosts = async (communityId) => {
     try {
       const response = await api.get(`/communities/${communityId}/posts`);
@@ -392,10 +412,14 @@ const Community = ({
     const token = localStorage.getItem("token");
     const planLevel = getPlanLevel(userData?.plan);
 
-    if (planLevel < 2) return showFlash("Upgrade to Premium to create communities.", "error");
-    // Premium limit: 3 communities. Platinum: Unlimited.
-    const myOwnedCommunities = communities.filter(c => c.creator_username === currentUser);
-    if (planLevel === 2 && myOwnedCommunities.length >= 3) return showFlash("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.", "error");
+    const isAdmin = userData?.role === 'admin';
+
+    if (!isAdmin) {
+      if (planLevel < 2) return showFlash("Upgrade to Premium to create communities.", "error");
+      // Premium limit: 3 communities. Platinum: Unlimited.
+      const myOwnedCommunities = communities.filter(c => c.creator_username === currentUser);
+      if (planLevel === 2 && myOwnedCommunities.length >= 3) return showFlash("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.", "error");
+    }
     if (!token) return showFlash("Please login first", "error");
 
     const formData = new FormData();
@@ -407,7 +431,7 @@ const Community = ({
     formData.append("font_family", newComm.fontFamily);
     formData.append("hover_animation", newComm.hoverAnimation);
     formData.append("hover_color", newComm.hoverColor);
-    if (isVip && planLevel >= 3) formData.append("is_vip", "true");
+    if (isVip && (planLevel >= 3 || isAdmin)) formData.append("is_vip", "true");
 
     if (commAvatar) formData.append("avatar_file", commAvatar);
     if (commBgImage && newComm.bgType === "image")
@@ -580,369 +604,12 @@ const Community = ({
     }
   };
 
-  // --- INTERACTION HANDLERS ---
-
-  const handleReaction = useCallback(async (postId, type, currentReaction) => {
-    const token = localStorage.getItem("token");
-    if (!token) return showFlash("Please login to react.", "error");
-
-    // Optimistic UI Update
+  const onPostUpdate = useCallback((postId, updatedFields) => {
     setPosts(prevPosts =>
-      prevPosts.map((p) => {
-        if (p.id === postId) {
-          const isSame = p.user_reaction === type;
-          const isNew = !p.user_reaction;
-
-          let newLikes = p.likes;
-          let newReaction = type;
-
-          if (isSame) {
-            // Remove like
-            newLikes = Math.max(0, newLikes - 1);
-            newReaction = null;
-          } else if (isNew) {
-            // Add like
-            newLikes += 1;
-          }
-          // If swapping (isDifferent), likes count stays same, just update reaction type
-
-          return { ...p, likes: newLikes, user_reaction: newReaction };
-        }
-        return p;
-      })
-    );
-
-    try {
-      if (currentReaction === type) {
-        await api.delete(`/posts/${postId}/react`);
-      } else {
-        await api.post(`/posts/${postId}/react`, { type });
-      }
-    } catch (error) {
-      console.error("Reaction failed", error);
-      if (error.response && error.response.status === 401) {
-        showFlash("Session expired. Please login again.", "error");
-      }
-      fetchPosts(activeCommunity.id); // Revert on error
-    }
-    setReactionModalPostId(null); // Close modal after reaction
-  }, [activeCommunity]);
-
-  const toggleComments = useCallback(async (postId) => {
-    const isExpanded = !!expandedComments[postId];
-    setExpandedComments({ ...expandedComments, [postId]: !isExpanded });
-
-    if (!isExpanded && !commentsData[postId]) {
-      // Fetch comments if opening and not loaded yet
-      try {
-        const res = await api.get(`/posts/${postId}/comments`);
-        setCommentsData({ ...commentsData, [postId]: res.data });
-      } catch (error) {
-        console.error("Fetch comments failed", error);
-      }
-    }
-  }, [expandedComments, commentsData]);
-
-  const submitComment = useCallback(async (postId, content, parentId = null) => {
-    const token = localStorage.getItem("token");
-    if (!content || !content.trim()) return;
-    if (!token) return showFlash("Please login to comment.", "error");
-
-    try {
-      const res = await api.post(`/posts/${postId}/comments`, { content, parent_id: parentId });
-      // Update local state
-      const currentComments = commentsData[postId] || [];
-      setCommentsData({
-        ...commentsData,
-        [postId]: [...currentComments, res.data],
-      });
-      if (parentId) {
-        setReplyingTo(null);
-        setReplyContent(""); // Clear reply input// Close reply form
-      } else {
-        setNewCommentText({ ...newCommentText, [postId]: "" }); // Clear main comment form
-      }
-
-      // Update comment count on post
-      setPosts(prevPosts =>
-        prevPosts.map((p) =>
-          p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p
-        )
-      );
-    } catch (error) {
-      console.error("Comment failed", error);
-    }
-  }, [commentsData, newCommentText]);
-
-  const handleShare = useCallback(async (postId) => {
-    try {
-      await api.post(`/posts/${postId}/share`);
-      setPosts(prevPosts =>
-        prevPosts.map((p) =>
-          p.id === postId ? { ...p, shares_count: p.shares_count + 1 } : p
-        )
-      );
-      showFlash("Post shared to your timeline! (Simulated)", "success");
-    } catch (error) {
-      console.error("Share failed", error);
-    }
-  }, []);
-
-  const handlePressStart = useCallback((postId) => {
-    isLongPress.current = false;
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      setReactionModalPostId(postId);
-    }, 100);
-  }, []);
-
-  const handlePressEnd = useCallback((post) => {
-    clearTimeout(longPressTimer.current);
-    if (!isLongPress.current) {
-      handleReaction(post.id, post.user_reaction || "like", post.user_reaction);
-    }
-  }, [handleReaction]);
-
-  const reactions = [
-    { emoji: "👍", label: "Like", type: "like" },
-    { emoji: "❤️", label: "Love", type: "love" },
-    { emoji: "😮", label: "Shock", type: "shock" },
-    { emoji: "🚀", label: "Rocket", type: "rocket" },
-    { emoji: "📈", label: "Bullish", type: "chart_up" },
-    { emoji: "👏", label: "Clap", type: "clap" },
-  ];
-
-  const getReactionEmoji = (type) => {
-    return reactions.find((r) => r.type === type)?.emoji || "👍";
-  };
-
-  // --- MENTION HANDLERS ---
-  const handleMentionableInputChange = useCallback((e) => {
-    const input = e.target;
-    const text = input.value;
-    const cursorPosition = input.selectionStart;
-
-    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
-    const lastSpace = text.lastIndexOf(" ", cursorPosition - 1);
-
-    if (lastAt > lastSpace) {
-      const query = text.substring(lastAt + 1, cursorPosition);
-      const rect = input.getBoundingClientRect();
-      setMentionState({
-        active: true,
-        query: query,
-        suggestions: [],
-        target: input,
-        position: {
-          top: rect.bottom + window.scrollY,
-          left: rect.left + window.scrollX,
-        },
-      });
-    } else {
-      setMentionState((prev) => ({ ...prev, active: false }));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (mentionState.active) {
-      clearTimeout(mentionDebounceTimer.current);
-      mentionDebounceTimer.current = setTimeout(async () => {
-        if (mentionState.query.trim() === "" && mentionState.query !== "")
-          return; // Don't search for empty string after @
-        try {
-          const res = await api.get(`/users/search?q=${mentionState.query}`);
-          setMentionState((prev) => ({ ...prev, suggestions: res.data }));
-        } catch (error) {
-          console.error("Failed to search users", error);
-        }
-      }, 300);
-    }
-  }, [mentionState.query, mentionState.active]);
-
-  const insertMention = (username) => {
-    const { target } = mentionState;
-    if (!target) return;
-
-    const text = target.value;
-    const cursorPosition = target.selectionStart;
-    const lastAt = text.lastIndexOf("@", cursorPosition - 1);
-
-    const newText = `${text.substring(0, lastAt)}@${username} ${text.substring(
-      cursorPosition
-    )}`;
-
-    // Update the correct state based on the input's name or another identifier
-    if (target.name === "mainPostContent") {
-      setNewPostContent(newText);
-    } else if (target.name.startsWith("commentInput-")) {
-      const postId = target.name.split("-")[1];
-      setNewCommentText({ ...newCommentText, [postId]: newText });
-    } else if (target.name === "replyInput") {
-      setReplyContent(newText);
-    }
-
-    setMentionState({
-      active: false,
-      query: "",
-      suggestions: [],
-      target: null,
-      position: { top: 0, left: 0 },
-    });
-    setTimeout(() => target.focus(), 0); // Refocus the input
-  };
-
-  const renderWithMentions = useCallback((text) => {
-    return text.split(/(@\w+)/g).map((part, i) =>
-      part.startsWith("@") ? (
-        <strong key={i} className="text-blue-500 font-normal">
-          {part}
-        </strong>
-      ) : (
-        part
+      prevPosts.map(p =>
+        p.id === postId ? { ...p, ...updatedFields } : p
       )
     );
-  }, []);
-
-  // --- EDIT & DELETE HANDLERS ---
-  const handleDeletePost = useCallback(async (postId) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      await api.delete(`/posts/${postId}`);
-      setPosts(prevPosts => prevPosts.filter((p) => p.id !== postId));
-      setActiveMenu(null);
-    } catch (error) {
-      showFlash("Failed to delete post", "error");
-    }
-  }, []);
-
-  const handleUpdatePost = useCallback(async () => {
-    if (!editingItem || !editingItem.content.trim()) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await api.put(`/posts/${editingItem.id}`, {
-          content: editingItem.content,
-          image_url: editingItem.image_url,
-          link_url: editingItem.link_url,
-        }
-      );
-
-      setPosts(prevPosts =>
-        prevPosts.map((p) => (p.id === editingItem.id ? { ...p, ...res.data } : p))
-      );
-      setEditingItem(null);
-    } catch (error) {
-      showFlash("Failed to update post", "error");
-    }
-  }, [editingItem]);
-
-  const handleUpdateComment = useCallback(async () => {
-    if (!editingItem || !editingItem.content.trim()) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await api.put(`/comments/${editingItem.id}`, { content: editingItem.content }
-      );
-
-      // Update local state
-      const postId = res.data.post_id;
-      const updatedComments = commentsData[postId].map((c) =>
-        c.id === editingItem.id ? res.data : c
-      );
-      setCommentsData({ ...commentsData, [postId]: updatedComments });
-
-      setEditingItem(null);
-    } catch (error) {
-      showFlash("Failed to update comment", "error");
-    }
-  }, [editingItem, commentsData]);
-
-  const handleDeleteComment = useCallback(async (commentId, postId) => {
-    if (!window.confirm("Delete this comment?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      await api.delete(`/comments/${commentId}`);
-
-      // Update local comments
-      const updatedComments = commentsData[postId].filter(
-        (c) => c.id !== commentId
-      );
-      setCommentsData({ ...commentsData, [postId]: updatedComments });
-
-      // Update post comment count
-      setPosts(prevPosts =>
-        prevPosts.map((p) =>
-          p.id === postId
-            ? { ...p, comments_count: Math.max(0, p.comments_count - 1) }
-            : p
-        )
-      );
-      setActiveMenu(null);
-    } catch (error) {
-      showFlash("Failed to delete comment", "error");
-    }
-  }, [commentsData]);
-
-  const handleReportPost = useCallback(async (postId) => {
-    const reason = prompt("Why are you reporting this post? (e.g., Spam, Harassment)");
-    if (!reason) return;
-
-    try {
-      const token = localStorage.getItem("token");
-      await api.post("/reports", { post_id: postId, reason });
-      showFlash("Report submitted. Thank you for helping keep the community safe.", "success");
-      setActiveMenu(null);
-    } catch (error) {
-      showFlash("Failed to submit report.", "error");
-    }
-  }, []);
-
-  // Note: Edit comment logic is simpler (no image/link) but backend supports content update
-  // For brevity, I'll implement delete first as requested, and basic edit structure.
-  // Since backend update_comment exists, let's add it.
-
-  const toggleMenu = useCallback((type, id) => {
-    if (activeMenu && activeMenu.type === type && activeMenu.id === id) {
-      setActiveMenu(null);
-    } else {
-      setActiveMenu({ type, id });
-    }
-  }, [activeMenu]);
-
-  const startEditPost = useCallback((post) => {
-    setEditingItem({
-      type: "post",
-      id: post.id,
-      content: post.content,
-      image_url: post.image_url,
-      link_url: post.link_url,
-    });
-    setActiveMenu(null);
-  }, []);
-
-  const startEditComment = useCallback((comment) => {
-    setEditingItem({
-      type: "comment",
-      id: comment.id,
-      content: comment.content,
-    });
-    setActiveMenu(null);
-  }, []);
-
-  // --- RECURSIVE COMMENT RENDERING ---
-  const buildCommentTree = useCallback((comments) => {
-    const commentMap = {};
-    const topLevelComments = [];
-    comments.forEach((c) => {
-      commentMap[c.id] = { ...c, children: [] };
-    });
-    comments.forEach((c) => {
-      if (c.parent_id && commentMap[c.parent_id]) {
-        commentMap[c.parent_id].children.push(commentMap[c.id]);
-      } else {
-        topLevelComments.push(commentMap[c.id]);
-      }
-    });
-    return topLevelComments;
   }, []);
 
   // Helper for Community Card Styles
@@ -990,8 +657,8 @@ const Community = ({
           <div className="relative z-10 flex items-center gap-4">
             {activeCommunity.avatar_url ? (
               <img
-              src={`${API_BASE_URL}${activeCommunity.avatar_url}`}
-              alt={activeCommunity.name}
+                src={`${API_BASE_URL}${activeCommunity.avatar_url}`}
+                alt={activeCommunity.name}
                 className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
               />
             ) : (
@@ -1024,10 +691,7 @@ const Community = ({
           <form onSubmit={handlePostSubmit}>
             <textarea
               value={newPostContent}
-              onChange={(e) => {
-                setNewPostContent(e.target.value);
-                handleMentionableInputChange(e);
-              }}
+              onChange={(e) => setNewPostContent(e.target.value)}
               name="mainPostContent"
               onPaste={handlePaste}
               placeholder={`What's on your mind? Share a strategy or crypto news...`}
@@ -1108,42 +772,8 @@ const Community = ({
 
         {/* Posts Feed */}
         <CommunityPostFeed 
-          posts={posts} 
-          currentUser={currentUser} 
-          userData={userData} 
-          toggleMenu={toggleMenu} 
-          activeMenu={activeMenu} 
-          menuRef={menuRef} 
-          startEditPost={startEditPost} 
-          handleDeletePost={handleDeletePost} 
-          handleReportPost={handleReportPost} 
-        editingItem={editingItem} 
-          setEditingItem={setEditingItem} 
-          handleUpdatePost={handleUpdatePost} 
-          handlePressStart={handlePressStart} 
-          handlePressEnd={handlePressEnd} 
-          handleReaction={handleReaction} 
-          reactionModalPostId={reactionModalPostId} 
-          getReactionEmoji={getReactionEmoji} 
-          reactions={reactions} 
-          toggleComments={toggleComments} 
-          handleShare={handleShare} 
-          expandedComments={expandedComments} 
-          commentsData={commentsData} 
-          buildCommentTree={buildCommentTree} 
-          renderWithMentions={renderWithMentions} 
-          handleUpdateComment={handleUpdateComment} 
-          handleDeleteComment={handleDeleteComment} 
-          startEditComment={startEditComment} 
-          setReplyingTo={setReplyingTo} 
-          replyingTo={replyingTo} 
-          setReplyContent={setReplyContent} 
-          replyContent={replyContent} 
-          handleMentionableInputChange={handleMentionableInputChange} 
-          submitComment={submitComment} 
-          newCommentText={newCommentText} 
-          setNewCommentText={setNewCommentText} 
-          setPreviewImage={setPreviewImage} 
+          posts={posts}
+          onPostUpdate={onPostUpdate}
         />
         {/* Mention Box */}
         {mentionState.active && mentionState.suggestions.length > 0 && (
@@ -1673,7 +1303,7 @@ const Community = ({
                     </div>
                   )}
                   {/* VIP Style Toggle (Platinum Only) */}
-                  {getPlanLevel(userData?.plan) >= 3 && (
+                  {(getPlanLevel(userData?.plan) >= 3 || userData?.role === 'admin') && (
                     <div className="pt-2 border-t border-gray-700">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500" />

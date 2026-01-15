@@ -2,7 +2,7 @@ import os
 import uuid
 import shutil
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
 from sqlmodel import Session, select
 from sqlalchemy import text
 from ..database import get_session
@@ -182,6 +182,20 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
     session.add(post)
     session.commit()
     return {"status": "success"}
+
+@router.delete("/api/posts/{post_id}/react", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_reaction(post_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == user.username)).first()
+    if reaction:
+        session.delete(reaction)
+        post.likes = max(0, post.likes - 1)
+        session.add(post)
+        session.commit()
+    return
 
 @router.post("/api/posts/{post_id}/share")
 async def share_post(post_id: int, session: Session = Depends(get_session)):

@@ -223,7 +223,7 @@ def get_market_price(symbol):
         base_asset = raw_symbol.replace("-USD", "").replace("USDT", "").replace("USD", "")
         url = f"https://min-api.cryptocompare.com/data/price?fsym={base_asset}&tsyms=USD"
         headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers, timeout=5)
+        r = requests.get(url, headers=headers, timeout=10)
         if r.status_code == 200:
             data = r.json()
             if "USD" in data:
