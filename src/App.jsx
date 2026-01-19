@@ -397,8 +397,6 @@ function App() {
         "mention_comment",
       ].includes(notification.type)
     ) {
-      navigate(`/home/post/${notification.post_id}`); // Adjusted path if needed, but usually post detail is root level or nested. Let's keep post detail at root /post/:id but protected.
-      // Actually, let's keep /post/:id as is, just protect it.
       navigate(`/post/${notification.post_id}`);
     } else if (notification.community_id) {
       navigate(`/community/${notification.community_id}`);

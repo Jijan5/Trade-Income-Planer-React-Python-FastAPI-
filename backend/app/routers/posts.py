@@ -13,7 +13,7 @@ from ..utils import process_mentions_and_create_notifications
 router = APIRouter()
 
 @router.get("/api/posts", response_model=list[PostResponse])
-async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, limit: int = 10):
+async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, limit: int = 10, current_user: User = Depends(get_current_user)):
     query = (
         select(Post, User)
         .join(User, Post.username == User.username)
@@ -22,6 +22,18 @@ async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, 
         .limit(limit)
     )
     results = session.exec(query).all()
+    
+    # Fetch reactions for these posts by the current user
+    post_ids = [post.id for post, _ in results]
+    user_reactions = {}
+    if post_ids:
+        reactions = session.exec(
+            select(Reaction).where(
+                Reaction.username == current_user.username,
+                Reaction.post_id.in_(post_ids)
+            )
+        ).all()
+        user_reactions = {r.post_id: r.type for r in reactions}
 
     response_list = []
     for post, user in results:
@@ -29,25 +41,26 @@ async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, 
         post_dict['user_role'] = user.role
         post_dict['user_plan'] = user.plan
         post_dict['user_avatar_url'] = user.avatar_url
-        if 'user_reaction' not in post_dict:
-            post_dict['user_reaction'] = None
+        post_dict['user_reaction'] = user_reactions.get(post.id)
         response_list.append(PostResponse(**post_dict))
     return response_list
 
 @router.get("/api/posts/{post_id}", response_model=PostResponse)
-async def get_post(post_id: int, session: Session = Depends(get_session)):
+async def get_post(post_id: int, session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
     user = session.exec(select(User).where(User.username == post.username)).first()
     
+    reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == current_user.username)).first()
+    
     post_dict = post.dict()
     post_dict['user_role'] = user.role if user else "user"
     post_dict['user_plan'] = user.plan if user else "Free"
     post_dict['user_avatar_url'] = user.avatar_url if user else None
-    if 'user_reaction' not in post_dict:
-        post_dict['user_reaction'] = None
+    post_dict['user_reaction'] = reaction.type if reaction else None
+
     return PostResponse(**post_dict)
 
 @router.post("/api/posts", response_model=Post)

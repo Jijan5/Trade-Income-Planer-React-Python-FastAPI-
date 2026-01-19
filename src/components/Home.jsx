@@ -141,22 +141,46 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
   const commentText = newCommentText[post.id];
 
   const handleLocalReaction = async (type) => {
+    // Close modal immediately after selection
+    if (reactionModalPostId) {
+      // We don't need to set null here manually if handleReaction does it, 
+      // but for UI responsiveness we can rely on the state update.
+  }
+    const oldReaction = post.user_reaction;
+    const oldLikes = post.likes;
+    const isSame = oldReaction === type;
+    const newReaction = isSame ? null : type;
+    
+    let newLikes = oldLikes;
+    if (isSame) newLikes = Math.max(0, newLikes - 1);
+    else if (!oldReaction) newLikes += 1;
+
+    onPostUpdate(post.id, { user_reaction: newReaction, likes: newLikes });
+
     const result = await handleReaction(post, type);
-    if (result.success)
-      onPostUpdate(result.postId, {
-        user_reaction: post.user_reaction === type ? null : type,
-      });
+    if (!result.success) {
+      onPostUpdate(post.id, { user_reaction: oldReaction, likes: oldLikes });
+    }
   };
 
   const handleLocalPressEnd = async () => {
+    // if modal is open, don't do toggle like
+    if (reactionModalPostId === post.id) {
+      await handlePressEnd(post);
+      return;
+  }
+    const oldReaction = post.user_reaction;
+    const oldLikes = post.likes;
+    const isUnliking = !!oldReaction;
+    const newReaction = isUnliking ? null : "like";
+    const newLikes = isUnliking ? Math.max(0, oldLikes - 1) : oldLikes + 1;
+
+    onPostUpdate(post.id, { user_reaction: newReaction, likes: newLikes });
     const result = await handlePressEnd(post);
-    if (result.success)
-      onPostUpdate(result.postId, {
-        user_reaction:
-          post.user_reaction === result.reactionType
-            ? null
-            : result.reactionType,
-      });
+    // Revert if fail or that was a long press modal
+    if (!result.success || result.isLongPress) {
+      onPostUpdate(post.id, { user_reaction: oldReaction, likes: oldLikes });
+    }
   };
   // Local state for UI toggles specific to this post
   const [visibleLimit, setVisibleLimit] = useState(3);
@@ -328,7 +352,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
             onMouseUp={handleLocalPressEnd}
             onTouchStart={() => handlePressStart(post.id)}
             onTouchEnd={handleLocalPressEnd}
-            className={`flex items-center gap-2 transition-colors ${
+            className={`reaction-trigger flex items-center gap-2 transition-colors ${
               post.user_reaction
                 ? "text-blue-400"
                 : "text-gray-400 hover:text-blue-400"

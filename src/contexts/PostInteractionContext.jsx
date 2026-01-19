@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import api from '../lib/axios';
 import { useAuth } from './AuthContext';
 
@@ -39,6 +39,20 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
 
     const getReactionEmoji = (type) => reactions.find((r) => r.type === type)?.emoji || "👍";
 
+    // Handle Click Outside to close Reaction Modal
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (reactionModalPostId) {
+                // Close if click is NOT inside .reaction-modal AND NOT on the trigger button
+                if (!event.target.closest('.reaction-modal') && !event.target.closest('.reaction-trigger')) {
+                    setReactionModalPostId(null);
+                }
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [reactionModalPostId]);
+
     const handleReaction = useCallback(async (post, type) => {
         const token = localStorage.getItem("token");
         if (!token) return showFlash("Please login to react.", "error");
@@ -66,15 +80,15 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         longPressTimer.current = setTimeout(() => {
             isLongPress.current = true;
             setReactionModalPostId(postId);
-        }, 300);
+        }, 200);
     }, []);
 
     const handlePressEnd = useCallback(async (post) => {
         clearTimeout(longPressTimer.current);
-        if (!isLongPress.current) {
-            return await handleReaction(post, post.user_reaction || "like");
+        if (isLongPress.current) {
+            return { success: false, isLongPress: true }; // Return status long press
         }
-        return { success: false }; // Indicate no action was taken
+        return await handleReaction(post, post.user_reaction || "like");
     }, [handleReaction]);
 
     const toggleComments = useCallback(async (postId) => {

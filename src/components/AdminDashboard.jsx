@@ -14,6 +14,7 @@ const AdminDashboard = () => {
   const [editFormData, setEditFormData] = useState({});
 
   const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [flash, setFlash] = useState(null);
   const [reports, setReports] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -63,15 +64,20 @@ const AdminDashboard = () => {
     if (activeTab === "content") fetchAllPosts();
   }, [activeTab]);
 
+  const showFlash = (message, type = "success") => {
+    setFlash({ message, type });
+    setTimeout(() => setFlash(null), 3000);
+  };
+
   const handleBroadcast = async (e) => {
     e.preventDefault();
     if (!broadcastMessage.trim()) return;
     try {
       await api.post("/admin/broadcast", { message: broadcastMessage });
-      alert("Broadcast sent successfully!");
+      showFlash("Broadcast sent successfully!", "success");
       setBroadcastMessage("");
     } catch (e) {
-      alert("Failed to send broadcast.");
+      showFlash("Failed to send broadcast.", "error");
     }
   };
 
@@ -80,9 +86,9 @@ const AdminDashboard = () => {
     try {
       await api.delete(`/posts/${postId}`);
       setPosts(posts.filter((p) => p.id !== postId));
-      alert("Post deleted.");
+      showFlash("Post deleted.", "success");
     } catch (e) {
-      alert("Failed to delete post.");
+      showFlash("Failed to delete post.", "error");
     }
   };
 
@@ -90,9 +96,9 @@ const AdminDashboard = () => {
     try {
         await api.delete(`/admin/reports/${reportId}`);
         setReports(reports.filter(r => r.id !== reportId));
-        alert("Report dismissed.");
+        showFlash("Report dismissed.", "success");
     } catch(e) {
-        alert("Failed to dismiss report");
+        showFlash("Failed to dismiss report.", "error");
     }
   };
 
@@ -127,9 +133,9 @@ const AdminDashboard = () => {
       setEditingUser(null);
       fetchUsers();
       fetchStats(); // Refresh stats as plan might change
-      alert("User updated successfully");
+      showFlash("User updated successfully", "success");
     } catch (e) {
-      alert("Failed to update user");
+      showFlash("Failed to update user", "error");
     }
   };
 
@@ -145,6 +151,19 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
+      {/* Custom Flash Notification */}
+      {flash && (
+        <div className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-fade-in ${
+          flash.type === 'success' ? 'bg-gray-800 border-green-500 text-green-400' : 'bg-gray-800 border-red-500 text-red-400'
+        }`}>
+           <span className="text-2xl">{flash.type === 'success' ? '✅' : '❌'}</span>
+           <div>
+             <h4 className="font-bold text-sm uppercase">{flash.type}</h4>
+             <p className="text-sm text-gray-300">{flash.message}</p>
+           </div>
+        </div>
+      )}
+
       {/* SIDEBAR - SCROLLABLE */}
       {/* Added overflow-y-auto and fixed height calculation to make it scrollable */}
       <div className="w-full md:w-64 bg-gray-800 rounded-lg border border-gray-700 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-lg">

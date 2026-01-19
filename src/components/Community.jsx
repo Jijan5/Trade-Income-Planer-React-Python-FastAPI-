@@ -49,14 +49,20 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
   };
 
   const handleLocalPressEnd = async () => {
+    if (reactionModalPostId === post.id) {
+      await handlePressEnd(post);
+      return;
+  }
+    const oldReaction = post.user_reaction;
+    const oldLikes = post.likes;
+    const isUnliking = !!oldReaction;
+    const newReaction = isUnliking ? null : "like";
+    const newLikes = isUnliking ? Math.max(0, oldLikes - 1) : oldLikes + 1;
+
+    onPostUpdate(post.id, { user_reaction: newReaction, likes: newLikes });
     const result = await handlePressEnd(post);
-    if (result.success) {
-      const isSame = post.user_reaction === result.reactionType;
-      const newReaction = isSame ? null : result.reactionType;
-      let newLikes = post.likes;
-      if (isSame) newLikes = Math.max(0, newLikes - 1);
-      else if (!post.user_reaction) newLikes += 1;
-      onPostUpdate(result.postId, { user_reaction: newReaction, likes: newLikes });
+    if (!result.success || result.isLongPress) {
+      onPostUpdate(post.id, { user_reaction: oldReaction, likes: oldLikes });
     }
   };
 
@@ -100,7 +106,6 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                 </div>
               </div>
               {/* Post Menu */}
-              {(currentUser === post.username || userData?.role === 'admin') && (
                 <div className="relative">
                   <button onClick={() => handleLocalToggleMenu("post", post.id)} className="text-gray-400 hover:text-white p-1">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -109,14 +114,19 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                   </button>
                   {activeMenu?.type === "post" && activeMenu?.id === post.id && (
                     <div ref={menuRef} className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
-                      {currentUser === post.username && (
-                        <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
+                      {currentUser === post.username || userData?.role === 'admin' ? (
+                        <>
+                          {currentUser === post.username && (
+                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
+                          )}
+                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300">Report</button>
                       )}
-                      <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
                     </div>
                   )}
                 </div>
-              )}
             </div>
             {/* Post Content */}
             {editingItem?.type === "post" && editingItem?.id === post.id ? (
@@ -145,14 +155,14 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
               <div className="relative group">
-              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={handleLocalPressEnd} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={handleLocalPressEnd} className={`flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
+              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={handleLocalPressEnd} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={handleLocalPressEnd} className={`reaction-trigger flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
                   {post.user_reaction ? <span className="text-xl">{getReactionEmoji(post.user_reaction)}</span> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6" /></svg>}
                   <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
                 </button>
                 {reactionModalPostId === post.id && (
                   <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
                     {reactions.map((r) => (
-                      <button key={r.type} onClick={() => handleReaction(post.id, r.type, post.user_reaction)} className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
+                      <button key={r.type} onClick={() => handleLocalReaction(r.type)} className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
                     ))}
                   </div>
                 )}
@@ -283,6 +293,7 @@ const Community = ({
   showFlash,
 }) => {
   const { userData } = useAuth();
+  const { previewImage, setPreviewImage, mentionState, setMentionState } = usePostInteractions();
   const { id } = useParams();
   const navigate = useNavigate();
   const [communities, setCommunities] = useState([]);
@@ -562,6 +573,44 @@ const Community = ({
     }
   };
 
+  const handleInputChange = async (e) => {
+    const val = e.target.value;
+    setNewPostContent(val);
+
+    // Mention Logic
+    const selectionStart = e.target.selectionStart;
+    const textBefore = val.substring(0, selectionStart);
+    const lastAt = textBefore.lastIndexOf('@');
+
+    if (lastAt !== -1) {
+      const query = textBefore.substring(lastAt + 1);
+      // Simple check: stop searching if space is typed
+      if (!/\s/.test(query)) {
+        try {
+          const res = await api.get(`/users/search?q=${query}`);
+          setMentionState({
+            active: true,
+            query,
+            suggestions: res.data,
+            position: { top: '100%', left: 0 } // Position handled by CSS relative to parent
+          });
+        } catch (err) { /* ignore */ }
+      } else {
+        setMentionState(prev => ({ ...prev, active: false }));
+      }
+    } else {
+      setMentionState(prev => ({ ...prev, active: false }));
+    }
+  };
+
+  const insertMention = (username) => {
+    const parts = newPostContent.split('@');
+    parts.pop(); // Remove the partial query
+    const newValue = parts.join('@') + `@${username} `;
+    setNewPostContent(newValue);
+    setMentionState(prev => ({ ...prev, active: false }));
+  };
+
   // Handle Create Post
   const handlePostSubmit = async (e) => {
     e.preventDefault();
@@ -689,14 +738,30 @@ const Community = ({
         {/* Create Post Box */}
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
           <form onSubmit={handlePostSubmit}>
-            <textarea
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              name="mainPostContent"
-              onPaste={handlePaste}
-              placeholder={`What's on your mind? Share a strategy or crypto news...`}
-              className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
-            />
+          <div className="relative">
+              <textarea
+                value={newPostContent}
+                onChange={handleInputChange}
+                name="mainPostContent"
+                onPaste={handlePaste}
+                placeholder={`What's on your mind? Share a strategy or crypto news...`}
+                className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
+              />
+              {/* Mention Box */}
+              {mentionState.active && mentionState.suggestions.length > 0 && (
+                <div className="absolute z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden mt-1 w-48 left-0 top-full">
+                  {mentionState.suggestions.map((user) => (
+                    <button
+                      key={user.username}
+                      onClick={() => insertMention(user.username)}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-600 hover:text-white"
+                    >
+                      {user.username}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Image Preview */}
             {postImage.preview && (
@@ -775,26 +840,7 @@ const Community = ({
           posts={posts}
           onPostUpdate={onPostUpdate}
         />
-        {/* Mention Box */}
-        {mentionState.active && mentionState.suggestions.length > 0 && (
-          <div
-            className="mention-box absolute z-30 w-48 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden"
-            style={{
-              top: mentionState.position.top,
-              left: mentionState.position.left,
-            }}
-          >
-            {mentionState.suggestions.map((user) => (
-              <button
-                key={user.username}
-                onClick={() => insertMention(user.username)}
-                className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-600"
-              >
-                {user.username}
-              </button>
-            ))}
-          </div>
-        )}
+        
         {/* Image Preview Modal */}
         {previewImage && (
           <div
