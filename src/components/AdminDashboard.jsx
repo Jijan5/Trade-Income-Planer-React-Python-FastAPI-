@@ -1,704 +1,388 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/axios";
-import { formatDistanceToNow } from "date-fns";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  LineChart, Line, PieChart, Pie, Cell 
-} from "recharts";
-import VerifiedBadge from "./VerifiedBadge";
+import { useAuth } from "../contexts/AuthContext";
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("overview"); // overview, users, subscriptions
-  const [loading, setLoading] = useState(false);
+  const { userData } = useAuth();
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
-  const [userSearch, setUserSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  
+  // Edit User State
   const [editingUser, setEditingUser] = useState(null);
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [communities, setCommunities] = useState([]);
+  const [editFormData, setEditFormData] = useState({});
+
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [reports, setReports] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [posts, setPosts] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [broadcastMsg, setBroadcastMsg] = useState("");
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeSubs: 0,
-    mrr: 0, // Monthly Recurring Revenue
-    userGrowth: [],
-    subsDistribution: []
-  });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/admin/stats");
+      setStats(res.data);
+    } catch (e) { console.error(e); }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/admin/users");
+      setUsers(res.data);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  const fetchReports = async () => {
+    try { const res = await api.get("/admin/reports"); setReports(res.data); } catch (e) { console.error(e); }
+  };
+
+  const fetchFeedbacks = async () => {
+    try { 
+      const res = await api.get("/admin/feedbacks"); 
+      setFeedbacks(res.data); 
+    } catch (e) { 
+      // Fallback to local storage if API fails
+      const local = JSON.parse(localStorage.getItem("local_feedbacks") || "[]");
+      setFeedbacks(local);
+    }
+  };
+
+  const fetchAllPosts = async () => {
+    try { const res = await api.get("/posts?limit=50"); setPosts(res.data); } catch (e) { console.error(e); }
+  };
 
   useEffect(() => {
-    fetchAdminData();
+    fetchStats();
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "reports") fetchReports();
+    if (activeTab === "feedbacks") fetchFeedbacks();
+    if (activeTab === "content") fetchAllPosts();
   }, [activeTab]);
 
-  const fetchAdminData = async () => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!broadcastMessage.trim()) return;
     try {
-      // prepare data holders
-      let fetchedUsers = [];
-      let fetchedFeedbacks = [];
-      let fetchedCommunities = [];
-      let fetchedPosts = [];
-      let fetchedReports = [];
-      let fetchedStats = null;
-      let fetchedSubs = [];
-
-      //try fetching read data (feedbacks & users)
-      try {
-        const [usersRes, feedRes, commRes, postsRes, reportsRes, statsRes, subsRes] = await Promise.allSettled([
-          api.get("/admin/users"),
-          api.get("/admin/feedbacks"),
-          api.get("/communities"),
-          api.get("/admin/posts"),
-          api.get("/admin/reports"),
-          api.get("/admin/stats"),
-          api.get("/admin/subscriptions")
-        ]);
-
-        if (usersRes.status === 'fulfilled' && usersRes.value.data) {
-            fetchedUsers = usersRes.value.data;
-        }
-        if (feedRes.status === 'fulfilled' && feedRes.value.data) {
-            fetchedFeedbacks = feedRes.value.data;
-        }
-        if (commRes.status === 'fulfilled' && commRes.value.data) {
-            fetchedCommunities = commRes.value.data;
-        }
-        if (postsRes.status === 'fulfilled' && postsRes.value.data) {
-            fetchedPosts = postsRes.value.data;
-        }
-        if (reportsRes.status === 'fulfilled' && reportsRes.value.data) {
-          fetchedReports = reportsRes.value.data;
-        }
-        if (statsRes.status === 'fulfilled' && statsRes.value.data) {
-          fetchedStats = statsRes.value.data;
-        }
-        if (subsRes.status === 'fulfilled' && subsRes.value.data) {
-          fetchedSubs = subsRes.value.data;
-        }
-      } catch (err) {
-        console.log("Error fetching admin data", err);
-      }
-
-      // Gabungkan feedback dari LocalStorage dengan data fetch/mock
-      const localFeedbacks = JSON.parse(localStorage.getItem("local_feedbacks") || "[]");
-      const combinedFeedbacks = [...localFeedbacks, ...fetchedFeedbacks];
-      // Hapus duplikat berdasarkan ID (jika ada)
-      const uniqueFeedbacks = Array.from(new Map(combinedFeedbacks.map(item => [item.id, item])).values())
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      // Set all states
-      if (fetchedStats) {
-        setStats(fetchedStats);
-      }
-      setUsers(fetchedUsers);
-      setSubscriptions(fetchedSubs);
-      setFeedbacks(uniqueFeedbacks);
-      setCommunities(fetchedCommunities);
-      setPosts(fetchedPosts);
-      setReports(fetchedReports);
-
-    } catch (error) {
-      console.error("Failed to fetch admin data", error);
-      setLoading(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSuspendUser = async (userId) => {
-    if(!window.confirm("Are you sure you want to suspend this user?")) return;
-    const userToSuspend = users.find(u => u.id === userId);
-    if (!userToSuspend) return;
-
-    const token = localStorage.getItem("token");
-    try {
-        const updatedUser = { ...userToSuspend, status: "suspended" };
-        await api.put(`/admin/users/${userId}`, updatedUser);
-        setUsers(users.map(u => u.id === userId ? {...u, status: "suspended"} : u));
-        alert(`User ${userToSuspend.username} has been suspended.`);
-    } catch (error) {
-        alert("Failed to suspend user.");
-    }
-  };
-
-  const handleSaveUser = async () => {
-    if (!editingUser) return;
-    const token = localStorage.getItem("token");
-    try {
-      const res = await api.put(
-        `/admin/users/${editingUser.id}`,
-        editingUser // The state object matches the required payload
-      );
-      
-      // Update local state with the confirmed data from backend
-      setUsers(users.map(u => u.id === editingUser.id ? res.data : u));
-      setEditingUser(null);
-      alert(`User ${editingUser.username} updated successfully!`);
-    } catch (error) {
-      console.error("Failed to update user", error);
-      alert(error.response?.data?.detail || "Failed to update user.");
-    }
-  };
-
-  const handleDeleteCommunity = async (communityId) => {
-    if (!window.confirm("Are you sure you want to delete this community? This will remove all posts and members permanently.")) return;
-    const token = localStorage.getItem("token");
-    try {
-      await api.delete(`/communities/${communityId}`);
-        setCommunities(communities.filter(c => c.id !== communityId));
-        alert("Community deleted successfully.");
-    } catch (error) {
-        console.error("Delete failed", error);
-        alert(error.response?.data?.detail || "Failed to delete community.");
+      await api.post("/admin/broadcast", { message: broadcastMessage });
+      alert("Broadcast sent successfully!");
+      setBroadcastMessage("");
+    } catch (e) {
+      alert("Failed to send broadcast.");
     }
   };
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm("Delete this post permanently?")) return;
-    const token = localStorage.getItem("token");
+    if (!window.confirm("Delete this post?")) return;
     try {
       await api.delete(`/posts/${postId}`);
-        setPosts(posts.filter(p => p.id !== postId));
-    } catch (error) {
-        alert("Failed to delete post.");
-    }
-  };
-
-  const handleBroadcast = async (e) => {
-    e.preventDefault();
-    if (!broadcastMsg.trim()) return;
-    if (!window.confirm("Send this message to ALL users?")) return;
-
-    const token = localStorage.getItem("token");
-    try {
-        await api.post("/admin/broadcast", { message: broadcastMsg });
-        alert("Broadcast sent successfully!");
-        setBroadcastMsg("");
-    } catch (error) {
-        alert("Failed to send broadcast.");
+      setPosts(posts.filter((p) => p.id !== postId));
+      alert("Post deleted.");
+    } catch (e) {
+      alert("Failed to delete post.");
     }
   };
 
   const handleDismissReport = async (reportId) => {
-    const token = localStorage.getItem("token");
     try {
         await api.delete(`/admin/reports/${reportId}`);
         setReports(reports.filter(r => r.id !== reportId));
         alert("Report dismissed.");
-    } catch (error) {
-        alert("Failed to dismiss report.");
+    } catch(e) {
+        alert("Failed to dismiss report");
     }
   };
 
-  const COLORS = ['#3b82f6', '#8b5cf6', '#eab308'];
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setEditFormData({
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      plan: user.plan,
+      status: user.status,
+      full_name: user.full_name || "",
+      country_code: user.country_code || "",
+      phone_number: user.phone_number || "",
+      plan_billing_cycle: user.plan_billing_cycle || "",
+      plan_expires_at: user.plan_expires_at ? user.plan_expires_at.split('T')[0] : ""
+    });
+  };
 
-  // filter users for serch
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(userSearch.toLowerCase()) ||
-    user.email.toLowerCase().includes(userSearch.toLowerCase())
-  );
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = { ...editFormData };
+      // Ensure date is in ISO format if present
+      if (payload.plan_expires_at) {
+         payload.plan_expires_at = new Date(payload.plan_expires_at).toISOString();
+      } else {
+         payload.plan_expires_at = null;
+      }
+
+      await api.put(`/admin/users/${editingUser.id}`, payload);
+      setEditingUser(null);
+      fetchUsers();
+      fetchStats(); // Refresh stats as plan might change
+      alert("User updated successfully");
+    } catch (e) {
+      alert("Failed to update user");
+    }
+  };
+
+  const menuItems = [
+    { id: "dashboard", label: "Dashboard", icon: "📊" },
+    { id: "users", label: "User Management", icon: "👥" },
+    { id: "subscriptions", label: "Subscriptions", icon: "💳" },
+    { id: "content", label: "Content Moderation", icon: "📝" },
+    { id: "reports", label: "Reports", icon: "🚩" },
+    { id: "feedbacks", label: "Feedbacks", icon: "💬" },
+    { id: "broadcast", label: "Broadcast", icon: "📢" },
+  ];
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-100px)] bg-gray-900 text-gray-100 overflow-hidden rounded-xl border border-gray-700 shadow-2xl animate-fade-in relative">
-      
-      {/* 📱 Mobile Sidebar Toggle */}
-      <div className="md:hidden p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
-        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="text-red-500">🛡️</span> Admin Panel
-        </h2>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="text-gray-300 hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-        </button>
-      </div>
-      {/* Sidebar */}
-      <div className={`absolute md:relative z-20 inset-y-0 left-0 w-64 bg-gray-800 border-r border-gray-700 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
-        <div className="p-6 border-b border-gray-700">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <span className="text-red-500">🛡️</span> Admin Panel
-          </h2>
-          <p className="text-xs text-gray-500 mt-1">TIP Management System</p>
+    <div className="flex flex-col md:flex-row gap-6">
+      {/* SIDEBAR - SCROLLABLE */}
+      {/* Added overflow-y-auto and fixed height calculation to make it scrollable */}
+      <div className="w-full md:w-64 bg-gray-800 rounded-lg border border-gray-700 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-lg">
+        <div className="p-4 border-b border-gray-700 bg-gray-900/50 sticky top-0 z-10 backdrop-blur-sm">
+          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+          <p className="text-xs text-gray-400">Welcome, {userData?.username}</p>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <button 
-            onClick={() => { setActiveTab("overview"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "overview" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            📊 Overview
-          </button>
-          <button 
-            onClick={() => { setActiveTab("users"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "users" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            👥 User Management
-          </button>
-          <button 
-            onClick={() => { setActiveTab("subscriptions"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "subscriptions" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            💳 Subscriptions
+        <nav className="p-2 space-y-1">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${
+                activeTab === item.id
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+              }`}
+            >
+              <span className="text-lg">{item.icon}</span>
+              {item.label}
             </button>
-          <button 
-            onClick={() => { setActiveTab("communities"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "communities" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            🏘️ Communities
-          </button>
-          <button 
-            onClick={() => { setActiveTab("content"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "content" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            📝 Content
-          </button>
-          <button 
-            onClick={() => { setActiveTab("broadcast"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "broadcast" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            📢 Broadcast
-          </button>
-          <button 
-            onClick={() => { setActiveTab("reports"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "reports" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            🚨 Reports
-          </button>
-          <button 
-            onClick={() => { setActiveTab("feedback"); setIsSidebarOpen(false); }}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-bold transition-colors ${activeTab === "feedback" ? "bg-blue-600 text-white" : "text-gray-400 hover:bg-gray-700 hover:text-white"}`}
-          >
-            💬 Feedback
-          </button>
+          ))}
         </nav>
-        <div className="p-4 border-t border-gray-700">
-          <div className="bg-gray-900 p-3 rounded text-xs text-gray-500">
-            <p>Admin Access Level: <span className="text-green-400 font-bold">Super Admin</span></p>
-            <p className="mt-1">v1.0.0 (Phase 1)</p>
-          </div>
-        </div>
       </div>
 
-      {/* Overlay for mobile sidebar */}
-      {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-10 md:hidden" onClick={() => setIsSidebarOpen(false)}></div>}
+      {/* MAIN CONTENT */}
+      <div className="flex-1 bg-gray-800 rounded-lg border border-gray-700 p-6 min-h-[500px] shadow-lg">
+        {activeTab === "dashboard" && stats && (
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+              <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+                 <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">Total Users</h3>
+                 <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
+              </div>
+              <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+                 <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">Active Subs</h3>
+                 <p className="text-3xl font-bold text-green-400">{stats.activeSubs}</p>
+              </div>
+              <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+                 <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">Est. MRR</h3>
+                 <p className="text-3xl font-bold text-blue-400">${stats.mrr}</p>
+              </div>
+           </div>
+        )}
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto bg-gray-900 p-8">
-        {loading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        {activeTab === "users" && (
+          <div className="overflow-x-auto animate-fade-in">
+            <table className="w-full text-left text-sm text-gray-400">
+              <thead className="bg-gray-900 text-gray-200 uppercase font-bold">
+                <tr>
+                  <th className="p-3 rounded-tl-lg">User</th>
+                  <th className="p-3">Plan</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 rounded-tr-lg">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {users.map(u => (
+                  <tr key={u.id} className="hover:bg-gray-700/50 transition-colors">
+                    <td className="p-3">
+                      <div className="font-bold text-white">{u.username}</div>
+                      <div className="text-xs">{u.email}</div>
+                      {u.full_name && <div className="text-[10px] text-gray-500">{u.full_name}</div>}
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-xs font-bold ${u.plan === 'Platinum' ? 'bg-purple-900 text-purple-300' : u.plan === 'Premium' ? 'bg-blue-900 text-blue-300' : 'bg-gray-700'}`}>
+                        {u.plan}
+                      </span>
+                      {u.plan_billing_cycle && <div className="text-[10px] mt-1">{u.plan_billing_cycle}</div>}
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] uppercase ${u.status === 'active' ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <button onClick={() => handleEditUser(u)} className="text-blue-400 hover:text-white font-bold text-xs border border-blue-900 hover:bg-blue-900 px-3 py-1 rounded transition-colors">Edit</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ) : (
-          <>
-            {/* OVERVIEW TAB */}
-            {activeTab === "overview" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white mb-6">Dashboard Overview</h3>
-                
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-                    <p className="text-gray-400 text-sm uppercase font-bold">Total Users</p>
-                    <p className="text-3xl font-bold text-white mt-2">{stats.totalUsers.toLocaleString()}</p>
-                    <span className="text-green-400 text-xs font-bold">↑ 12% from last month</span>
-                  </div>
-                  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-                    <p className="text-gray-400 text-sm uppercase font-bold">Active Subscriptions</p>
-                    <p className="text-3xl font-bold text-blue-400 mt-2">{stats.activeSubs}</p>
-                    <span className="text-gray-500 text-xs">Conversion Rate: {((stats.activeSubs/stats.totalUsers)*100).toFixed(1)}%</span>
-                  </div>
-                  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-                    <p className="text-gray-400 text-sm uppercase font-bold">Monthly Revenue (MRR)</p>
-                    <p className="text-3xl font-bold text-green-400 mt-2">${stats.mrr.toLocaleString()}</p>
-                    <span className="text-green-400 text-xs font-bold">↑ 8% from last month</span>
-                  </div>
+        )}
+        
+        {activeTab === "subscriptions" && (
+          <div className="overflow-x-auto animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">Active Subscriptions</h3>
+            <table className="w-full text-left text-sm text-gray-400">
+              <thead className="bg-gray-900 text-gray-200 uppercase font-bold">
+                <tr>
+                  <th className="p-3">User</th>
+                  <th className="p-3">Plan</th>
+                  <th className="p-3">Billing</th>
+                  <th className="p-3">Expires</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {users.filter(u => u.plan !== 'Free').map(u => (
+                  <tr key={u.id} className="hover:bg-gray-700/50">
+                    <td className="p-3 font-bold text-white">{u.username}</td>
+                    <td className="p-3"><span className="text-blue-400">{u.plan}</span></td>
+                    <td className="p-3">{u.plan_billing_cycle || "-"}</td>
+                    <td className="p-3">{u.plan_expires_at ? new Date(u.plan_expires_at).toLocaleDateString() : "-"}</td>
+                  </tr>
+                ))}
+                {users.filter(u => u.plan !== 'Free').length === 0 && (
+                  <tr><td colSpan="4" className="p-4 text-center">No active subscriptions.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === "content" && (
+          <div className="space-y-4 animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">Recent Posts</h3>
+            {posts.map(post => (
+              <div key={post.id} className="bg-gray-900 p-4 rounded border border-gray-700 flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-bold text-blue-400">{post.username}</p>
+                  <p className="text-gray-300 mt-1">{post.content}</p>
+                  <p className="text-xs text-gray-500 mt-2">{new Date(post.created_at).toLocaleString()}</p>
                 </div>
+                <button onClick={() => handleDeletePost(post.id)} className="text-red-400 hover:text-white text-xs border border-red-900 bg-red-900/20 px-3 py-1 rounded">Delete</button>
+              </div>
+            ))}
+          </div>
+        )}
 
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                    <h4 className="text-lg font-bold text-white mb-4">User Growth</h4>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={stats.userGrowth}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                          <XAxis dataKey="name" stroke="#9ca3af" />
-                          <YAxis stroke="#9ca3af" />
-                          <Tooltip contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151' }} />
-                          <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                    <h4 className="text-lg font-bold text-white mb-4">Plan Distribution</h4>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={stats.subsDistribution}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {stats.subsDistribution.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip contentStyle={{ backgroundColor: '#1f2937', borderColor: '#374151' }} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="flex justify-center gap-4 mt-2">
-                        {stats.subsDistribution.map((entry, index) => (
-                          <div key={index} className="flex items-center gap-1 text-xs text-gray-400">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                            {entry.name}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+        {activeTab === "reports" && (
+          <div className="space-y-4 animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">User Reports</h3>
+            {reports.length === 0 ? <p className="text-gray-500">No reports found.</p> : reports.map(report => (
+              <div key={report.id} className="bg-gray-900 p-4 rounded border border-red-900/50 flex justify-between items-center">
+                <div>
+                  <p className="text-sm text-red-400 font-bold">Reported by: {report.reporter_username}</p>
+                  <p className="text-gray-300">Reason: {report.reason}</p>
+                  <p className="text-xs text-gray-500">Target ID: {report.post_id ? `Post #${report.post_id}` : `Comment #${report.comment_id}`}</p>
+                </div>
+                <div className="flex gap-2">
+                  {report.post_id && <button onClick={() => handleDeletePost(report.post_id)} className="text-red-400 border border-red-900 px-3 py-1 rounded text-xs">Delete Content</button>}
+                  <button onClick={() => handleDismissReport(report.id)} className="text-gray-400 border border-gray-700 px-3 py-1 rounded text-xs">Dismiss</button>
                 </div>
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
-            {/* FEEDBACK TAB */}
-            {activeTab === "feedback" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">User Feedback</h3>
-                <div className="grid gap-4">
-                  {feedbacks.length === 0 ? (
-                    <p className="text-gray-500">No feedback available.</p>
-                  ) : feedbacks.map((item) => (
-                    <div key={item.id} className="bg-gray-800 p-6 rounded-xl border border-gray-700 hover:border-gray-600 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
-                        <h4 className="font-bold text-blue-400 text-sm">{item.email}</h4>
-                        <span className="text-xs text-gray-500">
-                          {(() => {
-                            try {
-                              return formatDistanceToNow(new Date(item.created_at || item.date), { addSuffix: true });
-                            } catch (e) { return ""; }
-                          })()}
-                        </span>
-                      </div>
-                      <p className="text-gray-300 text-sm leading-relaxed">"{item.message}"</p>
-                    </div>
-                  ))}
+        {activeTab === "feedbacks" && (
+          <div className="space-y-4 animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">User Feedbacks</h3>
+            {feedbacks.length === 0 ? <p className="text-gray-500">No feedbacks yet.</p> : feedbacks.map((fb, idx) => (
+              <div key={fb.id || idx} className="bg-gray-900 p-4 rounded border border-gray-700">
+                <div className="flex justify-between mb-2">
+                  <span className="text-blue-400 font-bold text-sm">{fb.email}</span>
+                  <span className="text-gray-500 text-xs">{fb.date || new Date(fb.created_at).toLocaleDateString()}</span>
                 </div>
+                <p className="text-gray-300">{fb.message}</p>
               </div>
-            )}
+            ))}
+          </div>
+        )}
 
-            {/* USERS TAB */}
-            {activeTab === "users" && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-bold text-white">User Management</h3>
-                  <input 
-                    type="text" 
-                    placeholder="Search users..." 
-                    value={userSearch}
-                    onChange={(e) => setUserSearch(e.target.value)}
-                    className="bg-gray-800 border border-gray-600 rounded px-4 py-2 text-sm text-white focus:outline-none focus:border-blue-500" 
-                  />
-                </div>
-
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Role</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Plan</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Joined</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
-                                {user.username.substring(0,2).toUpperCase()}
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-white flex items-center">
-                                  {user.username}
-                                  <VerifiedBadge user={user} />
-                                </div>
-                                <div className="text-sm text-gray-500">{user.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === 'admin' ? 'bg-purple-900 text-purple-200' : 'bg-gray-700 text-gray-300'}`}>
-                              {user.role}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                            {user.plan}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'active' ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>
-                              {user.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.joined}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onClick={() => setEditingUser(user)} className="text-blue-400 hover:text-blue-300 mr-3">Edit</button>
-                            {user.status === 'active' && user.role !== 'admin' && (
-                              <button onClick={() => handleSuspendUser(user.id)} className="text-red-400 hover:text-red-300">Suspend</button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+        {activeTab === "broadcast" && (
+          <div className="max-w-xl animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">System Broadcast</h3>
+            <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
+              <label className="block text-sm font-bold text-gray-400 mb-2">Message to All Users</label>
+              <textarea 
+                value={broadcastMessage}
+                onChange={(e) => setBroadcastMessage(e.target.value)}
+                className="w-full bg-gray-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none h-32 resize-none"
+                placeholder="Type your announcement here..."
+              />
+              <div className="mt-4 flex justify-end">
+                <button 
+                  onClick={handleBroadcast}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-bold transition-colors"
+                >
+                  Send Broadcast
+                </button>
               </div>
-            )}
-
-            {/* SUBSCRIPTIONS TAB */}
-            {activeTab === "subscriptions" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">Subscription Monitoring</h3>
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Plan Details</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
-                      {subscriptions.map((sub) => (
-                        <tr key={sub.id} className="hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-400">
-                            #{sub.id}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">
-                            {sub.user}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-white">{sub.plan}</div>
-                            <div className="text-xs text-gray-500">{sub.billing}</div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-green-400">
-                            ${sub.amount}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              sub.status === 'paid' ? 'bg-green-900 text-green-200' : 
-                              sub.status === 'pending' ? 'bg-yellow-900 text-yellow-200' : 
-                              'bg-red-900 text-red-200'
-                            }`}>
-                              {sub.status.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.date}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-blue-400 hover:text-blue-300 cursor-pointer">View Invoice</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            {/* COMMUNITIES TAB */}
-            {activeTab === "communities" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">Community Management</h3>
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Creator</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Members</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
-                      {communities.map((comm) => (
-                        <tr key={comm.id} className="hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{comm.id}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{comm.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{comm.creator_username}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-400 font-mono">{comm.members_count}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button 
-                              onClick={() => handleDeleteCommunity(comm.id)} 
-                              className="text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/40 px-3 py-1 rounded transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                      {communities.length === 0 && (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-8 text-center text-gray-500">No communities found.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-            {/* CONTENT TAB */}
-            {activeTab === "content" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">Content Moderation (All Posts)</h3>
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Author</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Content Preview</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
-                      {posts.map((post) => (
-                        <tr key={post.id} className="hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{post.username}</td>
-                          <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">{post.content}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button onClick={() => handleDeletePost(post.id)} className="text-red-400 hover:text-red-300">Delete</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* REPORTS TAB */}
-            {activeTab === "reports" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">User Reports</h3>
-                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-700">
-                    <thead className="bg-gray-900">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reporter</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Target ID</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-gray-800 divide-y divide-gray-700">
-                      {reports.map((report) => (
-                        <tr key={report.id} className="hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{report.reporter_username}</td>
-                          <td className="px-6 py-4 text-sm text-red-300">{report.reason}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {report.post_id ? `Post #${report.post_id}` : `Comment #${report.comment_id}`}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            {report.post_id && (
-                                <button onClick={() => handleDeletePost(report.post_id)} className="text-red-400 hover:text-red-300 bg-red-900/20 px-2 py-1 rounded">Delete Post</button>
-                            )}
-                            <button onClick={() => handleDismissReport(report.id)} className="text-gray-400 hover:text-white bg-gray-700 px-2 py-1 rounded">Dismiss</button>
-                          </td>
-                        </tr>
-                      ))}
-                      {reports.length === 0 && <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">No reports found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* BROADCAST TAB */}
-            {activeTab === "broadcast" && (
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-white">System Broadcast</h3>
-                <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
-                    <p className="text-gray-400 mb-4 text-sm">Send a notification to ALL registered users. Use this for important announcements.</p>
-                    <form onSubmit={handleBroadcast}>
-                        <textarea 
-                            value={broadcastMsg}
-                            onChange={(e) => setBroadcastMsg(e.target.value)}
-                            className="w-full bg-gray-900 border border-gray-600 rounded-lg p-4 text-white focus:border-blue-500 outline-none h-32 resize-none"
-                            placeholder="Type your announcement here..."
-                            required
-                        />
-                        <div className="mt-4 flex justify-end">
-                            <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
-                                <span>📢</span> Send Broadcast
-                            </button>
-                        </div>
-                    </form>
-                </div>
-              </div>
-            )}
-          </>
+            </div>
+          </div>
         )}
       </div>
-      {/* Edit User Modal */}
+
+      {/* EDIT USER MODAL */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setEditingUser(null)}>
-          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-md w-full animate-fade-in" onClick={e => e.stopPropagation()}>
-             <h3 className="text-xl font-bold text-white mb-4">Edit User</h3>
-             <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-1">Username</label>
-                  <input type="text" value={editingUser.username} onChange={e => setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-1">Email</label>
-                  <input type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                   <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1">Role</label>
-                      <select value={editingUser.role} onChange={e => setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                   </div>
-                   <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1">Status</label>
-                      <select value={editingUser.status} onChange={e => setEditingUser({...editingUser, status: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
-                        <option value="active">Active</option>
-                        <option value="suspended">Suspended</option>
-                      </select>
-                   </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 mb-1">Plan</label>
-                  <select value={editingUser.plan} onChange={e => setEditingUser({...editingUser, plan: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
-                     <option value="Free">Free</option>
-                     <option value="Basic">Basic</option>
-                     <option value="Premium">Premium</option>
-                     <option value="Platinum">Platinum</option>
-                  </select>
-                </div>
-             </div>
-             <div className="flex justify-end gap-3 mt-6">
-                <button onClick={() => setEditingUser(null)} className="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancel</button>
-                <button onClick={handleSaveUser} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded font-bold">Save Changes</button>
-             </div>
-          </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+           <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
+              <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-4">Edit User: <span className="text-blue-400">{editingUser.username}</span></h3>
+              <form onSubmit={handleUpdateUser} className="space-y-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Plan Level</label>
+                       <select value={editFormData.plan} onChange={e => setEditFormData({...editFormData, plan: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
+                          <option value="Free">Free</option>
+                          <option value="Basic">Basic</option>
+                          <option value="Premium">Premium</option>
+                          <option value="Platinum">Platinum</option>
+                       </select>
+                    </div>
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Billing Cycle</label>
+                       <select value={editFormData.plan_billing_cycle} onChange={e => setEditFormData({...editFormData, plan_billing_cycle: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
+                          <option value="">None</option>
+                          <option value="Monthly">Monthly</option>
+                          <option value="Yearly">Yearly</option>
+                       </select>
+                    </div>
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Expires At</label>
+                       <input type="date" value={editFormData.plan_expires_at} onChange={e => setEditFormData({...editFormData, plan_expires_at: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Account Status</label>
+                       <select value={editFormData.status} onChange={e => setEditFormData({...editFormData, status: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
+                          <option value="active">Active</option>
+                          <option value="banned">Banned</option>
+                          <option value="suspended">Suspended</option>
+                       </select>
+                    </div>
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Full Name</label>
+                       <input type="text" value={editFormData.full_name} onChange={e => setEditFormData({...editFormData, full_name: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
+                    </div>
+                    <div>
+                       <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Phone Number</label>
+                       <input type="text" value={editFormData.phone_number} onChange={e => setEditFormData({...editFormData, phone_number: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
+                    </div>
+                 </div>
+                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-700">
+                    <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white font-bold transition-colors">Cancel</button>
+                    <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold transition-colors">Save Changes</button>
+                 </div>
+              </form>
+           </div>
         </div>
       )}
     </div>

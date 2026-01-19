@@ -69,9 +69,10 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   const { showFlash } = useOutletContext();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
+  const isAdmin = userData?.role === 'admin';
 
   const downloadCSV = () => {
-    if (planLevel < 1) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
+    if (planLevel < 1 && !isAdmin) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
     if (!account.history || account.history.length === 0) return;
 
     const headers = ["ID", "Symbol", "Type", "Entry Price", "Exit Price", "Size", "PnL", "Reason", "Note", "Time"];
@@ -184,7 +185,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             <div className="bg-gray-900 p-4 rounded border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <label className="text-sm font-bold text-gray-300 uppercase">Enable Prop Firm Challenge</label>
-                {planLevel >= 1 ? (
+                {planLevel >= 1 || isAdmin ? (
                   <input type="checkbox" checked={config.isChallengeMode} onChange={(e) => setConfig({...config, isChallengeMode: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
                 ) : (
                   <span className="text-xs text-gray-500 flex items-center gap-1">
@@ -223,7 +224,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 <label className="text-sm font-bold text-gray-300 uppercase flex items-center gap-2">
                   👮 Enable Discipline Rules
                 </label>
-                {planLevel >= 2 ? (
+                {planLevel >= 2 || isAdmin ? (
                   <input type="checkbox" checked={config.enableRules} onChange={(e) => setConfig({...config, enableRules: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
                 ) : (
                   <span className="text-xs text-gray-500 flex items-center gap-1">
@@ -323,7 +324,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                         🤖 AI Trading Coach
                     </h3>
-                    {planLevel >= 2 ? (
+                    {planLevel >= 2 || isAdmin ? (
                       <button 
                           onClick={analyzeHealth}
                           disabled={isAnalyzing || account.history.length < 2}
@@ -505,7 +506,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 >
                     Reset Session
                 </button>
-                {planLevel >= 1 ? (
+                {planLevel >= 1 || isAdmin ? (
                   <button 
                       onClick={downloadCSV}
                       disabled={account.history.length === 0}

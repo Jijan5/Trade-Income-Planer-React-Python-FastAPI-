@@ -96,6 +96,7 @@ const SimulationLayout = ({
   const location = useLocation();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
+  const isAdmin = userData?.role === 'admin';
   return (
     <ManualTradeProvider activeSymbol={activeSymbol}>
       <>
@@ -160,7 +161,7 @@ const SimulationLayout = ({
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              Strategy Simulator {planLevel < 2 && "🔒"}
+              Strategy Simulator {(planLevel < 2 && !isAdmin) && "🔒"}
             </Link>
             <Link
               to="/simulation/planner"
@@ -170,7 +171,7 @@ const SimulationLayout = ({
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              Goal Planner {planLevel < 2 && "🔒"}
+              Goal Planner {(planLevel < 2 && !isAdmin) && "🔒"}
             </Link>
             <Link
               to="/simulation/manual"
@@ -452,9 +453,18 @@ function App() {
 
       if (window.snap && response.data.token) {
         window.snap.pay(response.data.token, {
-          onSuccess: (result) => {
-            alert("Payment success! Your plan will be updated shortly.");
-            window.location.reload();
+          onSuccess: async (result) => {
+            try {
+              // call endpoint verification to backend
+              const orderId = result.order_id || response.data.order_id;
+              await api.post("/payment/verify", { order_id: orderId });
+              
+              alert("Payment success! Your plan has been updated automatically.");
+              window.location.reload();
+            } catch (error) {
+              console.error("Verification failed", error);
+              alert("Payment successful but verification failed. Please contact support.");
+            }
           },
           onPending: (result) => alert("Waiting for payment..."),
           onError: (result) => alert("Payment failed!"),
@@ -764,7 +774,7 @@ function App() {
                     />
                   </svg>
                   {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 block h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
+                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
                       {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                   )}
@@ -915,7 +925,7 @@ function App() {
             <Route
               path="strategy"
               element={
-                planLevel >= 2 ? (
+                planLevel >= 2 || userData?.role === 'admin' ? (
                   <StrategyView
                     onSimulate={handleSimulate}
                     isLoading={loading}
@@ -944,7 +954,7 @@ function App() {
             <Route
               path="planner"
               element={
-                planLevel >= 2 ? (
+                planLevel >= 2 || userData?.role === 'admin' ? (
                   <GoalPlanner />
                 ) : (
                   <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">

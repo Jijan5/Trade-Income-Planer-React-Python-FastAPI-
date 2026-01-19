@@ -12,6 +12,8 @@ const TradeHistory = () => {
   const { showFlash } = useOutletContext();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
+  const isAdmin = userData?.role === 'admin';
+
 
   useEffect(() => {
     fetchTrades();
@@ -51,7 +53,7 @@ const TradeHistory = () => {
   }, {});
 
   const handleExportCSV = () => {
-    if (planLevel < 1) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
+    if (planLevel < 1 && !isAdmin) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
     if (trades.length === 0) return showFlash("No trades to export.", "info");
 
     const headers = ["Date", "Time", "Symbol", "Entry Price", "Exit Price", "PnL", "Result", "Notes"];
@@ -88,7 +90,7 @@ const TradeHistory = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-end">
-      {planLevel >= 1 ? (
+      {planLevel >= 1 || isAdmin ? (
           <button 
             onClick={handleExportCSV}
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2 transition-colors"

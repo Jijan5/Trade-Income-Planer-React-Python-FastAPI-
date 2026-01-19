@@ -20,6 +20,9 @@ async def update_user_profile(
     username: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
     password: Optional[str] = Form(None),
+    full_name: Optional[str] = Form(None),
+    country_code: Optional[str] = Form(None),
+    phone_number: Optional[str] = Form(None),
     avatar_file: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
@@ -35,6 +38,10 @@ async def update_user_profile(
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
         user.email = email
+    
+    if full_name is not None: user.full_name = full_name
+    if country_code is not None: user.country_code = country_code
+    if phone_number is not None: user.phone_number = phone_number
         
     if password:
         user.hashed_password = get_password_hash(password)

@@ -228,7 +228,7 @@ async def delete_post(post_id: int, user: User = Depends(get_current_user), sess
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
-    if post.username != user.username:
+    if post.username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this post")
     
     notifications = session.exec(select(Notification).where(Notification.post_id == post_id)).all()

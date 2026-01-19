@@ -74,6 +74,9 @@ class User(SQLModel, table=True):
   reset_token: Optional[str] = SQLField(default=None, index=True)
   reset_token_expires: Optional[datetime] = SQLField(default=None)
   status: str = SQLField(default="active")  # statuses: active, banned
+  plan_billing_cycle: Optional[str] = SQLField(default=None) # Monthly, Yearly
+  plan_start_date: Optional[datetime] = SQLField(default=None)
+  plan_expires_at: Optional[datetime] = SQLField(default=None)
   
 class UserCreate(BaseModel):
   username: str
@@ -91,6 +94,12 @@ class UserRead(BaseModel):
   avatar_url: Optional[str] = None
   plan: str
   status: str
+  full_name: Optional[str] = None
+  country_code: Optional[str] = None
+  phone_number: Optional[str] = None
+  plan_billing_cycle: Optional[str] = None
+  plan_start_date: Optional[datetime] = None
+  plan_expires_at: Optional[datetime] = None
 
 class AdminUserUpdate(BaseModel):
   username: str
@@ -98,6 +107,11 @@ class AdminUserUpdate(BaseModel):
   role: str
   plan: str
   status: str
+  full_name: Optional[str] = None
+  country_code: Optional[str] = None
+  phone_number: Optional[str] = None
+  plan_billing_cycle: Optional[str] = None
+  plan_expires_at: Optional[datetime] = None
 
 class Token(BaseModel):
   access_token: str
