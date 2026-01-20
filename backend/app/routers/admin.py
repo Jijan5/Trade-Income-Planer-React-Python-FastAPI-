@@ -1,18 +1,18 @@
-from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select
+from datetime import datetime, timedelta
 from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, select, SQLModel
 from ..database import get_session
-from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification
 from ..dependencies import get_current_admin_user, get_current_user
+from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification, UserUpdateAdmin
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
-@router.get("/api/admin/users", response_model=list[UserRead])
+@router.get("/users", response_model=list[UserRead])
 async def get_all_users(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     return session.exec(select(User)).all()
 
-@router.get("/api/admin/stats")
+@router.get("/stats")
 async def get_dashboard_stats(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     
@@ -58,7 +58,7 @@ async def get_dashboard_stats(user: User = Depends(get_current_admin_user), sess
         "subsDistribution": subs_distribution
     }
 
-@router.get("/api/admin/subscriptions")
+@router.get("/subscriptions")
 async def get_admin_subscriptions(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     # Generate subscription list from users with paid plans
     # In a real app with payment gateway, this would query a 'Transaction' table
@@ -71,11 +71,11 @@ async def get_admin_subscriptions(user: User = Depends(get_current_admin_user), 
         "date": getattr(u, "created_at", datetime.now()), "billing": "Monthly"
     } for u in users]
 
-@router.get("/api/admin/feedbacks", response_model=list[Feedback])
+@router.get("/feedbacks", response_model=list[Feedback])
 async def get_all_feedbacks(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     return session.exec(select(Feedback).order_by(Feedback.created_at.desc())).all()
 
-@router.get("/api/admin/posts", response_model=list[PostResponse])
+@router.get("/posts", response_model=list[PostResponse])
 async def get_admin_posts(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
     if not posts:
@@ -97,7 +97,7 @@ async def get_admin_posts(user: User = Depends(get_current_admin_user), session:
         results.append(PostResponse(**post_dict))
     return results
 
-@router.post("/api/admin/broadcast")
+@router.post("/broadcast")
 async def broadcast_message(request: BroadcastRequest, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     count = 0
@@ -116,27 +116,7 @@ async def broadcast_message(request: BroadcastRequest, user: User = Depends(get_
     session.commit()
     return {"status": "success", "count": count}
 
-@router.put("/api/admin/users/{user_id}", response_model=UserRead)
-async def admin_update_user(
-    user_id: int, 
-    user_update: AdminUserUpdate, 
-    admin_user: User = Depends(get_current_admin_user), 
-    session: Session = Depends(get_session)
-):
-    user_to_update = session.get(User, user_id)
-    if not user_to_update:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user_data = user_update.model_dump(exclude_unset=True)
-    for key, value in user_data.items():
-        setattr(user_to_update, key, value)
-    
-    session.add(user_to_update)
-    session.commit()
-    session.refresh(user_to_update)
-    return user_to_update
-
-@router.delete("/api/admin/feedbacks/{feedback_id}")
+@router.delete("/feedbacks/{feedback_id}")
 async def delete_feedback(feedback_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     feedback = session.get(Feedback, feedback_id)
     if not feedback:
@@ -145,31 +125,17 @@ async def delete_feedback(feedback_id: int, user: User = Depends(get_current_adm
     session.commit()
     return {"status": "success"}
 
-@router.get("/api/admin/reports", response_model=list[Report])
+@router.get("/reports", response_model=list[Report])
 async def get_admin_reports(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     return session.exec(select(Report).order_by(Report.created_at.desc())).all()
 
-@router.delete("/api/admin/reports/{report_id}")
+@router.delete("/reports/{report_id}")
 async def delete_report(report_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     report = session.get(Report, report_id)
     if report:
         session.delete(report)
         session.commit()
     return {"status": "success"}
-
-class UserUpdateAdmin(User):
-    username: str
-    email: str
-    role: str
-    plan: str
-    status: str
-    full_name: Optional[str] = None
-    country_code: Optional[str] = None
-    phone_number: Optional[str] = None
-    plan_billing_cycle: Optional[str] = None
-    plan_expires_at: Optional[datetime] = None
-    suspended_until: Optional[datetime] = None
-    suspension_reason: Optional[str] = None
 
 @router.put("/users/{user_id}", response_model=User)
 async def update_user_by_admin(user_id: int, user_data: UserUpdateAdmin, admin: User = Depends(get_current_user), session: Session = Depends(get_session)):

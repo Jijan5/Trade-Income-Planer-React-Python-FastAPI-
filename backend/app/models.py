@@ -77,7 +77,12 @@ class User(SQLModel, table=True):
   plan_billing_cycle: Optional[str] = SQLField(default=None) # Monthly, Yearly
   plan_start_date: Optional[datetime] = SQLField(default=None)
   plan_expires_at: Optional[datetime] = SQLField(default=None)
-  
+  suspended_until: Optional[datetime] = SQLField(default=None)
+  suspension_reason: Optional[str] = SQLField(default=None)
+  appeal_message: Optional[str] = SQLField(default=None)
+  appeal_status: Optional[str] = SQLField(default="none")
+  appeal_response: Optional[str] = SQLField(default=None)
+
 class UserCreate(BaseModel):
   username: str
   email: str
@@ -100,6 +105,11 @@ class UserRead(BaseModel):
   plan_billing_cycle: Optional[str] = None
   plan_start_date: Optional[datetime] = None
   plan_expires_at: Optional[datetime] = None
+  suspended_until: Optional[datetime] = None
+  suspension_reason: Optional[str] = None
+  appeal_message: Optional[str] = None
+  appeal_status: Optional[str] = None
+  appeal_response: Optional[str] = None
 
 class AdminUserUpdate(BaseModel):
   username: str
@@ -112,6 +122,23 @@ class AdminUserUpdate(BaseModel):
   phone_number: Optional[str] = None
   plan_billing_cycle: Optional[str] = None
   plan_expires_at: Optional[datetime] = None
+
+class UserUpdateAdmin(SQLModel):
+    username: str
+    email: str
+    role: str
+    plan: str
+    status: str
+    full_name: Optional[str] = None
+    country_code: Optional[str] = None
+    phone_number: Optional[str] = None
+    plan_billing_cycle: Optional[str] = None
+    plan_expires_at: Optional[datetime] = None
+    suspended_until: Optional[datetime] = None
+    suspension_reason: Optional[str] = None
+    appeal_message: Optional[str] = None
+    appeal_status: Optional[str] = None
+    appeal_response: Optional[str] = None
 
 class Token(BaseModel):
   access_token: str

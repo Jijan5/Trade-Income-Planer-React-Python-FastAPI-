@@ -60,8 +60,17 @@ const AdminRoute = ({ children }) => {
 
 // 🛡️ SECURITY: Protected Route for Authenticated Users
 const ProtectedRoute = ({ children }) => {
-  const { token } = useAuth();
+  const { token, userData, loading } = useAuth();
+  
+  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
   if (!token) return <Navigate to="/" replace />;
+  if (userData && userData.status === 'suspended') {
+    const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+    // If suspension is indefinite (null) or hasn't expired yet
+    if (!suspendedUntil || suspendedUntil > new Date()) {
+        return <Navigate to="/suspended" replace />;
+    }
+  }
   return children;
 };
 

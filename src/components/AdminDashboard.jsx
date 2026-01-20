@@ -169,6 +169,7 @@ const AdminDashboard = () => {
     { id: "reports", label: "Reports", icon: "🚩" },
     { id: "feedbacks", label: "Feedbacks", icon: "💬" },
     { id: "broadcast", label: "Broadcast", icon: "📢" },
+    { id: "appeals", label: "Appeals", icon: "⚖️" },
   ];
 
   return (
@@ -349,6 +350,66 @@ const AdminDashboard = () => {
           </div>
         )}
 
+{activeTab === "appeals" && (
+          <div className="space-y-4 animate-fade-in">
+            <h3 className="text-lg font-bold text-white mb-4">Suspension Appeals</h3>
+            {users.filter(u => u.appeal_status === 'pending').length === 0 ? (
+              <p className="text-gray-500">No pending appeals.</p>
+            ) : (
+              users.filter(u => u.appeal_status === 'pending').map(u => (
+                <div key={u.id} className="bg-gray-900 p-4 rounded border border-yellow-600/50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="text-lg font-bold text-white">{u.username} <span className="text-xs text-gray-500">({u.email})</span></p>
+                      <p className="text-xs text-red-400 mt-1">Suspended Until: {u.suspended_until ? new Date(u.suspended_until).toLocaleString() : "Indefinite"}</p>
+                      <p className="text-xs text-gray-400">Reason: {u.suspension_reason}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={async () => {
+                          if(!window.confirm(`Approve appeal for ${u.username}? This will unsuspend the user.`)) return;
+                          try {
+                            const payload = { ...u, status: 'active', suspended_until: null, appeal_status: 'approved', appeal_response: 'Your appeal has been approved. Welcome back.' };
+                            // Clean payload for UserUpdateAdmin
+                            delete payload.id; delete payload.created_at; delete payload.updated_at; delete payload.hashed_password; delete payload.avatar_url; delete payload.reset_token; delete payload.reset_token_expires;
+                            await api.put(`/admin/users/${u.id}`, payload);
+                            fetchUsers();
+                            showFlash("Appeal approved. User unsuspended.", "success");
+                          } catch(e) { showFlash("Failed to approve appeal.", "error"); }
+                        }}
+                        className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          const reason = prompt("Enter rejection reason:");
+                          if(!reason) return;
+                          try {
+                            const payload = { ...u, appeal_status: 'rejected', appeal_response: reason };
+                            // Clean payload
+                            delete payload.id; delete payload.created_at; delete payload.updated_at; delete payload.hashed_password; delete payload.avatar_url; delete payload.reset_token; delete payload.reset_token_expires;
+                            await api.put(`/admin/users/${u.id}`, payload);
+                            fetchUsers();
+                            showFlash("Appeal rejected.", "success");
+                          } catch(e) { showFlash("Failed to reject appeal.", "error"); }
+                        }}
+                        className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                    <p className="text-xs text-gray-400 uppercase font-bold mb-1">Appeal Message:</p>
+                    <p className="text-gray-300 text-sm italic">"{u.appeal_message}"</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {activeTab === "broadcast" && (
           <div className="max-w-xl animate-fade-in">
             <h3 className="text-lg font-bold text-white mb-4">System Broadcast</h3>
@@ -405,7 +466,6 @@ const AdminDashboard = () => {
                        <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">Account Status</label>
                        <select value={editFormData.status} onChange={e => setEditFormData({...editFormData, status: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none">
                           <option value="active">Active</option>
-                          <option value="banned">Banned</option>
                           <option value="suspended">Suspended</option>
                        </select>
                     </div>

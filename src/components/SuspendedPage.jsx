@@ -47,6 +47,14 @@ const SuspendedPage = () => {
                     <p className="text-white mt-1 font-mono">{isPermanent ? "Indefinitely" : suspendedUntil.toLocaleString()}</p>
                 </div>
 
+                {userData.appeal_status === 'rejected' && (
+                    <div className="bg-red-900/30 p-4 rounded-lg border border-red-500/50 text-left mb-6">
+                        <h3 className="font-bold text-red-400 mb-1">Appeal Rejected</h3>
+                        <p className="text-sm text-gray-300">Admin Response:</p>
+                        <p className="text-white mt-1 italic">"{userData.appeal_response}"</p>
+                    </div>
+                )}
+
                 {appealSent ? (
                     <div className="bg-green-900/50 p-4 rounded-lg border border-green-500/50">
                         <h3 className="font-bold text-green-300">Appeal Submitted</h3>
