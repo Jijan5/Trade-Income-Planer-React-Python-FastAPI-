@@ -114,7 +114,11 @@ const AdminDashboard = () => {
       country_code: user.country_code || "",
       phone_number: user.phone_number || "",
       plan_billing_cycle: user.plan_billing_cycle || "",
-      plan_expires_at: user.plan_expires_at ? user.plan_expires_at.split('T')[0] : ""
+      plan_expires_at: user.plan_expires_at ? user.plan_expires_at.split('T')[0] : "",
+      suspension_reason_preset: ['Spamming', 'Inappropriate Content', 'Hate Speech'].includes(user.suspension_reason) ? user.suspension_reason : 'other',
+      suspension_reason_other: ['Spamming', 'Inappropriate Content', 'Hate Speech'].includes(user.suspension_reason) ? '' : user.suspension_reason || '',
+      suspension_duration_days: 0,
+      suspension_duration_hours: 0,
     });
   };
 
@@ -128,6 +132,24 @@ const AdminDashboard = () => {
       } else {
          payload.plan_expires_at = null;
       }
+
+      if (payload.status === 'suspended') {
+        const days = parseInt(payload.suspension_duration_days || 0);
+        const hours = parseInt(payload.suspension_duration_hours || 0);
+        
+        if (days > 0 || hours > 0) {
+            const suspendedUntil = new Date();
+            suspendedUntil.setDate(suspendedUntil.getDate() + days);
+            suspendedUntil.setHours(suspendedUntil.getHours() + hours);
+            payload.suspended_until = suspendedUntil.toISOString();
+        } else {
+            payload.suspended_until = null; // Indefinite
+        }
+
+        payload.suspension_reason = payload.suspension_reason_preset === 'other' ? payload.suspension_reason_other : payload.suspension_reason_preset;
+      }
+
+      delete payload.suspension_reason_preset; delete payload.suspension_reason_other; delete payload.suspension_duration_days; delete payload.suspension_duration_hours;
 
       await api.put(`/admin/users/${editingUser.id}`, payload);
       setEditingUser(null);
@@ -396,6 +418,39 @@ const AdminDashboard = () => {
                        <input type="text" value={editFormData.phone_number} onChange={e => setEditFormData({...editFormData, phone_number: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none" />
                     </div>
                  </div>
+                 {/* Suspension Fields */}
+                 {editFormData.status === 'suspended' && (
+                    <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/30 mt-4 space-y-4 animate-fade-in">
+                        <h4 className="font-bold text-red-300">Suspension Details</h4>
+                        <div>
+                            <label className="block text-xs text-gray-400 uppercase mb-2 font-bold">Reason</label>
+                            <div className="space-y-2 text-sm">
+                                {['Spamming', 'Inappropriate Content', 'Hate Speech', 'other'].map(reason => (
+                                    <label key={reason} className="flex items-center gap-2 text-gray-300">
+                                        <input type="radio" name="suspension_reason_preset" value={reason} checked={editFormData.suspension_reason_preset === reason} onChange={e => setEditFormData({...editFormData, suspension_reason_preset: e.target.value})} className="w-4 h-4 text-red-500 bg-gray-700 border-gray-600 focus:ring-red-600" />
+                                        {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                                    </label>
+                                ))}
+                            </div>
+                            {editFormData.suspension_reason_preset === 'other' && (
+                                <textarea value={editFormData.suspension_reason_other} onChange={e => setEditFormData({...editFormData, suspension_reason_other: e.target.value})} placeholder="Specify other reason..." className="mt-2 w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-red-500 outline-none"></textarea>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-xs text-gray-400 uppercase mb-2 font-bold">Duration (Leave 0 for Indefinite)</label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Days</label>
+                                    <input type="number" value={editFormData.suspension_duration_days} onChange={e => setEditFormData({...editFormData, suspension_duration_days: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs text-gray-500 mb-1">Hours</label>
+                                    <input type="number" value={editFormData.suspension_duration_hours} onChange={e => setEditFormData({...editFormData, suspension_duration_hours: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 outline-none" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 )}
                  <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-700">
                     <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white font-bold transition-colors">Cancel</button>
                     <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold transition-colors">Save Changes</button>

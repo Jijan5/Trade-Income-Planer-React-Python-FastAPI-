@@ -26,6 +26,7 @@ import Subscription from "./components/Subscriptions";
 import AdminDashboard from "./components/AdminDashboard";
 import PostDetail from "./components/PostDetail";
 import TradeHistory from "./components/TradeHistory";
+import SuspendedPage from "./components/SuspendedPage";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
@@ -45,6 +46,14 @@ const AdminRoute = ({ children }) => {
 
   if (!userData || userData.role !== "admin") {
     return <Navigate to="/" replace />;
+  }
+  // Check for suspension after ensuring user is logged in
+  if (userData && userData.status === 'suspended') {
+    const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+    // If suspension is indefinite (null) or hasn't expired yet
+    if (!suspendedUntil || suspendedUntil > new Date()) {
+        return <Navigate to="/suspended" replace />;
+    }
   }
   return children;
 };
@@ -269,7 +278,7 @@ const StrategyView = ({
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, userData, unreadCount, setUnreadCount, login, logout } =
+  const { token, userData, unreadCount, setUnreadCount, login, logout, fetchUserProfile } =
     useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
@@ -456,16 +465,22 @@ function App() {
               // call endpoint verification to backend
               const orderId = result.order_id || response.data.order_id;
               await api.post("/payment/verify", { order_id: orderId });
+
+              // Create persistent notification
+              await api.post("/notifications/self", {
+                message: `Payment successful! Your plan has been upgraded to ${plan.name}.`,
+                type: "system_broadcast"
+              });
               
-              alert("Payment success! Your plan has been updated automatically.");
-              window.location.reload();
+              if (fetchUserProfile) await fetchUserProfile();
+              showFlash(`Payment success! Your plan has been upgraded to ${plan.name}.`, "success");
             } catch (error) {
               console.error("Verification failed", error);
-              alert("Payment successful but verification failed. Please contact support.");
+              showFlash("Payment successful but verification failed. Please contact support.", "error");
             }
           },
-          onPending: (result) => alert("Waiting for payment..."),
-          onError: (result) => alert("Payment failed!"),
+          onPending: (result) => showFlash("Waiting for payment...", "info"),
+          onError: (result) => showFlash("Payment failed!", "error"),
           onClose: () =>
             console.log(
               "Customer closed the popup without finishing the payment"
@@ -474,7 +489,7 @@ function App() {
       }
     } catch (error) {
       console.error("Payment Error:", error);
-      alert("Failed to initiate payment. Please try again.");
+      showFlash("Failed to initiate payment. Please try again.", "error");
     }
   };
 
@@ -831,6 +846,13 @@ function App() {
       </nav>
 
       <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
+        {/* Special check for suspended route to allow access even if other routes are protected */}
+        {userData && userData.status === 'suspended' && new Date(userData.suspended_until) > new Date() && location.pathname !== '/suspended' && (
+           <Navigate to="/suspended" replace />
+        )}
+        {userData && userData.status === 'suspended' && !userData.suspended_until && location.pathname !== '/suspended' && (
+           <Navigate to="/suspended" replace />
+        )}
         <Routes>
           <Route
             path="/"
@@ -1001,6 +1023,10 @@ function App() {
                 <AdminDashboard />
               </AdminRoute>
             }
+          />
+          <Route
+            path="/suspended"
+            element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
           />
         </Routes>
       </div>

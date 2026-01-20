@@ -1,11 +1,12 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from typing import Optional
 from ..database import get_session
 from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification
-from ..dependencies import get_current_admin_user
+from ..dependencies import get_current_admin_user, get_current_user
 
-router = APIRouter()
+router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @router.get("/api/admin/users", response_model=list[UserRead])
 async def get_all_users(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
@@ -155,3 +156,35 @@ async def delete_report(report_id: int, user: User = Depends(get_current_admin_u
         session.delete(report)
         session.commit()
     return {"status": "success"}
+
+class UserUpdateAdmin(User):
+    username: str
+    email: str
+    role: str
+    plan: str
+    status: str
+    full_name: Optional[str] = None
+    country_code: Optional[str] = None
+    phone_number: Optional[str] = None
+    plan_billing_cycle: Optional[str] = None
+    plan_expires_at: Optional[datetime] = None
+    suspended_until: Optional[datetime] = None
+    suspension_reason: Optional[str] = None
+
+@router.put("/users/{user_id}", response_model=User)
+async def update_user_by_admin(user_id: int, user_data: UserUpdateAdmin, admin: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    if admin.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    db_user = session.get(User, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    update_data = user_data.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_user, key, value)
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    return db_user

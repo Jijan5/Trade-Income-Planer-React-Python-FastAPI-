@@ -3,7 +3,7 @@ import uuid
 import shutil
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 from sqlalchemy import text
 from ..database import get_session
 from ..models import Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User
@@ -11,6 +11,13 @@ from ..dependencies import get_current_user
 from ..utils import process_mentions_and_create_notifications
 
 router = APIRouter()
+
+class NotificationSelfCreate(SQLModel):
+    message: str
+    type: str = "system_broadcast"
+    
+class AppealCreate(SQLModel):
+    message: str
 
 @router.get("/api/posts", response_model=list[PostResponse])
 async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, limit: int = 10, current_user: User = Depends(get_current_user)):
@@ -287,3 +294,29 @@ async def delete_comment(comment_id: int, user: User = Depends(get_current_user)
     session.delete(comment)
     session.commit()
     return {"status": "success"}
+
+@router.post("/api/notifications/self")
+async def create_self_notification(notif_data: NotificationSelfCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    notif = Notification(
+        user_id=user.id,
+        actor_username="System",
+        type=notif_data.type,
+        content_preview=notif_data.message,
+        post_id=None,
+        comment_id=None,
+        community_id=None
+    )
+    session.add(notif)
+    session.commit()
+    return {"status": "success"}
+
+@router.post("/api/users/me/appeal")
+async def submit_appeal(appeal_data: AppealCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    if user.status != 'suspended':
+        raise HTTPException(status_code=400, detail="Only suspended users can appeal.")
+    
+    user.appeal_message = appeal_data.message
+    user.appeal_status = "pending"
+    session.add(user)
+    session.commit()
+    return {"status": "success", "detail": "Appeal submitted successfully."}
