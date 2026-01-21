@@ -75,6 +75,31 @@ The FastAPI backend provides the API endpoints and business logic for the applic
 *   **Asynchronous Operations:** Asynchronous task handling for improved performance.
 *   **API Endpoints:** Well-defined API endpoints for managing users, communities, posts, comments, and other resources.
 
+### Backend Architecture & Engine Logic
+
+The backend is built with **FastAPI**, leveraging **SQLModel** for database interactions and **Pydantic** for robust data validation. It is structured to be modular, asynchronous, and scalable.
+
+#### Core Engine (`engine.py`)
+The `engine.py` module contains the mathematical models and logic for the trading tools:
+
+1.  **`calculate_compounding(request: SimulationRequest)`**:
+    *   **Purpose:** Simulates equity growth over time based on a trading strategy.
+    *   **Logic:** It iterates through a specified number of days and trades per day. For each trade, it determines the outcome (Win/Loss) based on the `win_rate`. It calculates Profit/Loss (PnL) using `risk_per_trade` and `risk_reward_ratio`.
+    *   **Output:** Returns a day-by-day breakdown of balance growth, total ROI, and a log of simulated trades.
+
+2.  **`calculate_goal_plan(request: GoalPlannerRequest)`**:
+    *   **Purpose:** Reverse-engineers the trading performance needed to achieve a financial goal.
+    *   **Logic:** Uses compound interest formulas to determine the required monthly return rate to go from `initial_balance` to `target_balance` within `deadline_months`.
+    *   **Output:** Provides the required monthly percentage and a feasibility assessment.
+
+3.  **`get_market_price(symbol: str)`**:
+    *   **Purpose:** Fetches real-time asset prices.
+    *   **Logic:** Connects to external APIs (e.g., Binance) to retrieve current market data for the simulation context.
+
+4.  **`analyze_trade_health(request: HealthAnalysisRequest)`**:
+    *   **Purpose:** AI-driven analysis of trading behavior.
+    *   **Logic:** Evaluates a list of trades to compute scores for Risk Management, Emotional Control, and System Adherence, providing actionable insights.
+
 ## Forgot Password Flow (PIN-Based)
 
 The application implements a secure PIN-based forgot password flow for local development. Here's how it works:
