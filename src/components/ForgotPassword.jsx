@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import api from '../lib/axios';
 import { useNavigate } from 'react-router-dom';
 
-const ForgotPassword = () => {
-  const ForgotPassword = ({ showFlash }) => {
+const ForgotPassword = ({ showFlash }) => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1: Email, 2: PIN, 3: New Password
   const [email, setEmail] = useState('');
