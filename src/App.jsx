@@ -1,13 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  Navigate,
-  Outlet,
-  Link,
-} from "react-router-dom";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Routes, Route, useNavigate, useLocation, Navigate, Outlet, Link } from "react-router-dom";
 import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
@@ -27,6 +19,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import PostDetail from "./components/PostDetail";
 import TradeHistory from "./components/TradeHistory";
 import SuspendedPage from "./components/SuspendedPage";
+import ForgotPassword from "./components/ForgotPassword";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
@@ -344,14 +337,14 @@ function App() {
   const [flashMessage, setFlashMessage] = useState(null);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
-  const showFlash = (message, type = "success") => {
+  const showFlash = useCallback((message, type = "success") => {
     setFlashMessage({ message, type });
     setIsFadingOut(false);
     setTimeout(() => setIsFadingOut(true), 2500);
     setTimeout(() => setFlashMessage(null), 3000);
-  };
+  }, []);
 
-  const handleFeedbackSubmit = async (e) => {
+  const handleFeedbackSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!feedbackEmail || !feedbackMessage) return;
     // Simpan ke LocalStorage agar langsung muncul di Admin (Fallback/Demo)
@@ -381,7 +374,7 @@ function App() {
     }
     if (!userData) setFeedbackEmail("");
     setFeedbackMessage("");
-  };
+  }, [feedbackEmail, feedbackMessage, userData, showFlash]);
 
   const handleBellClick = async () => {
     setShowNotifications(!showNotifications);
@@ -423,20 +416,7 @@ function App() {
     }
   };
 
-  if (showAuth) {
-    return (
-      <Auth
-        onLogin={(newToken) => {
-          login(newToken);
-          setShowAuth(false);
-        }}
-        initialIsLogin={authInitialLogin}
-        onClose={() => setShowAuth(false)}
-      />
-    );
-  }
-
-  const handleSimulate = async (params) => {
+  const handleSimulate = useCallback(async (params) => {
     setLoading(true);
     setError(null);
     try {
@@ -449,9 +429,9 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = useCallback(async (plan) => {
     if (!token) {
       setAuthInitialLogin(true);
       setShowAuth(true);
@@ -500,7 +480,7 @@ function App() {
       console.error("Payment Error:", error);
       showFlash("Failed to initiate payment. Please try again.", "error");
     }
-  };
+  }, [token, fetchUserProfile, showFlash]);
 
   const handleExportSimulationCSV = (data) => {
     if (!data || !data.daily_breakdown) return;
@@ -538,7 +518,7 @@ function App() {
     document.body.removeChild(a);
   };
 
-  const navItems = [
+  const navItems = useMemo(() => [
     {
       path: "/home",
       title: "Home",
@@ -619,7 +599,20 @@ function App() {
         </svg>
       ),
     },
-  ];
+  ], []);
+
+  if (showAuth) {
+    return (
+      <Auth
+        onLogin={(newToken) => {
+          login(newToken);
+          setShowAuth(false);
+        }}
+        initialIsLogin={authInitialLogin}
+        onClose={() => setShowAuth(false)}
+      />
+    );
+  }
 
   return (
     <PostInteractionProvider showFlash={showFlash}>
@@ -751,7 +744,7 @@ function App() {
                   className={`p-2.5 rounded-full transition-colors custom-icon ${
                     location.pathname.startsWith(item.path)
                       ? "text-white"
-                      : "text-gray-400 hover:bg-blue-600 hover:text-white"
+                      : "text-gray-400 hover:text-white"
                   }`}
                 >
                   {item.icon}
@@ -882,6 +875,7 @@ function App() {
               )
             }
           />
+          <Route path="/forgot-password" element={<ForgotPassword showFlash={showFlash} />} />
           <Route
             path="/home"
             element={
@@ -890,6 +884,7 @@ function App() {
                   communities={communities}
                   highlightedPost={highlightedPost}
                   setHighlightedPost={setHighlightedPost}
+                  showFlash={showFlash}
                 />
               </ProtectedRoute>
             }
@@ -1013,7 +1008,7 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <Profile />
+                <Profile showFlash={showFlash} />
               </ProtectedRoute>
             }
           />

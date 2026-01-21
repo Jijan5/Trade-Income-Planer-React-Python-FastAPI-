@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, s
 from sqlmodel import Session, select, SQLModel
 from sqlalchemy import text
 from ..database import get_session
-from ..models import (Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User)
+from ..models import (Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User, Report)
 from ..dependencies import get_current_user, get_current_active_user
 from ..utils import process_mentions_and_create_notifications
 
@@ -251,6 +251,19 @@ async def delete_post(post_id: int, user: User = Depends(get_current_active_user
     if post.username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this post")
     
+    # 1. Delete Reports associated with the post
+    reports = session.exec(select(Report).where(Report.post_id == post_id)).all()
+    for r in reports: session.delete(r)
+
+    # 2. Delete Reports & Notifications associated with comments of the post
+    comments = session.exec(select(Comment).where(Comment.post_id == post_id)).all()
+    comment_ids = [c.id for c in comments]
+    if comment_ids:
+        comment_reports = session.exec(select(Report).where(Report.comment_id.in_(comment_ids))).all()
+        for r in comment_reports: session.delete(r)
+        comment_notifs = session.exec(select(Notification).where(Notification.comment_id.in_(comment_ids))).all()
+        for n in comment_notifs: session.delete(n)
+    
     notifications = session.exec(select(Notification).where(Notification.post_id == post_id)).all()
     for n in notifications: session.delete(n)
 
@@ -283,8 +296,16 @@ async def delete_comment(comment_id: int, user: User = Depends(get_current_activ
     comment = session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
-    if comment.username != user.username:
+    if comment.username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    
+    # Delete reports associated with the comment
+    reports = session.exec(select(Report).where(Report.comment_id == comment_id)).all()
+    for r in reports: session.delete(r)
+
+    # Delete notifications associated with the comment
+    notifications = session.exec(select(Notification).where(Notification.comment_id == comment_id)).all()
+    for n in notifications: session.delete(n)
     
     post = session.get(Post, comment.post_id)
     if post:

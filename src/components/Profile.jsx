@@ -29,7 +29,7 @@ const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
   );
 });
 
-const Profile = () => {
+const Profile = ({ showFlash }) => {
   const { fetchUserProfile } = useAuth();
   const [user, setUser] = useState({
     username: "",
@@ -125,7 +125,7 @@ const Profile = () => {
         setCommMembers(res.data);
     } catch (error) {
         console.error("Failed to fetch members", error);
-        alert(error.response?.data?.detail || "Could not load members.");
+        showFlash(error.response?.data?.detail || "Could not load members.", "error");
     } finally {
         setMembersLoading(false);
     }
@@ -205,11 +205,11 @@ const Profile = () => {
 
     try {
       await api.put(`/communities/${editingComm.id}`, formData, { headers: { "Content-Type": undefined } });
-      alert("Community updated!");
+      showFlash("Community updated!", "success");
       setEditingComm(null);
       fetchMyCommunities();
     } catch (error) {
-      alert("Failed to update community");
+      showFlash("Failed to update community", "error");
     }
   };
 
@@ -220,13 +220,13 @@ const Profile = () => {
     const token = localStorage.getItem("token");
     try {
         await api.delete(`/communities/${editingComm.id}/members/${usernameToKick}`);
-        alert(`${usernameToKick} has been kicked.`);
+        showFlash(`${usernameToKick} has been kicked.`, "success");
         // Refresh member list
         fetchCommMembers(editingComm.id);
         // Also refresh the main community list to update member count
         fetchMyCommunities(); 
     } catch (error) {
-        alert(error.response?.data?.detail || "Failed to kick member.");
+      showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
     }
   };
 

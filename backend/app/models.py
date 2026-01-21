@@ -140,14 +140,14 @@ class UserUpdateAdmin(SQLModel):
     appeal_status: Optional[str] = None
     appeal_response: Optional[str] = None
     
-    # def auto_unsuspend_user(self, session: Session):
-    #   if self:
-    #     self.status = "active"
-    #     self.suspended_until = None
-    #     self.suspension_reason = None
-    #     session.add(self)
-    #     session.commit()
-    #     session.refresh(self)
+    def auto_unsuspend_user(self, session: Session):
+      if self:
+        self.status = "active"
+        self.suspended_until = None
+        self.suspension_reason = None
+        session.add(self)
+        session.commit()
+        session.refresh(self)
 
 class Token(BaseModel):
   access_token: str

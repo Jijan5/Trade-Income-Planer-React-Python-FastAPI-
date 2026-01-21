@@ -16,13 +16,15 @@ async def get_communities(session: Session = Depends(get_session)):
     return session.exec(select(Community)).all()
 
 @router.get("/api/communities/{community_id}/members", response_model=list[CommunityMemberRead])
-async def get_community_members(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def get_community_members(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     community = session.get(Community, community_id)
     if not community:
         raise HTTPException(status_code=404, detail="Community not found")
     
-    if community.creator_username != user.username:
-        raise HTTPException(status_code=403, detail="Only the creator can view the member list.")
+    # Ensure the user is either the creator OR a member
+    member = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
+    if community.creator_username != user.username and not member:
+        raise HTTPException(status_code=403, detail="Unauthorized: Must be creator or member to view member list")
 
     members = session.exec(
         select(CommunityMember, User)
@@ -98,6 +100,15 @@ async def kick_community_member(community_id: int, username_to_kick: str, user: 
         community.members_count -= 1
         session.add(community)
     
+    # Notify the kicked user
+    notif = Notification(
+        user_id=user_to_kick.id,
+        actor_username=user.username,
+        type="system_broadcast",
+        content=f"You have been kicked from the community '{community.name}'.",
+        community_id=community_id
+    )
+    session.add(notif)
     session.commit()
     return {"status": "success"}
 

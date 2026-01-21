@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { countryCodes } from "../utils/countryCodes";
 import api from "../lib/axios";
 
 const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +16,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,21 +39,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
     setError("");
     setSuccess("");
     setLoading(true);
-
-    if (isForgotPassword) {
-      try {
-        await api.post('/forgot-password', { email });
-        setSuccess("If an account with that email exists, a reset link has been sent. Please check your inbox.");
-        setError("");
-        setIsForgotPassword(false); // Go back to login view after success
-      } catch (err) {
-        setError("Failed to send reset link. Please try again later.");
-        setSuccess("");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
 
     if (!isLogin && password !== confirmPassword) {
       setError("Passwords do not match");
@@ -129,14 +115,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
               &times;
             </button>
           )}
-          {isForgotPassword ? (
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white">Reset Password</h2>
-              <p className="text-gray-400 mt-2">
-                Enter your email to receive a reset link.
-              </p>
-            </div>
-          ) : (
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-white">
                 {isLogin ? "Welcome Back" : "Create Account"}
@@ -147,7 +125,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   : "Start your journey to trading mastery"}
               </p>
             </div>
-          )}
 
           {error && (
             <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-2 rounded mb-6 text-sm">
@@ -162,21 +139,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-          {isForgotPassword ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-            ) : (
-              <>
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">
                     Username
@@ -287,9 +249,10 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                       <button
                         type="button"
                         onClick={() => {
-                          setIsForgotPassword(true);
-                          setError("");
-                          setSuccess("");
+                          navigate("/forgot-password");
+                          setTimeout(() => {
+                            if (onClose) onClose();
+                          }, 50);
                         }}
                         className="text-xs text-blue-400 hover:underline"
                       >
@@ -355,8 +318,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                     </div>
                   </div>
                 )}
-              </>
-            )}
 
             <button
               type="submit"
@@ -365,8 +326,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
             >
               {loading
                 ? "Processing..."
-                : isForgotPassword
-                ? "Send Reset Link"
                 : isLogin
                 ? "Sign In"
                 : "Sign Up"}
@@ -375,17 +334,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
-              {isForgotPassword ? (
-                <>
-                  Remembered your password?{" "}
-                  <button
-                    onClick={() => setIsForgotPassword(false)}
-                    className="text-blue-400 hover:text-blue-300 font-medium"
-                  >
-                    Back to Login
-                  </button>
-                </>
-              ) : isLogin ? (
+              {isLogin ? (
                 <>
                   Don't have an account?{" "}
                   <button

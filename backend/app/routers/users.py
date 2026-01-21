@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from sqlmodel import Session, select
 from ..database import get_session
 from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, get_current_active_user
 from ..auth import get_password_hash
 
 router = APIRouter()
@@ -24,7 +24,7 @@ async def update_user_profile(
     country_code: Optional[str] = Form(None),
     phone_number: Optional[str] = Form(None),
     avatar_file: Optional[UploadFile] = File(None),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session)
 ):
     if username and username != user.username:

@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 from ..database import get_session
 from ..models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, HealthAnalysisRequest, HealthAnalysisResponse, ManualTrade, ManualTradeCreate, User
 from ..engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, get_current_active_user
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ async def get_manual_trades(user: User = Depends(get_current_user), session: Ses
     return session.exec(select(ManualTrade).where(ManualTrade.user_id == user.id).order_by(ManualTrade.trade_date.desc())).all()
 
 @router.post("/api/manual-trades", response_model=ManualTrade)
-async def create_manual_trade(trade: ManualTradeCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def create_manual_trade(trade: ManualTradeCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     db_trade = ManualTrade(
         user_id=user.id,
         symbol=trade.symbol,

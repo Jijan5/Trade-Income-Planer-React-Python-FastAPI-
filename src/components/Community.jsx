@@ -113,16 +113,16 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                     </svg>
                   </button>
                   {activeMenu?.type === "post" && activeMenu?.id === post.id && (
-                    <div ref={menuRef} className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
+                    <div ref={menuRef} className="absolute right-0 mt-1 w-32 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
                       {currentUser === post.username || userData?.role === 'admin' ? (
                         <>
                           {currentUser === post.username && (
-                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white">Edit</button>
+                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white">Edit</button>
                           )}
-                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300">Delete</button>
-                        </>
+                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300">Delete</button>
+                          </>
                       ) : (
-                        <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300">Report</button>
+                        <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300">Report</button>
                       )}
                     </div>
                   )}
@@ -160,9 +160,9 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                   <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
                 </button>
                 {reactionModalPostId === post.id && (
-                  <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+                  <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
                     {reactions.map((r) => (
-                      <button key={r.type} onClick={() => handleLocalReaction(r.type)} className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
+                      <button key={r.type} onClick={() => handleLocalReaction(r.type)} className="p-2 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
                     ))}
                   </div>
                 )}
@@ -222,9 +222,9 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                               <div className="relative">
                                 <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
                                 {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20">
-                                    {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700">Edit</button>}
-                                    <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700">Delete</button>
+                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 border border-gray-600 rounded shadow-xl z-20">
+                                  {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300">Edit</button>}
+                                  <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400">Delete</button>
                                   </div>
                                 )}
                               </div>
@@ -263,7 +263,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
       });
       
       // Memoized Post Feed for Community
-      const CommunityPostFeed = React.memo(({ posts, expandedComments, commentsData, newCommentText, ...actions }) => {
+      const CommunityPostFeed = React.memo(({ posts, onPostUpdate }) => {
         return (
           <div className="space-y-4">
             {posts.length === 0 ? (
@@ -275,10 +275,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                   <CommunityPostItem 
                       key={post.id} 
                       post={post}
-                      isExpanded={!!expandedComments[post.id]}
-                      comments={commentsData[post.id]}
-                      commentText={newCommentText[post.id]}
-                      {...actions} 
+                      onPostUpdate={onPostUpdate}
                   />
               ))
       )}
@@ -338,6 +335,11 @@ const Community = ({
   // Exit Modal State
   const [showExitModal, setShowExitModal] = useState(false);
   const [communityToExit, setCommunityToExit] = useState(null);
+
+  // Members & Kick State
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [members, setMembers] = useState([]);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null });
 
   // Fetch Communities
   const fetchCommunities = async () => {
@@ -549,8 +551,10 @@ const Community = ({
   // Handle Delete Community (Admin/Creator)
   const handleDeleteCommunity = async (e, communityId) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this community? This action cannot be undone and will delete all posts and members.")) return;
-    
+    setConfirmModal({
+      isOpen: true,
+      message: "Are you sure you want to delete this community? This action cannot be undone and will delete all posts and members.",
+      onConfirm: async () => {    
     const token = localStorage.getItem("token");
     try {
       await api.delete(`/communities/${communityId}`);
@@ -560,6 +564,36 @@ const Community = ({
         console.error("Delete failed", error);
         showFlash(error.response?.data?.detail || "Failed to delete community.", "error");
     }
+        }
+      });
+    };
+
+    // Fetch Members
+    const fetchMembers = async () => {
+      try {
+        const res = await api.get(`/communities/${activeCommunity.id}/members`);
+        setMembers(res.data);
+        setShowMembersModal(true);
+      } catch (error) {
+        showFlash("Failed to fetch members.", "error");
+      }
+    };
+
+    // Handle Kick Member
+    const handleKickMember = (username) => {
+      setConfirmModal({
+        isOpen: true,
+        message: `Are you sure you want to kick ${username} from this community?`,
+        onConfirm: async () => {
+          try {
+            await api.delete(`/communities/${activeCommunity.id}/members/${username}`);
+            setMembers(members.filter(m => m.username !== username));
+            showFlash(`${username} has been kicked.`, "success");
+          } catch (error) {
+            showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
+          }
+      }
+    });
   };
 
   const handlePaste = (e) => {
@@ -717,8 +751,8 @@ const Community = ({
             )}
             <div>
               <button
-                onClick={() => navigate("/communities")}
-                className="opacity-70 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold"
+                onClick={() => navigate("/community")}
+                className="opacity-100 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold text-white"
               >
                 ← Back to Communities
               </button>
@@ -728,10 +762,13 @@ const Community = ({
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
+          <div className="text-right flex flex-col items-end gap-2">
+            <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30 cursor-pointer hover:bg-blue-900/50 transition-colors" onClick={fetchMembers}>
               {activeCommunity.members_count} Members
             </span>
+            {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
+               <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Creator View</span>
+            )}
           </div>
         </div>
 
@@ -872,6 +909,58 @@ const Community = ({
               className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        )}
+        {/* Members Modal */}
+        {showMembersModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+                <h3 className="text-lg font-bold text-white">Community Members</h3>
+                <button onClick={() => setShowMembersModal(false)} className="text-gray-400 hover:text-white">✕</button>
+              </div>
+              <div className="space-y-3">
+                {members.map(member => (
+                  <div key={member.user_id} className="flex items-center justify-between bg-gray-900/50 p-3 rounded border border-gray-700">
+                    <div className="flex items-center gap-3">
+                      {member.avatar_url ? (
+                        <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                          {member.username.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-bold text-white">{member.username}</p>
+                        <p className="text-[10px] text-gray-500">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && member.username !== activeCommunity.creator_username && (
+                      <button onClick={() => handleKickMember(member.username)} className="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-2 py-1 rounded transition-colors">
+                        Kick
+                      </button>
+                    )}
+                    {member.username === activeCommunity.creator_username && (
+                      <span className="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-900/50">Owner</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Generic Confirmation Modal */}
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+              <h3 className="text-lg font-bold text-white mb-2">Are you sure?</h3>
+              <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Confirm</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -1481,6 +1570,19 @@ const Community = ({
             </div>
           </div>
         </div>
+      )}
+      {/* Generic Confirmation Modal for List View (Delete Community) */}
+      {confirmModal.isOpen && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+              <h3 className="text-lg font-bold text-white mb-2">Are you sure?</h3>
+              <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Confirm</button>
+              </div>
+            </div>
+          </div>
       )}
     </div>
   );

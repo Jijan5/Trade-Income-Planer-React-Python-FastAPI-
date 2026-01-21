@@ -19,6 +19,9 @@ const AdminDashboard = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [posts, setPosts] = useState([]);
 
+   // Confirmation Modal State
+   const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null, type: "danger" });
+
   const fetchStats = async () => {
     try {
       const res = await api.get("/admin/stats");
@@ -82,14 +85,21 @@ const AdminDashboard = () => {
   };
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm("Delete this post?")) return;
-    try {
+    const executeDelete = async () => {
+      try {
       await api.delete(`/posts/${postId}`);
       setPosts(posts.filter((p) => p.id !== postId));
       showFlash("Post deleted.", "success");
     } catch (e) {
       showFlash("Failed to delete post.", "error");
     }
+  };
+    setConfirmModal({
+      isOpen: true,
+      message: "Are you sure you want to delete this post? This action cannot be undone.",
+      onConfirm: executeDelete,
+      type: "danger"
+    });
   };
 
   const handleDismissReport = async (reportId) => {
@@ -184,6 +194,32 @@ const AdminDashboard = () => {
              <h4 className="font-bold text-sm uppercase">{flash.type}</h4>
              <p className="text-sm text-gray-300">{flash.message}</p>
            </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+            <h3 className={`text-lg font-bold mb-2 ${confirmModal.type === 'success' ? 'text-green-400' : 'text-white'}`}>
+              {confirmModal.type === 'success' ? 'Confirm Action' : 'Are you sure?'}
+            </h3>
+            <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
+            <div className="flex gap-3 justify-center">
+              <button 
+                onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} 
+                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} 
+                className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors ${confirmModal.type === 'success' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -366,8 +402,12 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex gap-2">
                       <button 
-                        onClick={async () => {
-                          if(!window.confirm(`Approve appeal for ${u.username}? This will unsuspend the user.`)) return;
+                        onClick={() => {
+                          setConfirmModal({
+                            isOpen: true,
+                            message: `Approve appeal for ${u.username}? This will unsuspend the user immediately.`,
+                            type: "success",
+                            onConfirm: async () => {
                           try {
                             const payload = { ...u, status: 'active', suspended_until: null, appeal_status: 'approved', appeal_response: 'Your appeal has been approved. Welcome back.' };
                             // Clean payload for UserUpdateAdmin
@@ -376,6 +416,8 @@ const AdminDashboard = () => {
                             fetchUsers();
                             showFlash("Appeal approved. User unsuspended.", "success");
                           } catch(e) { showFlash("Failed to approve appeal.", "error"); }
+                            }
+                          });
                         }}
                         className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold"
                       >

@@ -264,21 +264,21 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
           {activeMenu?.type === "post" && activeMenu?.id === post.id && (
             <div
               ref={menuRef}
-              className="absolute right-0 mt-1 w-32 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
+              className="absolute right-0 mt-1 w-32 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
             >
               {currentUser === post.username || userData?.role === "admin" ? (
                 <>
                   {currentUser === post.username && (
                     <button
                       onClick={() => startEditPost(post)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 hover:text-white"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white"
                     >
                       Edit
                     </button>
                   )}
                   <button
                     onClick={() => handleDeletePost(post.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800 hover:text-red-300"
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300"
                   >
                     Delete
                   </button>
@@ -286,7 +286,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
               ) : (
                 <button
                   onClick={() => handleReportPost(post.id)}
-                  className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-gray-800 hover:text-yellow-300"
+                  className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300"
                 >
                   Report
                 </button>
@@ -383,12 +383,12 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
             </span>
           </button>
           {reactionModalPostId === post.id && (
-            <div className="absolute bottom-full left-0 mb-2 flex bg-gray-900 border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+            <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
               {reactions.map((r) => (
                 <button
                   key={r.type}
                   onClick={() => handleLocalReaction(r.type)}
-                  className="p-2 hover:bg-gray-700 rounded-full transition-transform hover:scale-125 text-xl"
+                  className="p-2 rounded-full transition-transform hover:scale-125 text-xl"
                   title={r.label}
                 >
                   {r.emoji}
@@ -588,11 +588,11 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
                             activeMenu?.id === comment.id && (
                               <div
                                 ref={menuRef}
-                                className="absolute left-0 mt-1 w-24 bg-gray-800 border border-gray-600 rounded shadow-xl z-20"
+                                className="absolute left-0 mt-1 w-24 border border-gray-600 rounded shadow-xl z-20"
                               >
                                 <button
                                   onClick={() => startEditComment(comment)}
-                                  className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:bg-gray-700"
+                                  className="w-full text-left px-3 py-1.5 text-xs text-gray-300"
                                 >
                                   Edit
                                 </button>
@@ -600,7 +600,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
                                   onClick={() =>
                                     handleDeleteComment(comment.id, post.id)
                                   }
-                                  className="w-full text-left px-3 py-1.5 text-xs text-red-400 hover:bg-gray-700"
+                                  className="w-full text-left px-3 py-1.5 text-xs text-red-400"
                                 >
                                   Delete
                                 </button>
@@ -746,8 +746,8 @@ const PostFeed = React.memo(({ posts, communitiesMap, onPostUpdate }) => {
   );
 });
 
-const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
-  const { userData, showFlash } = useAuth();
+const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) => {
+  const { userData } = useAuth();
   const navigate = useNavigate();
   const [postsPage, setPostsPage] = useState(0);
   const [posts, setPosts] = useState([]);
@@ -921,7 +921,7 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
     if (!newPostContent.trim() && !postImage.file) return;
 
     const token = localStorage.getItem("token");
-    if (!token) return alert("Please login to post.");
+    if (!token) return showFlash("Please login to post.", "error");
 
     const formData = new FormData();
     formData.append("content", newPostContent);
@@ -939,7 +939,7 @@ const Home = ({ communities, highlightedPost, setHighlightedPost }) => {
       setPostImage({ file: null, preview: "" });
       fetchGlobalPosts();
     } catch (error) {
-      alert("Failed to post.");
+      showFlash("Failed to post.", "error");
     }
   };
 

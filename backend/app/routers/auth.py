@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from pydantic import BaseModel, EmailStr
 from ..database import get_session
 import secrets
+import string
 from ..models import User, UserCreate, Token
 from ..auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
@@ -43,23 +44,66 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+    
+class VerifyPinRequest(BaseModel):
+    email: EmailStr
+    pin: str
 
-@router.post("/forgot-password")
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    pin: str
+    new_password: str
+    confirm_password: str
+
+@router.post("/api/forgot-password")
 async def forgot_password(req: ForgotPasswordRequest, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == req.email)).first()
     if user:
-        # Generate a secure token
-        reset_token = secrets.token_urlsafe(32)
-        user.reset_token = reset_token
-        user.reset_token_expires = datetime.utcnow() + timedelta(hours=1) # Token is valid for 1 hour
+         # --- PRODUCTION SCRIPT (COMMENTED OUT) ---
+        # reset_token = secrets.token_urlsafe(32)
+        # user.reset_token = reset_token
+        # user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+        # session.add(user)
+        # session.commit()
+        # send_email_reset(user.email, reset_token) # send email
+        
+        # --- LOCALHOST SCRIPT (PIN GENERATION) ---
+        pin = ''.join(secrets.choice(string.digits) for _ in range(6))
+        user.reset_token = pin
+        user.reset_token_expires = datetime.utcnow() + timedelta(minutes=15) # PIN valid 15 minutes
         session.add(user)
         session.commit()
 
-        # In a real application, you would send an email here.
-        # For development, we'll just print the link.
-        reset_link = f"http://localhost:5173/reset-password?token={reset_token}"
-        print("--- PASSWORD RESET LINK (FOR DEVELOPMENT) ---")
-        print(reset_link)
-        print("---------------------------------------------")
+        print(f"\n========================================")
+        print(f" [LOCALHOST] PASSWORD RESET PIN: {pin} ")
+        print(f"========================================\n")
 
-    return {"message": "If an account with this email exists, a password reset link has been sent."}
+    return {"status": "success", "message": "If an account with this email exists, a PIN has been sent."}
+
+@router.post("/api/verify-reset-pin")
+async def verify_reset_pin(req: VerifyPinRequest, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email == req.email)).first()
+    if not user or user.reset_token != req.pin:
+        raise HTTPException(status_code=400, detail="Invalid PIN")
+    
+    if user.reset_token_expires and datetime.utcnow() > user.reset_token_expires:
+        raise HTTPException(status_code=400, detail="PIN expired")
+        
+    return {"status": "success", "message": "PIN verified"}
+
+@router.post("/api/reset-password")
+async def reset_password(req: ResetPasswordRequest, session: Session = Depends(get_session)):
+    if req.new_password != req.confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+        
+    # Reuse verification logic for security
+    await verify_reset_pin(VerifyPinRequest(email=req.email, pin=req.pin), session)
+    
+    user = session.exec(select(User).where(User.email == req.email)).first()
+    user.hashed_password = get_password_hash(req.new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    session.add(user)
+    session.commit()
+    
+    return {"status": "success", "message": "Password reset successfully"}

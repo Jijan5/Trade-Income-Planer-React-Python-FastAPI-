@@ -40,7 +40,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
             </div>
             <div className="pt-8">
               <p className="text-sm text-gray-400 mb-4">Trusted by traders worldwide</p>
-              <div className="flex justify-center space-x-8 opacity-60">
+              <div className="flex justify-center space-x-8 opacity-100">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-400">10K+</div>
                   <div className="text-xs text-gray-400">Active Traders</div>
