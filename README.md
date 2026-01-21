@@ -113,14 +113,6 @@ The Admin Panel provides administrators with a comprehensive set of tools for ma
     *   Review user appeals for suspended accounts.
     *   Approve or reject appeals and provide feedback.
 
-## Contributing
-
-Contributions are welcome! Please see the [contributing guidelines](CONTRIBUTING.md) for more information.
-
-## License
-
-[MIT](LICENSE)
-
 ---
 
 ## 📦 How to Run (Local Development)
