@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from sqlalchemy import text
 from ..database import get_session
 from ..models import Community, CommunityCreate, CommunityMember, CommunityMemberRead, Post, PostResponse, User, Comment, Reaction, Notification, Report
-from ..dependencies import get_current_user
+from ..dependencies import get_current_user, get_current_active_user
 
 router = APIRouter()
 
@@ -37,7 +37,7 @@ async def get_community_members(community_id: int, user: User = Depends(get_curr
     ]
 
 @router.post("/api/communities/{community_id}/join")
-async def join_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def join_community(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     existing = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
     if existing:
         return {"status": "already_joined"}
@@ -54,7 +54,7 @@ async def join_community(community_id: int, user: User = Depends(get_current_use
     return {"status": "success"}
 
 @router.post("/api/communities/{community_id}/leave")
-async def leave_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def leave_community(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     comm = session.get(Community, community_id)
     if not comm:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -74,7 +74,7 @@ async def leave_community(community_id: int, user: User = Depends(get_current_us
     return {"status": "success"}
 
 @router.delete("/api/communities/{community_id}/members/{username_to_kick}")
-async def kick_community_member(community_id: int, username_to_kick: str, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def kick_community_member(community_id: int, username_to_kick: str, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     community = session.get(Community, community_id)
     if not community:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -113,7 +113,7 @@ async def create_community(
     hover_color: str = Form("#3b82f6"),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session)
 ):
     avatar_url = None
@@ -167,7 +167,7 @@ async def update_community(
     hover_color: Optional[str] = Form(None),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session)
 ):
     community = session.get(Community, community_id)
@@ -208,7 +208,7 @@ async def update_community(
     return community
 
 @router.delete("/api/communities/{community_id}")
-async def delete_community(community_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def delete_community(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     community = session.get(Community, community_id)
     if not community:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -259,7 +259,7 @@ async def get_community_posts(community_id: int, session: Session = Depends(get_
     return results
 
 @router.post("/api/communities/{community_id}/posts", response_model=Post)
-async def create_community_post(community_id: int, content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def create_community_post(community_id: int, content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     try:
         image_url_to_save = None
         if image_file:

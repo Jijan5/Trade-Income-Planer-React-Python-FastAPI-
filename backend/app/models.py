@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field, field_validator
 from decimal import Decimal
 from typing import Literal, Optional
-from sqlmodel import SQLModel, Field as SQLField
-from datetime import datetime
+from sqlmodel import Session, SQLModel, Field as SQLField
+from datetime import datetime, timedelta
 
 class SimulationRequest(BaseModel):
   initial_balance: Decimal = Field(..., gt=0, description="The starting balance for the simulation.")
@@ -139,6 +139,15 @@ class UserUpdateAdmin(SQLModel):
     appeal_message: Optional[str] = None
     appeal_status: Optional[str] = None
     appeal_response: Optional[str] = None
+    
+    # def auto_unsuspend_user(self, session: Session):
+    #   if self:
+    #     self.status = "active"
+    #     self.suspended_until = None
+    #     self.suspension_reason = None
+    #     session.add(self)
+    #     session.commit()
+    #     session.refresh(self)
 
 class Token(BaseModel):
   access_token: str

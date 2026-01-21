@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select, SQLModel
 from ..database import get_session
 from ..dependencies import get_current_admin_user, get_current_user
@@ -154,3 +154,9 @@ async def update_user_by_admin(user_id: int, user_data: UserUpdateAdmin, admin: 
     session.commit()
     session.refresh(db_user)
     return db_user
+
+# @router.post("/users/{user_id}/unsuspend")
+# async def unsuspend_user(user_id: int, background_tasks: BackgroundTasks, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+#     db_user = session.get(User, user_id)
+#     background_tasks.add_task(db_user.auto_unsuspend_user, session=session)
+#     return {"message": f"User {user_id} will be auto-unsuspended."}

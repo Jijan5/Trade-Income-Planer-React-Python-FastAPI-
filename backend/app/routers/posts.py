@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, s
 from sqlmodel import Session, select, SQLModel
 from sqlalchemy import text
 from ..database import get_session
-from ..models import Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User
-from ..dependencies import get_current_user
+from ..models import (Post, PostCreate, PostResponse, Comment, CommentCreate, CommentResponse, Reaction, ReactionCreate, Notification, User)
+from ..dependencies import get_current_user, get_current_active_user
 from ..utils import process_mentions_and_create_notifications
 
 router = APIRouter()
@@ -71,7 +71,7 @@ async def get_post(post_id: int, session: Session = Depends(get_session), curren
     return PostResponse(**post_dict)
 
 @router.post("/api/posts", response_model=Post)
-async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     try:
         image_url_to_save = None
         if image_file:
@@ -126,7 +126,7 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
     return results
 
 @router.post("/api/posts/{post_id}/comments", response_model=CommentResponse)
-async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     try:
         post = session.get(Post, post_id)
         if not post:
@@ -175,7 +175,7 @@ async def create_comment(post_id: int, comment: CommentCreate, user: User = Depe
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/posts/{post_id}/react")
-async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     existing_reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == user.username)).first()
     post = session.get(Post, post_id)
     if not post:
@@ -204,7 +204,7 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
     return {"status": "success"}
 
 @router.delete("/api/posts/{post_id}/react", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_reaction(post_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def delete_reaction(post_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -227,7 +227,7 @@ async def share_post(post_id: int, session: Session = Depends(get_session)):
     return {"status": "success"}
 
 @router.put("/api/posts/{post_id}", response_model=Post)
-async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -244,7 +244,7 @@ async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(
     return post
 
 @router.delete("/api/posts/{post_id}")
-async def delete_post(post_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def delete_post(post_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     post = session.get(Post, post_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -264,7 +264,7 @@ async def delete_post(post_id: int, user: User = Depends(get_current_user), sess
     return {"status": "success"}
 
 @router.put("/api/comments/{comment_id}", response_model=Comment)
-async def update_comment(comment_id: int, comment_data: CommentCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def update_comment(comment_id: int, comment_data: CommentCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     comment = session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
@@ -279,7 +279,7 @@ async def update_comment(comment_id: int, comment_data: CommentCreate, user: Use
     return comment
 
 @router.delete("/api/comments/{comment_id}")
-async def delete_comment(comment_id: int, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+async def delete_comment(comment_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     comment = session.get(Comment, comment_id)
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
