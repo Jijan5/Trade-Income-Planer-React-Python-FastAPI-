@@ -53,7 +53,18 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [reactionModalPostId]);
 
-    const handleReaction = useCallback(async (post, type) => {
+    // Handle Click Outside to close Active Menu (Dropdown)
+    useEffect(() => {
+        const handleClickOutsideMenu = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setActiveMenu(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutsideMenu);
+        return () => document.removeEventListener('mousedown', handleClickOutsideMenu);
+    }, [activeMenu]);
+
+    const handleReaction = useCallback(async (post, type, isFromLongPress = false) => {
         const token = localStorage.getItem("token");
         if (!token) return showFlash("Please login to react.", "error");
 
@@ -65,7 +76,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
             } else {
                 await api.post(`/posts/${post.id}/react`, { type });
             }
-            return { success: true, postId: post.id, reactionType: type };
+            return { success: true, postId: post.id, reactionType: type, isLongPress: isFromLongPress };
         } catch (error) {
             console.error("Reaction failed", error);
             showFlash("Reaction failed. Please try again.", "error");
@@ -76,6 +87,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
     }, [showFlash]);
 
     const handlePressStart = useCallback((postId) => {
+        if (longPressTimer.current) clearTimeout(longPressTimer.current);
         isLongPress.current = false;
         longPressTimer.current = setTimeout(() => {
             isLongPress.current = true;
@@ -87,13 +99,13 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         clearTimeout(longPressTimer.current);
         if (isLongPress.current) {
             return { success: false, isLongPress: true }; // Return status long press
-        }
-        return await handleReaction(post, post.user_reaction || "like");
-    }, [handleReaction]);
+        }    
+        return await handleReaction(post, post.user_reaction || "like", false);
+    }, [handleReaction, showFlash]);
 
     const toggleComments = useCallback(async (postId) => {
         const isExpanded = !!expandedComments[postId];
-        setExpandedComments(prev => ({ ...prev, [postId]: !isExpanded }));
+        setExpandedComments(prev => ({ ...prev, [postId]: !isExpanded  }));
         if (!isExpanded && !commentsData[postId]) {
             try {
                 const res = await api.get(`/posts/${postId}/comments`);

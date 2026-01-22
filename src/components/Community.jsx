@@ -10,12 +10,12 @@ import { getPlanLevel } from "../utils/permissions";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 // Memoized Single Post Item for Community
-const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
+const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFlash }) => {
   const { 
     currentUser, userData, reactions, getReactionEmoji, handleReaction, handlePressStart, handlePressEnd, 
-    reactionModalPostId, toggleComments, expandedComments, commentsData, submitComment, newCommentText, 
+    reactionModalPostId, setReactionModalPostId, toggleComments, expandedComments, commentsData, submitComment, newCommentText, 
     setNewCommentText, handleShare, handleDeletePost, handleUpdatePost, handleDeleteComment, handleUpdateComment, 
-    handleReportPost, toggleMenu, activeMenu, setActiveMenu, menuRef, editingItem, setEditingItem, startEditPost, 
+    toggleMenu, activeMenu, setActiveMenu, menuRef, editingItem, setEditingItem, startEditPost, 
     startEditComment, replyingTo, setReplyingTo, replyContent, setReplyContent, setPreviewImage 
   } = usePostInteractions();
 
@@ -26,10 +26,15 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
   const [visibleLimit, setVisibleLimit] = useState(3);
   const [expandedReplies, setExpandedReplies] = useState({});
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("Inappropriate Content");
+  const [customReason, setCustomReason] = useState("");
+
   // Reset visible limit when comments are collapsed
   useEffect(() => { if (!isExpanded) setVisibleLimit(3); }, [isExpanded]);
 
   const handleLocalReaction = async (type) => {
+    setReactionModalPostId(null);
     // 1. Optimized UI Update
     const oldReaction = post.user_reaction;
     const oldLikes = post.likes;
@@ -68,7 +73,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
 
   const handleLocalDeletePost = async () => {
     const result = await handleDeletePost(post.id);
-    if (result.success) onPostUpdate(result.postId, { _deleted: true });
+    if (result.success) onPostDelete(post.id);
   };
 
   const handleLocalUpdatePost = async () => {
@@ -78,6 +83,25 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
 
   const handleLocalToggleMenu = (type, id) => {
     setActiveMenu(activeMenu?.type === type && activeMenu?.id === id ? null : { type, id });
+  };
+
+  const handleReportClick = () => {
+    setActiveMenu(null);
+    setShowReportModal(true);
+  };
+
+  const submitReport = async () => {
+    const finalReason = reportReason === "Other" ? customReason : reportReason;
+    if (!finalReason.trim()) return showFlash("Please specify a reason.", "error");
+    try {
+      await api.post("/reports", { post_id: post.id, reason: finalReason });
+      showFlash("Post reported successfully.", "success");
+      setShowReportModal(false);
+      setCustomReason("");
+      setReportReason("Inappropriate Content");
+    } catch (error) {
+      showFlash(error.response?.data?.detail || "Failed to report post.", "error");
+    }
   };
 
   return (
@@ -122,7 +146,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                           <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300">Delete</button>
                           </>
                       ) : (
-                        <button onClick={() => handleReportPost(post.id)} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300">Report</button>
+                        <button onClick={handleReportClick} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300">Report</button>
                       )}
                     </div>
                   )}
@@ -155,7 +179,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
               <div className="relative group">
-              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={handleLocalPressEnd} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={handleLocalPressEnd} className={`reaction-trigger flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
+              <button onMouseDown={() => handlePressStart(post.id)} onMouseUp={handleLocalPressEnd} onTouchStart={() => handlePressStart(post.id)} onTouchEnd={handleLocalPressEnd}  className={`reaction-trigger flex items-center gap-2 transition-colors ${post.user_reaction ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}>
                   {post.user_reaction ? <span className="text-xl">{getReactionEmoji(post.user_reaction)}</span> : <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a2.25 2.25 0 012.25 2.25V7.5h3.75a2.25 2.25 0 012.25 2.25v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 16.5v-6a2.25 2.25 0 012.25-2.25v-.003zM6.75 16.5v-6" /></svg>}
                   <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
                 </button>
@@ -258,12 +282,49 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                 </div>
               </div>
             )}
+            {/* Report Modal */}
+            {showReportModal && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowReportModal(false)}>
+                <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-lg font-bold text-white mb-4">Report Post</h3>
+                  <div className="space-y-3 mb-4">
+                    {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
+                      <label key={reason} className="flex items-center gap-3 cursor-pointer group">
+                        <input 
+                          type="radio" 
+                          name={`reportReason-${post.id}`}
+                          value={reason} 
+                          checked={reportReason === reason} 
+                          onChange={(e) => setReportReason(e.target.value)}
+                          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 focus:ring-blue-500"
+                        />
+                        <span className="text-gray-300 text-sm group-hover:text-white">{reason}</span>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  {reportReason === "Other" && (
+                    <textarea
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                      placeholder="Please describe the issue..."
+                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mb-4 h-24 resize-none"
+                    />
+                  )}
+
+                  <div className="flex justify-end gap-3">
+                    <button onClick={() => setShowReportModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+                    <button onClick={submitReport} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Report</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       });
       
       // Memoized Post Feed for Community
-      const CommunityPostFeed = React.memo(({ posts, onPostUpdate }) => {
+      const CommunityPostFeed = React.memo(({ posts, onPostUpdate, onPostDelete, showFlash }) => {
         return (
           <div className="space-y-4">
             {posts.length === 0 ? (
@@ -276,6 +337,8 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate }) => {
                       key={post.id} 
                       post={post}
                       onPostUpdate={onPostUpdate}
+                      onPostDelete={onPostDelete}
+                      showFlash={showFlash}
                   />
               ))
       )}
@@ -695,6 +758,10 @@ const Community = ({
     );
   }, []);
 
+  const onPostDelete = useCallback((postId) => {
+    setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+  }, []);
+
   // Helper for Community Card Styles
   const getCardStyle = (comm) => {
     const style = {
@@ -876,6 +943,8 @@ const Community = ({
         <CommunityPostFeed 
           posts={posts}
           onPostUpdate={onPostUpdate}
+          onPostDelete={onPostDelete}
+          showFlash={showFlash}
         />
         
         {/* Image Preview Modal */}

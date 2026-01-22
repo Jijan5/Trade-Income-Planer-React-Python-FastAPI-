@@ -90,6 +90,7 @@ const AdminDashboard = () => {
       await api.delete(`/posts/${postId}`);
       setPosts(posts.filter((p) => p.id !== postId));
       showFlash("Post deleted.", "success");
+      fetchReports();
     } catch (e) {
       showFlash("Failed to delete post.", "error");
     }
@@ -106,6 +107,7 @@ const AdminDashboard = () => {
     try {
         await api.delete(`/admin/reports/${reportId}`);
         setReports(reports.filter(r => r.id !== reportId));
+        fetchReports();
         showFlash("Report dismissed.", "success");
     } catch(e) {
         showFlash("Failed to dismiss report.", "error");

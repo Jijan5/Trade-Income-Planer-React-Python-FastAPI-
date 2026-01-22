@@ -30,7 +30,11 @@ const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % marketPrices.length);
     }, 3000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      // Reset the fetching flag when component unmounts
+      // isFetchingPrices.current = false;
+    };
   }, [marketPrices.length]);
 
   if (loadingPrices)
@@ -99,7 +103,7 @@ const NewsWidget = React.memo(({ news }) => {
   );
 });
 
-const PostItem = React.memo(({ post, community, onPostUpdate }) => {
+const PostItem = React.memo(({ post, community, onPostUpdate, onPostDelete, showFlash }) => {
   const navigate = useNavigate();
   const {
     currentUser,
@@ -110,6 +114,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
     handlePressStart,
     handlePressEnd,
     reactionModalPostId,
+    setReactionModalPostId,
     toggleComments,
     expandedComments,
     commentsData,
@@ -121,9 +126,9 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
     handleUpdatePost,
     handleDeleteComment,
     handleUpdateComment,
-    handleReportPost,
     toggleMenu,
     activeMenu,
+    setActiveMenu,
     menuRef,
     editingItem,
     setEditingItem,
@@ -140,12 +145,17 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
   const comments = commentsData[post.id];
   const commentText = newCommentText[post.id];
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState("Inappropriate Content");
+  const [customReason, setCustomReason] = useState("");
+
   const handleLocalReaction = async (type) => {
     // Close modal immediately after selection
-    if (reactionModalPostId) {
-      // We don't need to set null here manually if handleReaction does it, 
-      // but for UI responsiveness we can rely on the state update.
-  }
+  //   if (reactionModalPostId) {
+  //     // We don't need to set null here manually if handleReaction does it, 
+  //     // but for UI responsiveness we can rely on the state update.
+  // }
+    setReactionModalPostId(null);
     const oldReaction = post.user_reaction;
     const oldLikes = post.likes;
     const isSame = oldReaction === type;
@@ -190,6 +200,33 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
   useEffect(() => {
     if (!isExpanded) setVisibleLimit(3);
   }, [isExpanded]);
+  const handleReportClick = () => {
+    setActiveMenu(null);
+    setShowReportModal(true);
+  };
+
+  const submitReport = async () => {
+    const finalReason = reportReason === "Other" ? customReason : reportReason;
+    if (!finalReason.trim()) return showFlash("Please specify a reason.", "error");
+    try {
+      await api.post("/reports", { post_id: post.id, reason: finalReason });
+      showFlash("Post reported successfully.", "success");
+      setShowReportModal(false);
+      setCustomReason("");
+      setReportReason("Inappropriate Content");
+    } catch (error) {
+      showFlash(error.response?.data?.detail || "Failed to report post.", "error");
+    }
+  };
+  const handleLocalUpdatePost = async () => {
+    const result = await handleUpdatePost(editingItem);
+    if (result.success) onPostUpdate(result.updatedPost.id, result.updatedPost);
+  };
+
+  const handleLocalDeletePost = async () => {
+    const result = await handleDeletePost(post.id);
+    if (result.success) onPostDelete(post.id);
+  };
   return (
     <div
       key={post.id}
@@ -215,7 +252,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
               <VerifiedBadge user={post} />
               {community && (
                 <span className="text-gray-400 font-normal text-xs ml-1">
-                  - posted in community{" "}
+                  posted in community{" "}
                   <span
                     className="text-blue-400 cursor-pointer hover:underline"
                     onClick={() => navigate(`/community/${community.id}`)}
@@ -277,7 +314,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
                     </button>
                   )}
                   <button
-                    onClick={() => handleDeletePost(post.id)}
+                    onClick={handleLocalDeletePost}
                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300"
                   >
                     Delete
@@ -285,8 +322,8 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
                 </>
               ) : (
                 <button
-                  onClick={() => handleReportPost(post.id)}
-                  className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300"
+                onClick={handleReportClick}
+                className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300"
                 >
                   Report
                 </button>
@@ -313,7 +350,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
               Cancel
             </button>
             <button
-              onClick={handleUpdatePost}
+              onClick={handleLocalUpdatePost}
               className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500"
             >
               Save
@@ -721,12 +758,49 @@ const PostItem = React.memo(({ post, community, onPostUpdate }) => {
           </div>
         </div>
       )}
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowReportModal(false)}>
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-4">Report Post</h3>
+            <div className="space-y-3 mb-4">
+              {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
+                <label key={reason} className="flex items-center gap-3 cursor-pointer group">
+                  <input 
+                    type="radio" 
+                    name="reportReason" 
+                    value={reason} 
+                    checked={reportReason === reason} 
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300 text-sm group-hover:text-white">{reason}</span>
+                </label>
+              ))}
+            </div>
+            
+            {reportReason === "Other" && (
+              <textarea
+                value={customReason}
+                onChange={(e) => setCustomReason(e.target.value)}
+                placeholder="Please describe the issue..."
+                className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mb-4 h-24 resize-none"
+              />
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowReportModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+              <button onClick={submitReport} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Report</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
 
 // Memoized Post Feed to prevent re-renders when typing in Create Post form
-const PostFeed = React.memo(({ posts, communitiesMap, onPostUpdate }) => {
+const PostFeed = React.memo(({ posts, communitiesMap, onPostUpdate, onPostDelete, showFlash }) => {
   return (
     <div className="space-y-4">
       {posts.map((post) => {
@@ -739,6 +813,8 @@ const PostFeed = React.memo(({ posts, communitiesMap, onPostUpdate }) => {
             post={post}
             community={community}
             onPostUpdate={onPostUpdate}
+            onPostDelete={onPostDelete}
+            showFlash={showFlash}
           />
         );
       })}
@@ -852,6 +928,10 @@ const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) =
       }
     } catch (error) {
       console.error("Failed to fetch posts", error);
+      // Stop polling if initial fetch fails.
+      if (page === 0 && isMounted.current) {
+        setHasMorePosts(false);
+    }
     } finally {
       if (isMounted.current) setLoadingPosts(false);
     }
@@ -890,6 +970,11 @@ const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) =
         setMarketPrices(prices);
       }
       setLoadingPrices(false);
+    // } else {
+    //   // Stop polling in this component, if component unmounted do not retry anymore
+    //     if (isMounted.current) {
+    //       clearInterval(interval);
+    //     }
     }
     isFetchingPrices.current = false;
   };
@@ -949,8 +1034,16 @@ const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) =
     );
   }, []);
 
+  const onPostDelete = useCallback((postId) => {
+    setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+  }, []);
+
   const myCommunities = communities.filter((c) =>
     joinedCommunityIds.includes(c.id)
+  );
+
+  const createdCommunities = communities.filter((c) =>
+    c.creator_username === currentUser
   );
 
   const communitiesMap = useMemo(() => {
@@ -1083,6 +1176,8 @@ const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) =
           posts={posts}
           communitiesMap={communitiesMap}
           onPostUpdate={onPostUpdate}
+          onPostDelete={onPostDelete}
+          showFlash={showFlash}
         />
         {hasMorePosts && (
           <div className="text-center mt-4">
@@ -1104,38 +1199,65 @@ const Home = ({ communities, highlightedPost, setHighlightedPost, showFlash }) =
             mobileView === "widgets" ? "block" : "hidden"
           } lg:block lg:col-span-1`}
         >
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg sticky top-24">
-            <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-              <span className="text-blue-500">👥</span> Your Communities
-            </h3>
-            <div className="space-y-3">
-              {myCommunities.length === 0 ? (
-                <p className="text-xs text-gray-500">
-                  You haven't joined any communities yet.
-                </p>
-              ) : (
-                myCommunities.map((comm) => (
-                  <div
-                    key={comm.id}
-                    onClick={() => {
-                      navigate(`/community/${comm.id}`);
-                    }}
-                    className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
-                  >
-                    <div>
-                      <p className="text-sm font-bold text-gray-300 group-hover:text-white">
-                        {comm.name}
-                      </p>
-                      <p className="text-[10px] text-gray-500">
-                        {comm.members_count} Members
-                      </p>
+          <div className="sticky top-24 space-y-6">
+            {/* Created Communities */}
+            {createdCommunities.length > 0 && (
+              <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
+                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                  <span className="text-yellow-500">👑</span> Created Communities
+                </h3>
+                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                  {createdCommunities.map((comm) => (
+                    <div
+                      key={comm.id}
+                      onClick={() => navigate(`/community/${comm.id}`)}
+                      className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-gray-300 group-hover:text-white">
+                          {comm.name}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          {comm.members_count} Members
+                        </p>
+                      </div>
+                      <span className="text-gray-500 group-hover:text-blue-400">→</span>
                     </div>
-                    <span className="text-gray-500 group-hover:text-blue-400">
-                      →
-                    </span>
-                  </div>
-                ))
-              )}
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Joined Communities */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
+              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <span className="text-blue-500">👥</span> Your Communities
+              </h3>
+              <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+                {myCommunities.length === 0 ? (
+                  <p className="text-xs text-gray-500">
+                    You haven't joined any communities yet.
+                  </p>
+                ) : (
+                  myCommunities.map((comm) => (
+                    <div
+                      key={comm.id}
+                      onClick={() => navigate(`/community/${comm.id}`)}
+                      className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-gray-300 group-hover:text-white">
+                          {comm.name}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          {comm.members_count} Members
+                        </p>
+                      </div>
+                      <span className="text-gray-500 group-hover:text-blue-400">→</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -40,14 +40,7 @@ const AdminRoute = ({ children }) => {
   if (!userData || userData.role !== "admin") {
     return <Navigate to="/" replace />;
   }
-  // Check for suspension after ensuring user is logged in
-  if (userData && userData.status === 'suspended') {
-    const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
-    // If suspension is indefinite (null) or hasn't expired yet
-    if (!suspendedUntil || suspendedUntil > new Date()) {
-        return <Navigate to="/suspended" replace />;
-    }
-  }
+
   return children;
 };
 
@@ -57,7 +50,7 @@ const ProtectedRoute = ({ children }) => {
   
   if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
   if (!token) return <Navigate to="/" replace />;
-  if (userData && userData.status === 'suspended') {
+  if (userData && userData.role !== 'admin' && userData.status === 'suspended') {
     const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
     // If suspension is indefinite (null) or hasn't expired yet
     if (!suspendedUntil || suspendedUntil > new Date()) {
@@ -296,6 +289,15 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const [highlightedPost, setHighlightedPost] = useState(null);
   const planLevel = getPlanLevel(userData?.plan);
+
+  // Polling to keep user status updated (e.g. for suspension)
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile(); 
+      const interval = setInterval(fetchUserProfile, 5000); // Poll every 5s
+      return () => clearInterval(interval);
+    }
+  }, [token, fetchUserProfile]);
 
   // #sandbox mode - Midtrans Integration
   useEffect(() => {
@@ -849,10 +851,7 @@ function App() {
 
       <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
         {/* Special check for suspended route to allow access even if other routes are protected */}
-        {userData && userData.status === 'suspended' && new Date(userData.suspended_until) > new Date() && location.pathname !== '/suspended' && (
-           <Navigate to="/suspended" replace />
-        )}
-        {userData && userData.status === 'suspended' && !userData.suspended_until && location.pathname !== '/suspended' && (
+        {userData && userData.role !== 'admin' && userData.status === 'suspended' && (!userData.suspended_until || new Date(userData.suspended_until) > new Date()) && location.pathname !== '/suspended' && (
            <Navigate to="/suspended" replace />
         )}
         <Routes>

@@ -2,10 +2,7 @@ import random
 import math
 from decimal import Decimal, getcontext
 import requests
-from .models import (
-    SimulationResponse, DailyResult, TradeResult, 
-    GoalPlannerResponse, HealthAnalysisResponse
-)
+from .models import ( SimulationResponse, DailyResult, TradeResult, GoalPlannerResponse, HealthAnalysisResponse )
 
 # Set precision for Decimal calculations
 getcontext().prec = 28
