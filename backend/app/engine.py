@@ -239,6 +239,13 @@ def analyze_trade_health(request):
             recommendation_reason="Start trading to get analysis.",
             trading_identity="Newcomer", identity_insight="The journey begins."
         )
+    
+    # Backend Validation: If risk_amount is 0 or missing, but the trade was a loss,
+    # use the absolute PnL as the realized risk. This makes the risk score more accurate.
+    for trade in trades:
+        if (not trade.risk_amount or trade.risk_amount <= 0) and trade.pnl < 0:
+            trade.risk_amount = abs(trade.pnl)
+            
     # 1. Calculate Basic Metrics
     total_trades = len(trades)
     wins = [t for t in trades if t.is_win]

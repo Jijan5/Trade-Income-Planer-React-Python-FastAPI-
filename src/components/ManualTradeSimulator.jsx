@@ -120,15 +120,28 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         const tradesPayload = chronologicalTrades.map(t => {
             // Calculate approximate risk amount based on SL distance
             // Risk = |Entry - SL| / Entry * Size
-            const riskAmt = Math.abs(t.entryPrice - t.slPrice) / t.entryPrice * t.size;
+            let riskAmt = 0;
+            const entry = parseFloat(t.entryPrice);
+            const sl = parseFloat(t.slPrice);
+            const size = parseFloat(t.size);
+            const pnl = parseFloat(t.finalPnL);
+
+            if (!isNaN(entry) && !isNaN(sl) && !isNaN(size) && entry > 0) {
+                riskAmt = (Math.abs(entry - sl) / entry) * size;
+            }
+            
+            // Fallback: If riskAmt is 0 (e.g. missing SL) but trade was a loss, assume the realized loss was the risk taken.
+            if ((!riskAmt || riskAmt === 0) && pnl < 0) {
+                riskAmt = Math.abs(pnl);
+            }
             
             const tradeItem = {
-                pnl: t.finalPnL,
+                pnl: pnl,
                 risk_amount: riskAmt,
                 balance: runningBal,
-                is_win: t.finalPnL > 0
+                is_win: pnl > 0
             };
-            runningBal += t.finalPnL;
+            runningBal += pnl;
             return tradeItem;
         });
 
@@ -142,6 +155,27 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   };
 
   if (!isSessionActive) {
+    // If lockout is active, show only the lockout screen.
+    if (lockout) {
+      return (
+        <div className="bg-gray-900/95 border border-red-500/30 p-8 rounded-lg shadow-lg max-w-md mx-auto mt-10 text-center animate-fade-in">
+          <div className="text-6xl mb-4 animate-bounce">⛔</div>
+          <h2 className="text-2xl font-bold text-red-400 mb-2 uppercase tracking-wider">
+            Trading Disabled
+          </h2>
+          <p className="text-white font-bold text-lg mb-4 max-w-xs mx-auto">
+            {lockout.reason}
+          </p>
+          <div className="text-5xl font-mono font-bold text-white bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+            {timeLeft || "30:00"}
+          </div>
+          <p className="text-sm text-gray-400 max-w-xs mx-auto">
+            Discipline is key. Take a walk, drink some water, and come back later.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-lg max-w-md mx-auto mt-10 text-center">
         <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-wider">
@@ -150,26 +184,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         <p className="text-gray-400 mb-8 text-sm">
           Trade {activeSymbol} with real-time market data without risking real money.
         </p>
-        {/* Lockout Overlay */}
-        {lockout && (
-          <div className="absolute inset-0 z-50 bg-gray-900/95 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg p-8 text-center animate-fade-in">
-            <div className="text-6xl mb-4 animate-bounce">⛔</div>
-            <h2 className="text-2xl font-bold text-red-400 mb-2 uppercase tracking-wider">
-              Trading Disabled
-            </h2>
-            <p className="text-white font-bold text-lg mb-4 max-w-xs mx-auto">
-              {lockout.reason}
-            </p>
-            <div className="text-5xl font-mono font-bold text-white bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
-              {timeLeft || "30:00"}
-            </div>
-            <p className="text-sm text-gray-400 max-w-xs mx-auto">
-              Discipline is key. Take a walk, drink some water, and come back later.
-            </p>
-          </div>
-        )}
-
-        <form onSubmit={startSession} className={`space-y-6 text-left relative ${lockout ? 'opacity-20 pointer-events-none filter blur-sm' : ''}`}>
+      
+        <form onSubmit={startSession} className="space-y-6 text-left relative">
             <div>
                 <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Initial Capital ($)</label>
                 <input
