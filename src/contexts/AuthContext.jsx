@@ -21,7 +21,10 @@ export const AuthProvider = ({ children }) => {
         try {
             // don't need URL manual header
             const res = await api.get("/users/me");
-            setUserData(res.data);
+            // Optimization: Only update state if data actually changed to prevent re-renders
+            setUserData(prev => {
+                return JSON.stringify(prev) !== JSON.stringify(res.data) ? res.data : prev;
+            });
         } catch (error) {
             console.error("Failed to fetch user profile", error);
             setUserData(null);
@@ -45,8 +48,14 @@ export const AuthProvider = ({ children }) => {
             fetchUserProfile();
             fetchUnreadCount();
             // Polling unread count every 15 seconds
-            const intervalId = setInterval(fetchUnreadCount, 15000);
-            return () => { clearInterval(intervalId) };
+            const unreadInterval = setInterval(fetchUnreadCount, 15000);
+            // Polling user profile every 5 seconds (for suspension/plan updates)
+            const profileInterval = setInterval(fetchUserProfile, 5000);
+            
+            return () => { 
+                clearInterval(unreadInterval);
+                clearInterval(profileInterval);
+            };
         } else {
             setUserData(null);
             setUnreadCount(0);

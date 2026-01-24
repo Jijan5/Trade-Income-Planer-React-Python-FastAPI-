@@ -16,11 +16,6 @@ import { usePostInteractions } from "../contexts/PostInteractionContext";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-// Remove if no longer needed
-  /*useEffect(() => {
-    return () => clearTimeout(timeoutId);
-  }, [timeoutId]);*/
-
 // --- Sub-components to prevent Home re-renders ---
 const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
   const [currentIndex, setCurrentIndex] = useState(0);

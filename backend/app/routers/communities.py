@@ -23,7 +23,7 @@ async def get_community_members(community_id: int, user: User = Depends(get_curr
     
     # Ensure the user is either the creator OR a member
     member = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
-    if community.creator_username != user.username and not member:
+    if community.creator_username != user.username and not member and user.role != "admin":
         raise HTTPException(status_code=403, detail="Unauthorized: Must be creator or member to view member list")
 
     members = session.exec(
@@ -40,6 +40,13 @@ async def get_community_members(community_id: int, user: User = Depends(get_curr
 
 @router.post("/api/communities/{community_id}/join")
 async def join_community(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+    if user.role == "admin":
+        return {"status": "success", "message": "Admin access"}
+    
+    comm = session.get(Community, community_id)
+    if not comm:
+        raise HTTPException(status_code=404, detail="Community not found")
+    
     existing = session.exec(select(CommunityMember).where(CommunityMember.community_id == community_id, CommunityMember.user_id == user.id)).first()
     if existing:
         return {"status": "already_joined"}
@@ -47,16 +54,17 @@ async def join_community(community_id: int, user: User = Depends(get_current_act
     member = CommunityMember(community_id=community_id, user_id=user.id)
     session.add(member)
     
-    comm = session.get(Community, community_id)
-    if comm:
-        comm.members_count += 1
-        session.add(comm)
+    comm.members_count += 1
+    session.add(comm)
     
     session.commit()
     return {"status": "success"}
 
 @router.post("/api/communities/{community_id}/leave")
 async def leave_community(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+    if user.role == "admin":
+        return {"status": "success", "message": "Admin access"}
+    
     comm = session.get(Community, community_id)
     if not comm:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -163,6 +171,10 @@ async def create_community(
     session.add(db_community)
     session.commit()
     session.refresh(db_community)
+    # Automatically add creator as a member
+    member = CommunityMember(community_id=db_community.id, user_id=user.id)
+    session.add(member)
+    session.commit()
     return db_community
 
 @router.put("/api/communities/{community_id}", response_model=Community)

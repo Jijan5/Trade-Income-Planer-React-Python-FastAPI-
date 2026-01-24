@@ -92,7 +92,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         longPressTimer.current = setTimeout(() => {
             isLongPress.current = true;
             setReactionModalPostId(postId);
-        }, 200);
+        }, 500);
     }, []);
 
     const handlePressEnd = useCallback(async (post) => {

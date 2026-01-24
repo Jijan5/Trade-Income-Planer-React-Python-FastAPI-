@@ -273,8 +273,7 @@ const StrategyView = ({
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, userData, unreadCount, setUnreadCount, login, logout, fetchUserProfile } =
-    useAuth();
+  const { token, userData, unreadCount, setUnreadCount, login, logout, fetchUserProfile } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
   const [simulationData, setSimulationData] = useState(null);
@@ -289,15 +288,6 @@ function App() {
   const [notifications, setNotifications] = useState([]);
   const [highlightedPost, setHighlightedPost] = useState(null);
   const planLevel = getPlanLevel(userData?.plan);
-
-  // Polling to keep user status updated (e.g. for suspension)
-  useEffect(() => {
-    if (token) {
-      fetchUserProfile(); 
-      const interval = setInterval(fetchUserProfile, 5000); // Poll every 5s
-      return () => clearInterval(interval);
-    }
-  }, [token, fetchUserProfile]);
 
   // #sandbox mode - Midtrans Integration
   useEffect(() => {
