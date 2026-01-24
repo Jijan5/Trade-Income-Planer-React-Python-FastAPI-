@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlmodel import Session, select, SQLModel
+from sqlalchemy import text
 from ..database import get_session
 from ..dependencies import get_current_admin_user, get_current_user
 from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification, UserUpdateAdmin
@@ -162,3 +163,21 @@ async def unsuspend_user(user_id: int, background_tasks: BackgroundTasks, user: 
         raise HTTPException(status_code=404, detail="User not found")
     background_tasks.add_task(db_user.auto_unsuspend_user, session=session)
     return {"message": f"User {user_id} will be auto-unsuspended."}
+
+@router.delete("/users/{user_id}")
+async def delete_user(user_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    db_user = session.get(User, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # delete related records to avoid foreign key constraint errors
+    # 1. delete community memberships
+    session.exec(text("DELETE FROM communitymember WHERE user_id = :uid"), params={"uid": user_id})
+    # 2. delete notifications
+    session.exec(text("DELETE FROM notification WHERE user_id = :uid"), params={"uid": user_id})
+    # 3. delete manual trades (if any)
+    session.exec(text("DELETE FROM manualtrade WHERE user_id = :uid"), params={"uid": user_id})
+
+    session.delete(db_user)
+    session.commit()
+    return {"status": "success"}

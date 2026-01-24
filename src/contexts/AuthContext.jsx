@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("token", newToken);
         setToken(newToken);
         setLoading(true);
-        fetchUserProfile();
+        // fetchUserProfile();
     };
 
     const logout = useCallback(() => {

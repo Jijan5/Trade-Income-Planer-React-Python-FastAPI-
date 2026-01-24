@@ -98,7 +98,7 @@ const SimulationLayout = ({
   showFlash,
 }) => {
   const location = useLocation();
-  const { userData } = useAuth();
+  const { userData, logout } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
   const isAdmin = userData?.role === 'admin';
   return (
@@ -270,6 +270,29 @@ const StrategyView = ({
   </div>
 );
 
+// Global Suspension Handler Component
+const SuspensionHandler = () => {
+  const { userData, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (userData && userData.role !== 'admin' && userData.status === 'suspended') {
+      const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+      // If suspension is indefinite (null) or hasn't expired yet
+      if ((!suspendedUntil || suspendedUntil > new Date()) && location.pathname !== '/suspended') {
+          navigate('/suspended', { replace: true });
+      }
+    }
+    // If user is on suspended page but is now active (approved appeal), log them out to re-login
+    if (userData && userData.status === 'active' && location.pathname === '/suspended') {
+        logout();
+    }
+  }, [userData, location, navigate, logout]);
+
+  return null;
+};
+
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -282,6 +305,7 @@ function App() {
   const [activeSymbol, setActiveSymbol] = useState("BTCUSDT");
   const [activeCategory, setActiveCategory] = useState("Crypto");
   const [communities, setCommunities] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Notification State
   const [showNotifications, setShowNotifications] = useState(false);
@@ -432,7 +456,6 @@ function App() {
 
     try {
       // Request Snap Token from Backend
-      // Note: Backend must use Server Key: SB-Mid-server-waDxbRj709dcZvEP6iH6kIVx
       const response = await api.post("/payment/create_transaction", {
         plan_id: plan.id,
         amount: plan.finalPrice,
@@ -786,8 +809,10 @@ function App() {
                     </span>
                   )}
                 </button>
+
+                {/* Desktop Profile & Logout */}
                 <div
-                  className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
+                  className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
                   onClick={() => navigate("/profile")}
                 >
                   {userData?.avatar_url ? (
@@ -808,9 +833,19 @@ function App() {
                 </div>
                 <button
                   onClick={logout}
-                  className="text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
+                  className="hidden md:block text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
                 >
                   Logout
+                </button>
+
+                {/* Mobile Hamburger Button */}
+                <button 
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="md:hidden text-gray-400 hover:text-white p-2"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
                 </button>
               </>
             ) : (
@@ -839,11 +874,71 @@ function App() {
         </div>
       </nav>
 
+      {/* Mobile Menu Modal */}
+      {isMobileMenuOpen && token && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+            <div className="absolute right-0 top-0 h-full w-72 bg-gray-800 border-l border-gray-700 p-6 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-8">
+                    <h3 className="text-xl font-bold text-white">Menu</h3>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Profile Summary */}
+                <div 
+                    className="flex items-center gap-4 mb-8 p-4 bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors"
+                    onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }}
+                >
+                    {userData?.avatar_url ? (
+                        <img src={`http://127.0.0.1:8000${userData.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-blue-500" />
+                    ) : (
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-blue-500">
+                            {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                        </div>
+                    )}
+                    <div>
+                        <p className="text-white font-bold text-lg flex items-center gap-1">
+                            {userData?.username}
+                            <VerifiedBadge user={userData} />
+                        </p>
+                        <p className="text-gray-400 text-xs">{userData?.email}</p>
+                    </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="space-y-4 flex-1">
+                    {userData?.role === "admin" && (
+                        <button 
+                            onClick={() => { navigate("/admin"); setIsMobileMenuOpen(false); }}
+                            className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                            🛡️ Admin Panel
+                        </button>
+                    )}
+                    <button 
+                        onClick={() => { navigate("/subscription"); setIsMobileMenuOpen(false); }}
+                        className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                        👑 Upgrade Pro
+                    </button>
+                </div>
+
+                {/* Logout */}
+                <button 
+                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-red-400 border border-gray-600 py-3 rounded-lg font-bold transition-colors mt-auto"
+                >
+                    Logout
+                </button>
+            </div>
+        </div>
+      )}
+
       <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
-        {/* Special check for suspended route to allow access even if other routes are protected */}
-        {userData && userData.role !== 'admin' && userData.status === 'suspended' && (!userData.suspended_until || new Date(userData.suspended_until) > new Date()) && location.pathname !== '/suspended' && (
-           <Navigate to="/suspended" replace />
-        )}
+      <SuspensionHandler />
         <Routes>
           <Route
             path="/"

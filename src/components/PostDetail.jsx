@@ -16,6 +16,7 @@ const PostDetail = ({ showFlash }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   // Interaction States
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -96,8 +97,12 @@ const PostDetail = ({ showFlash }) => {
     }
   };
 
-  const handleDeletePost = async () => {
-    if (!window.confirm("Delete this post?")) return;
+  const handleDeleteClick = () => {
+    setActiveMenu(null);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeletePost = async () => {
     try {
       await api.delete(`/posts/${post.id}`);
       navigate("/home");
@@ -225,8 +230,8 @@ const PostDetail = ({ showFlash }) => {
               </button>
               {activeMenu === 'post' && (
                 <div ref={menuRef} className="absolute right-0 mt-2 w-32 bg-gray-900 border border-gray-700 rounded shadow-xl z-10">
-                  <button onClick={handleDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800">Delete</button>
-                </div>
+                  <button onClick={handleDeleteClick} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-800">Delete</button>
+                  </div>
               )}
             </div>
           )}
@@ -287,6 +292,19 @@ const PostDetail = ({ showFlash }) => {
           {comments.length === 0 && <p className="text-gray-500 text-center py-4">No comments yet.</p>}
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-2">Delete Post?</h3>
+            <p className="text-gray-400 text-sm mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+              <button onClick={confirmDeletePost} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

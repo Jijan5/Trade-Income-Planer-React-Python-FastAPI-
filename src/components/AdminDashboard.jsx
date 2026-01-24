@@ -21,6 +21,7 @@ const AdminDashboard = () => {
 
    // Confirmation Modal State
    const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null, type: "danger" });
+   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const fetchStats = async () => {
     try {
@@ -65,6 +66,12 @@ const AdminDashboard = () => {
     if (activeTab === "reports") fetchReports();
     if (activeTab === "feedbacks") fetchFeedbacks();
     if (activeTab === "content") fetchAllPosts();
+    let interval;
+    if (activeTab === "appeals") {
+        fetchUsers();
+        interval = setInterval(fetchUsers, 3000);
+    }
+    return () => clearInterval(interval);
   }, [activeTab]);
 
   const showFlash = (message, type = "success") => {
@@ -173,6 +180,24 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Are you sure you want to delete this user? This will permanently remove their account and all associated data.",
+      type: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/users/${userId}`);
+          setUsers(users.filter((u) => u.id !== userId));
+          showFlash("User deleted successfully.", "success");
+          fetchStats();
+        } catch (e) {
+          showFlash(e.response?.data?.detail || "Failed to delete user. Check database constraints.", "error");
+        }
+      },
+    });
+  };
+
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "users", label: "User Management", icon: "👥" },
@@ -227,16 +252,35 @@ const AdminDashboard = () => {
 
       {/* SIDEBAR - SCROLLABLE */}
       {/* Added overflow-y-auto and fixed height calculation to make it scrollable */}
-      <div className="w-full md:w-64 bg-gray-800 rounded-lg border border-gray-700 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-lg">
-        <div className="p-4 border-b border-gray-700 bg-gray-900/50 sticky top-0 z-10 backdrop-blur-sm">
-          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
-          <p className="text-xs text-gray-400">Welcome, {userData?.username}</p>
+      <div className="w-full md:w-64 bg-gray-800 rounded-lg border border-gray-700 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-lg z-20">
+        <div className="p-4 border-b border-gray-700 bg-gray-900/50 sticky top-0 z-10 backdrop-blur-sm flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+            <p className="text-xs text-gray-400">Welcome, {userData?.username}</p>
+          </div>
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="md:hidden text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 focus:outline-none"
+          >
+            {isSidebarOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
-        <nav className="p-2 space-y-1">
+        <nav className={`p-2 space-y-1 ${isSidebarOpen ? 'block' : 'hidden'} md:block`}>
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setIsSidebarOpen(false);
+              }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${
                 activeTab === item.id
                   ? "bg-blue-600 text-white shadow-md"
@@ -300,7 +344,10 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td className="p-3">
-                      <button onClick={() => handleEditUser(u)} className="text-blue-400 hover:text-white font-bold text-xs border border-blue-900 hover:bg-blue-900 px-3 py-1 rounded transition-colors">Edit</button>
+                    <div className="flex gap-2">
+                        <button onClick={() => handleEditUser(u)} className="text-blue-400 hover:text-white font-bold text-xs border border-blue-900 hover:bg-blue-900 px-3 py-1 rounded transition-colors">Edit</button>
+                        <button onClick={() => handleDeleteUser(u.id)} className="text-red-400 hover:text-white font-bold text-xs border border-red-900 hover:bg-red-900 px-3 py-1 rounded transition-colors">Delete</button>
+                      </div>
                     </td>
                   </tr>
                 ))}

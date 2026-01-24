@@ -145,7 +145,6 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
     }, [showFlash]);
 
     const handleDeletePost = useCallback(async (postId) => {
-        if (!window.confirm("Are you sure you want to delete this post?")) return { success: false };
         try {
             await api.delete(`/posts/${postId}`);
             setActiveMenu(null);

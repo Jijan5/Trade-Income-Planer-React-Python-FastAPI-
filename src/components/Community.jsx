@@ -26,6 +26,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   const [visibleLimit, setVisibleLimit] = useState(3);
   const [expandedReplies, setExpandedReplies] = useState({});
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState("Inappropriate Content");
   const [customReason, setCustomReason] = useState("");
@@ -71,9 +72,15 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
     }
   };
 
-  const handleLocalDeletePost = async () => {
+  const handleLocalDeletePost = () => {
+    setActiveMenu(null);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
     const result = await handleDeletePost(post.id);
     if (result.success) onPostDelete(post.id);
+    setShowDeleteModal(false);
   };
 
   const handleLocalUpdatePost = async () => {
@@ -315,6 +322,19 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                   <div className="flex justify-end gap-3">
                     <button onClick={() => setShowReportModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
                     <button onClick={submitReport} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Report</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowDeleteModal(false)}>
+                <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-lg font-bold text-white mb-2">Delete Post?</h3>
+                  <p className="text-gray-400 text-sm mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
+                  <div className="flex justify-center gap-3">
+                    <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+                    <button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Delete</button>
                   </div>
                 </div>
               </div>
