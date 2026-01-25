@@ -102,7 +102,7 @@ const SimulationLayout = ({
   const planLevel = getPlanLevel(userData?.plan);
   const isAdmin = userData?.role === 'admin';
   return (
-    <ManualTradeProvider activeSymbol={activeSymbol}>
+    <ManualTradeProvider activeSymbol={activeSymbol} key={userData?.username}>
       <>
         {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
         <div className="space-y-6 mb-8">

@@ -51,6 +51,7 @@ const Profile = ({ showFlash }) => {
   const [editingComm, setEditingComm] = useState(null); // If not null, show edit modal
 
   // Edit Community Modal State
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null });
   const [activeEditTab, setActiveEditTab] = useState('appearance');
   const [commMembers, setCommMembers] = useState([]);
   const [membersLoading, setMembersLoading] = useState(false);
@@ -215,19 +216,22 @@ const Profile = ({ showFlash }) => {
 
   const handleKickMember = async (usernameToKick) => {
     if (!editingComm) return;
-    if (!window.confirm(`Are you sure you want to kick ${usernameToKick} from the community?`)) return;
-
-    const token = localStorage.getItem("token");
-    try {
-        await api.delete(`/communities/${editingComm.id}/members/${usernameToKick}`);
-        showFlash(`${usernameToKick} has been kicked.`, "success");
-        // Refresh member list
-        fetchCommMembers(editingComm.id);
-        // Also refresh the main community list to update member count
-        fetchMyCommunities(); 
-    } catch (error) {
-      showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
-    }
+    setConfirmModal({
+      isOpen: true,
+      message: `Are you sure you want to kick ${usernameToKick} from the community?`,
+      onConfirm: async () => {
+        try {
+            await api.delete(`/communities/${editingComm.id}/members/${usernameToKick}`);
+            showFlash(`${usernameToKick} has been kicked.`, "success");
+            // Refresh member list
+            fetchCommMembers(editingComm.id);
+            // Also refresh the main community list to update member count
+            fetchMyCommunities(); 
+        } catch (error) {
+          showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
+        }
+      }
+    });
   };
 
   const filteredCountries = useMemo(() => countryCodes.filter(c => 
@@ -399,6 +403,22 @@ const Profile = ({ showFlash }) => {
         </h2>
         <MyCommunitiesList myCommunities={myCommunities} openEditModal={openEditModal} />
     </div>
+
+    {/* Confirmation Modal */}
+    {confirmModal.isOpen && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+          <h3 className="text-lg font-bold text-white mb-2">Are you sure?</h3>
+          <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
+            <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* EDIT COMMUNITY MODAL */}
     {editingComm && (

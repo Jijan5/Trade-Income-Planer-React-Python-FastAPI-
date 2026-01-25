@@ -166,6 +166,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           <p className="text-white font-bold text-lg mb-4 max-w-xs mx-auto">
             {lockout.reason}
           </p>
+          <p className="text-xs text-gray-500 mb-4">
+            Account: <span className="text-gray-300">{userData?.username}</span>
+          </p>
           <div className="text-5xl font-mono font-bold text-white bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
             {timeLeft || "30:00"}
           </div>

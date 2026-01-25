@@ -16,6 +16,7 @@ const defaultState = {
 export const ManualTradeProvider = ({ children, activeSymbol }) => {
     const { userData } = useAuth();
     const storageKey = userData ? `manual_trade_session_${userData.id}` : null;
+    const lockoutKey = userData ? `trading_lockout_${userData.id}` : null;
 
     const loadState = () => {
         if (!storageKey) return null;
@@ -42,15 +43,16 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
     const [healthData, setHealthData] = useState(null);
 
     const [lockout, setLockout] = useState(() => {
-        const saved = localStorage.getItem('trading_lockout');
+        if (!lockoutKey) return null;
+        const saved = localStorage.getItem(lockoutKey);
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
                 if (new Date().getTime() < parsed.until) return parsed;
-                localStorage.removeItem('trading_lockout');
+                localStorage.removeItem(lockoutKey);
             } catch (e) {
                 console.error("Failed to parse lockout data", e);
-                localStorage.removeItem('trading_lockout');
+                localStorage.removeItem(lockoutKey);
             }
         }
         return null;
@@ -67,12 +69,13 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
     }, [config, account, challengeState, isSessionActive, storageKey]);
 
     const triggerLockout = useCallback((reason) => {
+        if (!lockoutKey) return;
         const until = new Date().getTime() + 30 * 60 * 1000; // 30 minutes lockout
         const lockoutData = { active: true, until, reason };
         setLockout(lockoutData);
-        localStorage.setItem('trading_lockout', JSON.stringify(lockoutData));
+        localStorage.setItem(lockoutKey, JSON.stringify(lockoutData));
         setIsSessionActive(false);
-    }, []);
+    }, [lockoutKey]);
 
     const checkRulesAfterClose = useCallback((updatedHistory) => {
         if (!config.enableRules) return;
@@ -184,7 +187,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
                 const diff = lockout.until - now;
                 if (diff <= 0) {
                     setLockout(null);
-                    localStorage.removeItem('trading_lockout');
+                    if (lockoutKey) localStorage.removeItem(lockoutKey);
                     clearInterval(interval);
                 } else {
                     setTimeLeft(new Date(diff).toISOString().substr(14, 5));
@@ -192,7 +195,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
             }, 1000);
             return () => clearInterval(interval);
         }
-    }, [lockout]);
+    }, [lockout, lockoutKey]);
 
     useEffect(() => {
         if (account.positions.length > 0 && marketState.price > 0) {
