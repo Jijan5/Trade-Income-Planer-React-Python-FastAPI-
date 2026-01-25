@@ -142,6 +142,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate, onPostDelete, show
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [reportReason, setReportReason] = useState("Inappropriate Content");
   const [customReason, setCustomReason] = useState("");
 
@@ -228,6 +229,32 @@ const PostItem = React.memo(({ post, community, onPostUpdate, onPostDelete, show
     const result = await handleDeletePost(post.id);
     if (result.success) onPostDelete(post.id);
     setShowDeleteModal(false);
+  };
+  const handleShareOption = (platform) => {
+    const shareUrl = `${window.location.origin}/post/${post.id}`;
+    const shareText = `Check out this post by ${post.username} on Trade Income Planner!`;
+
+    switch (platform) {
+      case 'x':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
+        break;
+      case 'instagram':
+        navigator.clipboard.writeText(shareUrl);
+        showFlash("Link copied! Paste it on Instagram.", "success");
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(shareUrl);
+        showFlash("Link copied to clipboard!", "success");
+        break;
+      default:
+        break;
+    }
+    
+    handleShare(post.id);
+    setShowShareModal(false);
   };
   return (
     <div
@@ -459,7 +486,7 @@ const PostItem = React.memo(({ post, community, onPostUpdate, onPostDelete, show
           </span>
         </button>
         <button
-          onClick={() => handleShare(post.id)}
+          onClick={() => setShowShareModal(true)}
           className="flex items-center gap-2 text-gray-400 hover:text-blue-400 transition-colors"
         >
           <svg
@@ -807,6 +834,45 @@ const PostItem = React.memo(({ post, community, onPostUpdate, onPostDelete, show
               <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
               <button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Delete</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowShareModal(false)}>
+          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-white mb-4 text-center">Share Post</h3>
+            <div className="grid grid-cols-4 gap-4 mb-4">
+              <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-2 group">
+                <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center border border-gray-700 group-hover:border-white transition-colors">
+                  <span className="text-xl text-white">𝕏</span>
+                </div>
+                <span className="text-xs text-gray-400">X</span>
+              </button>
+              <button onClick={() => handleShareOption('facebook')} className="flex flex-col items-center gap-2 group">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                  <span className="text-xl text-white">f</span>
+                </div>
+                <span className="text-xs text-gray-400">Facebook</span>
+              </button>
+              <button onClick={() => handleShareOption('instagram')} className="flex flex-col items-center gap-2 group">
+                <div className="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full flex items-center justify-center group-hover:opacity-90 transition-opacity">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                </div>
+                <span className="text-xs text-gray-400">Instagram</span>
+              </button>
+              <button onClick={() => handleShareOption('copy')} className="flex flex-col items-center gap-2 group">
+                <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-gray-600 transition-colors">
+                  <span className="text-xl text-white">🔗</span>
+                </div>
+                <span className="text-xs text-gray-400">Copy Link</span>
+              </button>
+            </div>
+            <button onClick={() => setShowShareModal(false)} className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-bold text-white transition-colors">Cancel</button>
           </div>
         </div>
       )}
