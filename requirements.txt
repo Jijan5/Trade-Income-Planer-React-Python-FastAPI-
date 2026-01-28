@@ -1,4 +1,17 @@
 fastapi
+bcrypt
+certifi
+cffi
+charset-normalizer
+click
+colorama
+cryptography
+h11
+httpcore
+idna
+MarkupSafe
+python-multipart
+request
 uvicorn
 pydantic
 yfinance
@@ -12,3 +25,4 @@ python-multipart
 pymysql
 PyJWT
 httpx
+websockets
