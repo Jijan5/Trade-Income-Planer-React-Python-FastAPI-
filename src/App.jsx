@@ -262,8 +262,7 @@ const StrategyView = ({
           />
         </svg>
         <p className="text-lg">
-          Masukkan parameter di atas dan klik "Jalankan Simulasi" untuk melihat
-          hasil.
+          Enter your own value and hit "Run Simulation" to show the result.
         </p>
       </div>
     )}

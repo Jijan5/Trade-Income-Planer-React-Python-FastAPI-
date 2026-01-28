@@ -224,7 +224,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             {formData.risk_per_trade > 2 && (
               <div className="mt-1 text-xs text-yellow-400 flex items-center gap-1">
                 <span>⚠</span>
-                <span>High risk. Professionals rarely risk >2%.</span>
+                <span>High risk. Professionals rarely risk > 2%.</span>
               </div>
             )}
           </div>
