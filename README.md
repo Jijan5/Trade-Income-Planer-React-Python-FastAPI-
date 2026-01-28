@@ -28,6 +28,8 @@
 *   **Community:** Connect with other traders, share ideas, and participate in discussions.
 *   **Content Sharing:** Create and share posts, comment on other users' content, and react to posts.
 *   **Notifications:** Stay informed about important events, such as mentions, replies, and system announcements.
+*   **Mentions:** Receive notifications when mentioned in posts or comments.
+*   **What-if Future Projection:** Simulate the future performance of a trading strategy with different scenarios.
 
 ### Admin Features
 
