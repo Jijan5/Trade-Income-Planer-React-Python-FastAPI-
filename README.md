@@ -41,6 +41,7 @@
 *   **Feedback Management:** Review and respond to user feedback.
 *   **Broadcasts:** Send announcements and updates to all users.
 *   **Suspension Appeals:** Review and act on user appeals for suspended accounts.
+*   **CRUD Operations:** Perform Create, Read, Update, and Delete operations on user accounts, posts, comments, and other resources.
 
 ### Integrations
 
@@ -170,3 +171,29 @@ npm install
 npm run dev
 ```
 *Frontend will run at `http://localhost:5173`*
+
+## Generate PIN code
+
+## Chatbot AI
+
+## Community
+
+## Explore (news)
+
+## Payment Gateway Midtrans
+
+## Simulation: Strategy Simulator
+
+## Simulation: Goal Planner
+
+## Simulation: Manual Trade (Demo Account)
+
+## Admin: Suspended & Delete
+
+## Admin: Delete content & Community
+
+## Admin: Broadcast
+
+## Admin: Appeals & Broadcast notification
+
+## Admin: Report content
