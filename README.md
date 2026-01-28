@@ -173,27 +173,40 @@ npm run dev
 *Frontend will run at `http://localhost:5173`*
 
 ## Generate PIN code
+https://github.com/user-attachments/assets/f1a87a1b-4281-47ed-8301-d59f86201b26
 
 ## Chatbot AI
+https://github.com/user-attachments/assets/8a5c6c1b-2cc4-4659-8442-a72f20f4bf72
 
 ## Community
+https://github.com/user-attachments/assets/fcae2151-129a-4a43-ad21-f98527af88e0
 
 ## Explore (news)
+https://github.com/user-attachments/assets/d5d2195a-c4d9-4a6e-9843-3c2572a9f9f5
 
 ## Payment Gateway Midtrans
+https://github.com/user-attachments/assets/d6156725-f9fd-4ddc-b64e-28dace388cea
 
 ## Simulation: Strategy Simulator
+https://github.com/user-attachments/assets/0214c6fd-abaa-4a43-9abd-80f911204b91
 
 ## Simulation: Goal Planner
+https://github.com/user-attachments/assets/d3b856dd-d290-487a-8c9f-a824f6ce49f9
 
 ## Simulation: Manual Trade (Demo Account)
+https://github.com/user-attachments/assets/80edefac-50e9-4512-941f-81c2a6025e2b
 
 ## Admin: Suspended & Delete
+https://github.com/user-attachments/assets/bf384797-972b-42b8-81c2-db0836afd75c
 
 ## Admin: Delete content & Community
+https://github.com/user-attachments/assets/a4293ccf-7176-4592-b279-9335a02dd172
 
 ## Admin: Broadcast
+https://github.com/user-attachments/assets/b5fe29ee-5f2c-446b-9ced-44b4ce3bcc24
 
 ## Admin: Appeals & Broadcast notification
+https://github.com/user-attachments/assets/4e54dfa1-5a5a-4f39-a5bd-c32b60c00166
 
 ## Admin: Report content
+https://github.com/user-attachments/assets/46043f49-788c-4b61-9a3e-217bcc7bebd4
