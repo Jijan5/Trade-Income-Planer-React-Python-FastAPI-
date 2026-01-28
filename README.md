@@ -30,6 +30,7 @@
 *   **Notifications:** Stay informed about important events, such as mentions, replies, and system announcements.
 *   **Mentions:** Receive notifications when mentioned in posts or comments.
 *   **What-if Future Projection:** Simulate the future performance of a trading strategy with different scenarios.
+* **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
 
 ### Admin Features
 
