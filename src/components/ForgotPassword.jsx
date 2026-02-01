@@ -21,7 +21,7 @@ const ForgotPassword = ({ showFlash }) => {
     setLoading(true);
     try {
       await api.post('/forgot-password', { email });
-      showMessage('PIN sent to console (Localhost)', 'success');
+      showMessage('PIN sent to email', 'success');
       setStep(2);
     } catch (error) {
       showMessage(error.response?.data?.detail || 'Failed to send PIN');
@@ -51,7 +51,6 @@ const ForgotPassword = ({ showFlash }) => {
     setLoading(true);
     try {
       await api.post('/reset-password', {
-        email,
         pin,
         new_password: passwords.new,
         confirm_password: passwords.confirm

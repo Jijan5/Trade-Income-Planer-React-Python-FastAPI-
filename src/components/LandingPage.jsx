@@ -40,7 +40,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
             </div>
             <div className="pt-8">
               <p className="text-sm text-gray-400 mb-4">Trusted by traders worldwide</p>
-              <div className="flex justify-center space-x-8 opacity-100">
+              {/* <div className="flex justify-center space-x-8 opacity-100">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-400">10K+</div>
                   <div className="text-xs text-gray-400">Active Traders</div>
@@ -53,7 +53,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                   <div className="text-2xl font-bold text-green-400">95%</div>
                   <div className="text-xs text-gray-400">Success Rate</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -102,7 +102,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 px-6 bg-gradient-to-r from-gray-900 to-gray-800">
+      {/* <section className="py-16 px-6 bg-gradient-to-r from-gray-900 to-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
@@ -123,7 +123,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Testimonials Section */}
       <section className="py-24 px-6 bg-gray-900">
