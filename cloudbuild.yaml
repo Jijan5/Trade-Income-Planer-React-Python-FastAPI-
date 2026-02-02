@@ -1,10 +1,10 @@
 steps:
   # Build the Docker image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo', '.']
+  args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo:latest', '.']
   # Push the Docker image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo']
+  args: ['push', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo:latest']
   # Deploy to Cloud Run
 - name: 'gcr.io/google-cloudsdk/cloudsdk'
   entrypoint: gcloud
@@ -13,11 +13,11 @@ steps:
   - 'deploy'
   - 'nama-service'
   - '--image'
-  - 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo'
+  - 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo:latest'
   - '--region'
   - 'lokasi-cloud-run'
   - '--platform=managed'
 images:
-- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo'
+- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo:latest'
 options:
   logsBucket: 'gs://trade_income_planner_bucket'
