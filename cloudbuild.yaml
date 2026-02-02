@@ -20,5 +20,4 @@ steps:
 images:
 - 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo'
 options:
-  logging: GCS
   logsBucket: 'gs://trade_income_planner_bucket'
