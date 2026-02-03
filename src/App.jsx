@@ -278,10 +278,13 @@ const SuspensionHandler = () => {
   useEffect(() => {
     if (userData && userData.role !== 'admin' && userData.status === 'suspended') {
       const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+        const now = new Date();
       // If suspension is indefinite (null) or hasn't expired yet
-      if ((!suspendedUntil || suspendedUntil > new Date()) && location.pathname !== '/suspended') {
+      if ((!suspendedUntil || suspendedUntil > now) && location.pathname !== '/suspended') {
           navigate('/suspended', { replace: true });
       }
+      // Log the comparison to help debug
+      console.log("Suspended until:", suspendedUntil, "Now:", now, "Expired:", suspendedUntil <= now);
     }
     // If user is on suspended page but is now active (approved appeal), log them out to re-login
     if (userData && userData.status === 'active' && location.pathname === '/suspended') {

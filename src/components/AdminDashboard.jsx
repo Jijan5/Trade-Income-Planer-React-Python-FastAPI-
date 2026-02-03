@@ -594,10 +594,6 @@ const AdminDashboard = () => {
                                     <label className="block text-xs text-gray-500 mb-1">Days</label>
                                     <input type="number" value={editFormData.suspension_duration_days} onChange={e => setEditFormData({...editFormData, suspension_duration_days: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 outline-none" />
                                 </div>
-                                <div>
-                                    <label className="block text-xs text-gray-500 mb-1">Hours</label>
-                                    <input type="number" value={editFormData.suspension_duration_hours} onChange={e => setEditFormData({...editFormData, suspension_duration_hours: e.target.value})} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 outline-none" />
-                                </div>
                             </div>
                         </div>
                     </div>

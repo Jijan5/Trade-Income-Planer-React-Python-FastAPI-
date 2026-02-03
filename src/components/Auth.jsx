@@ -218,11 +218,11 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                     Check Username
                   </button>
                   {usernameError && <p className="text-red-400 text-xs mt-2">{usernameError}</p>}
-                  {isUsernameAvailable === false && (
-                    <p className="text-red-400 text-xs mt-2">✗ Username already exist.</p>
-                  )}
                   {isUsernameAvailable === true && (
                     <p className="text-green-400 text-xs mt-2">✓ Username can be used!.</p>
+                  )}
+                  {isUsernameAvailable === false && (
+                    <p className="text-red-400 text-xs mt-2">✗ Username already exist.</p>
                   )}
                   {isUsernameAvailable === null && usernameError === "" && username !== "" && (
                     <p className="text-gray-400 text-xs mt-2">Click check username to verify.</p>
