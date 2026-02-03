@@ -24,7 +24,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 # DB Startup
 @app.on_event("startup")
 def on_startup():
-  create_db_and_tables()
+    create_db_and_tables()
 
 # Include Routers
 app.include_router(general.router)
