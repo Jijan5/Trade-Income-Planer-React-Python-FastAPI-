@@ -93,7 +93,7 @@ const ChatAssistant = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Tanya tentang trading..."
+              placeholder="Ask something to Tip..."
               className="flex-1 bg-gray-900 text-white text-sm rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-gray-600 placeholder-gray-500"
             />
             <button 
