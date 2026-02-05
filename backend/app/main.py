@@ -18,7 +18,7 @@ app.add_middleware(
   allow_headers=["*"],
 )
 
-# Sajikan folder 'static' agar bisa diakses dari browser
+# Serve the ‘static’ folder so it can be accessed from a browser.
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # DB Startup
