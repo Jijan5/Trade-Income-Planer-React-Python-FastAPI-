@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -6,6 +6,7 @@ const AdminDashboard = () => {
   const { userData } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [stats, setStats] = useState(null);
+  const [searchUsers, setSearchUsers] = useState("");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -18,6 +19,8 @@ const AdminDashboard = () => {
   const [reports, setReports] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [searchContent, setSearchContent] = useState("");
+  const [searchFeedback, setSearchFeedback] = useState("");
 
    // Confirmation Modal State
    const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null, type: "danger" });
@@ -74,7 +77,14 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, [activeTab]);
 
-  const showFlash = (message, type = "success") => {
+    const filteredUsers = useCallback(() => {
+        const search = searchUsers.toLowerCase();
+        return users.filter(user =>
+            user.username.toLowerCase().includes(search) || user.email.toLowerCase().includes(search)
+        );
+    }, [users, searchUsers]);
+
+    const showFlash = (message, type = "success") => {
     setFlash({ message, type });
     setTimeout(() => setFlash(null), 3000);
   };
@@ -315,6 +325,11 @@ const AdminDashboard = () => {
 
         {activeTab === "users" && (
           <div className="overflow-x-auto animate-fade-in">
+            <input
+              type="text"
+              placeholder="Search users..."
+              onChange={(e) => setSearchUsers(e.target.value)}
+              className="mb-4 bg-gray-900 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-full" />
             <table className="w-full text-left text-sm text-gray-400">
               <thead className="bg-gray-900 text-gray-200 uppercase font-bold">
                 <tr>
@@ -325,7 +340,7 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {users.map(u => (
+              {filteredUsers().map(u => (
                   <tr key={u.id} className="hover:bg-gray-700/50 transition-colors">
                     <td className="p-3">
                       <div className="font-bold text-white">{u.username}</div>
