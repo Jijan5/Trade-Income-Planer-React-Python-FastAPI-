@@ -3,3 +3,15 @@ node_modules
 .DS_Store
 npm-debug.log
 .env
+*.log
+dist
+build
+.vscode
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov
+.env.local
+.env.production
+.env.staging

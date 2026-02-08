@@ -1,38 +1,31 @@
-FROM python:3.13.1-slim
-WORKDIR /app
-
-# Copy requirements first for better caching
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-
-# Copy the backend code
-COPY backend/ ./backend/
-
-# Copy the built frontend (if needed for serving static files)
-COPY src/ ./src/
-COPY public/ ./public/
-COPY index.html package.json vite.config.js ./
-
-# Build the frontend
+# Build frontend
 FROM node:18-alpine AS frontend-builder
 WORKDIR /app
+
+# Copy package files first for better caching
 COPY package*.json ./
 RUN npm install
-COPY . .
+
+# Copy source files
+COPY src/ ./src/
+COPY public/ ./public/
+COPY index.html vite.config.js ./
+
+# Build the frontend
 RUN npm run build
 
-# Final stage
+# Production stage
 FROM python:3.13.1-slim
 WORKDIR /app
 
-# Copy backend requirements and install
+# Copy requirements and install Python dependencies
 COPY requirements.txt ./
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend code
 COPY backend/ ./backend/
 
-# Copy built frontend
+# Copy built frontend static files
 COPY --from=frontend-builder /app/dist ./static
 
 # Expose port 8080 for Cloud Run
