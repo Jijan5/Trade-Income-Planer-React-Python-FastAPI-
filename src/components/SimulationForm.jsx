@@ -19,30 +19,73 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
   const STRATEGY_PRESETS = [
     {
       name: "Scalper (Aggressive)",
-      data: { initial_balance: 2000, capital_utilization: 100, risk_per_trade: 1, risk_reward_ratio: 1.5, win_rate: 60, trades_per_day: 10, simulation_days: 30, fees_per_trade: 0.5, risk_type: "dynamic" }
+      data: {
+        initial_balance: 2000,
+        capital_utilization: 100,
+        risk_per_trade: 1,
+        risk_reward_ratio: 1.5,
+        win_rate: 60,
+        trades_per_day: 10,
+        simulation_days: 30,
+        fees_per_trade: 0.5,
+        risk_type: "dynamic",
+      },
     },
     {
       name: "Day Trader (Balanced)",
-      data: { initial_balance: 10000, capital_utilization: 50, risk_per_trade: 1, risk_reward_ratio: 2, win_rate: 50, trades_per_day: 3, simulation_days: 30, fees_per_trade: 2, risk_type: "dynamic" }
+      data: {
+        initial_balance: 10000,
+        capital_utilization: 50,
+        risk_per_trade: 1,
+        risk_reward_ratio: 2,
+        win_rate: 50,
+        trades_per_day: 3,
+        simulation_days: 30,
+        fees_per_trade: 2,
+        risk_type: "dynamic",
+      },
     },
     {
       name: "Swing Trader (Relaxed)",
-      data: { initial_balance: 5000, capital_utilization: 30, risk_per_trade: 2, risk_reward_ratio: 3, win_rate: 40, trades_per_day: 1, simulation_days: 90, fees_per_trade: 5, risk_type: "fixed" }
+      data: {
+        initial_balance: 5000,
+        capital_utilization: 30,
+        risk_per_trade: 2,
+        risk_reward_ratio: 3,
+        win_rate: 40,
+        trades_per_day: 1,
+        simulation_days: 90,
+        fees_per_trade: 5,
+        risk_type: "fixed",
+      },
     },
     {
       name: "Gambler (High Risk)",
-      data: { initial_balance: 1000, capital_utilization: 100, risk_per_trade: 10, risk_reward_ratio: 1, win_rate: 40, trades_per_day: 5, simulation_days: 30, fees_per_trade: 0, risk_type: "fixed" }
-    }
+      data: {
+        initial_balance: 1000,
+        capital_utilization: 100,
+        risk_per_trade: 10,
+        risk_reward_ratio: 1,
+        win_rate: 40,
+        trades_per_day: 5,
+        simulation_days: 30,
+        fees_per_trade: 0,
+        risk_type: "fixed",
+      },
+    },
   ];
 
-  const breakEvenWinRate = (1 / (1 + formData.risk_reward_ratio) * 100).toFixed(1);
+  const breakEvenWinRate = (
+    (1 / (1 + formData.risk_reward_ratio)) *
+    100
+  ).toFixed(1);
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     // Hanya parse ke float jika tipe inputnya number
     setFormData({
       ...formData,
-      [name]: type === 'number' ? parseFloat(value) : value,
+      [name]: type === "number" ? parseFloat(value) : value,
     });
   };
 
@@ -115,7 +158,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
           <h2 className="text-lg font-semibold text-gray-100 uppercase tracking-wider">
             Configuration
           </h2>
-          
+
           {/* Preset Buttons */}
           <div className="flex flex-wrap gap-2">
             {STRATEGY_PRESETS.map((preset) => (
@@ -145,17 +188,17 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             <div className="flex bg-gray-900 p-1 rounded border border-gray-600 w-fit">
               {["dynamic", "fixed"].map((type) => (
                 <button
-                key={type}
-                type="button"
-                onClick={() => setFormData({ ...formData, risk_type: type })}
-                className={`px-6 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${
-                  formData.risk_type === type
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800"
-                }`}
-              >
-                {type}
-              </button>
+                  key={type}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, risk_type: type })}
+                  className={`px-6 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${
+                    formData.risk_type === type
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800"
+                  }`}
+                >
+                  {type}
+                </button>
               ))}
             </div>
           </div>
@@ -224,7 +267,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             {formData.risk_per_trade > 2 && (
               <div className="mt-1 text-xs text-yellow-400 flex items-center gap-1">
                 <span>⚠</span>
-                <span>High risk. Professionals rarely risk > 2%.</span>
+                <span>High risk. Professionals rarely risk {">"} 2%.</span>
               </div>
             )}
           </div>
@@ -273,7 +316,13 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             {/* Break Even Indicator */}
             <div className="mt-1 text-[10px] flex justify-between">
               <span className="text-gray-500">Min to not lose:</span>
-              <span className={`font-bold ${formData.win_rate < breakEvenWinRate ? 'text-red-500' : 'text-green-500'}`}>
+              <span
+                className={`font-bold ${
+                  formData.win_rate < breakEvenWinRate
+                    ? "text-red-500"
+                    : "text-green-500"
+                }`}
+              >
                 {breakEvenWinRate}%
               </span>
             </div>
