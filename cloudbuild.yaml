@@ -8,4 +8,5 @@ steps:
 images:
 - 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer'
 options:
-  logging: CLOUD_LOGGING_ONLY
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+  logging: CLOUD_LOGGING_ONLY 
