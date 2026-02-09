@@ -1,11 +1,11 @@
 steps:
   # Build the Docker image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo']
+  args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-incomeplaner', '.']
   # Push the Docker image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo']
+  args: ['push', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-incomeplaner', '.']
 images:
-- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo'
+- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-incomeplaner'
 options:
   logging: CLOUD_LOGGING_ONLY
