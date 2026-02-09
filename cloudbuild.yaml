@@ -4,7 +4,7 @@ steps:
   args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer', '.']
   # Push the Docker image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer', '.']
+  args: ['build', '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer', '.']
 images:
 - 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer'
 options:
