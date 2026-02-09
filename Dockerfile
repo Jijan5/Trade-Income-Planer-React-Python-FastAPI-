@@ -1,5 +1,5 @@
 # Build frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:25-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy package files first for better caching
