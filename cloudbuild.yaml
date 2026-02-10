@@ -5,7 +5,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [push, 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA']
 
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/google-cloud-sdk/cloud-sdk'
     args: [run, 'deploy', 'trade-income-planner', '--image', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA', '--region', $_DEPLOY_REGION, '--platform', $_PLATFORM]
 
     entrypoint: gcloud
