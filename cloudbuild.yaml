@@ -1,13 +1,13 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: [build, '-t', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/tiprepo/trade-income-planer:$COMMIT_SHA', '.']
+    args: [build, '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA', '.']
 
   - name: 'gcr.io/cloud-builders/docker'
-    args: [push, 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/tiprepo/trade-income-planer:$COMMIT_SHA']
+    args: [push, 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA']
 
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: gcloud
-    args: [run, 'deploy', 'trade-income-planner', '--image', 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/tiprepo/trade-income-planer:$COMMIT_SHA', '--region', 'asia-southeast1', '--platform', 'managed', '--allow-unauthenticated']
+    args: [run, 'deploy', 'trade-income-planner', '--image', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA', '--region', 'asia-southeast1', '--platform', 'managed', '--allow-unauthenticated']
 options:
   defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
   logging: CLOUD_LOGGING_ONLY 
@@ -16,4 +16,4 @@ substitutions:
   _DEPLOY_REGION: asia-southeast1
   _PLATFORM: managed
 images:
-- 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/tiprepo/trade-income-planer:$COMMIT_SHA'
+- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA'
