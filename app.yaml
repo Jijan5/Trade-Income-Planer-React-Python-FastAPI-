@@ -1,0 +1,20 @@
+runtime: python313-slim
+
+entrypoint: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+
+env_variables:
+  SECRET_KEY: l48dyfpq0832-gabmc!uaoe74gsmi73t
+  GEMINI_API_KEY: AIzaSyBYk7ZXeZK6e-x1LHFip-oGPT3HXrLsMV0
+  MYSQL_USER: azizanartiandiakbar
+  MYSQL_PASSWORD:
+  MYSQL_SERVER: production
+  MYSQL_PORT: "3306"
+  MYSQL_DB: "db-trade-planer"
+  VITE_API_BASE_URL: "https://tradeincomeplanner.com"
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 10
+
+instance_class: F1
