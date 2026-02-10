@@ -24,3 +24,4 @@ pymysql
 PyJWT
 httpx
 websockets
+jinja2

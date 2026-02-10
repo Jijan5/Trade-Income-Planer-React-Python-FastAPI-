@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 from .database import create_db_and_tables
 from .routers import auth, users, posts, communities, simulation, admin, general, payment
@@ -21,10 +22,7 @@ app.add_middleware(
 # Serve the ‘static’ folder so it can be accessed from a browser.
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# DB Startup
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
+# DB Startup - removed to allow app to start without database
 
 # Include Routers
 app.include_router(general.router)
@@ -35,3 +33,10 @@ app.include_router(communities.router)
 app.include_router(simulation.router)
 app.include_router(admin.router)
 app.include_router(payment.router)
+
+# Serve React app for non-API routes
+@app.get("/{path:path}")
+async def serve_frontend(path: str):
+    if path.startswith("api/") or path.startswith("static/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse("static/index.html")
