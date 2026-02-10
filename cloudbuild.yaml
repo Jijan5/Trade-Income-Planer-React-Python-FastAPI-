@@ -1,6 +1,6 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: [build, '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA']
+    args: [build, '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA', '.']
     # Push the Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: [push, 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planer:$COMMIT_SHA']
