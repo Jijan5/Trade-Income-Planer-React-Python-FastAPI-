@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -22,7 +22,10 @@ app.add_middleware(
 # Serve the ‘static’ folder so it can be accessed from a browser.
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# DB Startup - removed to allow app to start without database
+# DB Startup
+@app.on_event("startup")
+def startup_event():
+    create_db_and_tables()
 
 # Include Routers
 app.include_router(general.router)

@@ -13,3 +13,5 @@ options:
 substitutions:
   _DEPLOY_REGION: asia-southeast1
   _PLATFORM: managed
+images:
+- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planner:$COMMIT_SHA'
