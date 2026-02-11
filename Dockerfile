@@ -29,7 +29,7 @@ COPY backend/ ./backend/
 COPY --from=frontend-builder /app/dist ./static
 
 # Expose port 8080 for Cloud Run
-EXPOSE 80
+EXPOSE 8080
 
 # Run the backend
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port 8080"]
