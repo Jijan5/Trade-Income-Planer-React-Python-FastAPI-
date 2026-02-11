@@ -32,4 +32,4 @@ COPY --from=frontend-builder /app/dist ./static
 EXPOSE 8080
 
 # Run the backend
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port 8080"]
+CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT"]
