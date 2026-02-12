@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Always use sqlite for simplicity
-DATABASE_URL = "sqlite:////tmp/trade.db"
+# Use MySQL for SaaS tenants
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://user:password@localhost/trade_db")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
 

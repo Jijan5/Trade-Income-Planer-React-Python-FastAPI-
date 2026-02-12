@@ -6,21 +6,27 @@ from pydantic import BaseModel, EmailStr
 from ..database import get_session
 import secrets
 import string
-from ..models import User, UserCreate, Token
+from ..models import User, UserCreate, Token, Tenant
 from ..auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
 
 @router.post("/api/register")
 async def register(user: UserCreate, session: Session = Depends(get_session)):
-  existing_user = session.exec(select(User).where(User.username == user.username)).first()
+  # Get default tenant
+  default_tenant = session.exec(select(Tenant).where(Tenant.name == "default")).first()
+  if not default_tenant:
+    raise HTTPException(status_code=500, detail="Default tenant not found")
+
+  existing_user = session.exec(select(User).where(User.username == user.username, User.tenant_id == default_tenant.id)).first()
   if existing_user:
     raise HTTPException(status_code=400, detail="Username already registered")
-  
+
   hashed_pwd = get_password_hash(user.password)
   db_user = User(
-      username=user.username, 
-      email=user.email, 
+      tenant_id=default_tenant.id,
+      username=user.username,
+      email=user.email,
       hashed_password=hashed_pwd,
       full_name=user.full_name,
       country_code=user.country_code,
@@ -29,8 +35,8 @@ async def register(user: UserCreate, session: Session = Depends(get_session)):
   session.add(db_user)
   session.commit()
   session.refresh(db_user)
-  
-  return {"message": "User created successfully"} 
+
+  return {"message": "User created successfully"}
 
 @router.post("/api/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):

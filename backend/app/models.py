@@ -4,6 +4,14 @@ from typing import Literal, Optional
 from sqlmodel import Session, SQLModel, Field as SQLField
 from datetime import datetime, timedelta
 
+# SaaS Tenant Model
+class Tenant(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    name: str = SQLField(unique=True, index=True)
+    domain: str = SQLField(unique=True, index=True)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    is_active: bool = SQLField(default=True)
+
 class SimulationRequest(BaseModel):
   initial_balance: Decimal = Field(..., gt=0, description="The starting balance for the simulation.")
   capital_utilization: Decimal = Field(..., gt=0, le=100, description="% Balance to be used in each trade (0-100).")
@@ -62,6 +70,7 @@ class ChatResponse(BaseModel):
 
 class User(SQLModel, table=True):
   id: Optional[int] = SQLField(default=None, primary_key=True)
+  tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
   username: str = SQLField(index=True, unique=True)
   email: str = SQLField(index=True, unique=True)
   country_code: str
@@ -93,6 +102,7 @@ class UserCreate(BaseModel):
   
 class UserRead(BaseModel):
   id: int
+  tenant_id: int
   username: str
   email: str
   role: str
@@ -124,6 +134,7 @@ class AdminUserUpdate(BaseModel):
   plan_expires_at: Optional[datetime] = None
 
 class UserUpdateAdmin(SQLModel):
+    tenant_id: int
     username: str
     email: str
     role: str
@@ -155,6 +166,7 @@ class Token(BaseModel):
   
 class Notification(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     user_id: int = SQLField(index=True, foreign_key="user.id") # The one being notified
     actor_username: str # The one who did the action
     type: str # 'mention_post', 'mention_comment', 'reply_post', 'reply_comment'
@@ -174,6 +186,7 @@ class CommunityMemberRead(BaseModel):
 # --- COMMUNITY MODELS ---
 class Community(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     name: str = SQLField(index=True)
     description: str
     members_count: int = SQLField(default=1)
@@ -212,6 +225,7 @@ class CommunityCreate(BaseModel):
 
 class Post(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     community_id: Optional[int] = SQLField(foreign_key="community.id")
     username: str
     content: str
@@ -272,6 +286,7 @@ class CommentResponse(BaseModel):
 
 class Reaction(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     post_id: int = SQLField(foreign_key="post.id")
     username: str
     type: str # 'like', 'shock', 'rocket', 'chart_up', 'clap'
@@ -313,6 +328,7 @@ class BroadcastRequest(BaseModel):
     
 class Report(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     reporter_username: str
     post_id: Optional[int] = SQLField(default=None, foreign_key="post.id")
     comment_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
