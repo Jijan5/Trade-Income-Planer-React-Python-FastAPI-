@@ -36,11 +36,16 @@ async def analyze_health(request: HealthAnalysisRequest):
 
 @router.get("/api/manual-trades", response_model=list[ManualTrade])
 async def get_manual_trades(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    return session.exec(select(ManualTrade).where(ManualTrade.user_id == user.id).order_by(ManualTrade.trade_date.desc())).all()
+    return session.exec(
+        select(ManualTrade)
+        .where(ManualTrade.tenant_id == user.tenant_id, ManualTrade.user_id == user.id)
+        .order_by(ManualTrade.trade_date.desc())
+    ).all()
 
 @router.post("/api/manual-trades", response_model=ManualTrade)
 async def create_manual_trade(trade: ManualTradeCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     db_trade = ManualTrade(
+        tenant_id=user.tenant_id,
         user_id=user.id,
         symbol=trade.symbol,
         entry_price=trade.entry_price,

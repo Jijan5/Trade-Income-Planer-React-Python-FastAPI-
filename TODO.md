@@ -1,20 +1,9 @@
-# SaaS Tenants Implementation Plan
+# Multi-Tenancy Fix Plan
 
-## Completed
+## Tasks to Complete:
 
-- [x] Add buzzerboy-saas-tenants to requirements.txt
-- [x] Add Tenant model in backend/app/models.py
-- [x] Add tenant_id field to all table models in models.py (User, Community, Post, Comment, Reaction, Feedback, ManualTrade, Notification, CommunityMember, Report)
-- [x] Update pydantic models (UserCreate, UserRead, AdminUserUpdate, UserUpdateAdmin) to include tenant_id
-- [x] Change backend/app/database.py to use MySQL instead of SQLite
-- [x] Update backend/app/main.py startup event to create a default tenant
-- [x] Update dependencies.py to validate tenant active status
-
-## Pending Tasks
-
-- [ ] Modify all router queries in backend/app/routers/ to filter data by tenant_id == current_user.tenant_id
-- [ ] Provide ALTER TABLE queries to add tenant_id columns to existing tables
-- [ ] Install updated dependencies
-- [ ] Run database migrations
-- [ ] Test tenant isolation
-- [ ] Update frontend if needed for tenant handling
+- [ ] 1. Update auth.py - Include tenant_id in JWT token
+- [ ] 2. Update dependencies.py - Add get_current_tenant dependency
+- [ ] 3. Update posts.py - Add tenant_id filtering and set tenant_id on create
+- [ ] 4. Update users.py - Add tenant_id filtering to search, communities, and notifications
+- [ ] 5. Update communities.py - Add tenant_id filtering and set tenant_id on create

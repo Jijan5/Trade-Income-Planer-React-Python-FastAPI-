@@ -1,6 +1,7 @@
 import os
 import uuid
 import shutil
+import aiofiles
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
 from sqlmodel import Session, select, SQLModel
@@ -78,8 +79,9 @@ async def create_public_post(content: str = Form(...), link_url: Optional[str] =
             os.makedirs("static/images", exist_ok=True)
             filename = f"{uuid.uuid4()}-{image_file.filename}"
             file_path = os.path.join("static/images", filename)
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(image_file.file, buffer)
+            async with aiofiles.open(file_path, "wb") as buffer:
+                contents = await image_file.read()
+                buffer.write(contents)
             image_url_to_save = f"/static/images/{filename}"
             
         db_post = Post(
@@ -90,6 +92,7 @@ async def create_public_post(content: str = Form(...), link_url: Optional[str] =
             link_url=link_url
         )
         session.add(db_post)
+        db_post.tenant_id = user.tenant_id
         session.commit()
         session.refresh(db_post)
 
@@ -191,6 +194,7 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
     else:
         new_reaction = Reaction(post_id=post_id, username=user.username, type=reaction.type)
         session.add(new_reaction)
+        new_reaction.tenant_id = user.tenant_id
         post.likes += 1
         post_owner = session.exec(select(User).where(User.username == post.username)).first()
         if post_owner and post_owner.id != user.id:
@@ -198,6 +202,7 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
                 user_id=post_owner.id, actor_username=user.username, type='react_post',
                 post_id=post_id, community_id=post.community_id
             )
+            notif.tenant_id = user.tenant_id
             session.add(notif)
     session.add(post)
     session.commit()
@@ -323,6 +328,7 @@ async def create_self_notification(notif_data: NotificationSelfCreate, user: Use
         actor_username="System",
         type=notif_data.type,
         content_preview=notif_data.message,
+        tenant_id=user.tenant_id,
         post_id=None,
         comment_id=None,
         community_id=None

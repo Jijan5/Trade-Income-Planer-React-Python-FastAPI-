@@ -1,6 +1,7 @@
 import os
 import uuid
 import shutil
+import aiofiles
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from sqlmodel import Session, select
@@ -140,8 +141,8 @@ async def create_community(
         os.makedirs("static/avatars", exist_ok=True)
         filename = f"comm_av_{uuid.uuid4()}_{avatar_file.filename}"
         file_path = os.path.join("static/avatars", filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(avatar_file.file, buffer)
+        async with aiofiles.open(file_path, "wb") as buffer:
+            contents = await avatar_file.read()
         avatar_url = f"/static/avatars/{filename}"
 
     final_bg_value = bg_value
@@ -149,8 +150,8 @@ async def create_community(
         os.makedirs("static/backgrounds", exist_ok=True)
         filename = f"comm_bg_{uuid.uuid4()}_{bg_image_file.filename}"
         file_path = os.path.join("static/backgrounds", filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(bg_image_file.file, buffer)
+        async with aiofiles.open(file_path, "wb") as buffer:
+            contents = await bg_image_file.read()
         final_bg_value = f"/static/backgrounds/{filename}"
 
     db_community = Community(
@@ -165,7 +166,8 @@ async def create_community(
         hover_animation=hover_animation,
         hover_color=hover_color,
         members_count=1,
-        active_count=1
+        active_count=1,
+        tenant_id = user.tenant_id
     )
     
     session.add(db_community)
@@ -211,16 +213,18 @@ async def update_community(
         os.makedirs("static/avatars", exist_ok=True)
         filename = f"comm_av_{uuid.uuid4()}_{avatar_file.filename}"
         file_path = os.path.join("static/avatars", filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(avatar_file.file, buffer)
+        async with aiofiles.open(file_path, "wb") as buffer:
+            contents = await avatar_file.read()
+            buffer.write(contents)
         community.avatar_url = f"/static/avatars/{filename}"
 
     if bg_type == "image" and bg_image_file:
         os.makedirs("static/backgrounds", exist_ok=True)
         filename = f"comm_bg_{uuid.uuid4()}_{bg_image_file.filename}"
         file_path = os.path.join("static/backgrounds", filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(bg_image_file.file, buffer)
+        async with aiofiles.open(file_path, "wb") as buffer:
+            contents = await bg_image_file.read()
+            buffer.write(contents)
         community.bg_value = f"/static/backgrounds/{filename}"
     elif bg_value:
         community.bg_value = bg_value
@@ -300,6 +304,7 @@ async def create_community_post(community_id: int, content: str = Form(...), lin
             image_url=image_url_to_save,
             link_url=link_url
         )
+        db_post.tenant_id = user.tenant_id
         session.add(db_post)
         session.commit()
         session.refresh(db_post)

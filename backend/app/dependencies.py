@@ -32,3 +32,16 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     if current_user.status != "active":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is not active.")
     return current_user
+
+async def get_current_tenant(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)):
+    """Get the current tenant from the JWT token."""
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    tenant_id: int = payload.get("tenant_id")
+    if tenant_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token - no tenant_id")
+    tenant = session.exec(select(Tenant).where(Tenant.id == tenant_id, Tenant.is_active == True)).first()
+    if not tenant:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant not active or not found")
+    return tenant

@@ -165,7 +165,7 @@ class Token(BaseModel):
   token_type: str
   
 class Notification(SQLModel, table=True):
-    id: Optional[int] = SQLField(default=None, primary_key=True)
+    id: Optional[int] = SQLField(default=None, primary_key=True, index=True)
     tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     user_id: int = SQLField(index=True, foreign_key="user.id") # The one being notified
     actor_username: str # The one who did the action
@@ -306,6 +306,7 @@ class FeedbackCreate(BaseModel):
     
 class ManualTrade(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     user_id: int = SQLField(foreign_key="user.id", index=True)
     symbol: str
     entry_price: Decimal = Field(default=0, max_digits=20, decimal_places=8)
