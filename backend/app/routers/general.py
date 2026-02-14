@@ -51,8 +51,8 @@ def get_crypto_news():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/feedback")
-async def submit_feedback(feedback: FeedbackCreate, session: Session = Depends(get_session)):
-    db_feedback = Feedback(email=feedback.email, message=feedback.message)
+async def submit_feedback(feedback: FeedbackCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    db_feedback = Feedback(email=feedback.email, message=feedback.message, tenant_id=user.tenant_id)
     session.add(db_feedback)
     session.commit()
     return {"status": "success", "message": "Feedback received"}
@@ -63,7 +63,8 @@ async def create_report(report: ReportCreate, user: User = Depends(get_current_u
         reporter_username=user.username,
         post_id=report.post_id,
         comment_id=report.comment_id,
-        reason=report.reason
+        reason=report.reason,
+        tenant_id=user.tenant_id
     )
     session.add(db_report)
     session.commit()

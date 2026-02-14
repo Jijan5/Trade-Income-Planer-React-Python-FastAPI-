@@ -15,9 +15,9 @@ const LandingPage = ({ onLogin, onRegister }) => {
               <span className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></span>
               The #1 Platform for Training Crypto Traders
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-snug">
               Master Your Trading
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 pb-4">
                 Skills & Strategy
               </span>
             </h1>

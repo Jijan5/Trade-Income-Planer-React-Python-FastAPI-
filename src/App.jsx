@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Routes, Route, useNavigate, useLocation, Navigate, Outlet, Link } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  useLocation,
+  Navigate,
+  Outlet,
+  Link,
+} from "react-router-dom";
 import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
@@ -47,14 +55,25 @@ const AdminRoute = ({ children }) => {
 // 🛡️ SECURITY: Protected Route for Authenticated Users
 const ProtectedRoute = ({ children }) => {
   const { token, userData, loading } = useAuth();
-  
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
   if (!token) return <Navigate to="/" replace />;
-  if (userData && userData.role !== 'admin' && userData.status === 'suspended') {
-    const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+  if (
+    userData &&
+    userData.role !== "admin" &&
+    userData.status === "suspended"
+  ) {
+    const suspendedUntil = userData.suspended_until
+      ? new Date(userData.suspended_until)
+      : null;
     // If suspension is indefinite (null) or hasn't expired yet
     if (!suspendedUntil || suspendedUntil > new Date()) {
-        return <Navigate to="/suspended" replace />;
+      return <Navigate to="/suspended" replace />;
     }
   }
   return children;
@@ -100,7 +119,7 @@ const SimulationLayout = ({
   const location = useLocation();
   const { userData, logout } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
-  const isAdmin = userData?.role === 'admin';
+  const isAdmin = userData?.role === "admin";
   return (
     <ManualTradeProvider activeSymbol={activeSymbol} key={userData?.username}>
       <>
@@ -165,7 +184,7 @@ const SimulationLayout = ({
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              Strategy Simulator {(planLevel < 2 && !isAdmin) && "🔒"}
+              Strategy Simulator {planLevel < 2 && !isAdmin && "🔒"}
             </Link>
             <Link
               to="/simulation/planner"
@@ -175,7 +194,7 @@ const SimulationLayout = ({
                   : "text-gray-500 hover:text-gray-300"
               }`}
             >
-              Goal Planner {(planLevel < 2 && !isAdmin) && "🔒"}
+              Goal Planner {planLevel < 2 && !isAdmin && "🔒"}
             </Link>
             <Link
               to="/simulation/manual"
@@ -276,19 +295,39 @@ const SuspensionHandler = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (userData && userData.role !== 'admin' && userData.status === 'suspended') {
-      const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
-        const now = new Date();
+    if (
+      userData &&
+      userData.role !== "admin" &&
+      userData.status === "suspended"
+    ) {
+      const suspendedUntil = userData.suspended_until
+        ? new Date(userData.suspended_until)
+        : null;
+      const now = new Date();
       // If suspension is indefinite (null) or hasn't expired yet
-      if ((!suspendedUntil || suspendedUntil > now) && location.pathname !== '/suspended') {
-          navigate('/suspended', { replace: true });
+      if (
+        (!suspendedUntil || suspendedUntil > now) &&
+        location.pathname !== "/suspended"
+      ) {
+        navigate("/suspended", { replace: true });
       }
       // Log the comparison to help debug
-      console.log("Suspended until:", suspendedUntil, "Now:", now, "Expired:", suspendedUntil <= now);
+      console.log(
+        "Suspended until:",
+        suspendedUntil,
+        "Now:",
+        now,
+        "Expired:",
+        suspendedUntil <= now
+      );
     }
     // If user is on suspended page but is now active (approved appeal), log them out to re-login
-    if (userData && userData.status === 'active' && location.pathname === '/suspended') {
-        logout();
+    if (
+      userData &&
+      userData.status === "active" &&
+      location.pathname === "/suspended"
+    ) {
+      logout();
     }
   }, [userData, location, navigate, logout]);
 
@@ -298,7 +337,16 @@ const SuspensionHandler = () => {
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, userData, unreadCount, setUnreadCount, login, logout, fetchUserProfile } = useAuth();
+  const {
+    token,
+    userData,
+    avatarUrl,
+    unreadCount,
+    setUnreadCount,
+    login,
+    logout,
+    fetchUserProfile,
+  } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
   const [authInitialLogin, setAuthInitialLogin] = useState(true);
   const [simulationData, setSimulationData] = useState(null);
@@ -362,37 +410,40 @@ function App() {
     setTimeout(() => setFlashMessage(null), 3000);
   }, []);
 
-  const handleFeedbackSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    if (!feedbackEmail || !feedbackMessage) return;
-    // Simpan ke LocalStorage agar langsung muncul di Admin (Fallback/Demo)
-    const newFeedback = {
-      id: Date.now(), // Gunakan timestamp sebagai ID unik
-      email: feedbackEmail,
-      message: feedbackMessage,
-      date: new Date().toISOString().split("T")[0],
-    };
-    const existing = JSON.parse(
-      localStorage.getItem("local_feedbacks") || "[]"
-    );
-    localStorage.setItem(
-      "local_feedbacks",
-      JSON.stringify([newFeedback, ...existing])
-    );
-
-    try {
-      await api.post("/feedback", {
+  const handleFeedbackSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!feedbackEmail || !feedbackMessage) return;
+      // Simpan ke LocalStorage agar langsung muncul di Admin (Fallback/Demo)
+      const newFeedback = {
+        id: Date.now(), // Gunakan timestamp sebagai ID unik
         email: feedbackEmail,
         message: feedbackMessage,
-      });
-      showFlash("Feedback sent! Thank you.", "success");
-    } catch (error) {
-      console.error("Feedback error", error);
-      showFlash("Feedback sent! (Saved locally)", "success");
-    }
-    if (!userData) setFeedbackEmail("");
-    setFeedbackMessage("");
-  }, [feedbackEmail, feedbackMessage, userData, showFlash]);
+        date: new Date().toISOString().split("T")[0],
+      };
+      const existing = JSON.parse(
+        localStorage.getItem("local_feedbacks") || "[]"
+      );
+      localStorage.setItem(
+        "local_feedbacks",
+        JSON.stringify([newFeedback, ...existing])
+      );
+
+      try {
+        await api.post("/feedback", {
+          email: feedbackEmail,
+          message: feedbackMessage,
+        });
+        showFlash("Feedback sent! Thank you.", "success");
+      } catch (error) {
+        console.error("Feedback error", error);
+        showFlash("Feedback sent! (Saved locally)", "success");
+      }
+      if (!userData) setFeedbackEmail("");
+      setFeedbackMessage("");
+    },
+    [feedbackEmail, feedbackMessage, userData, showFlash]
+  );
 
   const handleBellClick = async () => {
     setShowNotifications(!showNotifications);
@@ -449,55 +500,64 @@ function App() {
     }
   }, []);
 
-  const handleSubscribe = useCallback(async (plan) => {
-    if (!token) {
-      setAuthInitialLogin(true);
-      setShowAuth(true);
-      return;
-    }
-
-    try {
-      // Request Snap Token from Backend
-      const response = await api.post("/payment/create_transaction", {
-        plan_id: plan.id,
-        amount: plan.finalPrice,
-        billing_cycle: plan.billingCycle,
-      });
-
-      if (window.snap && response.data.token) {
-        window.snap.pay(response.data.token, {
-          onSuccess: async (result) => {
-            try {
-              // call endpoint verification to backend
-              const orderId = result.order_id || response.data.order_id;
-              await api.post("/payment/verify", { order_id: orderId });
-
-              // Create persistent notification
-              await api.post("/notifications/self", {
-                message: `Payment successful! Your plan has been upgraded to ${plan.name}.`,
-                type: "system_broadcast"
-              });
-              
-              if (fetchUserProfile) await fetchUserProfile();
-              showFlash(`Payment success! Your plan has been upgraded to ${plan.name}.`, "success");
-            } catch (error) {
-              console.error("Verification failed", error);
-              showFlash("Payment successful but verification failed. Please contact support.", "error");
-            }
-          },
-          onPending: (result) => showFlash("Waiting for payment...", "info"),
-          onError: (result) => showFlash("Payment failed!", "error"),
-          onClose: () =>
-            console.log(
-              "Customer closed the popup without finishing the payment"
-            ),
-        });
+  const handleSubscribe = useCallback(
+    async (plan) => {
+      if (!token) {
+        setAuthInitialLogin(true);
+        setShowAuth(true);
+        return;
       }
-    } catch (error) {
-      console.error("Payment Error:", error);
-      showFlash("Failed to initiate payment. Please try again.", "error");
-    }
-  }, [token, fetchUserProfile, showFlash]);
+
+      try {
+        // Request Snap Token from Backend
+        const response = await api.post("/payment/create_transaction", {
+          plan_id: plan.id,
+          amount: plan.finalPrice,
+          billing_cycle: plan.billingCycle,
+        });
+
+        if (window.snap && response.data.token) {
+          window.snap.pay(response.data.token, {
+            onSuccess: async (result) => {
+              try {
+                // call endpoint verification to backend
+                const orderId = result.order_id || response.data.order_id;
+                await api.post("/payment/verify", { order_id: orderId });
+
+                // Create persistent notification
+                await api.post("/notifications/self", {
+                  message: `Payment successful! Your plan has been upgraded to ${plan.name}.`,
+                  type: "system_broadcast",
+                });
+
+                if (fetchUserProfile) await fetchUserProfile();
+                showFlash(
+                  `Payment success! Your plan has been upgraded to ${plan.name}.`,
+                  "success"
+                );
+              } catch (error) {
+                console.error("Verification failed", error);
+                showFlash(
+                  "Payment successful but verification failed. Please contact support.",
+                  "error"
+                );
+              }
+            },
+            onPending: (result) => showFlash("Waiting for payment...", "info"),
+            onError: (result) => showFlash("Payment failed!", "error"),
+            onClose: () =>
+              console.log(
+                "Customer closed the popup without finishing the payment"
+              ),
+          });
+        }
+      } catch (error) {
+        console.error("Payment Error:", error);
+        showFlash("Failed to initiate payment. Please try again.", "error");
+      }
+    },
+    [token, fetchUserProfile, showFlash]
+  );
 
   const handleExportSimulationCSV = (data) => {
     if (!data || !data.daily_breakdown) return;
@@ -535,88 +595,91 @@ function App() {
     document.body.removeChild(a);
   };
 
-  const navItems = useMemo(() => [
-    {
-      path: "/home",
-      title: "Home",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/explore",
-      title: "Explore",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18V6.375c0-.621.504-1.125 1.125-1.125H9.75"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/community",
-      title: "Community",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.51.056 1.02.083 1.531.083s1.02-.027 1.531-.083m-3.062 0c.203.18.45.33.712.453m-7.5 0a9.094 9.094 0 013.741-.479 3 3 0 014.682-2.72M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7.5 3.75h15a9.094 9.094 0 00-15 0z"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/simulation",
-      title: "Simulation",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-          />
-        </svg>
-      ),
-    },
-  ], []);
+  const navItems = useMemo(
+    () => [
+      {
+        path: "/home",
+        title: "Home",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+            />
+          </svg>
+        ),
+      },
+      {
+        path: "/explore",
+        title: "Explore",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18V6.375c0-.621.504-1.125 1.125-1.125H9.75"
+            />
+          </svg>
+        ),
+      },
+      {
+        path: "/community",
+        title: "Community",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.51.056 1.02.083 1.531.083s1.02-.027 1.531-.083m-3.062 0c.203.18.45.33.712.453m-7.5 0a9.094 9.094 0 013.741-.479 3 3 0 014.682-2.72M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7.5 3.75h15a9.094 9.094 0 00-15 0z"
+            />
+          </svg>
+        ),
+      },
+      {
+        path: "/simulation",
+        title: "Simulation",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+            />
+          </svg>
+        ),
+      },
+    ],
+    []
+  );
 
   if (showAuth) {
     return (
@@ -636,7 +699,7 @@ function App() {
       {/* Override default Vite styles that constrain width */}
       <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
         {/* Override default Vite styles that constrain width */}
-      <style>{`
+        <style>{`
         body { display: block !important; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
 
@@ -668,583 +731,691 @@ function App() {
           background: #4b5563; /* gray-600 */
         }
       `}</style>
-      {/* Flash Message Notification */}
-      {flashMessage && (
-        <div
-          className={`fixed top-24 right-6 z-[100] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-500 transform ${
-            isFadingOut
-              ? "opacity-0 translate-y-[-20px]"
-              : "opacity-100 translate-y-0"
-          } ${
-            flashMessage.type === "success"
-              ? "bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400/50"
-              : flashMessage.type === "info"
-              ? "bg-gradient-to-r from-blue-600 to-sky-600 border border-blue-400/50"
-              : "bg-gradient-to-r from-red-600 to-rose-600 border border-red-400/50"
-          } text-white backdrop-blur-md`}
-        >
+        {/* Flash Message Notification */}
+        {flashMessage && (
           <div
-            className={`p-1 rounded-full ${
+            className={`fixed top-24 right-6 z-[100] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-500 transform ${
+              isFadingOut
+                ? "opacity-0 translate-y-[-20px]"
+                : "opacity-100 translate-y-0"
+            } ${
               flashMessage.type === "success"
-                ? "bg-green-500/30"
+                ? "bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400/50"
                 : flashMessage.type === "info"
-                ? "bg-blue-500/30"
-                : "bg-red-500/30"
-            }`}
+                ? "bg-gradient-to-r from-blue-600 to-sky-600 border border-blue-400/50"
+                : "bg-gradient-to-r from-red-600 to-rose-600 border border-red-400/50"
+            } text-white backdrop-blur-md`}
           >
-            {flashMessage.type === "success" ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              ) : flashMessage.type === "info" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            <div
+              className={`p-1 rounded-full ${
+                flashMessage.type === "success"
+                  ? "bg-green-500/30"
+                  : flashMessage.type === "info"
+                  ? "bg-blue-500/30"
+                  : "bg-red-500/30"
+              }`}
+            >
+              {flashMessage.type === "success" ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
                 </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
+              ) : flashMessage.type === "info" ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </div>
+            <div>
+              <h4 className="font-bold text-sm">
+                {flashMessage.type === "success"
+                  ? "Success"
+                  : flashMessage.type === "info"
+                  ? "Info"
+                  : "Error"}
+              </h4>
+              <p className="text-xs opacity-90">{flashMessage.message}</p>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold text-sm">
-              {flashMessage.type === "success"
-                ? "Success"
-                : flashMessage.type === "info"
-                ? "Info"
-                : "Error"}
-            </h4>
-            <p className="text-xs opacity-90">{flashMessage.message}</p>
-          </div>
-        </div>
-      )}
-      {/* Navbar */}
-      <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between w-full">
-          <div
-            className="flex items-center cursor-pointer"
-            onClick={() => navigate(token ? "/home" : "/")}
-          >
-            <img
-              src="/tip-brand.png"
-              alt="Trade Income Planner"
-              className="h-10"
-            />
-          </div>
+        )}
+        {/* Navbar */}
+        <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 fixed top-0 left-0 right-0 z-50">
+          <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center cursor-pointer"
+              onClick={() => navigate(token ? "/home" : "/")}
+            >
+              <img
+                src="/tip-brand.png"
+                alt="Trade Income Planner"
+                className="h-10"
+              />
+            </div>
 
-          {/* Main Navigation (Center) */}
-          <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
+            {/* Main Navigation (Center) */}
+            <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
+              {token &&
+                navItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    title={item.title}
+                    className={`p-2.5 rounded-full transition-colors custom-icon ${
+                      location.pathname.startsWith(item.path)
+                        ? "text-white"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    {item.icon}
+                  </button>
+                ))}
+            </div>
+
+            <div className="flex items-center gap-4">
+              {/* Admin Button - Only visible for admins */}
+              {userData?.role === "admin" && (
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="hidden md:block text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105 border border-red-400"
+                >
+                  🛡️ Admin Panel
+                </button>
+              )}
+              {/* Upgrade button - only show if logged in */}
+              {token && (
+                <button
+                  onClick={() => navigate("/subscription")}
+                  className="hidden md:flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  👑 Upgrade Pro
+                </button>
+              )}
+
+              {token ? (
+                <>
+                  <button
+                    onClick={handleBellClick}
+                    className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                      />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Desktop Profile & Logout */}
+                  <div
+                    className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
+                    onClick={() => navigate("/profile")}
+                  >
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt="Avatar"
+                        className="w-8 h-8 rounded-full object-cover border border-gray-500"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs border border-gray-500">
+                        {userData?.username?.substring(0, 2).toUpperCase() ||
+                          "U"}
+                      </div>
+                    )}
+                    <div className="text-sm font-bold text-white hidden sm:flex items-center">
+                      {userData?.username || "User"}
+                      <VerifiedBadge user={userData} />
+                    </div>
+                  </div>
+                  <button
+                    onClick={logout}
+                    className="hidden md:block text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
+                  >
+                    Logout
+                  </button>
+
+                  {/* Mobile Hamburger Button */}
+                  <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="md:hidden text-gray-400 hover:text-white p-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-8 h-8"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                      />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setAuthInitialLogin(true);
+                      setShowAuth(true);
+                    }}
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAuthInitialLogin(false);
+                      setShowAuth(true);
+                    }}
+                    className="text-xs bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 py-2 rounded transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </nav>
+
+        {/* Mobile Menu Modal */}
+        {isMobileMenuOpen && token && (
+          <div
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <div
+              className="absolute right-0 top-0 h-full w-72 bg-gray-800 border-l border-gray-700 p-6 shadow-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-xl font-bold text-white">Menu</h3>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Profile Summary */}
+              <div
+                className="flex items-center gap-4 mb-8 p-4 bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors"
+                onClick={() => {
+                  navigate("/profile");
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-blue-500">
+                    {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                  </div>
+                )}
+                <div>
+                  <p className="text-white font-bold text-lg flex items-center gap-1">
+                    {userData?.username}
+                    <VerifiedBadge user={userData} />
+                  </p>
+                  <p className="text-gray-400 text-xs">{userData?.email}</p>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-4 flex-1">
+                {userData?.role === "admin" && (
+                  <button
+                    onClick={() => {
+                      navigate("/admin");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    🛡️ Admin Panel
+                  </button>
+                )}
+                {token && (
+                  <button
+                    onClick={() => {
+                      navigate("/subscription");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    👑 Upgrade Pro
+                  </button>
+                )}
+              </div>
+
+              {/* Logout */}
+              <button
+                onClick={() => {
+                  logout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full bg-gray-700 hover:bg-gray-600 text-red-400 border border-gray-600 py-3 rounded-lg font-bold transition-colors mt-auto"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
+          <SuspensionHandler />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                token ? (
+                  <Navigate to="/home" replace />
+                ) : (
+                  <LandingPage
+                    onLogin={() => {
+                      setAuthInitialLogin(true);
+                      setShowAuth(true);
+                    }}
+                    onRegister={() => {
+                      setAuthInitialLogin(false);
+                      setShowAuth(true);
+                    }}
+                  />
+                )
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={<ForgotPassword showFlash={showFlash} />}
+            />
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <Home
+                    communities={communities}
+                    highlightedPost={highlightedPost}
+                    setHighlightedPost={setHighlightedPost}
+                    showFlash={showFlash}
+                  />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/explore"
+              element={
+                <ProtectedRoute>
+                  <Explore />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/post/:id"
+              element={
+                <ProtectedRoute>
+                  <PostDetail showFlash={showFlash} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/community"
+              element={
+                <ProtectedRoute>
+                  <Community
+                    communities={communities}
+                    highlightedPost={highlightedPost}
+                    setHighlightedPost={setHighlightedPost}
+                    showFlash={showFlash}
+                  />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/community/:id"
+              element={
+                <ProtectedRoute>
+                  <Community
+                    communities={communities}
+                    highlightedPost={highlightedPost}
+                    setHighlightedPost={setHighlightedPost}
+                    showFlash={showFlash}
+                  />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/simulation"
+              element={
+                <ProtectedRoute>
+                  <SimulationLayout
+                    activeCategory={activeCategory}
+                    setActiveCategory={setActiveCategory}
+                    activeSymbol={activeSymbol}
+                    setActiveSymbol={setActiveSymbol}
+                    showFlash={showFlash}
+                  />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="manual" replace />} />
+              <Route
+                path="strategy"
+                element={
+                  planLevel >= 2 || userData?.role === "admin" ? (
+                    <StrategyView
+                      onSimulate={handleSimulate}
+                      isLoading={loading}
+                      error={error}
+                      simulationData={simulationData}
+                      onExport={handleExportSimulationCSV}
+                    />
+                  ) : (
+                    <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
+                      <h3 className="text-2xl font-bold text-white mb-4">
+                        Feature Locked 🔒
+                      </h3>
+                      <p className="text-gray-400 mb-6">
+                        Upgrade to Premium to access Strategy Simulator.
+                      </p>
+                      <button
+                        onClick={() => navigate("/subscription")}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
+                      >
+                        Upgrade Now
+                      </button>
+                    </div>
+                  )
+                }
+              />
+              <Route
+                path="planner"
+                element={
+                  planLevel >= 2 || userData?.role === "admin" ? (
+                    <GoalPlanner />
+                  ) : (
+                    <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
+                      <h3 className="text-2xl font-bold text-white mb-4">
+                        Feature Locked 🔒
+                      </h3>
+                      <p className="text-gray-400 mb-6">
+                        Upgrade to Premium to access Goal Planner.
+                      </p>
+                      <button
+                        onClick={() => navigate("/subscription")}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
+                      >
+                        Upgrade Now
+                      </button>
+                    </div>
+                  )
+                }
+              />
+              <Route
+                path="manual"
+                element={<ManualTradeSimulator activeSymbol={activeSymbol} />}
+              />
+              <Route path="history" element={<TradeHistory />} />
+            </Route>
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile showFlash={showFlash} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription"
+              element={
+                <ProtectedRoute>
+                  <Subscription onSubscribe={handleSubscribe} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/suspended"
+              element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
+            />
+          </Routes>
+        </div>
+        {/* 📱 MOBILE BOTTOM NAVIGATION */}
+        {token && (
+          <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
             {token &&
               navItems.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  title={item.title}
-                  className={`p-2.5 rounded-full transition-colors custom-icon ${
+                  className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-colors w-full ${
                     location.pathname.startsWith(item.path)
-                      ? "text-white"
-                      : "text-gray-400 hover:text-white"
+                      ? "text-blue-400"
+                      : "text-gray-500 hover:text-gray-300"
                   }`}
                 >
                   {item.icon}
+                  <span className="text-[10px] font-bold">{item.title}</span>
                 </button>
               ))}
           </div>
-
-          <div className="flex items-center gap-4">
-            {/* Admin Button - Only visible for admins */}
-            {userData?.role === "admin" && (
-              <button
-                onClick={() => navigate("/admin")}
-                className="hidden md:block text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105 border border-red-400"
-              >
-                🛡️ Admin Panel
-              </button>
-            )}
-            <button
-              onClick={() => navigate("/subscription")}
-              className="hidden md:block text-xs bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105"
-            >
-              👑 Upgrade Pro
-            </button>
-            {token ? (
-              <>
-                <button
-                  onClick={handleBellClick}
-                  className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
-                  {unreadCount > 0 && (
-                    <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Desktop Profile & Logout */}
-                <div
-                  className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
-                  onClick={() => navigate("/profile")}
-                >
-                  {userData?.avatar_url ? (
-                    <img
-                      src={`http://127.0.0.1:8000${userData.avatar_url}`}
-                      alt="Avatar"
-                      className="w-8 h-8 rounded-full object-cover border border-gray-500"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs border border-gray-500">
-                      {userData?.username?.substring(0, 2).toUpperCase() || "U"}
-                    </div>
-                  )}
-                  <div className="text-sm font-bold text-white hidden sm:flex items-center">
-                    {userData?.username || "User"}
-                    <VerifiedBadge user={userData} />
-                  </div>
-                </div>
-                <button
-                  onClick={logout}
-                  className="hidden md:block text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
-                >
-                  Logout
-                </button>
-
-                {/* Mobile Hamburger Button */}
-                <button 
-                    onClick={() => setIsMobileMenuOpen(true)}
-                    className="md:hidden text-gray-400 hover:text-white p-2"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => {
-                    setAuthInitialLogin(true);
-                    setShowAuth(true);
-                  }}
-                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => {
-                    setAuthInitialLogin(false);
-                    setShowAuth(true);
-                  }}
-                  className="text-xs bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 py-2 rounded transition-colors"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile Menu Modal */}
-      {isMobileMenuOpen && token && (
-        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="absolute right-0 top-0 h-full w-72 bg-gray-800 border-l border-gray-700 p-6 shadow-2xl flex flex-col" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-bold text-white">Menu</h3>
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="text-gray-400 hover:text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Profile Summary */}
-                <div 
-                    className="flex items-center gap-4 mb-8 p-4 bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors"
-                    onClick={() => { navigate("/profile"); setIsMobileMenuOpen(false); }}
-                >
-                    {userData?.avatar_url ? (
-                        <img src={`http://127.0.0.1:8000${userData.avatar_url}`} alt="Avatar" className="w-12 h-12 rounded-full object-cover border-2 border-blue-500" />
-                    ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-blue-500">
-                            {userData?.username?.substring(0, 2).toUpperCase() || "U"}
-                        </div>
-                    )}
-                    <div>
-                        <p className="text-white font-bold text-lg flex items-center gap-1">
-                            {userData?.username}
-                            <VerifiedBadge user={userData} />
-                        </p>
-                        <p className="text-gray-400 text-xs">{userData?.email}</p>
-                    </div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="space-y-4 flex-1">
-                    {userData?.role === "admin" && (
-                        <button 
-                            onClick={() => { navigate("/admin"); setIsMobileMenuOpen(false); }}
-                            className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                        >
-                            🛡️ Admin Panel
-                        </button>
-                    )}
-                    <button 
-                        onClick={() => { navigate("/subscription"); setIsMobileMenuOpen(false); }}
-                        className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                        👑 Upgrade Pro
-                    </button>
-                </div>
-
-                {/* Logout */}
-                <button 
-                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-red-400 border border-gray-600 py-3 rounded-lg font-bold transition-colors mt-auto"
-                >
-                    Logout
-                </button>
+        )}
+        {/* Footer */}
+        <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative hidden md:block">
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            <div className="text-center md:text-left">
+              <div className="flex justify-center md:justify-start mb-2">
+                <img
+                  src="/tip-brand.png"
+                  alt="Trade Income Planner"
+                  className="h-15"
+                />
+              </div>
+              <p className="text-gray-400 text-sm mb-4">
+                Professional Equity Simulator & Trading Assistant with AI-driven
+                insights and risk-free simulation.
+              </p>
             </div>
-        </div>
-      )}
 
-      <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
-      <SuspensionHandler />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              token ? (
-                <Navigate to="/home" replace />
-              ) : (
-                <LandingPage
-                  onLogin={() => {
-                    setAuthInitialLogin(true);
-                    setShowAuth(true);
-                  }}
-                  onRegister={() => {
-                    setAuthInitialLogin(false);
-                    setShowAuth(true);
-                  }}
-                />
-              )
-            }
-          />
-          <Route path="/forgot-password" element={<ForgotPassword showFlash={showFlash} />} />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Home
-                  communities={communities}
-                  highlightedPost={highlightedPost}
-                  setHighlightedPost={setHighlightedPost}
-                  showFlash={showFlash}
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/explore"
-            element={
-              <ProtectedRoute>
-                <Explore />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/post/:id"
-            element={
-              <ProtectedRoute>
-                <PostDetail showFlash={showFlash} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/community"
-            element={
-              <ProtectedRoute>
-                <Community
-                  communities={communities}
-                  highlightedPost={highlightedPost}
-                  setHighlightedPost={setHighlightedPost}
-                  showFlash={showFlash}
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/community/:id"
-            element={
-              <ProtectedRoute>
-                <Community
-                  communities={communities}
-                  highlightedPost={highlightedPost}
-                  setHighlightedPost={setHighlightedPost}
-                  showFlash={showFlash}
-                />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/simulation"
-            element={
-              <ProtectedRoute>
-                <SimulationLayout
-                  activeCategory={activeCategory}
-                  setActiveCategory={setActiveCategory}
-                  activeSymbol={activeSymbol}
-                  setActiveSymbol={setActiveSymbol}
-                  showFlash={showFlash}
-                />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate to="manual" replace />} />
-            <Route
-              path="strategy"
-              element={
-                planLevel >= 2 || userData?.role === 'admin' ? (
-                  <StrategyView
-                    onSimulate={handleSimulate}
-                    isLoading={loading}
-                    error={error}
-                    simulationData={simulationData}
-                    onExport={handleExportSimulationCSV}
+            {/* Feedback Form */}
+            <div className="md:col-span-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
+              <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">
+                Send Feedback
+              </h3>
+              <form onSubmit={handleFeedbackSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <input
+                    type="text"
+                    value={userData?.username || "Guest"}
+                    disabled
+                    className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
                   />
-                ) : (
-                  <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
-                    <h3 className="text-2xl font-bold text-white mb-4">
-                      Feature Locked 🔒
-                    </h3>
-                    <p className="text-gray-400 mb-6">
-                      Upgrade to Premium to access Strategy Simulator.
-                    </p>
-                    <button
-                      onClick={() => navigate("/subscription")}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
-                    >
-                      Upgrade Now
-                    </button>
-                  </div>
-                )
-              }
-            />
-            <Route
-              path="planner"
-              element={
-                planLevel >= 2 || userData?.role === 'admin' ? (
-                  <GoalPlanner />
-                ) : (
-                  <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
-                    <h3 className="text-2xl font-bold text-white mb-4">
-                      Feature Locked 🔒
-                    </h3>
-                    <p className="text-gray-400 mb-6">
-                      Upgrade to Premium to access Goal Planner.
-                    </p>
-                    <button
-                      onClick={() => navigate("/subscription")}
-                      className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
-                    >
-                      Upgrade Now
-                    </button>
-                  </div>
-                )
-              }
-            />
-            <Route
-              path="manual"
-              element={<ManualTradeSimulator activeSymbol={activeSymbol} />}
-            />
-            <Route path="history" element={<TradeHistory />} />
-          </Route>
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile showFlash={showFlash} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/subscription"
-            element={
-              <ProtectedRoute>
-                <Subscription onSubscribe={handleSubscribe} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/suspended"
-            element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
-          />
-        </Routes>
-      </div>
-      {/* 📱 MOBILE BOTTOM NAVIGATION */}
-      {token && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
-          {token &&
-            navItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-colors w-full ${
-                  location.pathname.startsWith(item.path)
-                    ? "text-blue-400"
-                    : "text-gray-500 hover:text-gray-300"
-                }`}
-              >
-                {item.icon}
-                <span className="text-[10px] font-bold">{item.title}</span>
-              </button>
-            ))}
-        </div>
-      )}
-      {/* Footer */}
-      <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative hidden md:block">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-          <div className="text-center md:text-left">
-            <div className="flex justify-center md:justify-start mb-2">
-              <img
-                src="/tip-brand.png"
-                alt="Trade Income Planner"
-                className="h-15"
-              />
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    value={feedbackEmail}
+                    onChange={(e) => setFeedbackEmail(e.target.value)}
+                    disabled={!!userData}
+                    className={`sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none ${
+                      userData ? "text-gray-500 cursor-not-allowed" : ""
+                    }`}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Your Feedback / Suggestion..."
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                    className="sm:col-span-2 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                    required
+                  />
+                </div>
+                <div className="text-right">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors"
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Professional Equity Simulator & Trading Assistant with AI-driven insights and risk-free simulation.
+          </div>
+          <div className="max-w-7xl mx-auto mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+              <div>
+                <h4 className="font-semibold mb-4">Platform</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Trade Simulator
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Communities
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Performance Tracking
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Support</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Help Center
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      API Documentation
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Contact Us
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Status
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Terms of Service
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#" className="hover:text-white transition-colors">
+                      Cookie Policy
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center">
+            <p className="text-gray-500 text-sm">
+              &copy; {new Date().getFullYear()} Trade Income Planner. All rights
+              reserved.
             </p>
           </div>
+        </footer>
+        {/* AI Chat Assistant Widget */}
+        <ChatAssistant />
 
-          {/* Feedback Form */}
-          <div className="md:col-span-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
-            <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">
-              Send Feedback
-            </h3>
-            <form onSubmit={handleFeedbackSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <input
-                  type="text"
-                  value={userData?.username || "Guest"}
-                  disabled
-                  className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  value={feedbackEmail}
-                  onChange={(e) => setFeedbackEmail(e.target.value)}
-                  disabled={!!userData}
-                  className={`sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none ${
-                    userData ? "text-gray-500 cursor-not-allowed" : ""
-                  }`}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Your Feedback / Suggestion..."
-                  value={feedbackMessage}
-                  onChange={(e) => setFeedbackMessage(e.target.value)}
-                  className="sm:col-span-2 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                  required
-                />
-              </div>
-              <div className="text-right">
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors"
-                >
-                  Send
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h4 className="font-semibold mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Trade Simulator</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Communities</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Performance Tracking</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Cookie Policy</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-gray-800 pt-8 text-center">
-          <p className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Trade Income Planner. All rights reserved.
-          </p>
-        </div>
-      </footer>
-      {/* AI Chat Assistant Widget */}
-      <ChatAssistant />
-
-      {showNotifications && (
-        <NotificationsModal
-          notifications={notifications}
-          onClose={() => setShowNotifications(false)}
-          onNotificationClick={handleNotificationClick}
-        />
-      )}
+        {showNotifications && (
+          <NotificationsModal
+            notifications={notifications}
+            onClose={() => setShowNotifications(false)}
+            onNotificationClick={handleNotificationClick}
+          />
+        )}
       </div>
     </PostInteractionProvider>
   );

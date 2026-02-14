@@ -9,7 +9,7 @@ from ..dependencies import get_current_user, get_current_active_user
 router = APIRouter()
 
 @router.post("/api/simulate", response_model=SimulationResponse)
-async def run_simulation(request: SimulationRequest):
+async def run_simulation(request: SimulationRequest, user: User = Depends(get_current_user)):
   try:
     result = calculate_compounding(request)
     return result
@@ -17,7 +17,7 @@ async def run_simulation(request: SimulationRequest):
     raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/plan", response_model=GoalPlannerResponse)
-async def run_goal_planner(request: GoalPlannerRequest):
+async def run_goal_planner(request: GoalPlannerRequest, user: User = Depends(get_current_user)):
   try:
     result = calculate_goal_plan(request)
     if isinstance(result, dict) and result.get("status") == "error":
@@ -27,7 +27,7 @@ async def run_goal_planner(request: GoalPlannerRequest):
       raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/api/analyze/health", response_model=HealthAnalysisResponse)
-async def analyze_health(request: HealthAnalysisRequest):
+async def analyze_health(request: HealthAnalysisRequest, user: User = Depends(get_current_user)):
     try:
         result = analyze_trade_health(request)
         return result

@@ -30,7 +30,7 @@ const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
 });
 
 const Profile = ({ showFlash }) => {
-  const { fetchUserProfile } = useAuth();
+  const { userData, avatarUrl, fetchUserProfile } = useAuth();
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -94,6 +94,10 @@ const Profile = ({ showFlash }) => {
     try {
       const res = await api.get("/users/me");
       setUser(res.data);
+      if (res.data.avatar_url && !previewAvatar) {
+        // Use the blob URL from context if available
+        setUser(prev => ({...prev, avatar_url: avatarUrl}));
+      }
     } catch (error) {
       console.error("Failed to fetch profile", error);
     }
@@ -262,8 +266,8 @@ const Profile = ({ showFlash }) => {
             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700 group-hover:border-blue-500 transition-colors">
               {previewAvatar ? (
                 <img src={previewAvatar} alt="Preview" className="w-full h-full object-cover" />
-              ) : user.avatar_url ? (
-                <img src={`${API_BASE_URL}${user.avatar_url}`} alt="Avatar" className="w-full h-full object-cover" />
+              ) : avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gray-600 flex items-center justify-center text-4xl font-bold text-gray-400">
                   {user.username ? user.username.substring(0, 2).toUpperCase() : "U"}

@@ -40,39 +40,48 @@ async def register(user: UserCreate, session: Session = Depends(get_session)):
 
 @router.post("/api/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-  user = session.exec(select(User).where(User.username == form_data.username)).first()
-  if not user or not verify_password(form_data.password, user.hashed_password):
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"},)
+    # First, get the default tenant to check against
+    default_tenant = session.exec(select(Tenant).where(Tenant.name == "default")).first()
+    if not default_tenant:
+        raise HTTPException(status_code=500, detail="Default tenant not found")
+
+    user = session.exec(select(User).where(User.username == form_data.username, User.tenant_id == default_tenant.id)).first()
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"},)
   
-  access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-  access_token = create_access_token(data={"sub": user.username, "role": user.role, "tenant_id": user.tenant_id}, expires_delta=access_token_expires)
-  return {"access_token": access_token, "token_type": "bearer"}
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.username, "role": user.role, "tenant_id": user.tenant_id}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 class CheckUsernameRequest(BaseModel):
     username: str
+    tenant_id: int  # Assuming tenant_id is passed from frontend
 
 @router.post("/api/check_username")
 async def check_username(req: CheckUsernameRequest, session: Session = Depends(get_session)):
-  existing_user = session.exec(select(User).where(User.username == req.username)).first()
+  existing_user = session.exec(select(User).where(User.username == req.username, User.tenant_id == req.tenant_id)).first()
   available = existing_user is None
   return {"available": available}
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
-    
+    tenant_id: int
+
 class VerifyPinRequest(BaseModel):
     email: EmailStr
     pin: str
+    tenant_id: int
 
 class ResetPasswordRequest(BaseModel):
     email: EmailStr
     pin: str
     new_password: str
     confirm_password: str
+    tenant_id: int
 
 @router.post("/api/forgot-password")
 async def forgot_password(req: ForgotPasswordRequest, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == req.email)).first()
+    user = session.exec(select(User).where(User.email == req.email, User.tenant_id == req.tenant_id)).first()
     if user:
          # --- PRODUCTION SCRIPT (COMMENTED OUT) ---
         # reset_token = secrets.token_urlsafe(32)
@@ -97,7 +106,7 @@ async def forgot_password(req: ForgotPasswordRequest, session: Session = Depends
 
 @router.post("/api/verify-reset-pin")
 async def verify_reset_pin(req: VerifyPinRequest, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == req.email)).first()
+    user = session.exec(select(User).where(User.email == req.email, User.tenant_id == req.tenant_id)).first()
     if not user or user.reset_token != req.pin:
         raise HTTPException(status_code=400, detail="Invalid PIN")
     
@@ -112,9 +121,9 @@ async def reset_password(req: ResetPasswordRequest, session: Session = Depends(g
         raise HTTPException(status_code=400, detail="Passwords do not match")
         
     # Reuse verification logic for security
-    await verify_reset_pin(VerifyPinRequest(email=req.email, pin=req.pin), session)
+    await verify_reset_pin(VerifyPinRequest(email=req.email, pin=req.pin, tenant_id=req.tenant_id), session)
     
-    user = session.exec(select(User).where(User.email == req.email)).first()
+    user = session.exec(select(User).where(User.email == req.email, User.tenant_id == req.tenant_id)).first()
     user.hashed_password = get_password_hash(req.new_password)
     user.reset_token = None
     user.reset_token_expires = None

@@ -115,8 +115,11 @@ async def verify_payment(req: VerifyPaymentRequest, session: Session = Depends(g
                 user_id = int(parts[1])
                 plan_id = parts[2]
                 
+                # Get current user's tenant_id for verification
+                current_user = Depends(get_current_user)
+                
                 # Update User Plan in Database
-                user = session.get(User, user_id)
+                user = session.exec(select(User).where(User.id == user_id, User.tenant_id == current_user.tenant_id)).first()
                 if user:
                     user.plan = plan_id.capitalize() # Basic, Premium, Platinum
                     session.add(user)

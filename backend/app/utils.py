@@ -22,7 +22,7 @@ async def process_mentions_and_create_notifications(
             notif_type = "mention_comment" if comment_id else "mention_post"
             notification = Notification(
                 user_id=mentioned_user.id, actor_username=author_user.username, type=notif_type,
-                post_id=post_id, comment_id=comment_id, community_id=community_id
+                post_id=post_id, comment_id=comment_id, community_id=community_id, tenant_id=author_user.tenant_id
             )
             session.add(notification)
             notified_user_ids.add(mentioned_user.id)

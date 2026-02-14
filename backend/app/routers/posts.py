@@ -25,6 +25,7 @@ async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, 
     query = (
         select(Post, User)
         .join(User, Post.username == User.username)
+        .where(Post.tenant_id == current_user.tenant_id)
         .order_by(Post.created_at.desc())
         .offset(skip)
         .limit(limit)
@@ -59,7 +60,7 @@ async def get_post(post_id: int, session: Session = Depends(get_session), curren
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     
-    user = session.exec(select(User).where(User.username == post.username)).first()
+    user = session.exec(select(User).where(User.username == post.username, User.tenant_id == current_user.tenant_id)).first()
     
     reaction = session.exec(select(Reaction).where(Reaction.post_id == post_id, Reaction.username == current_user.username)).first()
     
@@ -72,40 +73,58 @@ async def get_post(post_id: int, session: Session = Depends(get_session), curren
     return PostResponse(**post_dict)
 
 @router.post("/api/posts", response_model=Post)
-async def create_public_post(content: str = Form(...), link_url: Optional[str] = Form(None), image_file: Optional[UploadFile] = File(None), user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+async def create_post(
+    content: str = Form(...),
+    community_id: Optional[int] = Form(None),
+    link_url: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session)
+):
     try:
         image_url_to_save = None
-        if image_file:
+        if image:
             os.makedirs("static/images", exist_ok=True)
-            filename = f"{uuid.uuid4()}-{image_file.filename}"
+            filename = f"{uuid.uuid4()}-{image.filename}"
             file_path = os.path.join("static/images", filename)
             async with aiofiles.open(file_path, "wb") as buffer:
-                contents = await image_file.read()
-                buffer.write(contents)
+                contents = await image.read()
+                await buffer.write(contents)
+            
+            # Set the URL to be saved in the database
             image_url_to_save = f"/static/images/{filename}"
+        # Create the Post object
             
         db_post = Post(
-            community_id=None, 
-            username=user.username, 
+            community_id=community_id,
+            username=user.username,
             content=content,
             image_url=image_url_to_save,
-            link_url=link_url
+            link_url=link_url,
+            tenant_id=user.tenant_id  # Ensure tenant_id is set
         )
         session.add(db_post)
-        db_post.tenant_id = user.tenant_id
         session.commit()
         session.refresh(db_post)
 
         await process_mentions_and_create_notifications(
             session=session, content=content, author_user=user, post_id=db_post.id,
-            community_id=None, notified_user_ids=set()
+            community_id=community_id, notified_user_ids=set()
         )
-        session.add(db_post)
-        session.commit()
-        session.refresh(db_post)
-        return db_post
+        session.refresh(db_post) # Refresh again to get any updates from notifications
+        # Prepare the response
+        post_dict = db_post.dict()
+        post_dict['tenant_id'] = db_post.tenant_id # Add tenant_id to the response
+        post_dict['user_role'] = user.role
+        post_dict['user_plan'] = user.plan
+        post_dict['user_avatar_url'] = user.avatar_url
+        post_dict['user_reaction'] = None # No reaction on creation
+        
+        return PostResponse(**post_dict)
     except Exception as e:
         session.rollback()
+         # Log the error for debugging
+        print(f"Error creating post: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/api/posts/{post_id}/comments", response_model=list[CommentResponse])
@@ -115,7 +134,12 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
         return []
 
     usernames = {c.username for c in comments}
-    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    # Assuming all comments on a post belong to the same tenant as the post/current_user
+    post = session.get(Post, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    users = session.exec(select(User).where(User.username.in_(usernames), User.tenant_id == post.tenant_id)).all()
     user_map = {u.username: u for u in users}
 
     results = []
@@ -135,7 +159,7 @@ async def create_comment(post_id: int, comment: CommentCreate, user: User = Depe
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
-        db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id)
+        db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id, tenant_id=user.tenant_id)
         session.add(db_comment)
         session.commit()
         session.refresh(db_comment)
@@ -151,17 +175,17 @@ async def create_comment(post_id: int, comment: CommentCreate, user: User = Depe
         )
 
         if comment.parent_id:
-            parent_comment = session.get(Comment, comment.parent_id)
+            parent_comment = session.exec(select(Comment).where(Comment.id == comment.parent_id, Comment.tenant_id == user.tenant_id)).first()
             if parent_comment:
-                parent_owner = session.exec(select(User).where(User.username == parent_comment.username)).first()
+                parent_owner = session.exec(select(User).where(User.username == parent_comment.username, User.tenant_id == user.tenant_id)).first()
                 if parent_owner and parent_owner.id != user.id and parent_owner.id not in notified_user_ids:
-                    reply_notif = Notification(user_id=parent_owner.id, actor_username=user.username, type='reply_comment', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                    reply_notif = Notification(user_id=parent_owner.id, actor_username=user.username, type='reply_comment', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id)
                     session.add(reply_notif)
                     notified_user_ids.add(parent_owner.id)
         else:
-            post_owner = session.exec(select(User).where(User.username == post.username)).first()
+            post_owner = session.exec(select(User).where(User.username == post.username, User.tenant_id == user.tenant_id)).first()
             if post_owner and post_owner.id != user.id and post_owner.id not in notified_user_ids:
-                reply_notif = Notification(user_id=post_owner.id, actor_username=user.username, type='reply_post', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id)
+                reply_notif = Notification(user_id=post_owner.id, actor_username=user.username, type='reply_post', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id)
                 session.add(reply_notif)
                 notified_user_ids.add(post_owner.id)
             
@@ -192,17 +216,15 @@ async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Dep
             existing_reaction.type = reaction.type
             session.add(existing_reaction)
     else:
-        new_reaction = Reaction(post_id=post_id, username=user.username, type=reaction.type)
+        new_reaction = Reaction(post_id=post_id, username=user.username, type=reaction.type, tenant_id=user.tenant_id)
         session.add(new_reaction)
-        new_reaction.tenant_id = user.tenant_id
         post.likes += 1
-        post_owner = session.exec(select(User).where(User.username == post.username)).first()
+        post_owner = session.exec(select(User).where(User.username == post.username, User.tenant_id == user.tenant_id)).first()
         if post_owner and post_owner.id != user.id:
             notif = Notification(
                 user_id=post_owner.id, actor_username=user.username, type='react_post',
-                post_id=post_id, community_id=post.community_id
+                post_id=post_id, community_id=post.community_id, tenant_id=user.tenant_id
             )
-            notif.tenant_id = user.tenant_id
             session.add(notif)
     session.add(post)
     session.commit()

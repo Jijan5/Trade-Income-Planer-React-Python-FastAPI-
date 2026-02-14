@@ -13,8 +13,12 @@ from ..dependencies import get_current_user, get_current_active_user
 router = APIRouter()
 
 @router.get("/api/communities", response_model=list[Community])
-async def get_communities(session: Session = Depends(get_session)):
-    return session.exec(select(Community)).all()
+async def get_communities(session: Session = Depends(get_session), user: User = Depends(get_current_user)):
+    communities = session.exec(select(Community).where(Community.tenant_id == user.tenant_id)).all()
+    for comm in communities:
+        if comm.avatar_url:
+            comm.avatar_url = f"{os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')}{comm.avatar_url}"
+    return communities
 
 @router.get("/api/communities/{community_id}/members", response_model=list[CommunityMemberRead])
 async def get_community_members(community_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
@@ -30,7 +34,7 @@ async def get_community_members(community_id: int, user: User = Depends(get_curr
     members = session.exec(
         select(CommunityMember, User)
         .join(User, CommunityMember.user_id == User.id)
-        .where(CommunityMember.community_id == community_id)
+        .where(CommunityMember.community_id == community_id, User.tenant_id == user.tenant_id)
     ).all()
 
     return [
@@ -96,7 +100,7 @@ async def kick_community_member(community_id: int, username_to_kick: str, user: 
     if community.creator_username == username_to_kick:
         raise HTTPException(status_code=400, detail="Creator cannot be kicked.")
 
-    user_to_kick = session.exec(select(User).where(User.username == username_to_kick)).first()
+    user_to_kick = session.exec(select(User).where(User.username == username_to_kick, User.tenant_id == user.tenant_id)).first()
     if not user_to_kick:
         raise HTTPException(status_code=404, detail="User to kick not found.")
 
@@ -115,7 +119,8 @@ async def kick_community_member(community_id: int, username_to_kick: str, user: 
         actor_username=user.username,
         type="system_broadcast",
         content=f"You have been kicked from the community '{community.name}'.",
-        community_id=community_id
+        community_id=community_id,
+        tenant_id=user.tenant_id
     )
     session.add(notif)
     session.commit()
@@ -174,7 +179,7 @@ async def create_community(
     session.commit()
     session.refresh(db_community)
     # Automatically add creator as a member
-    member = CommunityMember(community_id=db_community.id, user_id=user.id)
+    member = CommunityMember(community_id=db_community.id, user_id=user.id, tenant_id=user.tenant_id)
     session.add(member)
     session.commit()
     return db_community
@@ -269,8 +274,14 @@ async def get_community_posts(community_id: int, session: Session = Depends(get_
     if not posts:
         return []
 
+    # Assuming all posts in a community belong to the same tenant
+    community = session.get(Community, community_id)
+    if not community:
+        # This case should ideally not happen if posts exist for the community_id
+        raise HTTPException(status_code=404, detail="Community not found")
+
     usernames = {p.username for p in posts}
-    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    users = session.exec(select(User).where(User.username.in_(usernames), User.tenant_id == community.tenant_id)).all()
     user_map = {u.username: u for u in users}
 
     results = []

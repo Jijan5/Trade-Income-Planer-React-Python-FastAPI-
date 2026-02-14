@@ -9,6 +9,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem("token"));
     const [userData, setUserData] = useState(null);
+    const [avatarUrl, setAvatarUrl] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -21,13 +22,30 @@ export const AuthProvider = ({ children }) => {
         try {
             // don't need URL manual header
             const res = await api.get("/users/me");
+            const profileData = res.data;
+            // If avatar URL exists, fetch it as a blob
+            if (profileData.avatar_url) {
+                try {
+                    const imageRes = await api.get(profileData.avatar_url, { 
+                        responseType: 'blob' 
+                    });
+                    const blobUrl = URL.createObjectURL(imageRes.data);
+                    setAvatarUrl(blobUrl);
+                } catch (imgError) {
+                    console.error("Failed to fetch avatar image", imgError);
+                    setAvatarUrl(null); // Reset on failure
+                }
+            } else {
+                setAvatarUrl(null); // Reset if no avatar
+            }
             // Optimization: Only update state if data actually changed to prevent re-renders
             setUserData(prev => {
-                return JSON.stringify(prev) !== JSON.stringify(res.data) ? res.data : prev;
+                return JSON.stringify(prev) !== JSON.stringify(profileData) ? profileData : prev;
             });
         } catch (error) {
             console.error("Failed to fetch user profile", error);
             setUserData(null);
+            setAvatarUrl(null);
         } finally {
             setLoading(false);
         }
@@ -69,6 +87,14 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         // fetchUserProfile();
     };
+    useEffect(() => {
+        // Cleanup blob URL on component unmount or when avatar changes
+        return () => {
+            if (avatarUrl) {
+                URL.revokeObjectURL(avatarUrl);
+            }
+        };
+    }, [avatarUrl]);
 
     const logout = useCallback(() => {
         localStorage.removeItem("token");
@@ -78,6 +104,7 @@ export const AuthProvider = ({ children }) => {
         }
         setToken(null);
         setUserData(null);
+        setAvatarUrl(null);
         setUnreadCount(0);
         navigate("/");
     }, [userData, navigate]);
@@ -102,6 +129,7 @@ export const AuthProvider = ({ children }) => {
     const value = useMemo(() => ({
         token,
         userData,
+        avatarUrl,
         loading,
         setUserData,
         unreadCount,
@@ -110,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         fetchUserProfile,
         fetchUnreadCount
-    }), [token, userData, loading, unreadCount, login, logout, fetchUserProfile, fetchUnreadCount]);
+    }), [token, userData, avatarUrl,loading, unreadCount, login, logout, fetchUserProfile, fetchUnreadCount]);
 
     return (
         <AuthContext.Provider value={value}>

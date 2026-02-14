@@ -13,7 +13,10 @@ router = APIRouter()
 
 @router.get("/api/users/me", response_model=UserRead)
 async def read_user_profile(user: User = Depends(get_current_user)):
-    return user
+    user_data = user.dict()
+    if user.avatar_url and not user.avatar_url.startswith('https'):
+        user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')}{user.avatar_url}"
+    return UserRead(**user_data)
 
 @router.put("/api/users/me", response_model=UserRead)
 async def update_user_profile(
@@ -28,13 +31,13 @@ async def update_user_profile(
     session: Session = Depends(get_session)
 ):
     if username and username != user.username:
-        existing_user = session.exec(select(User).where(User.username == username)).first()
+        existing_user = session.exec(select(User).where(User.username == username, User.tenant_id == user.tenant_id)).first()
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already taken")
         user.username = username
 
     if email and email != user.email:
-        existing = session.exec(select(User).where(User.email == email)).first()
+        existing = session.exec(select(User).where(User.email == email, User.tenant_id == user.tenant_id)).first()
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
         user.email = email
@@ -60,15 +63,15 @@ async def update_user_profile(
     return user
 
 @router.get("/api/users/search")
-async def search_users(q: str = "", session: Session = Depends(get_session)):
+async def search_users(q: str = "", session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     if not q:
         return []
-    users = session.exec(select(User).where(User.username.ilike(f"{q}%")).limit(5)).all()
-    return [{"username": user.username} for user in users]
+    users = session.exec(select(User).where(User.tenant_id == user.tenant_id, User.username.ilike(f"{q}%")).limit(5)).all()
+    return [{"username": user.username, "avatar_url": user.avatar_url} for user in users]
 
 @router.get("/api/users/me/communities", response_model=list[Community])
 async def get_my_communities(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    return session.exec(select(Community).where(Community.creator_username == user.username)).all()
+    return session.exec(select(Community).where(Community.creator_username == user.username, Community.tenant_id == user.tenant_id)).all()
 
 @router.get("/api/users/me/joined_communities", response_model=list[int])
 async def get_joined_communities(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -84,7 +87,7 @@ async def get_notifications(user: User = Depends(get_current_user), session: Ses
     
     response_data = []
     for notif in notifications:
-        actor = session.exec(select(User).where(User.username == notif.actor_username)).first()
+        actor = session.exec(select(User).where(User.username == notif.actor_username, User.tenant_id == user.tenant_id)).first()
         content_preview = ""
         # ... (logic preview content just like before) ...
         # Simplified for brevity, assume logic is imported or copied

@@ -21,7 +21,6 @@ app.add_middleware(
 
 # Serve the ‘static’ folder so it can be accessed from a browser.
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 # DB Startup
 @app.on_event("startup")
 def startup_event():
@@ -36,10 +35,3 @@ app.include_router(communities.router)
 app.include_router(simulation.router)
 app.include_router(admin.router)
 app.include_router(payment.router)
-
-# Serve React app for non-API routes
-@app.get("/{path:path}")
-async def serve_frontend(path: str):
-    if path.startswith("api/") or path.startswith("static/"):
-        raise HTTPException(status_code=404, detail="Not found")
-    return FileResponse("static/index.html")

@@ -11,11 +11,11 @@ router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 @router.get("/users", response_model=list[UserRead])
 async def get_all_users(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    return session.exec(select(User)).all()
+    return session.exec(select(User).where(User.tenant_id == user.tenant_id)).all()
 
 @router.get("/stats")
 async def get_dashboard_stats(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    users = session.exec(select(User)).all()
+    users = session.exec(select(User).where(User.tenant_id == user.tenant_id)).all()
     
     total_users = len(users)
     active_subs = len([u for u in users if u.plan != "Free"])
@@ -63,7 +63,7 @@ async def get_dashboard_stats(user: User = Depends(get_current_admin_user), sess
 async def get_admin_subscriptions(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
     # Generate subscription list from users with paid plans
     # In a real app with payment gateway, this would query a 'Transaction' table
-    users = session.exec(select(User).where(User.plan != "Free")).all()
+    users = session.exec(select(User).where(User.plan != "Free", User.tenant_id == user.tenant_id)).all()
     plan_prices = {"Basic": 12, "Premium": 19, "Platinum": 28}
     
     return [{
@@ -74,16 +74,16 @@ async def get_admin_subscriptions(user: User = Depends(get_current_admin_user), 
 
 @router.get("/feedbacks", response_model=list[Feedback])
 async def get_all_feedbacks(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    return session.exec(select(Feedback).order_by(Feedback.created_at.desc())).all()
+    return session.exec(select(Feedback).where(Feedback.tenant_id == user.tenant_id).order_by(Feedback.created_at.desc())).all()
 
 @router.get("/posts", response_model=list[PostResponse])
 async def get_admin_posts(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    posts = session.exec(select(Post).order_by(Post.created_at.desc())).all()
+    posts = session.exec(select(Post).where(Post.tenant_id == user.tenant_id).order_by(Post.created_at.desc())).all()
     if not posts:
         return []
     
     usernames = {p.username for p in posts}
-    users = session.exec(select(User).where(User.username.in_(usernames))).all()
+    users = session.exec(select(User).where(User.username.in_(usernames), User.tenant_id == user.tenant_id)).all()
     user_map = {u.username: u for u in users}
 
     results = []
@@ -100,7 +100,7 @@ async def get_admin_posts(user: User = Depends(get_current_admin_user), session:
 
 @router.post("/broadcast")
 async def broadcast_message(request: BroadcastRequest, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    users = session.exec(select(User)).all()
+    users = session.exec(select(User).where(User.tenant_id == user.tenant_id)).all()
     count = 0
     for u in users:
         if u.id == user.id: continue
@@ -111,7 +111,9 @@ async def broadcast_message(request: BroadcastRequest, user: User = Depends(get_
             type="system_broadcast", 
             content=request.message,
             post_id=None, 
-            community_id=None)
+            community_id=None,
+            tenant_id=user.tenant_id
+        )
         session.add(notif)
         count += 1
     session.commit()
@@ -128,7 +130,7 @@ async def delete_feedback(feedback_id: int, user: User = Depends(get_current_adm
 
 @router.get("/reports", response_model=list[Report])
 async def get_admin_reports(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    return session.exec(select(Report).order_by(Report.created_at.desc())).all()
+    return session.exec(select(Report).where(Report.tenant_id == user.tenant_id).order_by(Report.created_at.desc())).all()
 
 @router.delete("/reports/{report_id}")
 async def delete_report(report_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
@@ -143,7 +145,7 @@ async def update_user_by_admin(user_id: int, user_data: UserUpdateAdmin, admin: 
     if admin.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    db_user = session.get(User, user_id)
+    db_user = session.exec(select(User).where(User.id == user_id, User.tenant_id == admin.tenant_id)).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -166,7 +168,7 @@ async def unsuspend_user(user_id: int, background_tasks: BackgroundTasks, user: 
 
 @router.delete("/users/{user_id}")
 async def delete_user(user_id: int, user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
-    db_user = session.get(User, user_id)
+    db_user = session.exec(select(User).where(User.id == user_id, User.tenant_id == user.tenant_id)).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 

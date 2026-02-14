@@ -244,6 +244,7 @@ class PostCreate(BaseModel):
 
 class PostResponse(BaseModel):
     id: int
+    tenant_id: int
     community_id: Optional[int] = None
     username: str
     content: str

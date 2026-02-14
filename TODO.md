@@ -1,9 +1,26 @@
-# Multi-Tenancy Fix Plan
+# TODO: Fix tenant_id issues in the codebase
 
-## Tasks to Complete:
+## Priority 1: Fix 500 Error on Comment/Reply
 
-- [ ] 1. Update auth.py - Include tenant_id in JWT token
-- [ ] 2. Update dependencies.py - Add get_current_tenant dependency
-- [ ] 3. Update posts.py - Add tenant_id filtering and set tenant_id on create
-- [ ] 4. Update users.py - Add tenant_id filtering to search, communities, and notifications
-- [ ] 5. Update communities.py - Add tenant_id filtering and set tenant_id on create
+- [ ] Fix posts.py - create_comment function to properly handle tenant_id for notifications
+- [ ] Fix utils.py - process_mentions_and_create_notifications to add tenant_id to notifications
+
+## Priority 2: Add tenant_id to Notifications (where missing)
+
+- [ ] Fix posts.py - add tenant_id to notification in create_comment
+- [ ] Fix communities.py - add tenant_id to notification in kick_community_member
+- [ ] Fix admin.py - add tenant_id to notification in broadcast_message
+
+## Priority 3: Add tenant_id filtering to endpoints (Security)
+
+- [ ] Fix communities.py - get_communities
+- [ ] Fix communities.py - get_community_posts
+- [ ] Fix users.py - search_users
+- [ ] Fix users.py - get_my_communities
+- [ ] Fix users.py - get_notifications
+- [ ] Fix users.py - get_unread_notification_count
+- [ ] Fix admin.py - get_all_users
+- [ ] Fix admin.py - get_dashboard_stats
+- [ ] Fix admin.py - get_admin_subscriptions
+- [ ] Fix admin.py - get_admin_posts
+- [ ] Fix admin.py - get_admin_reports
