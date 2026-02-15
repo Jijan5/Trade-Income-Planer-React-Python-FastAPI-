@@ -15,9 +15,7 @@ router = APIRouter()
 @router.get("/api/communities", response_model=list[Community])
 async def get_communities(session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     communities = session.exec(select(Community).where(Community.tenant_id == user.tenant_id)).all()
-    for comm in communities:
-        if comm.avatar_url:
-            comm.avatar_url = f"{os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')}{comm.avatar_url}"
+    # Return communities with their stored URLs - frontend will handle URL construction
     return communities
 
 @router.get("/api/communities/{community_id}/members", response_model=list[CommunityMemberRead])
@@ -148,6 +146,7 @@ async def create_community(
         file_path = os.path.join("static/avatars", filename)
         async with aiofiles.open(file_path, "wb") as buffer:
             contents = await avatar_file.read()
+            await buffer.write(contents)
         avatar_url = f"/static/avatars/{filename}"
 
     final_bg_value = bg_value
@@ -157,6 +156,7 @@ async def create_community(
         file_path = os.path.join("static/backgrounds", filename)
         async with aiofiles.open(file_path, "wb") as buffer:
             contents = await bg_image_file.read()
+            await buffer.write(contents)
         final_bg_value = f"/static/backgrounds/{filename}"
 
     db_community = Community(

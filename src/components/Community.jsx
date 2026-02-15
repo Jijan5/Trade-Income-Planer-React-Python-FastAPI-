@@ -1637,13 +1637,13 @@ const Community = ({
                         : newComm.bgValue,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
+                    backgroundColor: newComm.bg_type === "color" ? newComm.bgValue : 'transparent',
                     "--glow-color": newComm.hoverColor,
                     border: isVip ? "3px solid #fbbf24" : "1px solid #4b5563",
                   }}
                   className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
                   ${newComm.hoverAnimation === "scale" ? "hover:scale-105" : ""}
-                  ${
-                    newComm.hoverAnimation === "glow"
+                  ${newComm.hoverAnimation === "glow"
                       ? "hover:shadow-[0_0_20px_var(--glow-color)]"
                       : "hover:shadow-xl"
                   }

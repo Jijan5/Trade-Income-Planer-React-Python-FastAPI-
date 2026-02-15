@@ -72,7 +72,7 @@ async def get_post(post_id: int, session: Session = Depends(get_session), curren
 
     return PostResponse(**post_dict)
 
-@router.post("/api/posts", response_model=Post)
+@router.post("/api/posts", response_model=PostResponse)
 async def create_post(
     content: str = Form(...),
     community_id: Optional[int] = Form(None),
@@ -253,7 +253,7 @@ async def share_post(post_id: int, session: Session = Depends(get_session)):
         session.commit()
     return {"status": "success"}
 
-@router.put("/api/posts/{post_id}", response_model=Post)
+@router.put("/api/posts/{post_id}", response_model=PostResponse)
 async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
     post = session.get(Post, post_id)
     if not post:
@@ -262,13 +262,25 @@ async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(
         raise HTTPException(status_code=403, detail="Not authorized to edit this post")
     
     post.content = post_data.content
-    post.image_url = post_data.image_url
+    # The image_url is not editable in this flow, so we preserve the existing one.
+    # post.image_url = post_data.image_url 
     post.link_url = post_data.link_url
     post.is_edited = True
     session.add(post)
     session.commit()
     session.refresh(post)
-    return post
+
+    # After updating, we need to return the full PostResponse
+    author_user = session.exec(select(User).where(User.username == post.username, User.tenant_id == user.tenant_id)).first()
+    reaction = session.exec(select(Reaction).where(Reaction.post_id == post.id, Reaction.username == user.username)).first()
+
+    post_dict = post.dict()
+    post_dict['user_role'] = author_user.role if author_user else "user"
+    post_dict['user_plan'] = author_user.plan if author_user else "Free"
+    post_dict['user_avatar_url'] = author_user.avatar_url if author_user else None
+    post_dict['user_reaction'] = reaction.type if reaction else None
+    
+    return PostResponse(**post_dict)
 
 @router.delete("/api/posts/{post_id}")
 async def delete_post(post_id: int, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):

@@ -3,6 +3,7 @@ import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import { countryCodes } from "../utils/countryCodes";
+import AuthenticatedImage from "./AuthenticatedImage";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -16,8 +17,7 @@ const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
       {myCommunities.map(comm => (
         <div key={comm.id} className="bg-gray-900 border border-gray-700 p-4 rounded-lg flex justify-between items-center">
           <div className="flex items-center gap-3">
-          {comm.avatar_url ? <img src={`${API_BASE_URL}${comm.avatar_url}`} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs">{comm.name.substring(0,2).toUpperCase()}</div>}
-          <div>
+          {comm.avatar_url ? <img src={`${API_BASE_URL}${comm.avatar_url}`} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs">{comm.name.substring(0,2).toUpperCase()}</div>}          <div>
               <h4 className="font-bold text-white text-sm">{comm.name}</h4>
               <p className="text-xs text-gray-500">{comm.members_count} Members</p>
             </div>

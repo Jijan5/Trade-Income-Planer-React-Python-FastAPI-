@@ -28,3 +28,4 @@ jinja2
 flet
 mysql-connector-python
 aiofiles
+utils

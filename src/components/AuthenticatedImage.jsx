@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import api from '../lib/axios';
+import React, { useState, useEffect } from "react";
+import api from "../lib/axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 const AuthenticatedImage = ({ src, alt, ...props }) => {
   const [imageSrc, setImageSrc] = useState(null);
@@ -9,30 +10,33 @@ const AuthenticatedImage = ({ src, alt, ...props }) => {
 
   useEffect(() => {
     if (!src) {
-        setIsLoading(false);
-        return;
+      setIsLoading(false);
+      return;
     }
 
     let isMounted = true;
     const fetchImage = async () => {
       try {
         // Construct the full, absolute URL to bypass the '/api' prefix
-        const imageUrl = `${API_BASE_URL}/${src}`;
+        // Remove any leading slash from src to avoid double slashes
+        const cleanSrc = src.startsWith("/") ? src.slice(1) : src;
+        const imageUrl = `${API_BASE_URL}/${cleanSrc}`;
+        console.log("Fetching image from:", imageUrl);
         const response = await api.get(imageUrl, {
-          responseType: 'blob',
+          responseType: "blob",
         });
         if (isMounted) {
           const blobUrl = URL.createObjectURL(response.data);
           setImageSrc(blobUrl);
         }
       } catch (error) {
-        console.error('Failed to load authenticated image:', error);
+        console.error("Failed to load authenticated image:", error);
         if (isMounted) {
           setImageSrc(null); // Or a placeholder
         }
       } finally {
         if (isMounted) {
-            setIsLoading(false);
+          setIsLoading(false);
         }
       }
     };
@@ -49,15 +53,21 @@ const AuthenticatedImage = ({ src, alt, ...props }) => {
 
   if (isLoading) {
     return (
-        <div className="w-full h-48 bg-gray-700 animate-pulse rounded" {...props}></div>
+      <div
+        className="w-full h-48 bg-gray-700 animate-pulse rounded"
+        {...props}
+      ></div>
     );
   }
 
   if (!imageSrc) {
     return (
-        <div className="w-full h-48 bg-gray-800 flex items-center justify-center rounded" {...props}>
-            <p className="text-gray-500">Image not available</p>
-        </div>
+      <div
+        className="w-full h-48 bg-gray-800 flex items-center justify-center rounded"
+        {...props}
+      >
+        <p className="text-gray-500">Image not available</p>
+      </div>
     );
   }
 
