@@ -375,18 +375,21 @@ function App() {
     };
   }, []);
 
-  const fetchCommunities = async () => {
+  const fetchCommunities = useCallback(async () => {
+    // Only fetch if there's a token
+    if (!token) return;
+
     try {
       const res = await api.get("/communities");
       setCommunities(res.data);
     } catch (error) {
       console.error("Failed to fetch communities", error);
     }
-  };
+  }, [token]); // Dependency on token
 
   useEffect(() => {
     fetchCommunities();
-  }, []);
+  }, [fetchCommunities]);
 
   // Feedback State
   const [feedbackEmail, setFeedbackEmail] = useState("");
