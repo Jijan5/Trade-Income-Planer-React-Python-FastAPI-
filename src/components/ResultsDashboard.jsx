@@ -140,11 +140,9 @@ const ResultsDashboard = ({ data }) => {
           
           <div className={`p-5 rounded-lg border ${ruinProb > 20 ? 'bg-red-900/20 border-red-500/30' : 'bg-blue-900/20 border-blue-500/30'}`}>
             <p className="text-xl font-medium text-gray-200 leading-relaxed">
-              "With your current strategy, there is a <span className={`font-bold text-2xl ${ruinProb > 0 ? 'text-red-400' : 'text-green-400'}`}>{ruinProb}% probability</span> that your account will be <span className="text-white font-bold underline decoration-red-500">DEPLETED</span> within <span className="text-white font-bold">{summary.day_simulated} days</span>."
+              "With your current strategy, there is a <span className={`font-bold text-2xl ${ruinProb > 0 ? 'text-red-400' : 'text-green-400'}`}>{ruinProb}% probability</span> will depleted."
               {ruinProb > 0 && (
-                <>
-                 Based on your strategy and a ruin probability of {ruinProb}%, depletion is projected to occur within 
-                <span className="text-white font-bold">
+                <> Based on your strategy and a ruin probability of {ruinProb}%, depletion is projected to occur within <span className="text-white font-bold">
                 {(summary.day_simulated * (1 - ruinProb / 100)).toFixed(0)} days
                 </span>.
                 </>
