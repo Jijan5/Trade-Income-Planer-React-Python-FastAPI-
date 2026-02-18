@@ -262,6 +262,7 @@ class PostResponse(BaseModel):
 
 class Comment(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     post_id: int = SQLField(foreign_key="post.id")
     parent_id: Optional[int] = SQLField(default=None, foreign_key="comment.id")
     username: str

@@ -154,52 +154,80 @@ async def get_post_comments(post_id: int, session: Session = Depends(get_session
 
 @router.post("/api/posts/{post_id}/comments", response_model=CommentResponse)
 async def create_comment(post_id: int, comment: CommentCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+    # --- Refactored for a single, atomic transaction ---
     try:
         post = session.get(Post, post_id)
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         
-        db_comment = Comment(post_id=post_id, username=user.username, content=comment.content, parent_id=comment.parent_id, tenant_id=user.tenant_id)
+        # 1. Create the comment object and add it to the session
+        db_comment = Comment(
+            post_id=post_id,
+            username=user.username,
+            content=comment.content,
+            parent_id=comment.parent_id,
+            tenant_id=user.tenant_id
+        )
         session.add(db_comment)
-        session.commit()
-        session.refresh(db_comment)
+
+        # 2. Update the post's comment count
+        post.comments_count += 1
+        session.add(post)
         
-        if post:
-            post.comments_count += 1
-            session.add(post)
-            
+        # Use flush to get the ID for the new comment, which is needed for notifications
+        session.flush()
+
+        # 3. Handle all notifications
         notified_user_ids = set()
+        
+        # Mentions
         await process_mentions_and_create_notifications(
             session=session, content=comment.content, author_user=user, post_id=post_id,
             community_id=post.community_id, notified_user_ids=notified_user_ids, comment_id=db_comment.id
         )
 
+        # Notification for a reply to a parent comment
         if comment.parent_id:
             parent_comment = session.exec(select(Comment).where(Comment.id == comment.parent_id, Comment.tenant_id == user.tenant_id)).first()
             if parent_comment:
                 parent_owner = session.exec(select(User).where(User.username == parent_comment.username, User.tenant_id == user.tenant_id)).first()
                 if parent_owner and parent_owner.id != user.id and parent_owner.id not in notified_user_ids:
-                    reply_notif = Notification(user_id=parent_owner.id, actor_username=user.username, type='reply_comment', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id)
+                    reply_notif = Notification(
+                        user_id=parent_owner.id, actor_username=user.username, type='reply_comment',
+                        post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id
+                    )
                     session.add(reply_notif)
                     notified_user_ids.add(parent_owner.id)
+        # Notification for a comment on a post
         else:
             post_owner = session.exec(select(User).where(User.username == post.username, User.tenant_id == user.tenant_id)).first()
             if post_owner and post_owner.id != user.id and post_owner.id not in notified_user_ids:
-                reply_notif = Notification(user_id=post_owner.id, actor_username=user.username, type='reply_post', post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id)
-                session.add(reply_notif)
+                comment_notif = Notification(
+                    user_id=post_owner.id, actor_username=user.username, type='comment_post',
+                    post_id=post_id, comment_id=db_comment.id, community_id=post.community_id, tenant_id=user.tenant_id
+                )
+                session.add(comment_notif)
                 notified_user_ids.add(post_owner.id)
-            
+
+        # 4. Commit the entire transaction
         session.commit()
+        
+        # 5. Refresh the comment object to get the final state from the DB
         session.refresh(db_comment)
         
+        # 6. Prepare and return the response
         comment_dict = db_comment.dict()
         comment_dict['user_role'] = user.role
         comment_dict['user_plan'] = user.plan
         comment_dict['user_avatar_url'] = user.avatar_url
         return CommentResponse(**comment_dict)
+
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"Error in create_comment: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"An internal error occurred: {e}")
 
 @router.post("/api/posts/{post_id}/react")
 async def react_to_post(post_id: int, reaction: ReactionCreate, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
