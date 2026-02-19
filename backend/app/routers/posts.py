@@ -49,7 +49,7 @@ async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, 
         post_dict = post.dict()
         post_dict['user_role'] = user.role
         post_dict['user_plan'] = user.plan
-        post_dict['user_avatar_url'] = user.avatar_url
+        post_dict['avatar_url'] = user.avatar_url
         post_dict['user_reaction'] = user_reactions.get(post.id)
         response_list.append(PostResponse(**post_dict))
     return response_list
@@ -67,7 +67,7 @@ async def get_post(post_id: int, session: Session = Depends(get_session), curren
     post_dict = post.dict()
     post_dict['user_role'] = user.role if user else "user"
     post_dict['user_plan'] = user.plan if user else "Free"
-    post_dict['user_avatar_url'] = user.avatar_url if user else None
+    post_dict['avatar_url'] = user.avatar_url if user else None
     post_dict['user_reaction'] = reaction.type if reaction else None
 
     return PostResponse(**post_dict)
@@ -117,7 +117,7 @@ async def create_post(
         post_dict['tenant_id'] = db_post.tenant_id # Add tenant_id to the response
         post_dict['user_role'] = user.role
         post_dict['user_plan'] = user.plan
-        post_dict['user_avatar_url'] = user.avatar_url
+        post_dict['avatar_url'] = user.avatar_url
         post_dict['user_reaction'] = None # No reaction on creation
         
         return PostResponse(**post_dict)
@@ -305,7 +305,7 @@ async def update_post(post_id: int, post_data: PostCreate, user: User = Depends(
     post_dict = post.dict()
     post_dict['user_role'] = author_user.role if author_user else "user"
     post_dict['user_plan'] = author_user.plan if author_user else "Free"
-    post_dict['user_avatar_url'] = author_user.avatar_url if author_user else None
+    post_dict['avatar_url'] = author_user.avatar_url if author_user else None
     post_dict['user_reaction'] = reaction.type if reaction else None
     
     return PostResponse(**post_dict)

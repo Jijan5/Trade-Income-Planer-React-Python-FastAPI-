@@ -28,6 +28,7 @@ import PostDetail from "./components/PostDetail";
 import TradeHistory from "./components/TradeHistory";
 import SuspendedPage from "./components/SuspendedPage";
 import ForgotPassword from "./components/ForgotPassword";
+import ContactUs from "./components/ContactUs";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
@@ -1250,6 +1251,7 @@ function App() {
               path="/suspended"
               element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
             />
+            <Route path="/contact-us" element={<ContactUs />} />
           </Routes>
         </div>
         {/* 📱 MOBILE BOTTOM NAVIGATION */}
@@ -1360,16 +1362,11 @@ function App() {
                 <ul className="space-y-2 text-sm text-gray-400">
                   <li>
                     <a href="#" className="hover:text-white transition-colors">
-                      Help Center
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
                       API Documentation
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
+                    <a href="/contact-us" className="hover:text-white transition-colors">
                       Contact Us
                     </a>
                   </li>

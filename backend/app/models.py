@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, EmailStr
 from decimal import Decimal
 from typing import Literal, Optional
 from sqlmodel import Session, SQLModel, Field as SQLField
@@ -248,6 +248,38 @@ class PostResponse(BaseModel):
     community_id: Optional[int] = None
     username: str
     content: str
+    image_url: Optional[str] = None
+    link_url: Optional[str] = None
+    created_at: datetime
+    likes: int
+    comments_count: int
+    shares_count: int
+    is_edited: bool
+    user_role: Optional[str] = None
+    user_plan: Optional[str] = None
+    avatar_url: Optional[str] = None
+    user_reaction: Optional[str] = None
+
+
+class ContactMessage(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True, default=1)
+    name: str
+    email: str
+    subject: str
+    message: str
+    status: str = SQLField(default="new", index=True)  # "new", "replied"
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    admin_reply: Optional[str] = None
+    replied_at: Optional[datetime] = None
+
+
+class ContactMessageCreate(BaseModel):
+    name: str
+    email: EmailStr
+    subject: str
+    message: str
+
     image_url: Optional[str] = None
     link_url: Optional[str] = None
     created_at: datetime

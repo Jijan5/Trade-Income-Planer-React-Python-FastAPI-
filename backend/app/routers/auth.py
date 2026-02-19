@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr
 from ..database import get_session
 import secrets
 import string
-from ..models import User, UserCreate, Token, Tenant
+from ..models import User, UserCreate, Token, Tenant, ContactMessage, ContactMessageCreate
 from ..auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
@@ -131,3 +131,16 @@ async def reset_password(req: ResetPasswordRequest, session: Session = Depends(g
     session.commit()
     
     return {"status": "success", "message": "Password reset successfully"}
+
+@router.post("/api/contact")
+async def contact_us(message_data: ContactMessageCreate, session: Session = Depends(get_session)):
+    db_message = ContactMessage.from_orm(message_data)
+    # In a real multi-tenant app, you might determine the tenant differently
+    db_message.tenant_id = 1 
+    session.add(db_message)
+    session.commit()
+    
+    # Here you would trigger an email to support/admin
+    # For example: send_contact_email(db_message.email, db_message.subject, db_message.message)
+    
+    return {"status": "success", "message": "Your message has been sent successfully."}

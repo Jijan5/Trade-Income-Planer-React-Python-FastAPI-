@@ -282,9 +282,9 @@ const PostItem = React.memo(
       >
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-3">
-            {post.user_avatar_url ? (
+            {post.avatar_url ? (
               <img
-                src={`${API_BASE_URL}${post.user_avatar_url}`}
+                src={`${API_BASE_URL}${post.avatar_url}`}
                 alt={post.username}
                 className="w-8 h-8 rounded-full object-cover"
               />

@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from pydantic import BaseModel
 from sqlmodel import Session, select, SQLModel
 from sqlalchemy import text
 from ..database import get_session
 from ..dependencies import get_current_admin_user, get_current_user
-from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification, UserUpdateAdmin
+from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification, UserUpdateAdmin, ContactMessage
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -183,3 +184,35 @@ async def delete_user(user_id: int, user: User = Depends(get_current_admin_user)
     session.delete(db_user)
     session.commit()
     return {"status": "success"}
+
+
+class AdminReplyRequest(BaseModel):
+    reply_message: str
+
+
+@router.get("/contact-messages", response_model=list[ContactMessage])
+async def get_contact_messages(user: User = Depends(get_current_admin_user), session: Session = Depends(get_session)):
+    return session.exec(select(ContactMessage).where(ContactMessage.tenant_id == user.tenant_id).order_by(ContactMessage.created_at.desc())).all()
+
+
+@router.post("/contact-messages/{message_id}/reply")
+async def reply_to_contact_message(
+    message_id: int,
+    reply: AdminReplyRequest,
+    user: User = Depends(get_current_admin_user),
+    session: Session = Depends(get_session)
+):
+    db_message = session.get(ContactMessage, message_id)
+    if not db_message:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    db_message.admin_reply = reply.reply_message
+    db_message.status = "replied"
+    db_message.replied_at = datetime.utcnow()
+    session.add(db_message)
+    session.commit()
+
+    # Here you would trigger an email to the user
+    # For example: send_reply_email(db_message.email, db_message.subject, reply.reply_message)
+
+    return {"status": "success", "message": "Reply sent successfully."}
