@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
+import ContactMessages from "./ContactMessages";
 
 const AdminDashboard = () => {
   const { userData } = useAuth();
@@ -21,7 +22,6 @@ const AdminDashboard = () => {
   const [posts, setPosts] = useState([]);
   const [searchContent, setSearchContent] = useState("");
   const [searchFeedback, setSearchFeedback] = useState("");
-  const [contactMessages, setContactMessages] = useState([]);
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -80,15 +80,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchContactMessages = async () => {
-    try {
-      const res = await api.get("/admin/contact-messages");
-      setContactMessages(res.data);
-    } catch (e) {
-      console.error("Failed to fetch contact messages", e);
-    }
-  };
-
   useEffect(() => {
     fetchStats();
     fetchUsers();
@@ -97,7 +88,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (activeTab === "reports") fetchReports();
     if (activeTab === "feedbacks") fetchFeedbacks();
-    if (activeTab === "contactMessages") fetchContactMessages();
     if (activeTab === "content") fetchAllPosts();
     let interval;
     if (activeTab === "appeals") {
@@ -674,39 +664,7 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "contactMessages" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Contact Messages
-            </h3>
-            {contactMessages.length === 0 ? (
-              <p className="text-gray-500">No messages found.</p>
-            ) : (
-              contactMessages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className="bg-gray-900 p-4 rounded border border-gray-700"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <p className="font-bold text-blue-400">{msg.subject}</p>
-                      <p className="text-sm text-gray-300">
-                        {msg.name}{" "}
-                        <span className="text-xs text-gray-500">
-                          ({msg.email})
-                        </span>
-                      </p>
-                    </div>
-                    <span className="text-gray-500 text-xs flex-shrink-0 ml-4">
-                      {new Date(msg.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  <p className="text-gray-300 bg-gray-800/50 p-3 rounded-md mt-2">
-                    {msg.message}
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
+          <ContactMessages showFlash={showFlash} />
         )}
 
         {activeTab === "appeals" && (

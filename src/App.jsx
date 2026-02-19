@@ -1251,7 +1251,10 @@ function App() {
               path="/suspended"
               element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
             />
-            <Route path="/contact-us" element={<ContactUs />} />
+            <Route
+              path="/contact-us"
+              element={<ContactUs showFlash={showFlash} />}
+            />
           </Routes>
         </div>
         {/* 📱 MOBILE BOTTOM NAVIGATION */}
@@ -1366,7 +1369,10 @@ function App() {
                     </a>
                   </li>
                   <li>
-                    <a href="/contact-us" className="hover:text-white transition-colors">
+                    <a
+                      href="/contact-us"
+                      className="hover:text-white transition-colors"
+                    >
                       Contact Us
                     </a>
                   </li>

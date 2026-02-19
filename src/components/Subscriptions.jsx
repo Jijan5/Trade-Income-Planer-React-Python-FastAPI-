@@ -172,7 +172,7 @@ const Subscription = ({ onSubscribe }) => {
         <p className="text-gray-500 text-sm">
           Cancel anytime. Secure payment via Midtrans.
           <br />
-          Need a custom plan for a large team? <a href="#" className="text-blue-400 hover:underline">Contact us</a>.
+          Need a custom plan for a large team? <a href="/contact-us" className="text-blue-400 hover:underline">Contact us</a>.
         </p>
       </div>
     </div>

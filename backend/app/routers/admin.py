@@ -7,6 +7,7 @@ from sqlalchemy import text
 from ..database import get_session
 from ..dependencies import get_current_admin_user, get_current_user
 from ..models import User, UserRead, AdminUserUpdate, Feedback, PostResponse, Post, Report, BroadcastRequest, Notification, UserUpdateAdmin, ContactMessage
+from ..email_utils import send_contact_reply_email
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -187,7 +188,9 @@ async def delete_user(user_id: int, user: User = Depends(get_current_admin_user)
 
 
 class AdminReplyRequest(BaseModel):
-    reply_message: str
+    subject: str
+    message: str
+    recipient_email: str
 
 
 @router.get("/contact-messages", response_model=list[ContactMessage])
@@ -199,6 +202,7 @@ async def get_contact_messages(user: User = Depends(get_current_admin_user), ses
 async def reply_to_contact_message(
     message_id: int,
     reply: AdminReplyRequest,
+    background_tasks: BackgroundTasks,
     user: User = Depends(get_current_admin_user),
     session: Session = Depends(get_session)
 ):
@@ -206,13 +210,21 @@ async def reply_to_contact_message(
     if not db_message:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    db_message.admin_reply = reply.reply_message
-    db_message.status = "replied"
-    db_message.replied_at = datetime.utcnow()
-    session.add(db_message)
-    session.commit()
+    try:
+        # Send the email in the background
+        background_tasks.add_task(
+            send_contact_reply_email,
+            recipient_email=reply.recipient_email,
+            subject=reply.subject,
+            message=reply.message
+        )
+        
+        # Once email is queued for sending, delete the message
+        session.delete(db_message)
+        session.commit()
 
-    # Here you would trigger an email to the user
-    # For example: send_reply_email(db_message.email, db_message.subject, reply.reply_message)
+    except Exception as e:
+        # If the email task fails to be added (less likely) or sending fails
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
-    return {"status": "success", "message": "Reply sent successfully."}
+    return {"status": "success", "message": "Reply has been sent and message deleted."}

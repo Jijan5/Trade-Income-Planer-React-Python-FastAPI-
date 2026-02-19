@@ -8,6 +8,7 @@ import secrets
 import string
 from ..models import User, UserCreate, Token, Tenant, ContactMessage, ContactMessageCreate
 from ..auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
+from ..email_utils import send_contact_email
 
 router = APIRouter()
 
@@ -140,7 +141,12 @@ async def contact_us(message_data: ContactMessageCreate, session: Session = Depe
     session.add(db_message)
     session.commit()
     
-    # Here you would trigger an email to support/admin
-    # For example: send_contact_email(db_message.email, db_message.subject, db_message.message)
+    # Trigger an email to support/admin
+    send_contact_email(
+        name=db_message.name,
+        from_email=db_message.email,
+        subject=db_message.subject,
+        message=db_message.message
+    )
     
     return {"status": "success", "message": "Your message has been sent successfully."}

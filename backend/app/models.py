@@ -280,18 +280,6 @@ class ContactMessageCreate(BaseModel):
     subject: str
     message: str
 
-    image_url: Optional[str] = None
-    link_url: Optional[str] = None
-    created_at: datetime
-    likes: int
-    comments_count: int
-    shares_count: int
-    is_edited: bool
-    user_role: str
-    user_plan: str
-    user_avatar_url: Optional[str] = None
-    user_reaction: Optional[str] = None
-
 class Comment(SQLModel, table=True):
     id: Optional[int] = SQLField(default=None, primary_key=True)
     tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
