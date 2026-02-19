@@ -55,7 +55,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 class CheckUsernameRequest(BaseModel):
     username: str
-    tenant_id: int  # Assuming tenant_id is passed from frontend
+    tenant_id: int = 1
 
 @router.post("/api/check_username")
 async def check_username(req: CheckUsernameRequest, session: Session = Depends(get_session)):

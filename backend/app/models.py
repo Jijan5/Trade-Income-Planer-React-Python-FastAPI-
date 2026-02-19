@@ -134,12 +134,12 @@ class AdminUserUpdate(BaseModel):
   plan_expires_at: Optional[datetime] = None
 
 class UserUpdateAdmin(SQLModel):
-    tenant_id: int
-    username: str
-    email: str
-    role: str
-    plan: str
-    status: str
+    tenant_id: Optional[int] = None
+    username: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    plan: Optional[str] = None
+    status: Optional[str] = None
     full_name: Optional[str] = None
     country_code: Optional[str] = None
     phone_number: Optional[str] = None
@@ -297,6 +297,7 @@ class ReactionCreate(BaseModel):
     type: str # 'like', 'shock', 'rocket', 'chart_up', 'clap'
 
 class Feedback(SQLModel, table=True):
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
     id: Optional[int] = SQLField(default=None, primary_key=True)
     email: str
     message: str
