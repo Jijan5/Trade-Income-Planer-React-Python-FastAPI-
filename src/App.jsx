@@ -859,7 +859,7 @@ function App() {
               {token && (
                 <button
                   onClick={() => navigate("/subscription")}
-                  className="hidden md:flex items-center gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-lg font-bold shadow-lg transition-all duration-200 transform hover:scale-105"
+                  className="hidden md:block text-xs gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   👑 Upgrade Pro
                 </button>
@@ -1344,17 +1344,17 @@ function App() {
                 <h4 className="font-semibold mb-4">Platform</h4>
                 <ul className="space-y-2 text-sm text-gray-400">
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
+                    <a href="/simulation/manual" className="hover:text-white transition-colors">
                       Trade Simulator
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
+                    <a href="/community" className="hover:text-white transition-colors">
                       Communities
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:text-white transition-colors">
+                    <a href="/simulation/history" className="hover:text-white transition-colors">
                       Performance Tracking
                     </a>
                   </li>

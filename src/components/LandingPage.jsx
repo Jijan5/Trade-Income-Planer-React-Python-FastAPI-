@@ -233,7 +233,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
             onClick={onRegister}
             className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl font-bold text-lg shadow-xl shadow-blue-600/30 transition-all transform hover:scale-105"
           >
-            Start Your Free Trial
+            Register Now!
           </button>
         </div>
       </section>
