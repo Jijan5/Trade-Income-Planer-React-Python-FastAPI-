@@ -30,3 +30,8 @@ mysql-connector-python
 aiofiles
 utils
 secure-smtplib
+
+# Test dependencies
+pytest
+pytest-asyncio
+pytest-cov

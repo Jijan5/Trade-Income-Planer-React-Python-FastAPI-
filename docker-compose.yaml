@@ -1,0 +1,64 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=password
+      - MYSQL_SERVER=db
+      - MYSQL_PORT=3306
+      - MYSQL_DB=db-trade-planer
+      - PORT=8080
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=db-trade-planer
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["sh", "/app/entrypoint.sh"]
+    environment:
+      - SECRET_KEY=test-secret-key-for-testing
+      - MYSQL_USER=test_user
+      - MYSQL_PASSWORD=test_password
+      - MYSQL_SERVER=localhost
+      - MYSQL_PORT=3306
+      - MYSQL_DB=test_db
+    volumes:
+      - ./coverage_html:/app/coverage_html
+    networks:
+      - app-network
+    profiles:
+      - test
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
