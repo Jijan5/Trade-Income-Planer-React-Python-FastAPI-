@@ -1,4 +1,5 @@
 # Trade Income Planner (TIP) 📈
+
 ![JSON](https://img.shields.io/badge/JSON-gray?style=for-the-badge&logo=json)
 ![Markdown](https://img.shields.io/badge/Markdown-gray?style=for-the-badge&logo=markdown)
 ![NPM](https://img.shields.io/badge/NPM-gray?style=for-the-badge&logo=npm)
@@ -21,88 +22,92 @@
 
 ### User Features
 
-*   **Trading Simulator:** Simulate trading strategies with real-time market data without risking real money.
-*   **Goal Planner:** Set financial goals and estimate the required monthly return to achieve them.
-*   **Manual Trade Tracking:** Manually record and analyze trading history for performance evaluation.
-*   **AI Trading Coach:** Leverage AI-powered insights to analyze trading behavior and identify areas for improvement.
-*   **Community:** Connect with other traders, share ideas, and participate in discussions.
-*   **Content Sharing:** Create and share posts, comment on other users' content, and react to posts.
-*   **Notifications:** Stay informed about important events, such as mentions, replies, and system announcements.
-*   **Mentions:** Receive notifications when mentioned in posts or comments.
-*   **What-if Future Projection:** Simulate the future performance of a trading strategy with different scenarios.
-* **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
+- **Trading Simulator:** Simulate trading strategies with real-time market data without risking real money.
+- **Goal Planner:** Set financial goals and estimate the required monthly return to achieve them.
+- **Manual Trade Tracking:** Manually record and analyze trading history for performance evaluation.
+- **AI Trading Coach:** Leverage AI-powered insights to analyze trading behavior and identify areas for improvement.
+- **Community:** Connect with other traders, share ideas, and participate in discussions.
+- **Content Sharing:** Create and share posts, comment on other users' content, and react to posts.
+- **Notifications:** Stay informed about important events, such as mentions, replies, and system announcements.
+- **Mentions:** Receive notifications when mentioned in posts or comments.
+- **What-if Future Projection:** Simulate the future performance of a trading strategy with different scenarios.
+- **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
 
 ### Admin Features
 
-*   **Dashboard:** Get a bird's-eye view of the platform with key metrics like total users, active subscriptions, and monthly recurring revenue (MRR).
-*   **User Management:** Manage user accounts, including roles, subscription plans, and account status.
-*   **Content Moderation:** Review and moderate user-generated content, including posts and comments.
-*   **Reporting:** View and address user reports of inappropriate content.
-*   **Feedback Management:** Review and respond to user feedback.
-*   **Broadcasts:** Send announcements and updates to all users.
-*   **Suspension Appeals:** Review and act on user appeals for suspended accounts.
-*   **CRUD Operations:** Perform Create, Read, Update, and Delete operations on user accounts, posts, comments, and other resources.
+- **Dashboard:** Get a bird's-eye view of the platform with key metrics like total users, active subscriptions, and monthly recurring revenue (MRR).
+- **User Management:** Manage user accounts, including roles, subscription plans, and account status.
+- **Content Moderation:** Review and moderate user-generated content, including posts and comments.
+- **Reporting:** View and address user reports of inappropriate content.
+- **Feedback Management:** Review and respond to user feedback.
+- **Broadcasts:** Send announcements and updates to all users.
+- **Suspension Appeals:** Review and act on user appeals for suspended accounts.
+- **CRUD Operations:** Perform Create, Read, Update, and Delete operations on user accounts, posts, comments, and other resources.
 
 ### Integrations
 
-*   **Binance:** Real-time market data is fetched from Binance to provide accurate trading simulations.
-*   **Midtrans:** Secure payment gateway integration for handling subscriptions and payments.
-*   **Google Gemini:** AI-powered insights and analysis are provided through integration with Google Gemini.
+- **Binance:** Real-time market data is fetched from Binance to provide accurate trading simulations.
+- **Midtrans:** Secure payment gateway integration for handling subscriptions and payments.
+- **Google Gemini:** AI-powered insights and analysis are provided through integration with Google Gemini.
 
 ## Technology Stack
 
-*   **Frontend:** React, Tailwind CSS, Recharts, Axios, date-fns
-*   **Backend:** FastAPI, Python, SQLModel, Pydantic
-*   **Database:** MySQL
+- **Frontend:** React, Tailwind CSS, Recharts, Axios, date-fns
+- **Backend:** FastAPI, Python, SQLModel, Pydantic
+- **Database:** MySQL
 
 ## React UI
 
 The React-based frontend provides a user-friendly interface for interacting with the application. Key components include:
 
-*   **LandingPage:** The initial page for new users, providing an overview of the platform and encouraging registration or login.
-*   **Auth:** A modal component for handling user authentication (login and registration).
-*   **Home:** The main feed displaying posts from users and communities.
-*   **Explore:** A section for discovering new content and communities.
-*   **Community:** A dedicated space for users to interact within specific communities.
-*   **Simulation:** A suite of tools for simulating trading strategies and planning financial goals.
-*   **Profile:** A page for users to manage their account settings and view their trading history.
-*   **AdminDashboard:** A panel for administrators to manage the platform.
-*   **Forgot Password:** Handles the Forgot Password flow.
+- **LandingPage:** The initial page for new users, providing an overview of the platform and encouraging registration or login.
+- **Auth:** A modal component for handling user authentication (login and registration).
+- **Home:** The main feed displaying posts from users and communities.
+- **Explore:** A section for discovering new content and communities.
+- **Community:** A dedicated space for users to interact within specific communities.
+- **Simulation:** A suite of tools for simulating trading strategies and planning financial goals.
+- **Profile:** A page for users to manage their account settings and view their trading history.
+- **AdminDashboard:** A panel for administrators to manage the platform.
+- **Forgot Password:** Handles the Forgot Password flow.
 
 ## Backend (FastAPI)
 
 The FastAPI backend provides the API endpoints and business logic for the application. Key features include:
 
-*   **User Authentication:** Secure user authentication and authorization using JWT.
-*   **Data Validation:** Robust data validation using Pydantic.
-*   **Database Interaction:** Efficient database interactions using SQLModel.
-*   **Asynchronous Operations:** Asynchronous task handling for improved performance.
-*   **API Endpoints:** Well-defined API endpoints for managing users, communities, posts, comments, and other resources.
+- **User Authentication:** Secure user authentication and authorization using JWT.
+- **Data Validation:** Robust data validation using Pydantic.
+- **Database Interaction:** Efficient database interactions using SQLModel.
+- **Asynchronous Operations:** Asynchronous task handling for improved performance.
+- **API Endpoints:** Well-defined API endpoints for managing users, communities, posts, comments, and other resources.
 
 ### Backend Architecture & Engine Logic
 
 The backend is built with **FastAPI**, leveraging **SQLModel** for database interactions and **Pydantic** for robust data validation. It is structured to be modular, asynchronous, and scalable.
 
 #### Core Engine (`engine.py`)
+
 The `engine.py` module contains the mathematical models and logic for the trading tools:
 
 1.  **`calculate_compounding(request: SimulationRequest)`**:
-    *   **Purpose:** Simulates equity growth over time based on a trading strategy.
-    *   **Logic:** It iterates through a specified number of days and trades per day. For each trade, it determines the outcome (Win/Loss) based on the `win_rate`. It calculates Profit/Loss (PnL) using `risk_per_trade` and `risk_reward_ratio`.
-    *   **Output:** Returns a day-by-day breakdown of balance growth, total ROI, and a log of simulated trades.
+
+    - **Purpose:** Simulates equity growth over time based on a trading strategy.
+    - **Logic:** It iterates through a specified number of days and trades per day. For each trade, it determines the outcome (Win/Loss) based on the `win_rate`. It calculates Profit/Loss (PnL) using `risk_per_trade` and `risk_reward_ratio`.
+    - **Output:** Returns a day-by-day breakdown of balance growth, total ROI, and a log of simulated trades.
 
 2.  **`calculate_goal_plan(request: GoalPlannerRequest)`**:
-    *   **Purpose:** Reverse-engineers the trading performance needed to achieve a financial goal.
-    *   **Logic:** Uses compound interest formulas to determine the required monthly return rate to go from `initial_balance` to `target_balance` within `deadline_months`.
-    *   **Output:** Provides the required monthly percentage and a feasibility assessment.
+
+    - **Purpose:** Reverse-engineers the trading performance needed to achieve a financial goal.
+    - **Logic:** Uses compound interest formulas to determine the required monthly return rate to go from `initial_balance` to `target_balance` within `deadline_months`.
+    - **Output:** Provides the required monthly percentage and a feasibility assessment.
 
 3.  **`get_market_price(symbol: str)`**:
-    *   **Purpose:** Fetches real-time asset prices.
-    *   **Logic:** Connects to external APIs (e.g., Binance) to retrieve current market data for the simulation context.
+
+    - **Purpose:** Fetches real-time asset prices.
+    - **Logic:** Connects to external APIs (e.g., Binance) to retrieve current market data for the simulation context.
 
 4.  **`analyze_trade_health(request: HealthAnalysisRequest)`**:
-    *   **Purpose:** AI-driven analysis of trading behavior.
-    *   **Logic:** Evaluates a list of trades to compute scores for Risk Management, Emotional Control, and System Adherence, providing actionable insights.
+    - **Purpose:** AI-driven analysis of trading behavior.
+    - **Logic:** Evaluates a list of trades to compute scores for Risk Management, Emotional Control, and System Adherence, providing actionable insights.
 
 ## Forgot Password Flow (PIN-Based)
 
@@ -118,40 +123,45 @@ The application implements a secure PIN-based forgot password flow for local dev
 
 The Admin Panel provides administrators with a comprehensive set of tools for managing the platform. Key features include:
 
-*   **Dashboard:**
-    *   Displays key metrics such as total users, active subscriptions, and monthly recurring revenue (MRR).
-    *   Provides insights into user growth and subscription distribution.
-*   **User Management:**
-    *   View and manage user accounts.
-    *   Edit user roles, subscription plans, and account status.
-    *   Suspend or ban users.
-*   **Subscriptions:**
-    *   View active subscriptions and their details.
-*   **Content Moderation:**
-    *   Review recent posts and comments.
-    *   Delete inappropriate content.
-*   **Reports:**
-    *   View user reports of inappropriate content.
-    *   Dismiss reports or take action on reported content.
-*   **Feedbacks:**
-    *   View user feedback and suggestions.
-    *   Delete irrelevant feedback.
-*   **Broadcasts:**
-    *   Send announcements and updates to all users.
-*   **Appeals:**
-    *   Review user appeals for suspended accounts.
-    *   Approve or reject appeals and provide feedback.
+- **Dashboard:**
+  - Displays key metrics such as total users, active subscriptions, and monthly recurring revenue (MRR).
+  - Provides insights into user growth and subscription distribution.
+- **User Management:**
+  - View and manage user accounts.
+  - Edit user roles, subscription plans, and account status.
+  - Suspend or ban users.
+- **Subscriptions:**
+  - View active subscriptions and their details.
+- **Content Moderation:**
+  - Review recent posts and comments.
+  - Delete inappropriate content.
+- **Reports:**
+  - View user reports of inappropriate content.
+  - Dismiss reports or take action on reported content.
+- **Feedbacks:**
+  - View user feedback and suggestions.
+  - Delete irrelevant feedback.
+-  **Contact Message**
+  - For recieve an email from user, admin can reply in this section.
+- **Broadcasts:**
+  - Send announcements and updates to all users.
+- **Appeals:**
+  - Review user appeals for suspended accounts.
+  - Approve or reject appeals and provide feedback.
 
 ---
 
 ## 📦 How to Run (Local Development)
 
 ### Prerequisites
-*   Node.js 25.2.1 & npm 11.6.2
-*   Python 3.13.1
+
+- Node.js 25.2.1 & npm 11.6.2
+- Python 3.13.1
 
 ### 1. Setup Backend
-```bash
+
+```
+bash
 cd backend
 # Create virtual environment
 python -m venv venv
@@ -162,51 +172,153 @@ pip install requirements.txt
 # Run server
 uvicorn app.main:app --reload
 ```
-*Backend will run at `http://127.0.0.1:8000`*
+
+_Backend will run at `http://127.0.0.1:8000`_
 
 ### 2. Setup Frontend
-```bash
+
+```
+bash
 # In a new terminal, go to project root
 npm install
 npm run dev
 ```
-*Frontend will run at `http://localhost:5173`*
+
+_Frontend will run at `http://localhost:5173`_
 
 ## Generate PIN code
+
 https://github.com/user-attachments/assets/f1a87a1b-4281-47ed-8301-d59f86201b26
 
 ## Chatbot AI
+
 https://github.com/user-attachments/assets/8a5c6c1b-2cc4-4659-8442-a72f20f4bf72
 
 ## Community
+
 https://github.com/user-attachments/assets/fcae2151-129a-4a43-ad21-f98527af88e0
 
 ## Explore (news)
+
 https://github.com/user-attachments/assets/d5d2195a-c4d9-4a6e-9843-3c2572a9f9f5
 
 ## Payment Gateway Midtrans
+
 https://github.com/user-attachments/assets/d6156725-f9fd-4ddc-b64e-28dace388cea
 
 ## Simulation: Strategy Simulator
+
 https://github.com/user-attachments/assets/0214c6fd-abaa-4a43-9abd-80f911204b91
 
 ## Simulation: Goal Planner
+
 https://github.com/user-attachments/assets/d3b856dd-d290-487a-8c9f-a824f6ce49f9
 
 ## Simulation: Manual Trade (Demo Account)
+
 https://github.com/user-attachments/assets/80edefac-50e9-4512-941f-81c2a6025e2b
 
 ## Admin: Suspended & Delete
+
 https://github.com/user-attachments/assets/bf384797-972b-42b8-81c2-db0836afd75c
 
 ## Admin: Delete content & Community
+
 https://github.com/user-attachments/assets/a4293ccf-7176-4592-b279-9335a02dd172
 
 ## Admin: Broadcast
+
 https://github.com/user-attachments/assets/b5fe29ee-5f2c-446b-9ced-44b4ce3bcc24
 
 ## Admin: Appeals & Broadcast notification
+
 https://github.com/user-attachments/assets/4e54dfa1-5a5a-4f39-a5bd-c32b60c00166
 
 ## Admin: Report content
+
 https://github.com/user-attachments/assets/46043f49-788c-4b61-9a3e-217bcc7bebd4
+
+---
+
+## 🐳 Docker Deployment
+
+The application includes Docker support for easy deployment. A `docker-compose.yaml` file is provided to run the entire stack.
+
+### Quick Start with Docker
+
+```
+bash
+docker-compose up --build
+```
+
+### Services
+
+- **backend**: FastAPI application (port 8080)
+- **db**: MySQL 8.0 database (port 3306)
+
+---
+
+## 🛡️ Security Features
+
+### Authentication & Authorization
+
+- JWT Authentication with 30-minute expiration
+- Password Hashing with bcrypt + SHA256
+- Role-Based Access Control (Admin/User)
+
+### API Security
+
+- Rate Limiting: 60 requests/minute per IP
+- CORS: Configurable allowed origins
+- Security Headers: X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, HSTS
+
+### Data Protection
+
+- Multi-Tenancy via tenant_id
+- SQL Injection Prevention with SQLModel
+- Input Validation with Pydantic
+
+---
+
+## 📋 Subscription Plans
+
+| Feature            | Free | Basic  | Premium | Platinum |
+| ------------------ | ---- | ------ | ------- | -------- |
+| Manual Trade       | ✅   | ✅     | ✅      | ✅       |
+| Strategy Simulator | ❌   | ❌     | ✅      | ✅       |
+| Goal Planner       | ❌   | ❌     | ✅      | ✅       |
+| Create Community   | ❌   | ❌     | ✅      | ✅       |
+| Price              | $0   | $12/mo | $19/mo  | $28/mo   |
+
+---
+
+## 🧪 Testing
+
+```
+bash
+cd backend
+pytest
+pytest --cov=app --cov-report=html
+```
+
+---
+
+## 📄 License
+
+This project is for educational. See the repository for details.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read the documentation and follow the code style guidelines.
+
+---
+
+## 📞 Support
+
+For issues and questions:
+
+- Check the [documentation](docs/)
+- Review the [API documentation](docs/api.md)
+- See [security documentation](docs/security.md)

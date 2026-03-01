@@ -8,7 +8,7 @@ import secrets
 import string
 from ..models import User, UserCreate, Token, Tenant, ContactMessage, ContactMessageCreate
 from ..auth import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from ..email_utils import send_contact_email
+from ..email_utils import send_contact_email, send_password_reset_email
 
 router = APIRouter()
 
@@ -84,25 +84,29 @@ class ResetPasswordRequest(BaseModel):
 async def forgot_password(req: ForgotPasswordRequest, session: Session = Depends(get_session)):
     user = session.exec(select(User).where(User.email == req.email, User.tenant_id == req.tenant_id)).first()
     if user:
-         # --- PRODUCTION SCRIPT (COMMENTED OUT) ---
-        # reset_token = secrets.token_urlsafe(32)
-        # user.reset_token = reset_token
-        # user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
-        # session.add(user)
-        # session.commit()
-        # send_email_reset(user.email, reset_token) # send email
-        
-        # --- LOCALHOST SCRIPT (PIN GENERATION) ---
+        # Generate 6-digit PIN
         pin = ''.join(secrets.choice(string.digits) for _ in range(6))
         user.reset_token = pin
-        user.reset_token_expires = datetime.utcnow() + timedelta(minutes=15) # PIN valid 15 minutes
+        user.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)  # PIN valid for 15 minutes
         session.add(user)
         session.commit()
 
-        print(f"\n========================================")
-        print(f" [LOCALHOST] PASSWORD RESET PIN: {pin} ")
-        print(f"========================================\n")
+        # --- PRODUCTION: Send PIN via email ---
+        # In production, this sends the actual email to the user
+        email_sent = send_password_reset_email(user.email, pin)
+        
+        if email_sent:
+            print(f"\n========================================")
+            print(f" [PRODUCTION] PIN sent to email: {user.email}")
+            print(f"========================================\n")
+        else:
+            # Fallback for development - show PIN in console if email fails
+            print(f"\n========================================")
+            print(f" [LOCAL/DEBUG] PASSWORD RESET PIN: {pin} ")
+            print(f" [Email failed to send - check SMTP settings]")
+            print(f"========================================\n")
 
+    # Always return generic message to prevent email enumeration
     return {"status": "success", "message": "If an account with this email exists, a PIN has been sent."}
 
 @router.post("/api/verify-reset-pin")

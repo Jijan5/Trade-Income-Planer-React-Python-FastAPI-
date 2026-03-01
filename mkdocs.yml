@@ -1,0 +1,57 @@
+site_name: Trade Income Planner
+site_description: Documentation for Trade Income Planner application
+site_author: Jijan5
+site_url: https://github.com/Jijan5/Trade-Income-Planer-React-Python-FastAPI-
+
+# Repository
+repo_name: Trade-Income-Planer-React-Python-FastAPI-
+repo_url: https://github.com/Jijan5/Trade-Income-Planer-React-Python-FastAPI-
+
+# Navigation
+nav:
+  - Home: index.md
+  - Installation:
+      - Quick Start: installation/quickstart.md
+      - Docker Setup: installation/docker.md
+      - Environment Variables: installation/environment.md
+  - Configuration:
+      - Database Setup: configuration/database.md
+      - Payment Gateway: configuration/payment-gateway.md
+      - Email Settings: configuration/email.md
+  - Usage:
+      - Running the App: usage/running.md
+      - User Guide: usage/user-guide.md
+      - Admin Guide: usage/admin-guide.md
+  - API Reference: api.md
+  - Testing: testing.md
+  - Deployment: deployment.md
+
+# Theme
+theme:
+  name: material
+  palette:
+    primary: teal
+    accent: teal
+  features:
+    - navigation.tabs
+    - navigation.top
+    - search.suggest
+    - search.highlight
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+  - mkdocstrings:
+      default_handler: python
+
+# Markdown extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+
+# Copyright
+copyright: Copyright &copy; 2024 Trade Income Planner

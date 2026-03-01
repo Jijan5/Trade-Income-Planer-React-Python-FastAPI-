@@ -116,3 +116,54 @@ def send_contact_reply_email(recipient_email: str, subject: str, message: str):
     except Exception as e:
         print(f"Local SMTP: Failed to send reply email: {e}")
         raise e # Re-raise the exception to be caught by the endpoint
+
+def send_password_reset_email(recipient_email: str, pin: str):
+    """
+    Sends a password reset PIN to the user's email.
+    Used for production password reset functionality.
+    """
+    if not all([SMTP_USER, SMTP_PASSWORD, SMTP_SERVER]):
+        print("SMTP credentials are not fully set in .env. Cannot send password reset email.")
+        return False
+
+    msg = MIMEMultipart()
+    msg['From'] = f"Trade Income Planner <{SMTP_USER}>"
+    msg['To'] = recipient_email
+    msg['Subject'] = "Password Reset PIN - Trade Income Planner"
+
+    # HTML body with PIN
+    body = f"""
+    <html>
+        <body>
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #333;">Password Reset Request</h2>
+                <p>Hello,</p>
+                <p>You requested to reset your password. Please use the following PIN code:</p>
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 20px 0;">
+                    {pin}
+                </div>
+                <p><strong>Important:</strong></p>
+                <ul>
+                    <li>This PIN is valid for 15 minutes only</li>
+                    <li>Do not share this PIN with anyone</li>
+                    <li>If you didn't request this, please ignore this email</li>
+                </ul>
+                <p>Best regards,<br>The Trade Income Planner Team</p>
+            </div>
+        </body>
+    </html>
+    """
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(SMTP_USER, recipient_email, text)
+        server.quit()
+        print(f"SMTP: Password reset PIN email sent successfully to {recipient_email}")
+        return True
+    except Exception as e:
+        print(f"SMTP: Failed to send password reset email: {e}")
+        return False

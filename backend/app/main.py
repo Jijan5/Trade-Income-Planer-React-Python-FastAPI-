@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException
+import os
+import time
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from dotenv import load_dotenv
 from .database import create_db_and_tables
 from .routers import auth, users, posts, communities, simulation, admin, general, payment
@@ -10,17 +13,92 @@ load_dotenv()
 
 app = FastAPI(title="Trading Simulation", version="1.0.0")
 
-# Setup CORS
+# Security: HTTP Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # 🛡️ Security Headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        
+        return response
+
+# Security: Rate Limiting Middleware
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Simple rate limiting middleware to prevent brute force attacks"""
+    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+        super().__init__(app)
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self.requests = {}
+    
+    async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for health checks and docs
+        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"]:
+            return await call_next(request)
+        
+        # Get client IP
+        client_ip = request.client.host if request.client else "unknown"
+        
+        # Check rate limit
+        current_time = time.time()
+        
+        if client_ip not in self.requests:
+            self.requests[client_ip] = []
+        
+        # Remove old requests outside the window
+        self.requests[client_ip] = [
+            req_time for req_time in self.requests[client_ip]
+            if current_time - req_time < self.window_seconds
+        ]
+        
+        # Check if limit exceeded
+        if len(self.requests[client_ip]) >= self.max_requests:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Please try again later."},
+                headers={"Retry-After": str(self.window_seconds)}
+            )
+        
+        # Add current request
+        self.requests[client_ip].append(current_time)
+        
+        return await call_next(request)
+
+# Setup CORS - More restrictive for production
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS", 
+    "http://localhost:3000,http://localhost:4000,http://localhost:5173,http://127.0.0.1:5173"
+).split(",")
+
 app.add_middleware(
-  CORSMiddleware,
-  allow_origins=["http://localhost:3000", "http://localhost:4000", "http://localhost:5173", "http://127.0.0.1:5173"],
-  allow_credentials=True,
-  allow_methods=["*"],
-  allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "X-Tenant-Domain"],
 )
 
-# Serve the ‘static’ folder so it can be accessed from a browser
+# Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add rate limiting (60 requests per minute)
+app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
+
+# Serve the 'static' folder so it can be accessed from a browser
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # DB Startup
 @app.on_event("startup")
 def startup_event():

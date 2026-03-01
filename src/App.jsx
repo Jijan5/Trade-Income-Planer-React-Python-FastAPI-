@@ -364,15 +364,28 @@ function App() {
   const [highlightedPost, setHighlightedPost] = useState(null);
   const planLevel = getPlanLevel(userData?.plan);
 
-  // #sandbox mode - Midtrans Integration
+  // 🛡️ SECURITY: Midtrans Integration - Use environment variables
+  // In production, set VITE_MIDTRANS_URL and VITE_MIDTRANS_CLIENT_KEY in .env
   useEffect(() => {
+    // Get configuration from environment variables
+    const midtransUrl = import.meta.env.VITE_MIDTRANS_URL || "https://app.sandbox.midtrans.com/snap/snap.js";
+    const midtransClientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "";
+    
+    // Only load if client key is configured
+    if (!midtransClientKey) {
+      console.warn("Midtrans client key not configured. Payment feature disabled.");
+      return;
+    }
+
     const script = document.createElement("script");
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", "SB-Mid-client-po0vaah-531nIOz5");
+    script.src = midtransUrl;
+    script.setAttribute("data-client-key", midtransClientKey);
     script.async = true;
     document.body.appendChild(script);
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 

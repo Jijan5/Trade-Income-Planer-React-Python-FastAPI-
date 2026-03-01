@@ -35,3 +35,8 @@ secure-smtplib
 pytest
 pytest-asyncio
 pytest-cov
+
+# Documentation
+mkdocs
+mkdocs-material
+mkdocstrings

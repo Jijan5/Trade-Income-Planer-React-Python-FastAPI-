@@ -176,12 +176,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                       {currentUser === post.username || userData?.role === 'admin' ? (
                         <>
                           {currentUser === post.username && (
-                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white">Edit</button>
+                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-gray-300 hover:text-white">Edit</button>
                           )}
-                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300">Delete</button>
+                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-red-400 hover:text-red-300">Delete</button>
                           </>
                       ) : (
-                        <button onClick={handleReportClick} className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300">Report</button>
+                        <button onClick={handleReportClick} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-yellow-400 hover:text-yellow-300">Report</button>
                       )}
                     </div>
                   )}
@@ -219,7 +219,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                   <span className="text-sm font-bold">{post.likes > 0 ? post.likes : ""}</span>
                 </button>
                 {reactionModalPostId === post.id && (
-                  <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+                  <div className="absolute bottom-full left-0 mb-2 flex border bg-gray-800 border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
                     {reactions.map((r) => (
                       <button key={r.type} onClick={() => handleLocalReaction(r.type)} className="p-2 rounded-full transition-transform hover:scale-125 text-xl" title={r.label}>{r.emoji}</button>
                     ))}

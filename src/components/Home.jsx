@@ -355,14 +355,14 @@ const PostItem = React.memo(
                     {currentUser === post.username && (
                       <button
                         onClick={() => startEditPost(post)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white"
+                        className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-gray-300 hover:text-white"
                       >
                         Edit
                       </button>
                     )}
                     <button
                       onClick={handleLocalDeletePost}
-                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300"
+                      className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-red-400 hover:text-red-300"
                     >
                       Delete
                     </button>
@@ -370,7 +370,7 @@ const PostItem = React.memo(
                 ) : (
                   <button
                     onClick={handleReportClick}
-                    className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300"
+                    className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-yellow-400 hover:text-yellow-300"
                   >
                     Report
                   </button>
@@ -429,7 +429,7 @@ const PostItem = React.memo(
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-700/50">
+        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-700/5">
           <div className="relative group">
             <button
               onMouseDown={() => handlePressStart(post.id)} // This just opens the modal
@@ -467,7 +467,7 @@ const PostItem = React.memo(
               </span>
             </button>
             {reactionModalPostId === post.id && (
-              <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+              <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 bg-gray-800 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
                 {reactions.map((r) => (
                   <button
                     key={r.type}
@@ -1142,19 +1142,9 @@ const Home = ({
     // Only show loading indicator on initial fetch if no data exists
     if (isMounted.current && marketPricesRef.current.length === 0)
       setLoadingPrices(true);
-    const symbols = [
-      "BTC-USD",
-      "ETH-USD",
-      "SOL-USD",
-      "BNB-USD",
-      "XRP-USD",
-      "PEPE24478-USD",
-    ];
+    const symbols = ["BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD"];
     const requests = symbols.map((sym) =>
-      api.get(`/price/${sym}`, { timeout: 5000 }).catch((err) => {
-        if (isMounted.current) {
-          console.warn(`Failed to fetch price for ${sym}`, err);
-        }
+      api.get(`/price/${sym}`, { timeout: 5000 }).catch(() => {
         return null;
       })
     );
