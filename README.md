@@ -308,7 +308,9 @@ cd backend
 pytest
 pytest --cov=app --cov-report=html
 ```
-
+## Testing result
+<img width="876" height="726" alt="test coverage 1" src="https://github.com/user-attachments/assets/a043a62f-e2b3-4c50-b725-a84e96abceff" />
+<img width="878" height="728" alt="test coverage 2" src="https://github.com/user-attachments/assets/f79c9270-d3e0-42f2-b75e-2f41556c2a5a" />
 ---
 
 ## 📄 License
