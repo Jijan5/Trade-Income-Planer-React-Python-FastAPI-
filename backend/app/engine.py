@@ -1,11 +1,17 @@
 import random
 import math
+import time
 from decimal import Decimal, getcontext
 import requests
 from .models import ( SimulationResponse, DailyResult, TradeResult, GoalPlannerResponse, HealthAnalysisResponse )
 
 # Set precision for Decimal calculations
 getcontext().prec = 28
+
+# Simple in-memory cache for market prices
+# Cache format: {symbol: (price_data, timestamp)}
+_price_cache = {}
+_CACHE_DURATION = 30  # seconds
 
 def calculate_compounding(request):
     initial_balance = float(request.initial_balance)
@@ -199,6 +205,15 @@ def calculate_goal_plan(request):
         return {"status": "error", "message": str(e)}
 
 def get_market_price(symbol):
+    global _price_cache
+    
+    # Check cache first
+    current_time = time.time()
+    if symbol in _price_cache:
+        cached_data, timestamp = _price_cache[symbol]
+        if current_time - timestamp < _CACHE_DURATION:
+            return cached_data
+    
     # Prepare symbol
     raw_symbol = symbol.replace("BINANCE:", "").replace("24478", "").replace("7083", "")
     
@@ -211,7 +226,9 @@ def get_market_price(symbol):
         headers = {"User-Agent": "Mozilla/5.0"}
         r = requests.get(url, headers=headers, timeout=2)
         if r.status_code == 200: 
-            return {"status": "success", "price": float(r.json()['price']), "symbol": binance_symbol}
+            result = {"status": "success", "price": float(r.json()['price']), "symbol": binance_symbol}
+            _price_cache[symbol] = (result, current_time)
+            return result
     except:
         pass # Continue to fallback
 
@@ -224,7 +241,9 @@ def get_market_price(symbol):
         if r.status_code == 200:
             data = r.json()
             if "USD" in data:
-                return {"status": "success", "price": float(data["USD"]), "symbol": base_asset + "USDT"}
+                result = {"status": "success", "price": float(data["USD"]), "symbol": base_asset + "USDT"}
+                _price_cache[symbol] = (result, current_time)
+                return result
     except Exception as e:
         print(f"Price fetch error: {e}")
 
