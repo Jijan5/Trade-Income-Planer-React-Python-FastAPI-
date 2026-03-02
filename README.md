@@ -141,8 +141,8 @@ The Admin Panel provides administrators with a comprehensive set of tools for ma
 - **Feedbacks:**
   - View user feedback and suggestions.
   - Delete irrelevant feedback.
--  **Contact Message**
-  - For recieve an email from user, admin can reply in this section.
+- **Contact Us:**
+  - View and manage user inquiries and messages.
 - **Broadcasts:**
   - Send announcements and updates to all users.
 - **Appeals:**
