@@ -206,6 +206,14 @@ https://github.com/user-attachments/assets/d5d2195a-c4d9-4a6e-9843-3c2572a9f9f5
 
 https://github.com/user-attachments/assets/d6156725-f9fd-4ddc-b64e-28dace388cea
 
+## Mention User
+
+https://github.com/user-attachments/assets/a29eb952-4946-4036-a652-d35e1cace9e6
+
+## Contact Us
+
+https://github.com/user-attachments/assets/7cceccd5-9e3c-4054-93ae-df4743c5511b
+
 ## Simulation: Strategy Simulator
 
 https://github.com/user-attachments/assets/0214c6fd-abaa-4a43-9abd-80f911204b91
