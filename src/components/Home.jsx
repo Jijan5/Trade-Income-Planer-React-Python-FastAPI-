@@ -672,7 +672,7 @@ const PostItem = React.memo(
                               activeMenu?.id === comment.id && (
                                 <div
                                   ref={menuRef}
-                                  className="absolute left-0 mt-1 w-24 border border-gray-600 rounded shadow-xl z-20"
+                                  className="absolute left-0 mt-1 w-24 border bg-gray-800 border-gray-600 rounded shadow-xl z-20"
                                 >
                                   <button
                                     onClick={() => startEditComment(comment)}

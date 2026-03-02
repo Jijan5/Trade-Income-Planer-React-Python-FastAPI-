@@ -91,7 +91,7 @@ async def create_transaction(req: PaymentRequest, current_user=Depends(get_curre
         raise HTTPException(status_code=500, detail="Failed to processed payment")
     
 @router.post("/api/payment/verify")
-async def verify_payment(req: VerifyPaymentRequest, session: Session = Depends(get_session)):
+async def verify_payment(req: VerifyPaymentRequest, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     try:
         # Cek status transaksi ke Midtrans Core API
         transaction_status_response = core.transactions.status(req.order_id)
@@ -115,11 +115,9 @@ async def verify_payment(req: VerifyPaymentRequest, session: Session = Depends(g
                 user_id = int(parts[1])
                 plan_id = parts[2]
                 
-                # Get current user's tenant_id for verification
-                current_user = Depends(get_current_user)
-                
-                # Update User Plan in Database
-                user = session.exec(select(User).where(User.id == user_id, User.tenant_id == current_user.tenant_id)).first()
+                # Use current_user's tenant_id for verification
+                # Update User Plan in Database (only update the current user's own plan)
+                user = session.exec(select(User).where(User.id == current_user.id, User.tenant_id == current_user.tenant_id)).first()
                 if user:
                     user.plan = plan_id.capitalize() # Basic, Premium, Platinum
                     session.add(user)

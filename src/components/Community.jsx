@@ -281,7 +281,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                               <div className="relative">
                                 <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
                                 {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 border border-gray-600 rounded shadow-xl z-20">
+                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 border bg-gray-800 border-gray-600 rounded shadow-xl z-20">
                                   {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300">Edit</button>}
                                   <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400">Delete</button>
                                   </div>
