@@ -385,3 +385,36 @@ class HealthAnalysisResponse(BaseModel):
   recommendation_reason: str
   trading_identity: str
   identity_insight: str
+
+# Beginner User Preferences Model
+class UserTradingPreferences(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    tenant_id: int = SQLField(foreign_key="tenant.id", index=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    # Tutorial progress
+    tutorial_completed: bool = SQLField(default=False)
+    tutorial_step: int = SQLField(default=0)
+    # Checklist preferences
+    checklist_required: bool = SQLField(default=True)
+    checklist_items: Optional[str] = SQLField(default=None)  # JSON string of checklist items
+    # Default trade settings
+    default_stop_loss: float = SQLField(default=2.0)
+    default_take_profit: float = SQLField(default=4.0)
+    default_position_size: float = SQLField(default=1000.0)
+    default_risk_percent: float = SQLField(default=1.0)
+    # Selected template
+    preferred_template: Optional[str] = SQLField(default=None)
+    # Timestamps
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class UserTradingPreferencesUpdate(BaseModel):
+    tutorial_completed: Optional[bool] = None
+    tutorial_step: Optional[int] = None
+    checklist_required: Optional[bool] = None
+    checklist_items: Optional[str] = None
+    default_stop_loss: Optional[float] = None
+    default_take_profit: Optional[float] = None
+    default_position_size: Optional[float] = None
+    default_risk_percent: Optional[float] = None
+    preferred_template: Optional[str] = None

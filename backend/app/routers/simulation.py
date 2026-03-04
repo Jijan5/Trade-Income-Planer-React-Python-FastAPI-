@@ -1,8 +1,9 @@
 import requests
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from datetime import datetime
 from ..database import get_session
-from ..models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, HealthAnalysisRequest, HealthAnalysisResponse, ManualTrade, ManualTradeCreate, User
+from ..models import SimulationRequest, SimulationResponse, GoalPlannerRequest, GoalPlannerResponse, HealthAnalysisRequest, HealthAnalysisResponse, ManualTrade, ManualTradeCreate, User, UserTradingPreferences, UserTradingPreferencesUpdate
 from ..engine import calculate_compounding, calculate_goal_plan, get_market_price, analyze_trade_health
 from ..dependencies import get_current_user, get_current_active_user
 
@@ -75,3 +76,114 @@ def get_klines(symbol: str, interval: str = "1d"):
             raise HTTPException(status_code=response.status_code, detail="Failed to fetch data from Binance")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# User Trading Preferences Endpoints
+@router.get("/api/trading-preferences")
+async def get_trading_preferences(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    """Get user's trading preferences for beginner features"""
+    prefs = session.exec(
+        select(UserTradingPreferences)
+        .where(UserTradingPreferences.tenant_id == user.tenant_id, UserTradingPreferences.user_id == user.id)
+    ).first()
+    
+    if not prefs:
+        # Create default preferences
+        prefs = UserTradingPreferences(
+            tenant_id=user.tenant_id,
+            user_id=user.id
+        )
+        session.add(prefs)
+        session.commit()
+        session.refresh(prefs)
+    
+    return prefs
+
+@router.put("/api/trading-preferences")
+async def update_trading_preferences(
+    updates: UserTradingPreferencesUpdate,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Update user's trading preferences"""
+    prefs = session.exec(
+        select(UserTradingPreferences)
+        .where(UserTradingPreferences.tenant_id == user.tenant_id, UserTradingPreferences.user_id == user.id)
+    ).first()
+    
+    if not prefs:
+        # Create new preferences if not exists
+        prefs = UserTradingPreferences(
+            tenant_id=user.tenant_id,
+            user_id=user.id
+        )
+    
+    # Apply updates
+    update_data = updates.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        if value is not None:
+            setattr(prefs, key, value)
+    
+    prefs.updated_at = datetime.utcnow()
+    session.add(prefs)
+    session.commit()
+    session.refresh(prefs)
+    
+    return prefs
+
+@router.post("/api/trading-preferences/complete-tutorial")
+async def complete_tutorial(
+    step: int = 0,
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Mark tutorial as completed or update step"""
+    prefs = session.exec(
+        select(UserTradingPreferences)
+        .where(UserTradingPreferences.tenant_id == user.tenant_id, UserTradingPreferences.user_id == user.id)
+    ).first()
+    
+    if not prefs:
+        prefs = UserTradingPreferences(
+            tenant_id=user.tenant_id,
+            user_id=user.id,
+            tutorial_completed=True,
+            tutorial_step=step
+        )
+    else:
+        prefs.tutorial_completed = True
+        prefs.tutorial_step = step
+        prefs.updated_at = datetime.utcnow()
+    
+    session.add(prefs)
+    session.commit()
+    session.refresh(prefs)
+    
+    return {"status": "success", "tutorial_completed": prefs.tutorial_completed}
+
+@router.post("/api/trading-preferences/save-checklist")
+async def save_checklist(
+    items: str,  # JSON string of checklist items
+    user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Save user's checklist configuration"""
+    prefs = session.exec(
+        select(UserTradingPreferences)
+        .where(UserTradingPreferences.tenant_id == user.tenant_id, UserTradingPreferences.user_id == user.id)
+    ).first()
+    
+    if not prefs:
+        prefs = UserTradingPreferences(
+            tenant_id=user.tenant_id,
+            user_id=user.id,
+            checklist_items=items
+        )
+    else:
+        prefs.checklist_items = items
+        prefs.updated_at = datetime.utcnow()
+    
+    session.add(prefs)
+    session.commit()
+    session.refresh(prefs)
+    
+    return {"status": "success", "checklist_items": prefs.checklist_items}

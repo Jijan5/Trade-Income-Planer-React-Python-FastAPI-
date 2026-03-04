@@ -59,6 +59,7 @@ This document outlines the security measures implemented in the Trade Income Pla
 | Strategy Simulator | ❌   | ❌    | ✅      | ✅       |
 | Goal Planner       | ❌   | ❌    | ✅      | ✅       |
 | Create Community   | ❌   | ❌    | ✅      | ✅       |
+| Verified Badge     | ❌   | ❌    | ❌      | ✅       |
 
 ---
 

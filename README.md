@@ -296,7 +296,8 @@ docker-compose up --build
 | Strategy Simulator | ❌   | ❌     | ✅      | ✅       |
 | Goal Planner       | ❌   | ❌     | ✅      | ✅       |
 | Create Community   | ❌   | ❌     | ✅      | ✅       |
-| Price              | $0   | $12/mo | $19/mo  | $28/mo   |
+| Verified Badge     | ❌   | ❌     | ❌      | ✅       |
+| Price              |  $0  |  $12/mo |  $19/mo  | $28/mo   |
 
 ---
 

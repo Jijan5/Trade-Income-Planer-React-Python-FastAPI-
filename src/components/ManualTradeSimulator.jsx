@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../lib/axios';
 import { useOutletContext } from "react-router-dom";
 import { useManualTrade } from "../contexts/ManualTradeContext";
 import { useAuth } from "../contexts/AuthContext";
 import { getPlanLevel } from "../utils/permissions";
+import { BeginnerWidgetsPanel } from "./BeginnerWidgets";
+import { QuickTemplateSelector } from "./TradeSetupTemplates";
+import { TradingGlossary, PreTradeChecklist, TutorialOverlay, BeginnerHelpButtons } from "./BeginnerHelpWidgets";
 
 // Memoized History Table to prevent re-renders on price ticks
 const TradeHistoryTable = React.memo(({ history }) => (
@@ -56,7 +59,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     marketState,
     account,
     challengeState,
-    isSessionActive, setIsSessionActive,
+    isSessionActive,
     healthData, setHealthData,
     lockout,
     timeLeft,
@@ -66,10 +69,58 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     resetSession,
   } = useManualTrade();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  
+  // Beginner help modal states
+  const [showGlossary, setShowGlossary] = useState(false);
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [checklistConfirmed, setChecklistConfirmed] = useState(false);
+  
   const { showFlash } = useOutletContext();
   const { userData } = useAuth();
   const planLevel = getPlanLevel(userData?.plan);
   const isAdmin = userData?.role === 'admin';
+
+  // Show tutorial on first visit
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('hideTutorial');
+    if (!hasSeenTutorial && isSessionActive) {
+      setShowTutorial(true);
+    }
+  }, [isSessionActive]);
+
+  // Handle applying position size from calculator
+  const handleApplyPositionSize = (size) => {
+    setConfig(prev => ({ ...prev, tradeAmount: size }));
+    showFlash(`Position size applied: $${size.toFixed(2)}`, "success");
+  };
+
+  // Handle applying trade setup template
+  const handleApplyTemplate = (template) => {
+    setConfig(prev => ({
+      ...prev,
+      stopLossPct: template.slPct,
+      takeProfitPct: template.tpPct
+    }));
+    setSelectedTemplate(template.id);
+    showFlash(`${template.name} template applied!`, "success");
+  };
+
+  // Handle checklist confirmation
+  const handleChecklistConfirm = () => {
+    setChecklistConfirmed(true);
+    setShowChecklist(false);
+  };
+
+  // Open position with checklist requirement
+  const handleOpenPosition = (type) => {
+    if (!checklistConfirmed) {
+      setShowChecklist(true);
+      return;
+    }
+    openPosition(type);
+  };
 
   const downloadCSV = () => {
     if (planLevel < 1 && !isAdmin) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
@@ -88,7 +139,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           trade.size,
           trade.finalPnL.toFixed(2),
           trade.reason,
-          `"${trade.note}"`, // Quote note to handle commas
+          `"${trade.note}"`,
           trade.closeTime.toLocaleString()
         ].join(",")
       ),
@@ -110,16 +161,10 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     if (account.history.length === 0) return;
     setIsAnalyzing(true);
     try {
-        // Prepare payload: map history to TradeItem format
-        // We need to reconstruct the balance history for the backend
         let runningBal = config.initialCapital;
-        
-        // Account history is newest first, so we reverse it to calculate chronologically
         const chronologicalTrades = [...account.history].reverse();
         
         const tradesPayload = chronologicalTrades.map(t => {
-            // Calculate approximate risk amount based on SL distance
-            // Risk = |Entry - SL| / Entry * Size
             let riskAmt = 0;
             const entry = parseFloat(t.entryPrice);
             const sl = parseFloat(t.slPrice);
@@ -130,7 +175,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 riskAmt = (Math.abs(entry - sl) / entry) * size;
             }
             
-            // Fallback: If riskAmt is 0 (e.g. missing SL) but trade was a loss, assume the realized loss was the risk taken.
             if ((!riskAmt || riskAmt === 0) && pnl < 0) {
                 riskAmt = Math.abs(pnl);
             }
@@ -155,7 +199,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   };
 
   if (!isSessionActive) {
-    // If lockout is active, show only the lockout screen.
     if (lockout) {
       return (
         <div className="bg-gray-900/95 border border-red-500/30 p-8 rounded-lg shadow-lg max-w-md mx-auto mt-10 text-center animate-fade-in">
@@ -208,7 +251,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   <input type="checkbox" checked={config.isChallengeMode} onChange={(e) => setConfig({...config, isChallengeMode: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
                 ) : (
                   <span className="text-xs text-gray-500 flex items-center gap-1">
-                    🔒 Basic+
+                    Basic+
                   </span>
                 )}
               </div>
@@ -237,17 +280,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               )}
             </div>
 
-            {/* Trading Rules Toggle (Feature #4) */}
+            {/* Trading Rules Toggle */}
             <div className="bg-gray-900 p-4 rounded border border-gray-700">
               <div className="flex items-center justify-between mb-4">
                 <label className="text-sm font-bold text-gray-300 uppercase flex items-center gap-2">
-                  👮 Enable Discipline Rules
+                  Enable Discipline Rules
                 </label>
                 {planLevel >= 2 || isAdmin ? (
                   <input type="checkbox" checked={config.enableRules} onChange={(e) => setConfig({...config, enableRules: e.target.checked})} className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
                 ) : (
                   <span className="text-xs text-gray-500 flex items-center gap-1">
-                    🔒 Premium
+                    Premium
                   </span>
                 )}
               </div>
@@ -308,7 +351,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 
                 {challengeState.status === 'ACTIVE' && (
                   <div className="space-y-3 mt-3">
-                    {/* Target Progress */}
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-400">Target: ${ (config.initialCapital * (1 + config.challengeTargetPct/100)).toLocaleString() }</span>
@@ -319,7 +361,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       </div>
                     </div>
 
-                    {/* Drawdown Limit */}
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-gray-400">Max Loss Limit: ${ (config.initialCapital * (1 - config.challengeMaxDrawdownPct/100)).toLocaleString() }</span>
@@ -337,11 +378,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               </div>
             )}
 
-            {/* AI Trading Coach Widget (NEW FEATURE) */}
+            {/* AI Trading Coach Widget */}
             <div className="col-span-1 bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-5 rounded-lg border border-blue-500/30">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        🤖 AI Trading Coach
+                        AI Trading Coach
                     </h3>
                     {planLevel >= 2 || isAdmin ? (
                       <button 
@@ -352,16 +393,15 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                           {isAnalyzing ? "Analyzing..." : "Analyze"}
                       </button>
                     ) : (
-                      <span className="text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">🔒 Premium</span>
+                      <span className="text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">Premium</span>
                     )}
                 </div>
                 
                 {healthData ? (
                     <div className="space-y-4 animate-fade-in">
-                      {/* Trading Identity Profile (Feature #5) */}
                       <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30">
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="text-lg">🎭</span>
+                                <span className="text-lg">Trading Persona</span>
                                 <p className="text-[10px] text-purple-300 uppercase font-bold">Your Trading Persona</p>
                             </div>
                             <p className="text-sm font-bold text-white leading-tight">{healthData.trading_identity}</p>
@@ -369,7 +409,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                                 "{healthData.identity_insight}"
                             </p>
                         </div>
-                        {/* Adaptive Risk Recommendation */}
                         <div className="bg-gray-800/80 p-3 rounded border border-gray-600 relative overflow-hidden">
                             <p className="text-[10px] text-blue-400 uppercase mb-1 font-bold">Recommended Risk (Next Trade)</p>
                             <div className="flex items-end gap-2">
@@ -380,7 +419,6 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                             <p className="text-xs text-gray-300 mt-1 leading-tight">{healthData.recommendation_reason}</p>
                         </div>
 
-                        {/* Health Score Breakdown */}
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-gray-400">Health Score</span>
@@ -456,6 +494,33 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     </div>
                 </div>
 
+                {/* Beginner Help Buttons */}
+                <BeginnerHelpButtons 
+                  onOpenGlossary={() => setShowGlossary(true)}
+                  onOpenChecklist={() => setShowChecklist(true)}
+                  onOpenTutorial={() => setShowTutorial(true)}
+                />
+
+                {/* Trade Setup Template Selector */}
+                <QuickTemplateSelector 
+                  selectedTemplate={selectedTemplate}
+                  onSelectTemplate={setSelectedTemplate}
+                  onApplyTemplate={handleApplyTemplate}
+                />
+
+                {/* Beginner Widgets Panel */}
+                <BeginnerWidgetsPanel 
+                  accountBalance={account.balance}
+                  stopLossPct={config.stopLossPct}
+                  takeProfitPct={config.takeProfitPct}
+                  currentPrice={marketState.price}
+                  tradeType="BUY"
+                  recentPnL={account.history.length > 0 ? account.history[0]?.finalPnL || 0 : 0}
+                  totalTrades={account.history.length}
+                  initialCapital={config.initialCapital}
+                  onApplyPositionSize={handleApplyPositionSize}
+                />
+
                 <div className="mb-6">
                     <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">Trade Amount ($)</label>
                     <input
@@ -498,9 +563,16 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     />
                 </div>
 
+                {/* Checklist indicator */}
+                {!checklistConfirmed && (
+                  <div className="mb-4 p-2 bg-yellow-900/30 border border-yellow-500/30 rounded text-center">
+                    <p className="text-xs text-yellow-400">Complete checklist before trading</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                     <button
-                        onClick={() => openPosition('BUY')}
+                        onClick={() => handleOpenPosition('BUY')}
                         disabled={marketState.isLoading || marketState.price <= 0 || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
                         className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
                     >
@@ -508,7 +580,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         <span className="text-[10px] opacity-70 font-normal">Profit if price goes UP</span>
                     </button>
                     <button
-                        onClick={() => openPosition('SELL')}
+                        onClick={() => handleOpenPosition('SELL')}
                         disabled={marketState.isLoading || marketState.price <= 0 || challengeState.status === 'FAILED' || challengeState.status === 'PASSED'}
                         className="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
                     >
@@ -534,7 +606,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       Export CSV
                   </button>
                 ) : (
-                  <button disabled className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-700 rounded cursor-not-allowed">Export CSV 🔒</button>
+                  <button disabled className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-700 rounded cursor-not-allowed">Export CSV</button>
                 )}
             </div>
         </div>
@@ -614,6 +686,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             {/* Trade History */}
             <TradeHistoryTable history={account.history} />
         </div>
+
+        {/* Beginner Help Modals - Rendered at the bottom */}
+        <TradingGlossary isOpen={showGlossary} onClose={() => setShowGlossary(false)} />
+        <PreTradeChecklist isOpen={showChecklist} onClose={() => setShowChecklist(false)} onConfirm={handleChecklistConfirm} />
+        <TutorialOverlay isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   );
 };

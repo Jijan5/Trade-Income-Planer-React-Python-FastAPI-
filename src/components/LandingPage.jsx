@@ -1,6 +1,68 @@
 import React from "react";
 
 const LandingPage = ({ onLogin, onRegister }) => {
+  // Feature data for the detailed features section
+  const features = [
+    {
+      id: "simulation",
+      icon: "📈",
+      title: "Strategy Simulation",
+      description: "Test your trading strategies with historical data and real-time market conditions. Run compound simulations to see how your account would grow over time with different risk parameters.",
+      features: ["Historical Backtesting", "Compound Growth Calculator", "Multiple Timeframes", "Risk Parameter Testing"],
+      imagePlaceholder: "/api/placeholder/600x400",
+      color: "blue",
+      alignment: "left"
+    },
+    {
+      id: "goal",
+      icon: "🎯",
+      title: "Goal Planner",
+      description: "Set realistic trading goals and track your progress. Calculate required returns to reach your financial targets with our advanced planning tools.",
+      features: ["Smart Goal Setting", "Progress Tracking", "Milestone Alerts", "Customizable Timelines"],
+      imagePlaceholder: "/api/placeholder/600x400",
+      color: "purple",
+      alignment: "right"
+    },
+    {
+      id: "manual",
+      icon: "🎮",
+      title: "Manual Trade Simulator",
+      description: "Practice trading with live market data without risking real money. Our comprehensive tools help beginners learn the ropes while experienced traders refine their strategies.",
+      features: [
+        "Live Market Execution",
+        "Position Size Calculator",
+        "Risk/Reward Ratio Display",
+        "Trade Setup Templates",
+        "Beginner Tips & Guidance",
+        "Pre-Trade Checklist",
+        "Trading Glossary",
+        "AI Trading Coach"
+      ],
+      imagePlaceholder: "/api/placeholder/600x400",
+      color: "green",
+      alignment: "left"
+    },
+    {
+      id: "history",
+      icon: "📊",
+      title: "Trade History & Analytics",
+      description: "Track your performance with comprehensive analytics. Visualize your progress with dynamic charts and detailed statistics to identify patterns and improve.",
+      features: [
+        "Dynamic Statistics Dashboard",
+        "PnL Over Time Charts",
+        "Win Rate Visualization",
+        "Trade Streak Tracking",
+        "Profit Factor Analysis",
+        "Average Win/Loss Metrics",
+        "Daily Performance View",
+        "CSV Export"
+      ],
+      imagePlaceholder: "/api/placeholder/600x400",
+      color: "cyan",
+      alignment: "right"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Hero Section */}
@@ -38,28 +100,11 @@ const LandingPage = ({ onLogin, onRegister }) => {
                 Access Dashboard
               </button>
             </div>
-            <div className="pt-8">
-              <p className="text-sm text-gray-400 mb-4">Trusted by traders worldwide</p>
-              {/* <div className="flex justify-center space-x-8 opacity-100">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-400">10K+</div>
-                  <div className="text-xs text-gray-400">Active Traders</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-purple-400">500K+</div>
-                  <div className="text-xs text-gray-400">Simulations Run</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">95%</div>
-                  <div className="text-xs text-gray-400">Success Rate</div>
-                </div>
-              </div> */}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Quick Features Section */}
       <section className="py-24 px-6 bg-gray-800/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -101,122 +146,142 @@ const LandingPage = ({ onLogin, onRegister }) => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      {/* <section className="py-16 px-6 bg-gradient-to-r from-gray-900 to-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-blue-400">10,000+</div>
-              <div className="text-gray-400">Active Traders</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-purple-400">$2.5M+</div>
-              <div className="text-gray-400">Virtual Profits Simulated</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-green-400">500+</div>
-              <div className="text-gray-400">Trading Strategies</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-4xl font-bold text-cyan-400">24/7</div>
-              <div className="text-gray-400">Market Monitoring</div>
-            </div>
-          </div>
-        </div>
-      </section> */}
-
-      {/* Testimonials Section */}
+      {/* Detailed Features Section */}
       <section className="py-24 px-6 bg-gray-900">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Traders Say</h2>
-            <p className="text-gray-400 text-lg">Hear from our community members</p>
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Powerful Trading Tools</h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Everything you need to become a consistently profitable trader
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-gray-800/50 p-8 rounded-2xl border border-gray-700">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  JD
+          <div className="space-y-24">
+            {features.map((feature, index) => (
+              <div 
+                key={feature.id} 
+                className={`flex flex-col ${feature.alignment === 'right' ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12`}
+              >
+                {/* Content Side */}
+                <div className="flex-1 space-y-6">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-${feature.color}-600/20 border border-${feature.color}-500/30`}>
+                    <span className="text-3xl">{feature.icon}</span>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold">{feature.title}</h3>
+                  <p className="text-gray-400 text-lg leading-relaxed">
+                    {feature.description}
+                  </p>
+                  <ul className="grid grid-cols-2 gap-3">
+                    {feature.features.map((item, idx) => (
+                      <li key={idx} className="flex items-center text-gray-300">
+                        <span className={`w-2 h-2 rounded-full bg-${feature.color}-500 mr-3`}></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={onRegister}
+                    className={`inline-flex items-center px-6 py-3 bg-${feature.color}-600 hover:bg-${feature.color}-500 text-white rounded-xl font-semibold transition-all`}
+                  >
+                    Get Started
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </div>
-                <div>
-                  <div className="font-semibold">John Doe</div>
-                  <div className="text-sm text-gray-400">Pro Trader</div>
+
+                {/* Image Side */}
+                <div className="flex-1 w-full">
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-800 border border-gray-700 shadow-2xl">
+                    {/* Placeholder for image - User can replace with actual images */}
+                    <div className={`aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center p-8`}>
+                      <div className="text-6xl mb-4 opacity-50">{feature.icon}</div>
+                      <div className="text-gray-500 text-center">
+                        <p className="text-lg font-semibold mb-2">{feature.title}</p>
+                        <p className="text-sm">Image placeholder - Add your screenshot here</p>
+                      </div>
+                      {/* Decorative elements */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className={`absolute top-4 right-4 w-20 h-20 bg-${feature.color}-500/10 rounded-full blur-xl`}></div>
+                        <div className={`absolute bottom-4 left-4 w-32 h-32 bg-${feature.color}-500/10 rounded-full blur-xl`}></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p className="text-gray-300 italic">
-                "This platform transformed my trading approach. The AI insights helped me identify patterns I never noticed before."
-              </p>
-              <div className="flex text-yellow-400 mt-4">
-                ★★★★★
-              </div>
-            </div>
-            <div className="bg-gray-800/50 p-8 rounded-2xl border border-gray-700">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  SM
-                </div>
-                <div>
-                  <div className="font-semibold">Sarah Miller</div>
-                  <div className="text-sm text-gray-400">Crypto Enthusiast</div>
-                </div>
-              </div>
-              <p className="text-gray-300 italic">
-                "The community here is incredible. I've learned more in 3 months than I did in 2 years trading alone."
-              </p>
-              <div className="flex text-yellow-400 mt-4">
-                ★★★★★
-              </div>
-            </div>
-            <div className="bg-gray-800/50 p-8 rounded-2xl border border-gray-700">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                  MR
-                </div>
-                <div>
-                  <div className="font-semibold">Mike Rodriguez</div>
-                  <div className="text-sm text-gray-400">Day Trader</div>
-                </div>
-              </div>
-              <p className="text-gray-300 italic">
-                "Risk-free simulation saved me thousands. Now I approach the market with a solid plan."
-              </p>
-              <div className="flex text-yellow-400 mt-4">
-                ★★★★★
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-24 px-6 bg-gray-800/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">Why Choose Trade Income Planner?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-            <div>
-              <h3 className="text-xl font-semibold mb-4 text-blue-400">Risk-Free Learning</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Practice trading with virtual money while learning from real market conditions. Build confidence and refine strategies before risking real capital.
-              </p>
+      {/* Manual Trade Features Highlight */}
+      <section className="py-24 px-6 bg-gradient-to-r from-green-900/20 to-cyan-900/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-green-900/30 border border-green-500/30 text-green-300 text-sm font-semibold mb-4">
+              🎮 Beginner Friendly
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4 text-purple-400">Data-Driven Insights</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Our AI analyzes your trading patterns to provide personalized recommendations, helping you avoid common mistakes and optimize performance.
-              </p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Manual Trade Simulator Features</h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Everything novice traders need to learn trading step by step
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Feature 1 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-green-500/50 transition-all">
+              <div className="w-12 h-12 bg-green-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">📊</div>
+              <h3 className="font-bold text-lg mb-2">Position Size Calculator</h3>
+              <p className="text-gray-400 text-sm">Calculate the right position size based on your risk tolerance and account balance.</p>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4 text-green-400">Community Support</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Join a network of successful traders sharing strategies, signals, and experiences. Learn from the best in a supportive environment.
-              </p>
+
+            {/* Feature 2 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-blue-500/50 transition-all">
+              <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">⚖️</div>
+              <h3 className="font-bold text-lg mb-2">Risk/Reward Display</h3>
+              <p className="text-gray-400 text-sm">See your potential risk vs reward before entering any trade.</p>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4 text-cyan-400">Professional Tools</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Access advanced charting, technical analysis, and performance tracking tools used by professional traders worldwide.
-              </p>
+
+            {/* Feature 3 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-purple-500/50 transition-all">
+              <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">📋</div>
+              <h3 className="font-bold text-lg mb-2">Trade Setup Templates</h3>
+              <p className="text-gray-400 text-sm">Choose from proven strategies like Breakout, Reversal, Range, and more.</p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-yellow-500/50 transition-all">
+              <div className="w-12 h-12 bg-yellow-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">💡</div>
+              <h3 className="font-bold text-lg mb-2">Beginner Tips</h3>
+              <p className="text-gray-400 text-sm">Get contextual tips based on your trading performance and experience level.</p>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-red-500/50 transition-all">
+              <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">✅</div>
+              <h3 className="font-bold text-lg mb-2">Pre-Trade Checklist</h3>
+              <p className="text-gray-400 text-sm">Follow a structured checklist before every trade to maintain discipline.</p>
+            </div>
+
+            {/* Feature 6 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-cyan-500/50 transition-all">
+              <div className="w-12 h-12 bg-cyan-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">📖</div>
+              <h3 className="font-bold text-lg mb-2">Trading Glossary</h3>
+              <p className="text-gray-400 text-sm">Learn trading terminology with our comprehensive built-in glossary.</p>
+            </div>
+
+            {/* Feature 7 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-indigo-500/50 transition-all">
+              <div className="w-12 h-12 bg-indigo-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">🎓</div>
+              <h3 className="font-bold text-lg mb-2">Tutorial Overlay</h3>
+              <p className="text-gray-400 text-sm">Step-by-step guided walkthrough for first-time users.</p>
+            </div>
+
+            {/* Feature 8 */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-pink-500/50 transition-all">
+              <div className="w-12 h-12 bg-pink-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">🤖</div>
+              <h3 className="font-bold text-lg mb-2">AI Trading Coach</h3>
+              <p className="text-gray-400 text-sm">Get AI-powered analysis of your trading patterns and personalized recommendations.</p>
             </div>
           </div>
         </div>
