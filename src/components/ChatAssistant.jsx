@@ -3,11 +3,14 @@ import api from "../lib/axios";
 
 const ChatAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showMarketPanel, setShowMarketPanel] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I am Tip, your AI Trading Mentor. Not sure where to start? Ask me about Risk Management or Strategy!' }
+    { role: 'assistant', content: 'Hello! I am Tip, your AI Trading Mentor. Ask me about market trends, trading strategies, or crypto analysis! 📈' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [marketData, setMarketData] = useState([]);
+  const [loadingMarket, setLoadingMarket] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -17,6 +20,25 @@ const ChatAssistant = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isOpen]);
+
+  // Fetch market data when panel opens
+  useEffect(() => {
+    if (showMarketPanel && marketData.length === 0) {
+      fetchMarketData();
+    }
+  }, [showMarketPanel]);
+
+  const fetchMarketData = async () => {
+    setLoadingMarket(true);
+    try {
+      const response = await api.get('/market-data?symbols=BTC,ETH,BNB,SOL,XRP');
+      setMarketData(response.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch market data", err);
+    } finally {
+      setLoadingMarket(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,15 +53,115 @@ const ChatAssistant = () => {
       const response = await api.post('/chat', { message: userMessage.content });
       const aiMessage = { role: 'assistant', content: response.data.response };
       setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Maaf, saya sedang offline sebentar. Coba lagi nanti ya.' }]);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I am having trouble responding. Please try again later.' }]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Quick market analysis questions
+  const quickQuestions = [
+    "What's the BTC trend?",
+    "Is ETH bullish?",
+    "Market analysis",
+    "Best crypto to trade?"
+  ];
+
+  const handleQuickQuestion = (question) => {
+    setInput(question);
+  };
+
   return (
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end font-sans">
+      {/* Market Data Panel */}
+      {isOpen && showMarketPanel && (
+        <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-900 to-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xs">📈</div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Market Trends</h3>
+                <p className="text-[10px] text-green-400">Live from Binance</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={fetchMarketData} disabled={loadingMarket} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loadingMarket ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              <button onClick={() => setShowMarketPanel(false)} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Market Data */}
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-900/50">
+            {loadingMarket ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-gray-400">Loading market data...</div>
+              </div>
+            ) : marketData.length > 0 ? (
+              <div className="space-y-3">
+                {marketData.map((coin, idx) => (
+                  <div key={idx} className="bg-gray-800 p-3 rounded-lg border border-gray-700">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-white">{coin.symbol}/USDT</span>
+                      <span className={`font-bold ${coin.change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {coin.change_24h >= 0 ? '📈' : '📉'} {coin.change_24h >= 0 ? '+' : ''}{coin.change_24h.toFixed(2)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">Price:</span>
+                      <span className="text-white font-mono">${coin.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">24h High:</span>
+                      <span className="text-green-400 font-mono">${coin.high_24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-400">24h Low:</span>
+                      <span className="text-red-400 font-mono">${coin.low_24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-gray-700">
+                      <span className={`text-xs px-2 py-1 rounded ${coin.trend.includes('Bullish') ? 'bg-green-900 text-green-400' : coin.trend.includes('Bearish') ? 'bg-red-900 text-red-400' : 'bg-gray-700 text-gray-400'}`}>
+                        {coin.trend}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No market data available
+              </div>
+            )}
+          </div>
+
+          {/* Quick Questions */}
+          <div className="p-3 bg-gray-800 border-t border-gray-700">
+            <p className="text-xs text-gray-500 mb-2">Quick Questions:</p>
+            <div className="flex flex-wrap gap-2">
+              {quickQuestions.map((q, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleQuickQuestion(q)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Window */}
       {isOpen && (
         <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in">
@@ -52,14 +174,26 @@ const ChatAssistant = () => {
               </div>
               <div>
                 <h3 className="font-bold text-white text-sm">Tip (Trading Mentor)</h3>
-                <p className="text-[10px] text-green-400">Online • Ready to help</p>
+                <p className="text-[10px] text-green-400">AI Powered • Online</p>
               </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
+            <div className="flex gap-2">
+              {/* Market Trends Button */}
+              <button 
+                onClick={() => setShowMarketPanel(!showMarketPanel)} 
+                className={`p-2 rounded-lg transition-colors ${showMarketPanel ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                title="View Market Trends"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </button>
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
@@ -93,7 +227,7 @@ const ChatAssistant = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask something to Tip..."
+              placeholder="Ask about market trends..."
               className="flex-1 bg-gray-900 text-white text-sm rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-gray-600 placeholder-gray-500"
             />
             <button 
