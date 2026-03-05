@@ -307,9 +307,7 @@ docker-compose up --build
 
 ```
 bash
-cd backend
-pytest
-pytest --cov=app --cov-report=html
+python -m pytest tests/
 ```
 ## Testing result
 <img width="749" height="604" alt="test coverage 1" src="https://github.com/user-attachments/assets/fe662232-9839-42fb-92bb-abbbcb2b3545" />
