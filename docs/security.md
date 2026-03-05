@@ -53,13 +53,15 @@ This document outlines the security measures implemented in the Trade Income Pla
 
 ### Subscription-Based Features
 
-| Feature            | Free | Basic | Premium | Platinum |
-| ------------------ | ---- | ----- | ------- | -------- |
-| Manual Trade       | ✅   | ✅    | ✅      | ✅       |
-| Strategy Simulator | ❌   | ❌    | ✅      | ✅       |
-| Goal Planner       | ❌   | ❌    | ✅      | ✅       |
-| Create Community   | ❌   | ❌    | ✅      | ✅       |
-| Verified Badge     | ❌   | ❌    | ❌      | ✅       |
+| Feature            | Free |  Basic  |  Premium  | Platinum |
+| ------------------ | ---- |  ------ |  -------  | -------- |
+| Manual Trade       | ✅   | ✅     | ✅      | ✅       |
+| Export CSV         | ❌   | ✅     | ✅      | ✅       |
+| Strategy Simulator | ❌   | ❌     | ✅      | ✅       |
+| Goal Planner       | ❌   | ❌     | ✅      | ✅       |
+| Create Community   | ❌   | ❌     | ✅      | ✅       |
+| Risk Calculator    | ❌   | ❌     | ✅      | ✅       |
+| Verified Badge     | ❌   | ❌     | ❌      | ✅       |
 
 ---
 

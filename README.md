@@ -290,12 +290,14 @@ docker-compose up --build
 
 ## 📋 Subscription Plans
 
-| Feature            | Free | Basic  | Premium | Platinum |
-| ------------------ | ---- | ------ | ------- | -------- |
+| Feature            | Free |  Basic  |  Premium  | Platinum |
+| ------------------ | ---- |  ------ |  -------  | -------- |
 | Manual Trade       | ✅   | ✅     | ✅      | ✅       |
+| Export CSV         | ❌   | ✅     | ✅      | ✅       |
 | Strategy Simulator | ❌   | ❌     | ✅      | ✅       |
 | Goal Planner       | ❌   | ❌     | ✅      | ✅       |
 | Create Community   | ❌   | ❌     | ✅      | ✅       |
+| Risk Calculator    | ❌   | ❌     | ✅      | ✅       |
 | Verified Badge     | ❌   | ❌     | ❌      | ✅       |
 | Price              |  $0  |  $12/mo |  $19/mo  | $28/mo   |
 

@@ -6,8 +6,8 @@ This guide explains how to run the Trade Income Planner application.
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+
+- Python 3.13+
+- Node.js 25.5.0+
 - MySQL 8.0+
 
 ### Backend

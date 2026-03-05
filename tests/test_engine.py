@@ -226,8 +226,13 @@ class TestGetMarketPrice:
 
     @patch('requests.get')
     def test_binance_price_failure(self, mock_get):
-        """Test price fetch failure from Binance."""
+        """Test price fetch failure from both Binance and CryptoCompare."""
+        # Mock both Binance and CryptoCompare to fail
         mock_get.side_effect = Exception("Network error")
+        
+        # Clear the price cache to ensure fresh test
+        from backend.app import engine
+        engine._price_cache.clear()
         
         result = get_market_price("BTC-USD")
         

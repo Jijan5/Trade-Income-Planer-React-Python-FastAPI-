@@ -68,16 +68,60 @@ The project targets **67-80% code coverage**.
 ### Current Coverage
 
 ```
-Name                          Stmts   Miss  Cover
------------------------------------------------------------
+Name                          Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------
 backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%
-backend\app\dependencies.py      40      2    95%
-backend\app\engine.py           217     18    92%
-backend\app\models.py           336      7    98%
-backend\app\utils.py             15     10    33%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-36562-365
+backend\app\models.py           361      7    98%   155-161
+backend\app\utils.py             15     10    33%   15-28
+-----------------------------------------------------------------
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
+backend\app\models.py           361      7    98%   155-161
+backend\app\utils.py             15     10    33%   15-28
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
+backend\app\models.py           361      7    98%   155-161
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\auth.py              35      0   100%
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 23, 26-27
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
+backend\app\models.py           361      7    98%   155-161
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
+backend\app\models.py           361      7    98%   155-161
+backend\app\utils.py             15     10    33%   15-28
 -----------------------------------------------------------
-TOTAL                           661     41    94%
+TOTAL                           698     46    93%
+Required test coverage of 90% reached. Total coverage: 93.41%
 ```
 
 ## Test Structure

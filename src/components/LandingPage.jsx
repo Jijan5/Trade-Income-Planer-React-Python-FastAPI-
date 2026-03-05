@@ -18,7 +18,10 @@ const LandingPage = ({ onLogin, onRegister }) => {
       icon: "🎯",
       title: "Goal Planner",
       description: "Set realistic trading goals and track your progress. Calculate required returns to reach your financial targets with our advanced planning tools.",
-      features: ["Smart Goal Setting", "Progress Tracking", "Milestone Alerts", "Customizable Timelines"],
+      features: [
+        "Smart Goal Setting", 
+        "Customizable Timelines"
+      ],
       imagePlaceholder: "/api/placeholder/600x400",
       color: "purple",
       alignment: "right"
@@ -36,7 +39,8 @@ const LandingPage = ({ onLogin, onRegister }) => {
         "Beginner Tips & Guidance",
         "Pre-Trade Checklist",
         "Trading Glossary",
-        "AI Trading Coach"
+        "AI Trading Coach",
+        "Risk Management Calculator"
       ],
       imagePlaceholder: "/api/placeholder/600x400",
       color: "green",
@@ -282,6 +286,13 @@ const LandingPage = ({ onLogin, onRegister }) => {
               <div className="w-12 h-12 bg-pink-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">🤖</div>
               <h3 className="font-bold text-lg mb-2">AI Trading Coach</h3>
               <p className="text-gray-400 text-sm">Get AI-powered analysis of your trading patterns and personalized recommendations.</p>
+            </div>
+
+            {/* Feature 9 - Risk Management Calculator */}
+            <div className="bg-gray-900/80 p-6 rounded-xl border border-gray-700 hover:border-red-500/50 transition-all">
+              <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center text-2xl mb-4">⚠️</div>
+              <h3 className="font-bold text-lg mb-2">Risk Management Calculator</h3>
+              <p className="text-gray-400 text-sm">Calculate position size, risk per trade, stop loss & take profit levels with educational tips for beginners.</p>
             </div>
           </div>
         </div>
