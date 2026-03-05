@@ -11,10 +11,8 @@ const Subscription = ({ onSubscribe }) => {
       yearlyPrice: 119,
       description: "For traders who want more data and control.",
       features: [
-        "Unlock All Assets (Meme Coins & Alts)",
         "Export Trade History (CSV) ✅",
         "Prop Firm Challenge Simulator ✅",
-        "Ad-Free Experience"
       ],
       color: "blue",
       recommended: false,
@@ -29,7 +27,8 @@ const Subscription = ({ onSubscribe }) => {
         "Everything in Basic",
         "🤖 AI Trading Coach Analysis",
         "👮 Discipline Mode (Trading Rules)",
-        "Strategy Simulator & Goal Planner ✅",
+        "⚠ Risk Management Calculator",
+        "📈 Strategy Simulator & Goal Planner",
         "Create up to 3 Communities"
       ],
       color: "purple",
@@ -43,7 +42,6 @@ const Subscription = ({ onSubscribe }) => {
       description: "Ultimate status and customization.",
       features: [
         "Everything in Premium",
-        "✨ VIP Community Styles (Animated)",
         "🎨 Custom Gradient Backgrounds",
         "✅ Verified User Badge",
         "Unlimited Community Creation",

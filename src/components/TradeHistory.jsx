@@ -236,7 +236,7 @@ const TradeHistory = () => {
       </div>
 
       {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
           <p className="text-xs text-gray-400 uppercase font-bold">Total PnL</p>
           <p className={`text-2xl font-bold ${stats.totalPnl >= 0 ? "text-green-400" : "text-red-400"}`}>
@@ -262,6 +262,12 @@ const TradeHistory = () => {
             {stats.profitFactor.toFixed(2)}
           </p>
           <p className="text-xs text-gray-500 mt-1">Avg R/R: 1:{stats.avgRR.toFixed(1)}</p>
+        </div>
+        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
+          <p className="text-xs text-gray-400 uppercase font-bold">Total Trades</p>
+          <p className={`text-2xl font-bold ${stats.totalTrades}`}>
+            {stats.totalTrades}
+          </p>
         </div>
       </div>
 
