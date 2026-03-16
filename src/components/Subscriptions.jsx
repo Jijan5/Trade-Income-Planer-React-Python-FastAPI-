@@ -42,7 +42,6 @@ const Subscription = ({ onSubscribe }) => {
       description: "Ultimate status and customization.",
       features: [
         "Everything in Premium",
-        "🎨 Custom Gradient Backgrounds",
         "✅ Verified User Badge",
         "Unlimited Community Creation",
         "Priority Support"

@@ -31,6 +31,8 @@
 - **Notifications:** Stay informed about important events, such as mentions, replies, and system announcements.
 - **Mentions:** Receive notifications when mentioned in posts or comments.
 - **What-if Future Projection:** Simulate the future performance of a trading strategy with different scenarios.
+- **Risk Management Calculator (Basic/Advanced):** Calculate your risk of trade before open position BUY/SELL with basic or advanced risk management features.
+- **Glossary:** A comprehensive reference guide defining key trading terms, concepts, and metrics used throughout the platform (e.g., win rate, risk-reward ratio, drawdown, ROI).
 - **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
 
 ### Admin Features
@@ -40,6 +42,8 @@
 - **Content Moderation:** Review and moderate user-generated content, including posts and comments.
 - **Reporting:** View and address user reports of inappropriate content.
 - **Feedback Management:** Review and respond to user feedback.
+- **Contact Messages:** View and manage user inquiries and messages.
+- **Appeals:** Review and respond to user appeals for account suspensions or other issues.
 - **Broadcasts:** Send announcements and updates to all users.
 - **Suspension Appeals:** Review and act on user appeals for suspended accounts.
 - **CRUD Operations:** Perform Create, Read, Update, and Delete operations on user accounts, posts, comments, and other resources.
@@ -300,6 +304,7 @@ docker-compose up --build
 | Risk Calculator    | ❌   | ❌     | ✅      | ✅       |
 | Verified Badge     | ❌   | ❌     | ❌      | ✅       |
 | Price              |  $0  |  $12/mo |  $19/mo  | $28/mo   |
+| Price              |  $0  | $119/yr | $189/yr  | $279/yr  |
 
 ---
 
