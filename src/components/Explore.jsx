@@ -11,35 +11,45 @@ const Explore = () => {
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
-    return () => { isMounted.current = false; };
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
   // --- 1. Fetch News Logic ---
   const fetchNews = async () => {
     try {
-      // Panggil endpoint proxy backend kita
       const response = await api.get("/news");
+      console.log("News API Response:", response.data);
       if (isMounted.current && response.data && response.data.Data) {
         setNews(response.data.Data);
+      } else {
+        console.log("No data.Data found, full response:", response.data);
       }
       if (isMounted.current) setLoading(false);
     } catch (err) {
       if (isMounted.current) {
         console.error("News Fetch Error:", err);
-        setError("Gagal memuat berita pasar.");
+        setError("Failed to load news.");
         setLoading(false);
       }
     }
   };
 
   useEffect(() => {
-    fetchNews();
-    // Auto-update setiap 5 menit (300000 ms)
-    const interval = setInterval(fetchNews, 300000);
+    const loadNews = async () => {
+      await fetchNews();
+    };
+
+    loadNews();
+    // Auto-update every 5 minutes (300000 ms)
+    const interval = setInterval(() => {
+      loadNews();
+    }, 300000);
     return () => {
       clearInterval(interval);
       isMounted.current = false;
-    }
+    };
   }, []);
 
   // --- 2. TradingView Ticker Widget ---
@@ -47,7 +57,8 @@ const Explore = () => {
     if (tickerContainer.current) {
       tickerContainer.current.innerHTML = "";
       const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
+      script.src =
+        "https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js";
       script.async = true;
       script.innerHTML = JSON.stringify({
         symbols: [
@@ -88,7 +99,10 @@ const Explore = () => {
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-gray-800 rounded-lg h-64 animate-pulse border border-gray-700"></div>
+              <div
+                key={i}
+                className="bg-gray-800 rounded-lg h-64 animate-pulse border border-gray-700"
+              ></div>
             ))}
           </div>
         )}
@@ -114,7 +128,7 @@ const Explore = () => {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                    {item.source_info.name}
+                    {item.source_info?.name || "News"}
                   </div>
                 </div>
 
@@ -126,12 +140,18 @@ const Explore = () => {
                   <p className="text-gray-400 text-sm line-clamp-3 mb-4 flex-1">
                     {item.body}
                   </p>
-                  
+
                   <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-700">
                     <span className="text-xs text-gray-500">
-                      {new Date(item.published_on * 1000).toLocaleDateString("id-ID", {
-                        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
-                      })}
+                      {new Date(item.published_on * 1000).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </span>
                     <a
                       href={item.url}
@@ -139,9 +159,20 @@ const Explore = () => {
                       rel="noopener noreferrer"
                       className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
                     >
-                      Read More 
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      Read More
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
                       </svg>
                     </a>
                   </div>

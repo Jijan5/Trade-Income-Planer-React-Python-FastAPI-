@@ -8,6 +8,7 @@ from ..models import ChatRequest, ChatResponse, FeedbackCreate, Feedback, Report
 from ..dependencies import get_current_user
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import datetime
 
 router = APIRouter()
 
@@ -147,15 +148,46 @@ async def chat_with_ai(request: ChatRequest):
 @router.get("/api/news")
 def get_crypto_news():
     try:
-        url = "https://min-api.cryptocompare.com/data/v2/news/?lang=EN"
+        url = "https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=10"
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise HTTPException(status_code=response.status_code, detail="Failed to fetch news")
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        api_data = response.json()
+        print(f"CoinDesk raw response keys: {api_data.keys()}")
+        articles = api_data.get('Data', [])
+        print(f"Found {len(articles)} articles")
+        
+        # Map to frontend expected format (CryptoCompare fields)
+        mapped_articles = []
+        for article in articles[:10]:
+            try:
+                # Use PUBLISHED_ON unix timestamp directly
+                published_on = article.get('PUBLISHED_ON', 0)
+                source_name = article.get('SOURCE_DATA', {}).get('NAME', 'Crypto News')
+                
+                mapped = {
+                    'id': str(article.get('ID', '')),
+                    'title': article.get('TITLE', 'No title'),
+                    'body': article.get('BODY', 'No description')[:300] + '...' if article.get('BODY') else 'Read full article for details.',
+                    'imageurl': article.get('IMAGE_URL', 'https://via.placeholder.com/400x250/1e293b/94a3b8?text=Crypto+News'),
+                    'published_on': published_on,
+                    'url': article.get('URL', '#'),
+                    'source_info': {
+                        'name': source_name
+                    }
+                }
+                mapped_articles.append(mapped)
+                print(f"Mapped article: {mapped['title'][:50]}...")
+            except Exception as e:
+                print(f"Error mapping article {article.get('ID')}: {e}")
+                continue
+        
+        print(f"Returning {len(mapped_articles)} mapped articles")
+        return {'Data': mapped_articles}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"News fetch error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch news from CoinDesk")
 
 @router.post("/api/feedback")
 async def submit_feedback(feedback: FeedbackCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
