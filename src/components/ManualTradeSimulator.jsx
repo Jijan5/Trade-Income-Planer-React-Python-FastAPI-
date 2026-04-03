@@ -621,84 +621,69 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             <div className="space-y-4 animate-fade-in">
               <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">Trading Persona</span>
+                <span className="text-lg font-bold text-white">{healthData.trading_identity}</span>
                   <p className="text-[10px] text-purple-300 uppercase font-bold">
-                    Your Trading Persona
+                    Your AI Trading Persona
                   </p>
                 </div>
-                <p className="text-sm font-bold text-white leading-tight">
-                  {healthData.trading_identity}
-                </p>
-                <p className="text-[10px] text-gray-400 mt-1 border-t border-purple-500/20 pt-1 italic">
+                <p className="text-xs text-gray-300 italic">
                   "{healthData.identity_insight}"
                 </p>
+                {healthData.ai_insight && (
+                  <div className="mt-2 p-2 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded border border-blue-500/30">
+                    <p className="text-[11px] text-blue-300 font-medium leading-tight">
+                      🎯 AI Coach Advice: {healthData.ai_insight}
+                    </p>
+                  </div>
+                )}
               </div>
-              <div className="bg-gray-800/80 p-3 rounded border border-gray-600 relative overflow-hidden">
-                <p className="text-[10px] text-blue-400 uppercase mb-1 font-bold">
-                  Recommended Risk (Next Trade)
+              <div className="bg-gray-800/80 p-3 rounded border border-gray-600">
+                <p className="text-[10px] text-blue-400 uppercase mb-2 font-bold">
+                  Recommended Risk & Action
                 </p>
-                <div className="flex items-end gap-2">
-                  <span className="text-3xl font-bold text-white">
-                    {healthData.recommended_risk}%
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-white">
+                    Risk: <span className="text-2xl">{healthData.recommended_risk}%</span>
+                  </span>
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                    healthData.overall_score >= 70 ? 'bg-green-900 text-green-400' :
+                    healthData.overall_score >= 50 ? 'bg-yellow-900 text-yellow-400' :
+                    'bg-red-900 text-red-400'
+                  }`}>
+                    Score: {healthData.overall_score}/100
                   </span>
                 </div>
-                <p className="text-xs text-gray-300 mt-1 leading-tight">
+                <p className="text-xs text-gray-300 leading-tight">
                   {healthData.recommendation_reason}
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-400">Health Score</span>
-                  <span
-                    className={`text-sm font-bold ${
-                      healthData.overall_score >= 70
-                        ? "text-green-400"
-                        : "text-yellow-400"
-                    }`}
-                  >
-                    {healthData.overall_score}/100
-                  </span>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <div className="text-sm font-bold text-blue-400">{healthData.risk_score}</div>
+                  <div className="text-[10px] text-gray-500 uppercase">Risk</div>
                 </div>
 
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>Risk</span>
-                    <span>{healthData.risk_score}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 h-1 rounded-full">
-                    <div
-                      className="bg-blue-500 h-1 rounded-full"
-                      style={{ width: `${healthData.risk_score}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>Emotion</span>
-                    <span>{healthData.emotional_score}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 h-1 rounded-full">
-                    <div
-                      className="bg-purple-500 h-1 rounded-full"
-                      style={{ width: `${healthData.emotional_score}%` }}
-                    ></div>
-                  </div>
-
-                  <div className="flex justify-between text-[10px] text-gray-500">
-                    <span>System (Win/Loss Quality)</span>
-                    <span>{healthData.system_score}</span>
-                  </div>
-                  <div className="w-full bg-gray-700 h-1 rounded-full">
-                    <div
-                      className="bg-green-500 h-1 rounded-full"
-                      style={{ width: `${healthData.system_score}%` }}
-                    ></div>
-                  </div>
+                <div>
+                  <div className="text-sm font-bold text-purple-400">{healthData.emotional_score}</div>
+                  <div className="text-[10px] text-gray-500 uppercase">Emotion</div>
                 </div>
-                <p className="text-[10px] text-gray-400 italic mt-2">
-                  "{healthData.summary}"
-                </p>
+                <div>
+                  <div className="text-sm font-bold text-green-400">{healthData.system_score}</div>
+                  <div className="text-[10px] text-gray-500 uppercase">System</div>
+                </div>
               </div>
+              <div className="text-[10px] text-gray-400 p-2 bg-gray-900/50 rounded">
+                {healthData.summary}
+              </div>
+              {healthData.warnings.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-yellow-400 uppercase">⚠️ Warnings</p>
+                  {healthData.warnings.map((warning, idx) => (
+                    <p key={idx} className="text-[10px] text-yellow-300 ml-2">• {warning}</p>
+                  ))}
+                </div>
+                )}
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500 text-xs">

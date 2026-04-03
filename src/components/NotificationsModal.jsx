@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNotifications } from '../contexts/NotificationContext';
 import VerifiedBadge from './VerifiedBadge';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => {
+const NotificationsModal = ({ onClose, onNotificationClick }) => {
+  const { notifications, markAllRead, unreadCount } = useNotifications();
   const [expanded, setExpanded] = useState({});
 
   const toggleExpand = (e, id) => {
@@ -46,8 +48,14 @@ const NotificationsModal = ({ notifications, onClose, onNotificationClick }) => 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          <h3 className="font-bold text-white">Notifications</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+          <h3 className="font-bold text-white flex items-center gap-2">
+            Notifications
+            {unreadCount > 0 && <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>}
+          </h3>
+          <div>
+            <button onClick={markAllRead} className="text-blue-400 hover:text-blue-300 mr-2 text-sm">Mark All Read</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+          </div>
         </div>
         
         <div className="flex-1 overflow-y-auto">

@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator, EmailStr
 from decimal import Decimal
 from typing import Literal, Optional
 from sqlmodel import Session, SQLModel, Field as SQLField
+import sqlalchemy as sa
 from datetime import datetime, timedelta
 
 # SaaS Tenant Model
@@ -65,6 +66,16 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
   response: str
+
+class ChatEnhancedRequest(BaseModel):
+  message: str
+  trades_summary: Optional[dict] = None
+  user_context: Optional[dict] = None
+  image_base64: Optional[str] = None
+
+class ChatEnhancedResponse(BaseModel):
+  response: str
+  insights: Optional[list[str]] = None
 
 # db models (auth)
 
@@ -385,6 +396,7 @@ class HealthAnalysisResponse(BaseModel):
   recommendation_reason: str
   trading_identity: str
   identity_insight: str
+  ai_insight: str = ""
 
 # Beginner User Preferences Model
 class UserTradingPreferences(SQLModel, table=True):

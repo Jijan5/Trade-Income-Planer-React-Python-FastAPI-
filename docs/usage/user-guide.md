@@ -79,6 +79,12 @@ Simulate manual trades:
    - Result (profit/loss)
 3. Track your performance over time
 
+**AI Coach Integration:** Use Coach Mode in chat to analyze your manual trades!
+
+### AI Trading Coach
+
+See [AI Coach Guide](ai-coach.md)
+
 ### Trade History
 
 View all your trading activity:

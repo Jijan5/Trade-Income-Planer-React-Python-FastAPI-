@@ -32,6 +32,7 @@ import ContactUs from "./components/ContactUs";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
+import { NotificationProvider, useNotifications } from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
 
@@ -712,11 +713,13 @@ function App() {
   }
 
   return (
-    <PostInteractionProvider showFlash={showFlash}>
-      {/* Override default Vite styles that constrain width */}
-      <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
-        {/* Override default Vite styles that constrain width */}
-        <style>{`
+      <NotificationProvider>
+        <PostInteractionProvider showFlash={showFlash}>
+          {/* Override default Vite styles that constrain width */}
+          <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
+
+          {/* Override default Vite styles that constrain width */}
+          <style>{`
         body { display: block !important; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
 
@@ -856,6 +859,7 @@ function App() {
                     {item.icon}
                   </button>
                 ))}
+
             </div>
 
             <div className="flex items-center gap-4">
@@ -1437,6 +1441,7 @@ function App() {
         )}
       </div>
     </PostInteractionProvider>
+  </NotificationProvider>
   );
 }
 

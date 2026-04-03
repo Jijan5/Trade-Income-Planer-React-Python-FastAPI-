@@ -125,3 +125,33 @@ async def mark_notifications_as_read(user: User = Depends(get_current_user), ses
         session.add(notif)
     session.commit()
     return {"status": "success"}
+
+# Achievement APIs
+@router.get("/api/achievements")
+async def get_achievements(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    achievements = session.exec(select(Achievement)).all()
+    unlocked = session.exec(select(UserAchievement).where(UserAchievement.user_id == user.id)).all()
+    unlocked_ids = {ua.achievement_id for ua in unlocked}
+    
+    result = []
+    for ach in achievements:
+        criteria = json.loads(ach.criteria)
+        progress = get_achievement_progress(user.id, ach.id, session)
+        result.append({
+            "id": ach.id,
+            "slug": ach.slug,
+            "name": ach.name,
+            "description": ach.description,
+            "category": ach.category,
+            "icon": ach.icon,
+            "rarity": ach.rarity,
+            "unlocked": ach.id in unlocked_ids,
+            "progress": progress
+        })
+    return result
+
+@router.post("/api/achievements/check")
+async def check_achievements(request: dict, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    from ..utils import check_and_unlock_achievements
+    new_unlocks = check_and_unlock_achievements(user.id, request['event'], request.get('data'), session)
+    return {"unlocked": new_unlocks}

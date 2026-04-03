@@ -1,10 +1,11 @@
 import os
 import requests
 import google.generativeai as genai
+# from google import genai
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from ..database import get_session
-from ..models import ChatRequest, ChatResponse, FeedbackCreate, Feedback, ReportCreate, Report, User
+from ..models import ChatRequest, ChatResponse, ChatEnhancedRequest, ChatEnhancedResponse, FeedbackCreate, Feedback, ReportCreate, Report, User
 from ..dependencies import get_current_user
 from pydantic import BaseModel
 from typing import Optional, List
@@ -144,6 +145,67 @@ async def chat_with_ai(request: ChatRequest):
         except Exception as e:
             print(f"Gemini API Error: {e}")
     return {"response": response_text}
+
+class TradingCoachRequest(BaseModel):
+    message: str
+    trades: Optional[list] = None
+    current_symbol: Optional[str] = None
+    current_position: Optional[dict] = None
+    account_balance: Optional[float] = None
+
+class TradingCoachResponse(BaseModel):
+    response: str
+    insights: Optional[list[str]] = None
+
+@router.post("/api/trading-coach", response_model=TradingCoachResponse)
+async def trading_coach(request: TradingCoachRequest):
+    api_key = os.getenv("GEMINI_TRADING_COACH_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Trading Coach unavailable.")
+    
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        context_parts = []
+        if request.trades:
+            trades_summary = "; ".join([
+                f"PnL ${t.get('pnl',0)} ({'Win' if t.get('is_win') else 'Loss'}), Risk ${t.get('risk_amount', 'N/A')}"
+                for t in request.trades[-10:]
+            ])
+            context_parts.append(f"Recent trades: {trades_summary}")
+        if request.current_position:
+            pos_type = request.current_position.get('type', '')
+            entry = request.current_position.get('entry', 0)
+            context_parts.append(f"Open {pos_type} @ ${entry}")
+        if request.account_balance:
+            context_parts.append(f"Balance: ${request.account_balance}")
+        
+        context = " | ".join(context_parts) if context_parts else "No context"
+        
+        prompt = f"""AI Trading Coach for Trade Income Planner app.
+
+USER CONTEXT: {context}
+USER ASK: {request.message}
+
+Give:
+1. Direct actionable answer
+2. Risk reminder
+3. Setup suggestion if relevant (entry/SL/TP)
+4. Psychology if fits
+
+Concise, professional."""
+
+        response = model.generate_content(prompt)
+        coach_response = response.text.strip()
+        
+        lines = coach_response.split('\n')
+        insights = [l.strip() for l in lines if l.strip() and len(l.strip()) < 100][:3]
+        
+        return TradingCoachResponse(response=coach_response, insights=insights)
+    except Exception as e:
+        print(f"Trading Coach error: {e}")
+        raise HTTPException(status_code=500, detail="Coach busy. Try again.")
 
 @router.get("/api/news")
 def get_crypto_news():

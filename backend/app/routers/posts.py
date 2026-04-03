@@ -112,6 +112,20 @@ async def create_post(
             community_id=community_id, notified_user_ids=set()
         )
         session.refresh(db_post) # Refresh again to get any updates from notifications
+        
+        # Emit WebSocket event for real-time notifications
+        notifications = session.exec(select(Notification).where(Notification.post_id == db_post.id)).all()
+        for notif in notifications:
+            await sio.emit('new_notification', {
+                'id': notif.id,
+                'user_id': notif.user_id,
+                'type': notif.type,
+                'content_preview': notif.content_preview,
+                'post_id': notif.post_id,
+                'comment_id': notif.comment_id,
+                'community_id': notif.community_id,
+                'created_at': notif.created_at.isoformat()
+            }, room=f'user_{notif.user_id}')
         # Prepare the response
         post_dict = db_post.dict()
         post_dict['tenant_id'] = db_post.tenant_id # Add tenant_id to the response

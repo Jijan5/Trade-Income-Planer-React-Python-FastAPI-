@@ -8,6 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from dotenv import load_dotenv
 from .database import create_db_and_tables
 from .routers import auth, users, posts, communities, simulation, admin, general, payment
+from fastapi_socketio import SocketManager
 
 load_dotenv()
 
@@ -40,7 +41,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         # Skip rate limiting for health checks and docs
-        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"]:
+        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] or request.url.path.startswith(('/socket.io/', '/auth', '/api')):
             return await call_next(request)
         
         # Get client IP
@@ -74,7 +75,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 # Setup CORS - More restrictive for production
 ALLOWED_ORIGINS = os.getenv(
     "ALLOWED_ORIGINS", 
-    "http://localhost:3000,http://localhost:4000,http://localhost:5173,http://127.0.0.1:5173"
+    "http://localhost:3000,http://localhost:4000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000"
 ).split(",")
 
 app.add_middleware(
@@ -88,8 +89,8 @@ app.add_middleware(
 # Add security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
 
-# Add rate limiting (60 requests per minute)
-app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+# Add rate limiting (300 requests per minute) - Increased for development
+app.add_middleware(RateLimitMiddleware, max_requests=300, window_seconds=60)
 
 # Health check endpoint
 @app.get("/health")
@@ -97,13 +98,19 @@ async def health_check():
     return {"status": "healthy", "version": "1.0.0"}
 
 # Serve the 'static' folder so it can be accessed from a browser
-app.mount("/static", StaticFiles(directory="static"), name="static")
+import os
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+else:
+    print("Warning: static directory not found, avatars disabled")
 
 # DB Startup
 @app.on_event("startup")
 def startup_event():
     create_db_and_tables()
 
+# SocketIO for real-time notifications
+sio = SocketManager(app=app, cors_allowed_origins=["http://localhost:5173", "http://127.0.0.1:5173"])
 # Include Routers
 app.include_router(general.router)
 app.include_router(auth.router)

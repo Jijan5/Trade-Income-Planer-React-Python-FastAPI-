@@ -15,6 +15,7 @@ uvicorn
 pydantic
 yfinance
 google-generativeai
+google-genai
 python-dotenv
 requests
 sqlmodel
@@ -24,6 +25,9 @@ pymysql
 PyJWT
 httpx
 websockets
+fastapi-socketio
+python-socketio
+authlib
 jinja2
 flet
 mysql-connector-python

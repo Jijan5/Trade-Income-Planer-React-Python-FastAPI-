@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from datetime import timedelta, datetime
@@ -154,3 +154,80 @@ async def contact_us(message_data: ContactMessageCreate, session: Session = Depe
     )
     
     return {"status": "success", "message": "Your message has been sent successfully."}
+
+# OAuth2 Social Login
+from authlib.integrations.starlette_client import OAuth
+from starlette.config import Config
+from starlette.responses import RedirectResponse
+from fastapi import Query
+from ..dependencies import get_current_user
+from ..auth import create_access_token
+from ..models import User
+from ..database import get_session
+import os
+
+# OAuth2 Social Login - DISABLED (add real keys to backend/app/.env)
+# from .config import config
+# oauth = OAuth(config)
+
+@router.get('/auth/google')
+async def google_login():
+    return {"error": "Google OAuth: Add GOOGLE_CLIENT_ID to backend/"}
+
+@router.get('/auth/facebook')
+async def facebook_login():
+    return {"error": "Facebook OAuth: Add FACEBOOK_APP_ID to backend/"}
+
+# OAuth2 Social Login - DISABLED until .env configured
+
+@router.get('/auth/google/callback')
+async def google_callback(request: Request, session: Session = Depends(get_session)):
+    token = await GOOGLE.authorize_access_token(request)
+    user_info = await GOOGLE.userinfo(token)
+    
+    email = user_info['email']
+    username = user_info['name'].replace(' ', '_').lower()[:20]
+    
+    user = session.exec(select(User).where(User.email == email)).first()
+    if not user:
+        user = User(
+            tenant_id=1,
+            username=username,
+            email=email,
+            full_name=user_info['name'],
+            hashed_password="social_auth",  # Dummy hash
+            provider='google'
+        )
+        session.add(user)
+        session.commit()
+    
+    access_token = create_access_token(data={"sub": user.username})
+    
+    redirect_url = f"http://localhost:5173/auth/callback/google?token={access_token}"
+    return RedirectResponse(url=redirect_url)
+
+@router.get('/auth/facebook/callback')
+async def facebook_callback(request: Request, session: Session = Depends(get_session)):
+    token = await FACEBOOK.authorize_access_token(request)
+    user_info = await FACEBOOK.get('me', token=token).json()
+    
+    email = user_info.get('email', f'fb_{user_info["id"]}@facebook.com')
+    username = user_info['name'].replace(' ', '_').lower()[:20]
+    
+    user = session.exec(select(User).where(User.email == email)).first()
+    if not user:
+        user = User(
+            tenant_id=1,
+            username=username,
+            email=email,
+            full_name=user_info['name'],
+            hashed_password="social_auth",
+            provider='facebook'
+        )
+        session.add(user)
+        session.commit()
+    
+    access_token = create_access_token(data={"sub": user.username})
+    
+    redirect_url = f"http://localhost:5173/auth/callback/facebook?token={access_token}"
+    return RedirectResponse(url=redirect_url)
