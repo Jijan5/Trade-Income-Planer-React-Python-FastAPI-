@@ -12,6 +12,9 @@ services:
       - MYSQL_PORT=3306
       - MYSQL_DB=db-trade-planer
       - PORT=8080
+      - WEB_CONCURRENCY=4
+      - RATE_LIMIT_REQUESTS=500
+      - RATE_LIMIT_WINDOW=60
     depends_on:
       db:
         condition: service_healthy
@@ -21,6 +24,7 @@ services:
 
   db:
     image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password --max_connections=300 --innodb_buffer_pool_size=512M --innodb_log_file_size=128M --query_cache_size=64M --table_open_cache=4000
     environment:
       - MYSQL_ROOT_PASSWORD=password
       - MYSQL_DATABASE=db-trade-planer
@@ -41,7 +45,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["sh", "/app/entrypoint.sh"]
+    command: ["sh", "/app/entrypoint.sh", "test"]
     environment:
       - SECRET_KEY=test-secret-key-for-testing
       - MYSQL_USER=test_user

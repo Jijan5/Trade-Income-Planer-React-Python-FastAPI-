@@ -258,7 +258,7 @@ def analyze_trade_health(request):
             overall_score=0, risk_score=0, emotional_score=0, system_score=0,
             summary="Not enough data. Complete a few trades for AI analysis.", warnings=[], recommended_risk=1.0,
             recommendation_reason="Start trading to get personalized coaching.", ai_insight="",
-            trading_identity="New Trader", identity_insight="Let's build your trading history first."
+            trading_identity="Newcomer", identity_insight="Let's build your trading history first."
         )
     
     # Use new GEMINI_TRADING_COACH_KEY

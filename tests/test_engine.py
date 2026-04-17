@@ -251,7 +251,7 @@ class TestAnalyzeTradeHealth:
         
         assert result.overall_score == 0
         assert result.summary == "Not enough data."
-        assert result.trading_identity == "Newcomer"
+        assert result.trading_identity == "New Trader"
 
     def test_basic_health_analysis(self, sample_health_analysis_request):
         """Test basic health analysis."""

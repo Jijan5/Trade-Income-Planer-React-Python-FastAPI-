@@ -89,8 +89,10 @@ app.add_middleware(
 # Add security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
 
-# Add rate limiting (300 requests per minute) - Increased for development
-app.add_middleware(RateLimitMiddleware, max_requests=300, window_seconds=60)
+# Add configurable rate limiting (default 100/min per IP, env override)
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
+app.add_middleware(RateLimitMiddleware, max_requests=RATE_LIMIT_REQUESTS, window_seconds=RATE_LIMIT_WINDOW)
 
 # Health check endpoint
 @app.get("/health")

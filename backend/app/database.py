@@ -17,7 +17,15 @@ if mysql_password:
 else:
     DATABASE_URL = f"mysql+pymysql://{mysql_user}@{mysql_server}:{mysql_port}/{mysql_db}"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {})
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    pool_size=20,
+    max_overflow=30,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    pool_timeout=20
+)
 
 def create_db_and_tables():
   SQLModel.metadata.create_all(engine)
