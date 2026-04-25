@@ -60,82 +60,172 @@ const LandingPage = ({ onLogin, onRegister }) => {
       
       {/* Inline styles for background animations & custom scrollbar */}
       <style>{`
-        html {
-          scroll-behavior: smooth;
-        }
-        /* Custom thin scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #030308;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: rgba(0, 207, 255, 0.15);
-          border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(0, 207, 255, 0.4);
-        }
+        html { scroll-behavior: smooth; }
 
-        /* Animated Neon Lines Background */
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030308; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,207,255,0.15); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,207,255,0.4); }
+
+        /* ── Wrapper ── */
         .neon-lines-container {
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
+          position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
         }
 
+        /* ── Horizontal streaks ── */
         .neon-line {
           position: absolute;
-          background: linear-gradient(90deg, transparent, rgba(0, 207, 255, 0.6), transparent);
-          height: 1px;
-          width: 250px;
-          opacity: 0;
-          animation: moveLine 15s linear infinite;
+          background: linear-gradient(90deg, transparent, rgba(0,207,255,0.7), transparent);
+          height: 1px; width: 300px; opacity: 0;
+          animation: moveLine linear infinite;
         }
-
-        .neon-line-v {
-          position: absolute;
-          background: linear-gradient(180deg, transparent, rgba(0, 207, 255, 0.5), transparent);
-          width: 1px;
-          height: 350px;
-          opacity: 0;
-          animation: moveLineV 20s linear infinite;
-        }
-
-        .neon-line:nth-child(1) { top: 15%; left: -250px; animation-duration: 22s; }
-        .neon-line:nth-child(2) { top: 45%; right: -250px; animation-duration: 28s; animation-direction: reverse; }
-        .neon-line:nth-child(3) { top: 75%; left: -250px; animation-duration: 25s; }
-        
-        .neon-line-v:nth-child(4) { left: 20%; top: -350px; animation-duration: 26s; }
-        .neon-line-v:nth-child(5) { left: 80%; bottom: -350px; animation-duration: 30s; animation-direction: reverse; }
+        .neon-line:nth-child(1)  { top:  8%; animation-duration: 18s; animation-delay:  0s; }
+        .neon-line:nth-child(2)  { top: 22%; animation-duration: 24s; animation-delay:  3s; animation-direction: reverse; }
+        .neon-line:nth-child(3)  { top: 40%; animation-duration: 20s; animation-delay:  6s; }
+        .neon-line:nth-child(4)  { top: 58%; animation-duration: 27s; animation-delay:  1s; animation-direction: reverse; }
+        .neon-line:nth-child(5)  { top: 72%; animation-duration: 22s; animation-delay:  9s; }
+        .neon-line:nth-child(6)  { top: 88%; animation-duration: 30s; animation-delay:  4s; animation-direction: reverse; }
 
         @keyframes moveLine {
-          0% { transform: translateX(0vw); opacity: 0; }
-          10% { opacity: 0.3; }
-          90% { opacity: 0.3; }
-          100% { transform: translateX(120vw); opacity: 0; }
+          0%   { transform: translateX(-320px); opacity: 0; }
+          8%   { opacity: 0.5; }
+          92%  { opacity: 0.5; }
+          100% { transform: translateX(110vw);  opacity: 0; }
         }
+
+        /* ── Vertical streaks ── */
+        .neon-line-v {
+          position: absolute;
+          background: linear-gradient(180deg, transparent, rgba(0,207,255,0.5), transparent);
+          width: 1px; height: 400px; opacity: 0;
+          animation: moveLineV linear infinite;
+        }
+        .neon-line-v:nth-child(7)  { left: 12%; animation-duration: 22s; animation-delay:  0s; }
+        .neon-line-v:nth-child(8)  { left: 35%; animation-duration: 28s; animation-delay:  5s; animation-direction: reverse; }
+        .neon-line-v:nth-child(9)  { left: 55%; animation-duration: 19s; animation-delay:  2s; }
+        .neon-line-v:nth-child(10) { left: 78%; animation-duration: 25s; animation-delay:  8s; animation-direction: reverse; }
+        .neon-line-v:nth-child(11) { left: 93%; animation-duration: 32s; animation-delay: 11s; }
 
         @keyframes moveLineV {
-          0% { transform: translateY(0vh); opacity: 0; }
-          10% { opacity: 0.2; }
-          90% { opacity: 0.2; }
-          100% { transform: translateY(120vh); opacity: 0; }
+          0%   { transform: translateY(-420px); opacity: 0; }
+          8%   { opacity: 0.3; }
+          92%  { opacity: 0.3; }
+          100% { transform: translateY(110vh);  opacity: 0; }
         }
+
+        /* ── Full-screen horizontal scan line ── */
+        .scan-line {
+          position: absolute; left: 0; width: 100%; height: 2px;
+          background: linear-gradient(90deg, transparent 0%, rgba(0,207,255,0.15) 30%, rgba(0,207,255,0.4) 50%, rgba(0,207,255,0.15) 70%, transparent 100%);
+          animation: scanDown 10s ease-in-out infinite;
+          opacity: 0;
+        }
+        @keyframes scanDown {
+          0%   { top: -2px;   opacity: 0; }
+          5%   { opacity: 1; }
+          95%  { opacity: 0.6; }
+          100% { top: 100vh;  opacity: 0; }
+        }
+
+        /* ── Floating glowing orbs ── */
+        .orb {
+          position: absolute; border-radius: 50%;
+          filter: blur(80px); animation: floatOrb ease-in-out infinite alternate;
+        }
+        .orb-1 { width: 600px; height: 600px; top: -10%; left: -12%;
+                 background: rgba(0,207,255,0.09); animation-duration: 14s; }
+        .orb-2 { width: 500px; height: 500px; bottom: -8%; right: -10%;
+                 background: rgba(120,40,200,0.07); animation-duration: 18s; animation-delay: 3s; }
+        .orb-3 { width: 350px; height: 350px; top: 35%; left: 40%;
+                 background: rgba(0,207,255,0.05); animation-duration: 22s; animation-delay: 6s; }
+        .orb-4 { width: 280px; height: 280px; top: 60%; left: 15%;
+                 background: rgba(0,150,255,0.06); animation-duration: 16s; animation-delay: 9s; }
+        .orb-5 { width: 220px; height: 220px; top: 20%; right: 15%;
+                 background: rgba(180,60,255,0.05); animation-duration: 20s; animation-delay: 2s; }
+
+        @keyframes floatOrb {
+          0%   { transform: translate(0px,  0px)  scale(1);   }
+          33%  { transform: translate(30px,-40px) scale(1.05); }
+          66%  { transform: translate(-20px,20px) scale(0.97); }
+          100% { transform: translate(10px,-20px) scale(1.03); }
+        }
+
+        /* ── Perspective grid floor ── */
+        .grid-floor {
+          position: absolute; bottom: 0; left: 0; width: 100%; height: 55%;
+          background-image:
+            linear-gradient(rgba(0,207,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,207,255,0.06) 1px, transparent 1px);
+          background-size: 60px 60px;
+          transform: perspective(700px) rotateX(55deg);
+          transform-origin: bottom center;
+          mask-image: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 70%);
+          -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 70%);
+          animation: gridPulse 6s ease-in-out infinite alternate;
+        }
+        @keyframes gridPulse {
+          0%   { opacity: 0.6; }
+          100% { opacity: 1.0; }
+        }
+
+        /* ── Dot particle field ── */
+        .dot-field {
+          position: absolute; inset: 0;
+          background-image: radial-gradient(circle, rgba(0,207,255,0.18) 1px, transparent 1px);
+          background-size: 48px 48px;
+          animation: driftField 40s linear infinite;
+          opacity: 0.35;
+        }
+        @keyframes driftField {
+          0%   { background-position: 0 0; }
+          100% { background-position: 48px 48px; }
+        }
+
+        /* ── Corner bracket accents ── */
+        .corner { position: absolute; width: 60px; height: 60px; opacity: 0.25; }
+        .corner-tl { top: 18px; left: 18px;
+          border-top: 1.5px solid #00cfff; border-left: 1.5px solid #00cfff; }
+        .corner-tr { top: 18px; right: 18px;
+          border-top: 1.5px solid #00cfff; border-right: 1.5px solid #00cfff; }
+        .corner-bl { bottom: 18px; left: 18px;
+          border-bottom: 1.5px solid #00cfff; border-left: 1.5px solid #00cfff; }
+        .corner-br { bottom: 18px; right: 18px;
+          border-bottom: 1.5px solid #00cfff; border-right: 1.5px solid #00cfff; }
       `}</style>
 
-      {/* Background Animated Neon Lines */}
+      {/* ── Rich Animated Background ── */}
       <div className="neon-lines-container">
+        {/* Horizontal streaks */}
         <div className="neon-line"></div>
         <div className="neon-line"></div>
         <div className="neon-line"></div>
+        <div className="neon-line"></div>
+        <div className="neon-line"></div>
+        <div className="neon-line"></div>
+        {/* Vertical streaks */}
         <div className="neon-line-v"></div>
         <div className="neon-line-v"></div>
-        {/* Soft Ambient Glows */}
-        <div className="absolute top-[-15%] left-[-10%] w-[50rem] h-[50rem] bg-[#00cfff]/10 rounded-full blur-[150px]"></div>
-        <div className="absolute bottom-[-15%] right-[-10%] w-[50rem] h-[50rem] bg-purple-600/5 rounded-full blur-[150px]"></div>
+        <div className="neon-line-v"></div>
+        <div className="neon-line-v"></div>
+        <div className="neon-line-v"></div>
+        {/* Scan line sweep */}
+        <div className="scan-line"></div>
+        {/* Floating ambient orbs */}
+        <div className="orb orb-1"></div>
+        <div className="orb orb-2"></div>
+        <div className="orb orb-3"></div>
+        <div className="orb orb-4"></div>
+        <div className="orb orb-5"></div>
+        {/* Perspective grid floor */}
+        <div className="grid-floor"></div>
+        {/* Drifting dot particle field */}
+        <div className="dot-field"></div>
+        {/* Corner bracket accents */}
+        <div className="corner corner-tl"></div>
+        <div className="corner corner-tr"></div>
+        <div className="corner corner-bl"></div>
+        <div className="corner corner-br"></div>
       </div>
 
       <div className="relative z-10">
