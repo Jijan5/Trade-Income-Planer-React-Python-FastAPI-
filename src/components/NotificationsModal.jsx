@@ -52,9 +52,9 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
             NOTIFICATIONS
             {unreadCount > 0 && <span className="bg-red-600/80 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.3)] text-white text-[9px] px-2 py-0.5 rounded-md">{unreadCount}</span>}
           </h3>
-          <div>
-            <button onClick={markAllRead} className="text-[#00cfff]/70 hover:text-[#00cfff] mr-4 text-[10px] font-extrabold uppercase tracking-widest drop-shadow-[0_0_3px_currentColor] transition-all">MARK ALL READ</button>
-            <button onClick={onClose} className="text-[#00cfff]/50 hover:text-[#00cfff] transition-colors font-extrabold text-lg">&times;</button>
+          <div className="flex items-center gap-4">
+            <button onClick={markAllRead} className="text-[#00cfff]/70 hover:text-[#00cfff] text-[10px] font-extrabold uppercase tracking-widest drop-shadow-[0_0_3px_currentColor] transition-all whitespace-nowrap">MARK ALL READ</button>
+            <button onClick={onClose} className="text-[#00cfff]/50 hover:text-[#00cfff] transition-colors font-extrabold text-xl leading-none">&times;</button>
           </div>
         </div>
         

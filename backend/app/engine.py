@@ -219,20 +219,27 @@ def get_market_price(symbol):
     
     try:
         # Normalize symbol for yfinance
-        norm_symbol = symbol.replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
-        norm_symbol = norm_symbol.replace("USDT", "USD").replace("-USD", "USD")
+        norm_symbol = symbol.upper().replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
+        norm_symbol = norm_symbol.replace("USDT", "USD")
         
-        # Forex/Commodities suffix
-        upper_sym = norm_symbol.upper()
-        if not '=' in norm_symbol and upper_sym not in ['BTC-USD', 'ETH-USD', 'CL=F', 'GC=F', 'SI=F']:
-            if any(pair in upper_sym for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+        # Commodities direct map
+        if 'XAU' in norm_symbol or 'GOLD' in norm_symbol:
+            norm_symbol = 'GC=F'
+        elif 'XAG' in norm_symbol or 'SILVER' in norm_symbol:
+            norm_symbol = 'SI=F'
+        elif 'OIL' in norm_symbol:
+            norm_symbol = 'CL=F'
+        # Format for Crypto (yfinance needs -USD suffix)
+        elif norm_symbol.endswith("USD") and "-" not in norm_symbol and len(norm_symbol) > 3:
+            if not any(pair in norm_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                norm_symbol = f"{norm_symbol[:-3]}-USD"
+        elif norm_symbol in ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "PEPE", "UNI"]:
+            norm_symbol = f"{norm_symbol}-USD"
+            
+        # Forex suffix
+        if not '=' in norm_symbol and "-" not in norm_symbol:
+            if any(pair in norm_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
                 norm_symbol += '=X'
-            elif 'OIL' in upper_sym:
-                norm_symbol = 'CL=F'  # WTI Crude Oil
-            elif 'GOLD' in upper_sym or 'XAU' in upper_sym:
-                norm_symbol = 'GC=F'  # Gold
-            elif 'SILVER' in upper_sym:
-                norm_symbol = 'SI=F'
         
         ticker = yf.Ticker(norm_symbol)
         info = ticker.info

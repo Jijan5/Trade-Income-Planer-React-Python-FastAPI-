@@ -1,5 +1,6 @@
 import os
 import requests
+import yfinance as yf
 import google.generativeai as genai
 # from google import genai
 from fastapi import APIRouter, Depends, HTTPException
@@ -41,7 +42,27 @@ async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP,EURUSD=X,CL=F,GC=F
     try:
         for symbol in symbol_list:
             try:
-                ticker = yf.Ticker(symbol)
+                # Format for yfinance
+                yf_symbol = symbol.upper().replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
+                yf_symbol = yf_symbol.replace("USDT", "USD")
+                
+                if 'XAU' in yf_symbol or 'GOLD' in yf_symbol:
+                    yf_symbol = 'GC=F'
+                elif 'XAG' in yf_symbol or 'SILVER' in yf_symbol:
+                    yf_symbol = 'SI=F'
+                elif 'OIL' in yf_symbol:
+                    yf_symbol = 'CL=F'
+                elif yf_symbol.endswith("USD") and "-" not in yf_symbol and len(yf_symbol) > 3:
+                    if not any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                        yf_symbol = f"{yf_symbol[:-3]}-USD"
+                elif yf_symbol in ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "PEPE", "UNI"]:
+                    yf_symbol = f"{yf_symbol}-USD"
+                    
+                if not '=' in yf_symbol and "-" not in yf_symbol:
+                    if any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                        yf_symbol += '=X'
+
+                ticker = yf.Ticker(yf_symbol)
                 info = ticker.info
                 hist = ticker.history(period="2d")  # 2d for change calculation
                 
@@ -79,7 +100,26 @@ async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP,EURUSD=X,CL=F,GC=F
 async def get_single_market_data(symbol: str):
     """Fetch market data for a single symbol"""
     try:
-        ticker = yf.Ticker(symbol.upper())
+        yf_symbol = symbol.upper().replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
+        yf_symbol = yf_symbol.replace("USDT", "USD")
+        
+        if 'XAU' in yf_symbol or 'GOLD' in yf_symbol:
+            yf_symbol = 'GC=F'
+        elif 'XAG' in yf_symbol or 'SILVER' in yf_symbol:
+            yf_symbol = 'SI=F'
+        elif 'OIL' in yf_symbol:
+            yf_symbol = 'CL=F'
+        elif yf_symbol.endswith("USD") and "-" not in yf_symbol and len(yf_symbol) > 3:
+            if not any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                yf_symbol = f"{yf_symbol[:-3]}-USD"
+        elif yf_symbol in ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "PEPE", "UNI"]:
+            yf_symbol = f"{yf_symbol}-USD"
+            
+        if not '=' in yf_symbol and "-" not in yf_symbol:
+            if any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                yf_symbol += '=X'
+
+        ticker = yf.Ticker(yf_symbol)
         info = ticker.info
         hist = ticker.history(period="2d")
         

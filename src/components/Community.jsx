@@ -147,10 +147,10 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             {/* Post Header & Menu */}
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
-                {post.user_avatar_url ? (
-                  <img src={`${API_BASE_URL}${post.user_avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover" />
+                {post.avatar_url ? (
+                  <img src={post.avatar_url.startsWith('http') ? post.avatar_url : `${API_BASE_URL}${post.avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover border border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
                 ) : (
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                  <div className="w-8 h-8 bg-[#030308] border border-[#00cfff]/30 rounded-full flex items-center justify-center text-[#00cfff] font-extrabold uppercase tracking-widest text-[10px] shadow-[0_0_10px_rgba(0,207,255,0.1)]">
                     {post.username.substring(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -941,101 +941,105 @@ const Community = ({
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md">
+        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-6">
           <form onSubmit={handlePostSubmit}>
-          <div className="relative">
-              <textarea
-                value={newPostContent}
-                onChange={handleInputChange}
-                name="mainPostContent"
-                onPaste={handlePaste}
-                placeholder={`What's on your mind? Share a strategy or crypto news...`}
-                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] min-h-[120px] transition-all resize-none"
-              />
-              {/* Mention Box */}
-              {mentionState.active && mentionState.suggestions.length > 0 && (
-                <div className="absolute z-50 bg-[#030308]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] overflow-hidden mt-2 w-56 left-0 top-full">
-                  {mentionState.suggestions.map((user) => (
-                    <button
-                      key={user.username}
-                      onClick={() => insertMention(user.username)}
-                      className="w-full text-left px-4 py-3 text-sm font-bold text-gray-300 hover:bg-[#00cfff]/20 hover:text-[#00cfff] transition-colors"
-                    >
-                      {user.username}
-                    </button>
-                  ))}
+            <div className="flex gap-4 sm:gap-5">
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <textarea
+                    value={newPostContent}
+                    onChange={handleInputChange}
+                    name="mainPostContent"
+                    onPaste={handlePaste}
+                    placeholder={`What's on your mind? Share a strategy or crypto news...`}
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] min-h-[120px] transition-all resize-none"
+                  />
+                  {/* Mention Box */}
+                  {mentionState.active && mentionState.suggestions.length > 0 && (
+                    <div className="absolute z-50 bg-[#030308]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] overflow-hidden mt-2 w-56 left-0 top-full">
+                      {mentionState.suggestions.map((user) => (
+                        <button
+                          key={user.username}
+                          onClick={() => insertMention(user.username)}
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-gray-300 hover:bg-[#00cfff]/20 hover:text-[#00cfff] transition-colors"
+                        >
+                          {user.username}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Image Preview */}
-            {postImage.preview && (
-              <div className="mt-4 relative w-fit group">
-                <img
-                  src={postImage.preview}
-                  alt="Preview"
-                  className="max-h-48 rounded-xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]"
-                />
-                <button
-                  type="button"
-                  onClick={() => setPostImage({ file: null, preview: "" })}
-                  className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg hover:bg-red-400 hover:scale-110 transition-all border border-red-400/50"
-                >
-                  ✕
-                </button>
+                {/* Image Preview */}
+                {postImage.preview && (
+                  <div className="mt-4 relative w-fit group">
+                    <img
+                      src={postImage.preview}
+                      alt="Preview"
+                      className="max-h-48 rounded-xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPostImage({ file: null, preview: "" })}
+                      className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg hover:bg-red-400 hover:scale-110 transition-all border border-red-400/50"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                {/* Link Input */}
+                {showLinkInput && (
+                  <input
+                    type="text"
+                    placeholder="Paste a link URL..."
+                    value={newPostLink}
+                    onChange={(e) => setNewPostLink(e.target.value)}
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none mt-4 transition-all"
+                  />
+                )}
+
+                <div className="flex justify-between items-center mt-4">
+                  {/* Media Buttons */}
+                  <div className="flex gap-5">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current.click()}
+                      className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
+                    >
+                      <span className="text-lg">📷</span> Upload
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files[0])
+                          setPostImage({
+                            file: e.target.files[0],
+                            preview: URL.createObjectURL(e.target.files[0]),
+                          });
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLinkInput(!showLinkInput)}
+                      className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
+                    >
+                      <span className="text-lg">🔗</span> Add Link
+                    </button>
+                  </div>
+
+                  {/* Post Button */}
+                  <button
+                    type="submit"
+                    className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-2.5 rounded-xl font-extrabold transition-all tracking-wide hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] hover:-translate-y-0.5"
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
-            )}
-
-            {/* Link Input */}
-            {showLinkInput && (
-              <input
-                type="text"
-                placeholder="Paste a link URL..."
-                value={newPostLink}
-                onChange={(e) => setNewPostLink(e.target.value)}
-                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none mt-4 transition-all"
-              />
-            )}
-
-            <div className="flex justify-between items-center mt-4">
-              {/* Media Buttons */}
-              <div className="flex gap-5">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current.click()}
-                  className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
-                >
-                  <span className="text-lg">📷</span> Upload
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  hidden
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files[0])
-                      setPostImage({
-                        file: e.target.files[0],
-                        preview: URL.createObjectURL(e.target.files[0]),
-                      });
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLinkInput(!showLinkInput)}
-                  className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
-                >
-                  <span className="text-lg">🔗</span> Add Link
-                </button>
-              </div>
-
-              {/* Post Button */}
-              <button
-                type="submit"
-                className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-2.5 rounded-xl font-extrabold transition-all tracking-wide hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] hover:-translate-y-0.5"
-              >
-                Post
-              </button>
             </div>
           </form>
         </div>

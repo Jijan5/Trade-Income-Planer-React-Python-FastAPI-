@@ -61,25 +61,58 @@ export const NotificationProvider = ({ children }) => {
     return () => newSocket.close();
   }, [token, userId, setGlobalUnreadCount]);
 
-  // Fixed useEffect - no re-render loop
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+      const headers = { Authorization: `Bearer ${token}` };
+      
+      const [notifsRes, unreadRes] = await Promise.all([
+        fetch(`${baseUrl}/api/notifications`, { headers }),
+        fetch(`${baseUrl}/api/notifications/unread_count`, { headers })
+      ]);
+      
+      if (notifsRes.ok) {
+        const data = await notifsRes.json();
+        setNotifications(data);
+      }
+      if (unreadRes.ok) {
+        const unreadData = await unreadRes.json();
+        setUnreadCount(unreadData.count);
+        if (setGlobalUnreadCount) setGlobalUnreadCount(unreadData.count);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  }, [token, setGlobalUnreadCount]);
 
   useEffect(() => {
     if (!token || !userData?.id) {
       return; // No connect if not logged in
     }
 
+    fetchNotifications();
     const cleanup = connectSocket();
     return cleanup;
-  }, [token, userData?.id]);
+  }, [token, userData?.id, connectSocket, fetchNotifications]);
 
   const markAllRead = useCallback(async () => {
+    if (!token) return;
     try {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+      await fetch(`${baseUrl}/api/notifications/mark_as_read`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       setUnreadCount(0);
       if (setGlobalUnreadCount) setGlobalUnreadCount(0);
+      
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     } catch (error) {
       console.error("Mark read failed", error);
     }
-  }, [setGlobalUnreadCount]);
+  }, [token, setGlobalUnreadCount]);
 
   const value = {
     notifications,

@@ -489,22 +489,22 @@ export const BeginnerHelpButtons = ({
   onOpenTutorial,
 }) => {
   return (
-    <div className="flex gap-3 mb-5">
+    <div className="flex flex-wrap gap-2 sm:gap-3 mb-5">
       <button
         onClick={onOpenTutorial}
-        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
         <span className="text-sm">🎓</span> Tutorial
       </button>
       <button
         onClick={onOpenChecklist}
-        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
         <span className="text-sm">✅</span> Checklist
       </button>
       <button
         onClick={onOpenGlossary}
-        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
         <span className="text-sm">📖</span> Glossary
       </button>

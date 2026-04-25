@@ -290,7 +290,7 @@ async def get_community_posts(community_id: int, session: Session = Depends(get_
         post_dict = post.dict()
         post_dict['user_role'] = user.role if user else "user"
         post_dict['user_plan'] = user.plan if user else "Free"
-        post_dict['user_avatar_url'] = user.avatar_url if user else None
+        post_dict['avatar_url'] = user.avatar_url if user else None
         if 'user_reaction' not in post_dict:
             post_dict['user_reaction'] = None
         results.append(PostResponse(**post_dict))
