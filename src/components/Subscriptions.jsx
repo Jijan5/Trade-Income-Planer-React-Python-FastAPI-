@@ -56,41 +56,39 @@ const Subscription = ({ onSubscribe }) => {
       <style>{`
         @keyframes heartbeat {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
+          50% { transform: scale(1.05); }
         }
         .animate-heartbeat {
           animation: heartbeat 1.5s infinite ease-in-out;
         }
       `}</style>
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-white mb-4">
-          Upgrade Your Trading Simulation Journey
+      <div className="text-center mb-16">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+          Upgrade Your Trading Simulation
         </h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-        Unlock advanced tools, AI analysis, and exclusive community features to accelerate your learning curve.
+        <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#00cfff]/70 max-w-2xl mx-auto leading-relaxed">
+          Unlock advanced tools, AI analysis, and exclusive community features to accelerate your learning curve.
         </p>
 
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center mt-8 gap-4">
-          <span className={`text-sm font-bold ${billingCycle === 'monthly' ? 'text-white' : 'text-gray-500'}`}>Monthly</span>
+        <div className="flex items-center justify-center mt-10 gap-5">
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-gray-500'}`}>Monthly</span>
           <button 
             onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-            className="w-14 h-7 bg-gray-700 rounded-full p-1 relative transition-colors duration-300 focus:outline-none"
+            className="w-16 h-8 bg-[#030308] border border-[#00cfff]/30 rounded-full p-1 relative transition-colors duration-300 focus:outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
           >
-            <div className={`w-5 h-5 bg-blue-500 rounded-full shadow-md transform transition-transform duration-300 ${billingCycle === 'yearly' ? 'translate-x-7' : ''}`}></div>
+            <div className={`w-6 h-6 bg-[#00cfff] rounded-full shadow-[0_0_10px_#00cfff] transform transition-transform duration-300 ${billingCycle === 'yearly' ? 'translate-x-8' : ''}`}></div>
           </button>
-          <span className={`text-sm font-bold ${billingCycle === 'yearly' ? 'text-white' : 'text-gray-500'}`}>
-          Yearly <span className="ml-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-heartbeat inline-block">
-              Save ~17%
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest transition-colors flex items-center ${billingCycle === 'yearly' ? 'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-gray-500'}`}>
+            Yearly 
+            <span className="ml-3 px-2.5 py-1 rounded-md bg-[#00cfff]/20 border border-[#00cfff]/50 text-[#00cfff] text-[9px] font-extrabold shadow-[0_0_10px_rgba(0,207,255,0.3)] animate-heartbeat">
+              SAVE ~17%
             </span>
           </span>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-            Best for traders who commit to consistency.
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
       {plans.map((plan) => {
           const price = billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
           const effectiveMonthly = billingCycle === 'yearly' ? (plan.yearlyPrice / 12).toFixed(2) : null;
@@ -98,47 +96,47 @@ const Subscription = ({ onSubscribe }) => {
           return (
           <div 
             key={plan.id}
-            className={`relative bg-gray-800 rounded-2xl border transition-all duration-300 flex flex-col
-              ${plan.recommended ? 'border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.15)] scale-105 z-10' : 'border-gray-700 hover:border-gray-600 hover:-translate-y-1'}
+            className={`relative bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl transition-all duration-300 flex flex-col
+              ${plan.recommended 
+                ? 'border border-[#00cfff] shadow-[0_0_30px_rgba(0,207,255,0.15)] md:-translate-y-4 md:scale-105 z-20' 
+                : 'border border-[#00cfff]/10 hover:border-[#00cfff]/30 hover:shadow-[0_0_20px_rgba(0,207,255,0.05)] hover:-translate-y-2'}
             `}
           >
             {plan.recommended && (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-wider">
-                Most Popular
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#00cfff] text-[#030308] text-[9px] font-extrabold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(0,207,255,0.5)] uppercase tracking-widest">
+                MOST POPULAR
               </div>
             )}
 
             <div className="p-8 flex-1">
-              <h3 className={`text-xl font-bold mb-2 ${
-                plan.color === 'yellow' ? 'text-yellow-400' : 
-                plan.color === 'purple' ? 'text-purple-400' : 'text-blue-400'
+              <h3 className={`text-[11px] font-extrabold uppercase tracking-widest mb-4 ${
+                plan.color === 'yellow' ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]' : 
+                plan.color === 'purple' ? 'text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]' : 'text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]'
               }`}>
                 {plan.name}
               </h3>
-              <div className="flex flex-col mb-4">
+              <div className="flex flex-col mb-6">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-4xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
                     ${price}
                   </span>
-                  <span className="text-gray-500">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                  <span className="text-[#00cfff]/50 text-xs font-bold uppercase tracking-widest">/{billingCycle === 'monthly' ? 'MO' : 'YR'}</span>
                 </div>
                 {effectiveMonthly && (
-                  <span className="text-sm text-green-400 font-medium">
-                    Effective: ${effectiveMonthly}/mo
+                  <span className="text-[10px] text-green-400 font-extrabold uppercase tracking-widest mt-2 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">
+                    EFFECTIVE: ${effectiveMonthly}/MO
                   </span>
                 )}
               </div>
-              <p className="text-gray-400 text-sm mb-6 border-b border-gray-700 pb-6">
+              <p className="text-[11px] text-gray-400 mb-8 border-b border-[#00cfff]/10 pb-6 font-medium leading-relaxed">
                 {plan.description}
               </p>
 
               <ul className="space-y-4">
                 {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-3 text-sm text-gray-300">
-                    <svg className={`w-5 h-5 flex-shrink-0 ${plan.recommended ? 'text-blue-500' : 'text-gray-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>{feature}</span>
+                  <li key={idx} className="flex items-start gap-3 text-xs text-gray-300 font-medium">
+                    <span className={`flex-shrink-0 text-sm ${plan.recommended ? 'text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]' : 'text-[#00cfff]/50'}`}>✔</span>
+                    <span className="leading-tight">{feature.replace("✅", "").replace("🤖", "").replace("👮", "").replace("⚠", "").replace("📈", "").trim()}</span>
                   </li>
                 ))}
               </ul>
@@ -151,25 +149,24 @@ const Subscription = ({ onSubscribe }) => {
                     billingCycle, 
                     finalPrice: price 
                 })}
-                className={`w-full py-3 rounded-lg font-bold transition-all duration-200
+                className={`w-full py-3.5 rounded-xl font-extrabold text-[11px] uppercase tracking-widest transition-all duration-300
                   ${plan.recommended 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-lg' 
-                    : 'bg-gray-700 hover:bg-gray-600 text-white hover:text-white'
+                    ? 'bg-[#00cfff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 hover:bg-[#00e5ff]' 
+                    : 'bg-[#030308] border border-[#00cfff]/30 text-[#00cfff] hover:bg-[#00cfff]/10 hover:border-[#00cfff]/50 hover:shadow-[0_0_15px_rgba(0,207,255,0.2)]'
                   }
                 `}
               >
-                Choose {plan.name}
+                CHOOSE {plan.name}
               </button>
             </div>
           </div>
         )})}
       </div>
       
-      <div className="mt-16 text-center border-t border-gray-800 pt-8">
-        <p className="text-gray-500 text-sm">
-          Cancel anytime. Secure payment via Midtrans.
-          <br />
-          Need a custom plan for a large team? <a href="/contact-us" className="text-blue-400 hover:underline">Contact us</a>.
+      <div className="mt-20 text-center border-t border-[#00cfff]/10 pt-8 relative z-10">
+        <p className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest leading-loose">
+          CANCEL ANYTIME. SECURE PAYMENT VIA MIDTRANS.<br />
+          NEED A CUSTOM PLAN FOR A LARGE TEAM? <a href="/contact-us" className="text-[#00cfff] hover:text-[#00e5ff] hover:drop-shadow-[0_0_5px_#00cfff] transition-colors ml-1">CONTACT US</a>.
         </p>
       </div>
     </div>

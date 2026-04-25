@@ -84,7 +84,7 @@ const Explore = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header / Ticker Tape */}
-      <div className="rounded-lg overflow-hidden border border-gray-700 shadow-lg">
+      <div className="rounded-2xl overflow-hidden border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] bg-[#0a0f1c]/60 backdrop-blur-md">
         <div className="tradingview-widget-container" ref={tickerContainer}>
           <div className="tradingview-widget-container__widget"></div>
         </div>
@@ -92,8 +92,9 @@ const Explore = () => {
 
       {/* News Section */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-          <span className="text-blue-500">📰</span> Market Insights & News
+        <h2 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3 tracking-wider">
+          <span className="text-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.6)]">📰</span> 
+          Market Insights & News
         </h2>
 
         {loading && (
@@ -101,14 +102,14 @@ const Explore = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-gray-800 rounded-lg h-64 animate-pulse border border-gray-700"
+                className="bg-[#0a0f1c]/60 rounded-2xl h-[350px] animate-pulse border border-[#00cfff]/10"
               ></div>
             ))}
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-500 text-red-200 rounded text-center">
+          <div className="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-xl text-center shadow-[0_0_15px_rgba(239,68,68,0.1)]">
             {error}
           </div>
         )}
@@ -118,31 +119,32 @@ const Explore = () => {
             {news.map((item) => (
               <div
                 key={item.id}
-                className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden hover:border-blue-500 transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col"
+                className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 overflow-hidden hover:border-[#00cfff]/60 transition-all duration-300 hover:shadow-[0_0_20px_rgba(0,207,255,0.15)] hover:-translate-y-1 flex flex-col group"
               >
                 {/* Image */}
-                <div className="h-48 overflow-hidden relative group">
+                <div className="h-48 overflow-hidden relative">
                   <img
                     src={item.imageurl}
                     alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute top-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1c] to-transparent opacity-60"></div>
+                  <div className="absolute top-3 right-3 bg-[#030308]/80 text-[#00cfff] text-xs px-3 py-1 rounded-full border border-[#00cfff]/30 backdrop-blur-md shadow-[0_0_10px_rgba(0,207,255,0.1)] font-bold">
                     {item.source_info?.name || "News"}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-5 flex-1 flex flex-col">
-                  <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">
+                <div className="p-6 flex-1 flex flex-col relative z-10 -mt-6 bg-[#0a0f1c]/80 backdrop-blur-xl rounded-t-2xl border-t border-[#00cfff]/10">
+                  <h3 className="text-lg font-extrabold text-white mb-3 line-clamp-2 leading-tight group-hover:text-[#00cfff] transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-gray-400 text-sm line-clamp-3 mb-4 flex-1">
+                  <p className="text-gray-400 text-sm line-clamp-3 mb-5 flex-1 leading-relaxed">
                     {item.body}
                   </p>
 
-                  <div className="flex justify-between items-center mt-auto pt-4 border-t border-gray-700">
-                    <span className="text-xs text-gray-500">
+                  <div className="flex justify-between items-center mt-auto pt-4 border-t border-[#00cfff]/10">
+                    <span className="text-xs font-medium text-gray-500">
                       {new Date(item.published_on * 1000).toLocaleDateString(
                         "id-ID",
                         {
@@ -157,7 +159,7 @@ const Explore = () => {
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                      className="text-sm font-extrabold text-[#00cfff] hover:text-[#00b3e6] flex items-center gap-1 transition-all group-hover:translate-x-1"
                     >
                       Read More
                       <svg

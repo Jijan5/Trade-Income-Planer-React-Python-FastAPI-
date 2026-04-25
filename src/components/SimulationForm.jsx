@@ -126,21 +126,21 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
       {/* Tooltip Modal */}
       {activeTooltip && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4"
           onClick={() => setActiveTooltip(null)}
         >
           <div
-            className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full relative animate-fade-in"
+            className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] max-w-sm w-full relative animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setActiveTooltip(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-[#00cfff]/50 hover:text-[#00cfff] hover:rotate-90 transition-all duration-300"
             >
               ✕
             </button>
-            <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-blue-500">ℹ</span>
+            <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#00cfff]/10 flex items-center justify-center border border-[#00cfff]/20 text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.2)]">ℹ</div>
               {activeTooltip.title}
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed">
@@ -152,32 +152,32 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg"
+        className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md"
       >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-gray-700 pb-4 gap-4">
-          <h2 className="text-lg font-semibold text-gray-100 uppercase tracking-wider">
-            Configuration
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-[#00cfff]/10 pb-6 gap-6">
+          <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">
+            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">⚙</span> Configuration
           </h2>
 
           {/* Preset Buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-3">
             {STRATEGY_PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
                 onClick={() => loadPreset(preset.data)}
-                className="px-3 py-1 text-xs font-medium bg-gray-700 hover:bg-gray-600 text-blue-300 rounded border border-gray-600 transition-colors"
+                className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-[#030308]/50 hover:bg-[#00cfff]/10 text-[#00cfff]/70 hover:text-[#00cfff] rounded-lg border border-[#00cfff]/20 hover:border-[#00cfff]/50 transition-all hover:shadow-[0_0_10px_rgba(0,207,255,0.2)]"
               >
                 {preset.name}
               </button>
             ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Risk Type Selection */}
           <div className="relative md:col-span-2 lg:col-span-4 mb-2">
-            <div className="flex items-center mb-2">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-3">
+              <label className="block text-xs font-extrabold text-[#00cfff] tracking-widest uppercase">
                 RISK MANAGEMENT TYPE
               </label>
               {renderInfoIcon(
@@ -185,16 +185,16 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
                 "Dynamic: Adjusts size based on current balance (Harder to blow up). Fixed: Constant size based on initial capital (Higher risk of ruin)."
               )}
             </div>
-            <div className="flex bg-gray-900 p-1 rounded border border-gray-600 w-fit">
+            <div className="flex bg-[#030308] p-1.5 rounded-xl border border-[#00cfff]/30 w-fit">
               {["dynamic", "fixed"].map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setFormData({ ...formData, risk_type: type })}
-                  className={`px-6 py-2 text-xs font-bold uppercase tracking-wider rounded transition-all ${
+                  className={`px-8 py-2.5 text-xs font-extrabold uppercase tracking-widest rounded-lg transition-all ${
                     formData.risk_type === type
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-gray-400 hover:text-white hover:bg-gray-800"
+                      ? "bg-[#00cfff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)]"
+                      : "text-[#00cfff]/50 hover:text-[#00cfff] hover:bg-[#00cfff]/10"
                   }`}
                 >
                   {type}
@@ -204,8 +204,8 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
           </div>
           {/* Modal Awal */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 INITIAL CAPITAL ($)
               </label>
               {renderInfoIcon(
@@ -218,15 +218,15 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="initial_balance"
               value={formData.initial_balance}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
 
           {/* Penggunaan Modal */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 CAPITAL UTILIZATION (%)
               </label>
               {renderInfoIcon(
@@ -239,15 +239,15 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="capital_utilization"
               value={formData.capital_utilization}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
 
           {/* Resiko Per Trade */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 RISK / TRADE (%)
               </label>
               {renderInfoIcon(
@@ -261,21 +261,21 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               value={formData.risk_per_trade}
               onChange={handleChange}
               step="0.1"
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
             {formData.risk_per_trade > 2 && (
-              <div className="mt-1 text-xs text-yellow-400 flex items-center gap-1">
+              <div className="mt-2 text-[10px] font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5 bg-yellow-500/10 p-1.5 rounded border border-yellow-500/20">
                 <span>⚠</span>
-                <span>High risk. Professionals rarely risk {">"} 2%.</span>
+                <span>High risk. Pros rarely risk {">"} 2%.</span>
               </div>
             )}
           </div>
 
           {/* Risk Reward */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 RISK : REWARD
               </label>
               {renderInfoIcon(
@@ -289,15 +289,15 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               value={formData.risk_reward_ratio}
               onChange={handleChange}
               step="0.1"
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
 
           {/* Win Rate */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 WIN RATE (%)
               </label>
               {renderInfoIcon(
@@ -310,17 +310,17 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="win_rate"
               value={formData.win_rate}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
             {/* Break Even Indicator */}
-            <div className="mt-1 text-[10px] flex justify-between">
+            <div className="mt-2 text-[10px] font-bold uppercase tracking-wider flex justify-between bg-[#030308]/50 p-1.5 rounded border border-[#00cfff]/10">
               <span className="text-gray-500">Min to not lose:</span>
               <span
-                className={`font-bold ${
+                className={`font-mono ${
                   formData.win_rate < breakEvenWinRate
-                    ? "text-red-500"
-                    : "text-green-500"
+                    ? "text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
+                    : "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
                 }`}
               >
                 {breakEvenWinRate}%
@@ -330,8 +330,8 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
 
           {/* Trades Per Day */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 TRADES / DAY
               </label>
               {renderInfoIcon(
@@ -344,15 +344,15 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="trades_per_day"
               value={formData.trades_per_day}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
 
           {/* Fees Per Trade */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 FEES / TRADE ($)
               </label>
               {renderInfoIcon(
@@ -365,15 +365,15 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="fees_per_trade"
               value={formData.fees_per_trade}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
 
           {/* Simulation Days */}
           <div className="relative">
-            <div className="flex items-center mb-1">
-              <label className="block text-xs font-medium text-gray-400">
+            <div className="flex items-center mb-2">
+              <label className="block text-xs font-extrabold text-gray-400 uppercase tracking-wider">
                 DURATION (DAYS)
               </label>
               {renderInfoIcon(
@@ -386,7 +386,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="simulation_days"
               value={formData.simulation_days}
               onChange={handleChange}
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
               required
             />
           </div>
@@ -394,7 +394,11 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 px-4 rounded font-bold uppercase tracking-wider transition duration-200 disabled:bg-gray-700 disabled:text-gray-500 h-[42px]"
+              className={`w-full bg-[#00cfff] text-[#030308] py-3.5 px-6 rounded-xl font-extrabold uppercase tracking-widest transition-all duration-300 h-[52px] ${
+                isLoading 
+                  ? "opacity-50 cursor-not-allowed border border-[#00cfff]/30 bg-transparent text-[#00cfff]" 
+                  : "hover:bg-[#00e5ff] shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5"
+              }`}
             >
               {isLoading ? "CALCULATING..." : "RUN SIMULATION"}
             </button>

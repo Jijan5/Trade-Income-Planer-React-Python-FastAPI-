@@ -76,33 +76,39 @@ const ContactMessages = ({ showFlash }) => {
   };
 
   return (
-    <div className="p-6 bg-gray-800 text-white">
-      <h2 className="text-2xl font-bold mb-4">Contact Us Messages</h2>
-      <div className="space-y-4">
+    <div className="p-8 bg-[#030308] min-h-screen text-white relative overflow-hidden">
+      {/* Background Orbs */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#00cfff]/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <h2 className="text-2xl font-extrabold mb-8 uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">CONTACT US MESSAGES</h2>
+      <div className="space-y-6 max-w-5xl mx-auto">
+        {messages.length === 0 && (
+          <p className="text-[#00cfff]/50 text-center py-10 text-[11px] font-extrabold uppercase tracking-widest bg-[#0a0f1c]/80 backdrop-blur-md rounded-2xl border border-[#00cfff]/20">NO NEW MESSAGES.</p>
+        )}
         {messages.map((message) => (
           <div
             key={message.id}
-            className="bg-gray-900 p-4 rounded-lg shadow-md"
+            className="bg-[#0a0f1c]/80 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] hover:border-[#00cfff]/40 transition-all group"
           >
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start mb-4 border-b border-[#00cfff]/10 pb-4">
               <div>
-                <p className="font-bold text-blue-400">{message.name}</p>
-                <p className="text-sm text-gray-400">{message.email}</p>
+                <p className="font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_2px_#00cfff]">{message.name}</p>
+                <p className="text-[10px] text-[#00cfff]/50 font-mono mt-1">{message.email}</p>
               </div>
-              <span className="text-xs text-gray-500">
+              <span className="text-[9px] text-[#00cfff]/40 font-mono uppercase tracking-widest">
                 {new Date(message.created_at).toLocaleString()}
               </span>
             </div>
-            <div className="mt-3">
-              <p className="font-semibold">{message.subject}</p>
-              <p className="text-gray-300 mt-1">{message.message}</p>
+            <div>
+              <p className="text-sm font-extrabold text-white mb-2">{message.subject}</p>
+              <p className="text-[#00cfff]/70 text-sm leading-relaxed">{message.message}</p>
             </div>
-            <div className="mt-4 flex justify-end">
+            <div className="mt-6 flex justify-end">
               <button
                 onClick={() => handleReplyClick(message)}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded text-sm"
+                className="bg-[#00cfff]/10 text-[#00cfff] border border-[#00cfff]/30 hover:bg-[#00cfff] hover:text-[#030308] px-6 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(0,207,255,0.1)] hover:shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:-translate-y-0.5"
               >
-                Reply
+                REPLY
               </button>
             </div>
           </div>
@@ -110,71 +116,74 @@ const ContactMessages = ({ showFlash }) => {
       </div>
 
       {showModal && selectedMessage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-2xl max-w-lg w-full text-left">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Reply to {selectedMessage.name}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-lg w-full text-left relative overflow-hidden">
+             {/* Glow */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00cfff]/10 rounded-full blur-[50px] pointer-events-none"></div>
+
+            <h3 className="text-lg font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff] mb-6">
+              REPLY TO {selectedMessage.name}
             </h3>
 
             {/* Original Message Preview */}
-            <div className="mb-4 bg-gray-900/50 p-3 rounded-lg border border-gray-700">
-              <p className="text-sm text-gray-400">
-                <strong>Original Subject:</strong> {selectedMessage.subject}
+            <div className="mb-6 bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/20">
+              <p className="text-[10px] text-[#00cfff]/50 font-mono">
+                <strong className="text-[#00cfff]/80 uppercase tracking-widest">ORIGINAL SUBJECT:</strong> {selectedMessage.subject}
               </p>
-              <p className="text-sm text-gray-300 mt-2 line-clamp-3">
-                {selectedMessage.message}
+              <p className="text-sm text-[#00cfff]/70 mt-3 line-clamp-3 leading-relaxed">
+                "{selectedMessage.message}"
               </p>
             </div>
 
             {/* Reply Form */}
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
                 <label
                   htmlFor="reply-subject"
-                  className="block text-sm font-bold text-gray-400 mb-1"
+                  className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-2"
                 >
-                  Subject
+                  SUBJECT
                 </label>
                 <input
                   id="reply-subject"
                   type="text"
                   value={replySubject}
                   onChange={(e) => setReplySubject(e.target.value)}
-                  className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Reply subject..."
+                  className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-3 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] font-mono text-sm placeholder:text-[#00cfff]/20 transition-all"
+                  placeholder="REPLY SUBJECT..."
                 />
               </div>
               <div>
                 <label
                   htmlFor="reply-body"
-                  className="block text-sm font-bold text-gray-400 mb-1"
+                  className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-2"
                 >
-                  Message
+                  MESSAGE
                 </label>
                 <textarea
                   id="reply-body"
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
-                  className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-3 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] font-mono text-sm placeholder:text-[#00cfff]/20 transition-all custom-scrollbar resize-none"
                   rows="5"
-                  placeholder="Your reply..."
+                  placeholder="YOUR REPLY..."
                 ></textarea>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 justify-end mt-6">
+            <div className="flex gap-4 justify-end mt-8 relative z-10">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 onClick={handleReplySubmit}
-                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors"
+                className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] text-[11px] font-extrabold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5"
               >
-                Send Reply
+                SEND REPLY
               </button>
             </div>
           </div>

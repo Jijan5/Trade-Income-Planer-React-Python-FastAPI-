@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, memo } from 'react';
 
-const BinanceChartWidget = ({ symbol = "BTCUSDT" }) => {
+const TradingViewChartWidget = ({ symbol = "BTCUSDT" }) => {
   const container = useRef();
 
   useEffect(() => {
@@ -13,7 +13,26 @@ const BinanceChartWidget = ({ symbol = "BTCUSDT" }) => {
     script.type = "text/javascript";
     script.async = true;
 
-    const formattedSymbol = symbol.includes(":") ? symbol : `BINANCE:${symbol}`;
+    // Normalize symbol for TradingView
+    let formattedSymbol = symbol;
+    const upperSym = symbol.toUpperCase();
+    
+    // Remove BINANCE: if present
+    formattedSymbol = formattedSymbol.replace(/^BINANCE:/, '');
+    
+    // Add exchange prefix based on symbol type
+    if (upperSym.includes('EURUSD') || upperSym.includes('GBPUSD') || upperSym.includes('USDJPY') || upperSym.includes('AUDUSD')) {
+      formattedSymbol = `OANDA:${formattedSymbol}`;
+    } else if (upperSym.includes('OIL') || upperSym.includes('USOIL')) {
+      formattedSymbol = `TVCL:USOIL`;
+    } else if (upperSym.includes('GOLD') || upperSym.includes('XAUUSD')) {
+      formattedSymbol = `XAUUSD`;
+    } else if (upperSym.includes('SILVER') || upperSym.includes('XAGUSD')) {
+      formattedSymbol = `XAGUSD`;
+    } else {
+      // Default crypto
+      formattedSymbol = `BINANCE:${formattedSymbol}`;
+    }
 
     script.innerHTML = JSON.stringify({
       "autosize": true,
@@ -21,7 +40,7 @@ const BinanceChartWidget = ({ symbol = "BTCUSDT" }) => {
       "interval": "D",
       "timezone": "Asia/Jakarta",
       "theme": "dark",
-      "style": "1", // 1 = Candle, 2 = Line, 3 = Area
+      "style": "1", 
       "locale": "en",
       "enable_publishing": false,
       "allow_symbol_change": true,
@@ -46,5 +65,5 @@ const BinanceChartWidget = ({ symbol = "BTCUSDT" }) => {
   );
 };
 
-// Menggunakan memo agar widget tidak re-render jika props tidak berubah
-export default memo(BinanceChartWidget);
+export default memo(TradingViewChartWidget);
+

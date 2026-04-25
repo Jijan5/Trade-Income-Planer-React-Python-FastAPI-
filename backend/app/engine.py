@@ -4,6 +4,7 @@ import time
 import os
 # from google import genai
 import google.generativeai as genai
+import yfinance as yf
 import requests
 from .models import ( SimulationResponse, DailyResult, TradeResult, GoalPlannerResponse, HealthAnalysisResponse )
 
@@ -216,40 +217,42 @@ def get_market_price(symbol):
         if current_time - timestamp < _CACHE_DURATION:
             return cached_data
     
-    # Prepare symbol
-    raw_symbol = symbol.replace("BINANCE:", "").replace("24478", "").replace("7083", "")
-    
-    # 1. Try Binance (Primary)
     try:
-        binance_symbol = raw_symbol.replace("-", "")
-        if "USD" in binance_symbol and not binance_symbol.endswith("T"): binance_symbol += "T"
+        # Normalize symbol for yfinance
+        norm_symbol = symbol.replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
+        norm_symbol = norm_symbol.replace("USDT", "USD").replace("-USD", "USD")
         
-        url = f"https://api.binance.com/api/v3/ticker/price?symbol={binance_symbol}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers, timeout=2)
-        if r.status_code == 200: 
-            result = {"status": "success", "price": float(r.json()['price']), "symbol": binance_symbol}
-            _price_cache[symbol] = (result, current_time)
-            return result
-    except:
-        pass # Continue to fallback
-
-    # 2. Fallback: CryptoCompare (If Binance is blocked)
-    try:
-        base_asset = raw_symbol.replace("-USD", "").replace("USDT", "").replace("USD", "")
-        url = f"https://min-api.cryptocompare.com/data/price?fsym={base_asset}&tsyms=USD"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers, timeout=10)
-        if r.status_code == 200:
-            data = r.json()
-            if "USD" in data:
-                result = {"status": "success", "price": float(data["USD"]), "symbol": base_asset + "USDT"}
-                _price_cache[symbol] = (result, current_time)
-                return result
+        # Forex/Commodities suffix
+        upper_sym = norm_symbol.upper()
+        if not '=' in norm_symbol and upper_sym not in ['BTC-USD', 'ETH-USD', 'CL=F', 'GC=F', 'SI=F']:
+            if any(pair in upper_sym for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                norm_symbol += '=X'
+            elif 'OIL' in upper_sym:
+                norm_symbol = 'CL=F'  # WTI Crude Oil
+            elif 'GOLD' in upper_sym or 'XAU' in upper_sym:
+                norm_symbol = 'GC=F'  # Gold
+            elif 'SILVER' in upper_sym:
+                norm_symbol = 'SI=F'
+        
+        ticker = yf.Ticker(norm_symbol)
+        info = ticker.info
+        price = info.get('regularMarketPrice') or info.get('currentPrice')
+        
+        if price is None:
+            # Fallback to history
+            hist = ticker.history(period="1d")
+            if not hist.empty:
+                price = hist['Close'].iloc[-1]
+            else:
+                raise ValueError("No price data")
+        
+        result = {"status": "success", "price": float(price), "symbol": norm_symbol}
+        _price_cache[symbol] = (result, current_time)
+        return result
+        
     except Exception as e:
-        print(f"Price fetch error: {e}")
-
-    return {"status": "error", "price": 0}
+        print(f"yfinance price fetch error for {symbol}: {e}")
+        return {"status": "error", "price": 0}
 
 def analyze_trade_health(request):
     trades = request.trades
@@ -261,17 +264,41 @@ def analyze_trade_health(request):
             trading_identity="Newcomer", identity_insight="Let's build your trading history first."
         )
     
-    # Use new GEMINI_TRADING_COACH_KEY
+    # Use new GEMINI_TRADING_COACH_KEY for tests, fallback rule-based
     api_key = os.getenv("GEMINI_TRADING_COACH_KEY")
     if not api_key:
-        # Fallback to old rule-based if key missing
-        # ... (existing rule-based code here but truncated for brevity)
-        summary = "AI Coach temporarily unavailable. Upgrade key configured."
+        # Rule-based fallback for tests
+        total_trades = len(trades)
+        wins = sum(1 for t in trades if t.is_win)
+        win_rate_pct = (wins / total_trades * 100) if total_trades > 0 else 0
+        
+        # Risk analysis
+        avg_risk = sum(t.risk_amount for t in trades) / total_trades if total_trades > 0 else 0
+        risk_score = 80 if avg_risk <= trades[0].balance * 0.02 else 40 if avg_risk <= trades[0].balance * 0.05 else 20
+        
+        # Emotional: check revenge (increasing size after loss)
+        emotional_score = 80
+        if total_trades >= 2:
+            for i in range(1, total_trades):
+                if not trades[i-1].is_win and trades[i].risk_amount > trades[i-1].risk_amount * 1.2:
+                    emotional_score = 30
+                    break
+        
+        overall_score = int((win_rate_pct / 100 * 40) + (risk_score / 100 * 30) + (emotional_score / 100 * 30))
+        system_score = 70  # Default
+        
         return HealthAnalysisResponse(
-            overall_score=50, risk_score=50, emotional_score=50, system_score=50,
-            summary=summary, warnings=[], recommended_risk=1.0,
-            recommendation_reason="Check GEMINI_TRADING_COACH_KEY.", ai_insight="",
-            trading_identity="Coach Setup", identity_insight="Configure AI key for full analysis."
+            overall_score=overall_score,
+            risk_score=risk_score,
+            emotional_score=emotional_score,
+            system_score=system_score,
+            summary=f"Win Rate: {win_rate_pct:.1f}%, Risk: Good",
+            warnings=[] if risk_score > 60 else ["High risk per trade detected"],
+            recommended_risk=1.0 if risk_score > 70 else 0.5,
+            recommendation_reason="Standard 1% risk",
+            trading_identity="Developing Trader" if win_rate_pct > 50 else "Risk Taker",
+            identity_insight="Work on consistency.",
+            ai_insight="Review last 3 trades."
         )
     
     try:

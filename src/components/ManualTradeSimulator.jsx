@@ -16,73 +16,73 @@ import RiskManagementCalculator from "./RiskManagementCalculator";
 
 // Memoized History Table to prevent re-renders on price ticks
 const TradeHistoryTable = React.memo(({ history }) => (
-  <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-    <div className="p-3 border-b border-gray-700 bg-gray-900">
-      <h3 className="text-xs font-bold text-gray-400 uppercase">
-        Trade History
+  <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden">
+    <div className="p-4 border-b border-[#00cfff]/10 bg-[#030308]/80">
+      <h3 className="text-xs font-extrabold text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
+        <span className="text-lg">📜</span> Trade History
       </h3>
     </div>
-    <div className="max-h-[300px] overflow-y-auto">
-      <table className="min-w-full divide-y divide-gray-700">
-        <thead className="bg-gray-900/50 sticky top-0">
+    <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+      <table className="min-w-full divide-y divide-[#00cfff]/10">
+        <thead className="bg-[#030308] sticky top-0 z-10 border-b border-[#00cfff]/10">
           <tr>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               Type
             </th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               Entry
             </th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               Exit
             </th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               Reason
             </th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               Note
             </th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+            <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
               PnL
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-700">
+        <tbody className="divide-y divide-[#00cfff]/5">
           {history.map((trade) => (
-            <tr key={trade.id} className="hover:bg-gray-700/30">
-              <td className="px-4 py-2">
+            <tr key={trade.id} className="hover:bg-[#00cfff]/5 transition-colors">
+              <td className="px-4 py-3">
                 <span
-                  className={`text-xs font-bold ${
-                    trade.type === "BUY" ? "text-green-500" : "text-red-500"
+                  className={`text-xs font-extrabold ${
+                    trade.type === "BUY" ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : "text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"
                   }`}
                 >
                   {trade.type}
                 </span>
               </td>
-              <td className="px-4 py-2 text-xs font-mono text-gray-400">
+              <td className="px-4 py-3 text-xs font-mono text-gray-300">
                 {trade.entryPrice.toFixed(2)}
               </td>
-              <td className="px-4 py-2 text-xs font-mono text-gray-400">
+              <td className="px-4 py-3 text-xs font-mono text-gray-300">
                 {trade.exitPrice.toFixed(2)}
               </td>
-              <td className="px-4 py-2 text-xs">
+              <td className="px-4 py-3 text-xs">
                 <span
-                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
                     trade.reason === "TP"
-                      ? "bg-green-900 text-green-400"
+                      ? "bg-green-900/30 text-green-400 border-green-500/30"
                       : trade.reason === "SL"
-                      ? "bg-red-900 text-red-400"
-                      : "bg-gray-700 text-gray-300"
+                      ? "bg-red-900/30 text-red-400 border-red-500/30"
+                      : "bg-[#00cfff]/10 text-[#00cfff] border-[#00cfff]/30"
                   }`}
                 >
                   {trade.reason}
                 </span>
               </td>
-              <td className="px-4 py-2 text-xs text-gray-400 italic max-w-[150px] truncate">
+              <td className="px-4 py-3 text-xs text-gray-400 italic max-w-[150px] truncate">
                 {trade.note}
               </td>
               <td
-                className={`px-4 py-2 text-xs font-mono font-bold ${
-                  trade.finalPnL >= 0 ? "text-green-400" : "text-red-400"
+                className={`px-4 py-3 text-sm font-mono font-bold ${
+                  trade.finalPnL >= 0 ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : "text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"
                 }`}
               >
                 {trade.finalPnL >= 0 ? "+" : ""}
@@ -275,21 +275,21 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   if (!isSessionActive) {
     if (lockout) {
       return (
-        <div className="bg-gray-900/95 border border-red-500/30 p-8 rounded-lg shadow-lg max-w-md mx-auto mt-10 text-center animate-fade-in">
+        <div className="bg-[#030308]/95 border border-red-500/50 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.1)] backdrop-blur-md max-w-md mx-auto mt-10 text-center animate-fade-in">
           <div className="text-6xl mb-4 animate-bounce">⛔</div>
-          <h2 className="text-2xl font-bold text-red-400 mb-2 uppercase tracking-wider">
+          <h2 className="text-2xl font-extrabold text-red-400 mb-2 uppercase tracking-widest drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
             Trading Disabled
           </h2>
           <p className="text-white font-bold text-lg mb-4 max-w-xs mx-auto">
             {lockout.reason}
           </p>
-          <p className="text-xs text-gray-500 mb-4">
-            Account: <span className="text-gray-300">{userData?.username}</span>
+          <p className="text-xs text-gray-500 mb-4 uppercase tracking-widest">
+            Account: <span className="text-[#00cfff] font-mono">{userData?.username}</span>
           </p>
-          <div className="text-5xl font-mono font-bold text-white bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+          <div className="text-5xl font-mono font-extrabold text-red-400 bg-black/50 p-6 rounded-xl border border-red-500/30 inline-block mb-4 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
             {timeLeft || "30:00"}
           </div>
-          <p className="text-sm text-gray-400 max-w-xs mx-auto">
+          <p className="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">
             Discipline is key. Take a walk, drink some water, and come back
             later.
           </p>
@@ -298,18 +298,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     }
 
     return (
-      <div className="bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-lg max-w-md mx-auto mt-10 text-center">
-        <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-wider">
+      <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md max-w-md mx-auto mt-10 text-center">
+        <h2 className="text-2xl font-extrabold text-white mb-2 uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">
           Live Market Simulator
         </h2>
-        <p className="text-gray-400 mb-8 text-sm">
-          Trade {activeSymbol} with real-time market data without risking real
-          money.
+        <p className="text-[#00cfff]/70 mb-8 text-sm uppercase tracking-wider">
+          Trade <span className="text-[#00cfff] font-bold">{activeSymbol}</span> with real-time market data without risking real money.
         </p>
 
         <form onSubmit={startSession} className="space-y-6 text-left relative">
           <div>
-            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+            <label className="block text-xs font-extrabold text-[#00cfff] mb-2 uppercase tracking-widest">
               Initial Capital ($)
             </label>
             <input
@@ -321,15 +320,15 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   initialCapital: parseFloat(e.target.value),
                 })
               }
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none text-lg font-mono"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none text-lg font-mono transition-all"
               required
             />
           </div>
 
           {/* Challenge Mode Toggle */}
-          <div className="bg-gray-900 p-4 rounded border border-gray-700">
+          <div className="bg-[#030308]/50 p-5 rounded-xl border border-[#00cfff]/20 transition-all hover:border-[#00cfff]/40">
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-bold text-gray-300 uppercase">
+              <label className="text-xs font-extrabold text-gray-300 uppercase tracking-widest">
                 Enable Prop Firm Challenge
               </label>
               {planLevel >= 1 || isAdmin ? (
@@ -339,19 +338,19 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   onChange={(e) =>
                     setConfig({ ...config, isChallengeMode: e.target.checked })
                   }
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-5 h-5 accent-[#00cfff] rounded cursor-pointer"
                 />
               ) : (
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-xs text-[#00cfff]/50 flex items-center gap-1 border border-[#00cfff]/20 px-2 py-1 rounded">
                   Basic+
                 </span>
               )}
             </div>
 
             {config.isChallengeMode && (
-              <div className="grid grid-cols-2 gap-4 animate-fade-in">
+              <div className="grid grid-cols-2 gap-4 animate-fade-in mt-4 pt-4 border-t border-[#00cfff]/10">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">
+                  <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                     Profit Target (%)
                   </label>
                   <input
@@ -363,11 +362,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         challengeTargetPct: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg text-white p-2 text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">
+                  <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                     Max Drawdown (%)
                   </label>
                   <input
@@ -379,7 +378,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         challengeMaxDrawdownPct: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg text-white p-2 text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all font-mono"
                   />
                 </div>
               </div>
@@ -387,9 +386,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           </div>
 
           {/* Trading Rules Toggle */}
-          <div className="bg-gray-900 p-4 rounded border border-gray-700">
+          <div className="bg-[#030308]/50 p-5 rounded-xl border border-[#00cfff]/20 transition-all hover:border-[#00cfff]/40">
             <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-bold text-gray-300 uppercase flex items-center gap-2">
+              <label className="text-xs font-extrabold text-gray-300 uppercase tracking-widest flex items-center gap-2">
                 Enable Discipline Rules
               </label>
               {planLevel >= 2 || isAdmin ? (
@@ -399,19 +398,19 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   onChange={(e) =>
                     setConfig({ ...config, enableRules: e.target.checked })
                   }
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                  className="w-5 h-5 accent-[#00cfff] rounded cursor-pointer"
                 />
               ) : (
-                <span className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="text-xs text-[#00cfff]/50 flex items-center gap-1 border border-[#00cfff]/20 px-2 py-1 rounded">
                   Premium
                 </span>
               )}
             </div>
 
             {config.enableRules && (
-              <div className="space-y-3 animate-fade-in">
+              <div className="space-y-4 animate-fade-in mt-4 pt-4 border-t border-[#00cfff]/10">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">
+                  <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                     Max Trades / Session
                   </label>
                   <input
@@ -423,11 +422,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxTradesPerDay: parseInt(e.target.value),
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg text-white p-2 text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">
+                  <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                     Max Loss Limit ($)
                   </label>
                   <input
@@ -439,11 +438,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxDailyLoss: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg text-white p-2 text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">
+                  <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                     Max Consecutive Losses
                   </label>
                   <input
@@ -455,11 +454,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxConsecutiveLosses: parseInt(e.target.value),
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-600 rounded text-white p-2 text-sm"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg text-white p-2 text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all font-mono"
                   />
                 </div>
-                <p className="text-[10px] text-yellow-500 italic mt-2">
-                  *Violation will lock trading for 30 mins.
+                <p className="text-[10px] text-yellow-400 font-bold tracking-wider mt-2 border border-yellow-500/30 bg-yellow-900/20 p-2 rounded">
+                  ⚠️ Violation will lock trading for 30 mins.
                 </p>
               </div>
             )}
@@ -467,9 +466,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded font-bold uppercase tracking-wider transition duration-200 shadow-lg"
+            className="w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all duration-300 shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5"
           >
-            Start Trading
+            START TRADING
           </button>
         </form>
       </div>
@@ -483,25 +482,25 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         {/* Challenge Status Card */}
         {config.isChallengeMode && (
           <div
-            className={`p-4 rounded-lg border ${
+            className={`p-5 rounded-2xl border backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.2)] ${
               challengeState.status === "FAILED"
-                ? "bg-red-900/20 border-red-500"
+                ? "bg-red-900/10 border-red-500/40"
                 : challengeState.status === "PASSED"
-                ? "bg-green-900/20 border-green-500"
-                : "bg-blue-900/20 border-blue-500"
+                ? "bg-green-900/10 border-green-500/40"
+                : "bg-[#00cfff]/5 border-[#00cfff]/30"
             }`}
           >
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                Challenge Status
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+                <span className="text-lg">🏆</span> Challenge Status
               </h3>
               <span
-                className={`text-xs font-bold px-2 py-1 rounded uppercase ${
+                className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border ${
                   challengeState.status === "FAILED"
-                    ? "bg-red-600 text-white"
+                    ? "bg-red-500/20 text-red-400 border-red-500/50"
                     : challengeState.status === "PASSED"
-                    ? "bg-green-600 text-white"
-                    : "bg-blue-600 text-white"
+                    ? "bg-green-500/20 text-green-400 border-green-500/50"
+                    : "bg-[#00cfff]/20 text-[#00cfff] border-[#00cfff]/50"
                 }`}
               >
                 {challengeState.status}
@@ -509,17 +508,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             </div>
 
             {challengeState.status === "ACTIVE" && (
-              <div className="space-y-3 mt-3">
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-400">
+              <div className="space-y-4">
+                <div className="bg-[#030308]/50 p-3 rounded-xl border border-[#00cfff]/10">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-[#00cfff]/70 font-bold uppercase tracking-wider">
                       Target: $
                       {(
                         config.initialCapital *
                         (1 + config.challengeTargetPct / 100)
                       ).toLocaleString()}
                     </span>
-                    <span className="text-green-400">
+                    <span className="text-green-400 font-mono font-bold drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
                       {(
                         ((account.balance - config.initialCapital) /
                           ((config.initialCapital * config.challengeTargetPct) /
@@ -529,9 +528,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       %
                     </span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-[#030308] rounded-full h-1.5 border border-[#00cfff]/20 overflow-hidden">
                     <div
-                      className="bg-green-500 h-2 rounded-full transition-all duration-500"
+                      className="bg-green-500 h-full rounded-full transition-all duration-500 relative"
                       style={{
                         width: `${Math.max(
                           0,
@@ -545,20 +544,22 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                           )
                         )}%`,
                       }}
-                    ></div>
+                    >
+                      <div className="absolute inset-0 bg-white/30 w-full animate-[shimmer_2s_infinite]"></div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-400">
+                <div className="bg-[#030308]/50 p-3 rounded-xl border border-[#00cfff]/10">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-[#00cfff]/70 font-bold uppercase tracking-wider">
                       Max Loss Limit: $
                       {(
                         config.initialCapital *
                         (1 - config.challengeMaxDrawdownPct / 100)
                       ).toLocaleString()}
                     </span>
-                    <span className="text-red-400">
+                    <span className="text-red-400 font-mono font-bold drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
                       Dist: $
                       {(
                         account.equity -
@@ -567,9 +568,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       ).toLocaleString()}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div className="w-full bg-[#030308] rounded-full h-1.5 border border-[#00cfff]/20 overflow-hidden">
                     <div
-                      className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                      className="bg-red-500 h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${Math.max(
                           0,
@@ -589,7 +590,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               </div>
             )}
             {challengeState.reason && (
-              <p className="mt-2 text-xs text-center font-bold uppercase tracking-wide opacity-80">
+              <p className="mt-4 p-2 bg-[#030308]/50 rounded-lg text-xs text-center font-bold text-[#00cfff] uppercase tracking-widest border border-[#00cfff]/20">
                 {challengeState.reason}
               </p>
             )}
@@ -597,110 +598,119 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         )}
 
         {/* AI Trading Coach Widget */}
-        <div className="col-span-1 bg-gradient-to-r from-blue-900/40 to-purple-900/40 p-5 rounded-lg border border-blue-500/30">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              AI Trading Coach
+        <div className="col-span-1 bg-[#0a0f1c]/60 p-5 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 to-transparent pointer-events-none"></div>
+          <div className="flex justify-between items-center mb-5 relative z-10">
+            <h3 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+              <span className="text-[#00cfff] text-lg">🤖</span> AI Trading Coach
             </h3>
             {planLevel >= 2 || isAdmin ? (
               <button
                 onClick={analyzeHealth}
                 disabled={isAnalyzing || account.history.length < 2}
-                className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white px-3 py-1 rounded text-xs font-bold transition-colors"
+                className={`text-[10px] font-extrabold px-3 py-1.5 rounded uppercase tracking-wider transition-all ${
+                  isAnalyzing || account.history.length < 2
+                    ? "bg-transparent border border-[#00cfff]/30 text-[#00cfff]/50 cursor-not-allowed"
+                    : "bg-[#00cfff]/20 text-[#00cfff] border border-[#00cfff]/50 hover:bg-[#00cfff]/30 hover:shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+                }`}
               >
-                {isAnalyzing ? "Analyzing..." : "Analyze"}
+                {isAnalyzing ? "ANALYZING..." : "ANALYZE"}
               </button>
             ) : (
-              <span className="text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">
+              <span className="text-[10px] bg-gray-800 border border-gray-700 text-gray-400 px-2 py-1 rounded font-bold uppercase">
                 Premium
               </span>
             )}
           </div>
 
           {healthData ? (
-            <div className="space-y-4 animate-fade-in">
-              <div className="bg-purple-900/20 p-3 rounded border border-purple-500/30">
-                <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg font-bold text-white">{healthData.trading_identity}</span>
-                  <p className="text-[10px] text-purple-300 uppercase font-bold">
-                    Your AI Trading Persona
+            <div className="space-y-4 animate-fade-in relative z-10">
+              <div className="bg-[#030308]/80 p-4 rounded-xl border border-[#00cfff]/20">
+                <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg font-extrabold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{healthData.trading_identity}</span>
+                  <p className="text-[9px] text-[#00cfff] uppercase font-extrabold tracking-widest border border-[#00cfff]/30 px-2 py-0.5 rounded-full">
+                    Persona
                   </p>
                 </div>
-                <p className="text-xs text-gray-300 italic">
+                <p className="text-xs text-gray-300 italic mb-3">
                   "{healthData.identity_insight}"
                 </p>
                 {healthData.ai_insight && (
-                  <div className="mt-2 p-2 bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded border border-blue-500/30">
-                    <p className="text-[11px] text-blue-300 font-medium leading-tight">
-                      🎯 AI Coach Advice: {healthData.ai_insight}
+                  <div className="p-3 bg-[#00cfff]/10 rounded-lg border border-[#00cfff]/30">
+                    <p className="text-[11px] text-[#00cfff] font-medium leading-relaxed">
+                      <span className="font-bold mr-1">🎯 AI Advice:</span> {healthData.ai_insight}
                     </p>
                   </div>
                 )}
               </div>
-              <div className="bg-gray-800/80 p-3 rounded border border-gray-600">
-                <p className="text-[10px] text-blue-400 uppercase mb-2 font-bold">
+              <div className="bg-[#030308]/80 p-4 rounded-xl border border-[#00cfff]/20">
+                <p className="text-[10px] text-[#00cfff] uppercase mb-3 font-extrabold tracking-widest">
                   Recommended Risk & Action
                 </p>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-white">
-                    Risk: <span className="text-2xl">{healthData.recommended_risk}%</span>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-white uppercase tracking-wider">
+                    Risk: <span className="text-2xl font-mono text-[#00cfff]">{healthData.recommended_risk}%</span>
                   </span>
-                  <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                    healthData.overall_score >= 70 ? 'bg-green-900 text-green-400' :
-                    healthData.overall_score >= 50 ? 'bg-yellow-900 text-yellow-400' :
-                    'bg-red-900 text-red-400'
+                  <span className={`px-3 py-1 text-xs font-extrabold rounded-full border uppercase tracking-wider ${
+                    healthData.overall_score >= 70 ? 'bg-green-900/30 text-green-400 border-green-500/50' :
+                    healthData.overall_score >= 50 ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500/50' :
+                    'bg-red-900/30 text-red-400 border-red-500/50'
                   }`}>
-                    Score: {healthData.overall_score}/100
+                    Score: {healthData.overall_score}
                   </span>
                 </div>
-                <p className="text-xs text-gray-300 leading-tight">
+                <p className="text-xs text-gray-300 leading-relaxed">
                   {healthData.recommendation_reason}
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <div className="text-sm font-bold text-blue-400">{healthData.risk_score}</div>
-                  <div className="text-[10px] text-gray-500 uppercase">Risk</div>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-[#030308]/60 p-3 rounded-xl border border-[#00cfff]/10">
+                  <div className="text-lg font-mono font-bold text-[#00cfff]">{healthData.risk_score}</div>
+                  <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">Risk</div>
                 </div>
 
-                <div>
-                  <div className="text-sm font-bold text-purple-400">{healthData.emotional_score}</div>
-                  <div className="text-[10px] text-gray-500 uppercase">Emotion</div>
+                <div className="bg-[#030308]/60 p-3 rounded-xl border border-[#00cfff]/10">
+                  <div className="text-lg font-mono font-bold text-[#00cfff]">{healthData.emotional_score}</div>
+                  <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">Emotion</div>
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-green-400">{healthData.system_score}</div>
-                  <div className="text-[10px] text-gray-500 uppercase">System</div>
+                <div className="bg-[#030308]/60 p-3 rounded-xl border border-[#00cfff]/10">
+                  <div className="text-lg font-mono font-bold text-green-400">{healthData.system_score}</div>
+                  <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">System</div>
                 </div>
               </div>
-              <div className="text-[10px] text-gray-400 p-2 bg-gray-900/50 rounded">
+              <div className="text-[11px] text-gray-400 p-3 bg-[#030308]/80 rounded-xl border border-[#00cfff]/10 leading-relaxed">
                 {healthData.summary}
               </div>
               {healthData.warnings.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-yellow-400 uppercase">⚠️ Warnings</p>
+                <div className="space-y-2 bg-red-900/10 p-3 rounded-xl border border-red-500/30">
+                  <p className="text-[10px] font-extrabold text-red-400 uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-base">⚠️</span> Warnings
+                  </p>
                   {healthData.warnings.map((warning, idx) => (
-                    <p key={idx} className="text-[10px] text-yellow-300 ml-2">• {warning}</p>
+                    <p key={idx} className="text-[11px] text-gray-300 ml-2">• {warning}</p>
                   ))}
                 </div>
                 )}
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500 text-xs">
-              <p>Complete at least 2 trades to unlock AI analysis.</p>
+            <div className="text-center py-6 text-[#00cfff]/40 text-xs font-bold uppercase tracking-widest border border-dashed border-[#00cfff]/20 rounded-xl bg-[#030308]/30">
+              <span className="text-2xl block mb-2 opacity-50">🤖</span>
+              <p>Complete 2 trades for AI analysis.</p>
             </div>
           )}
         </div>
 
         {/* Account Stats */}
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-          <div className="flex justify-between items-end mb-2">
-            <p className="text-xs text-gray-400 uppercase">Equity</p>
+        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#00cfff]/5 rounded-full blur-3xl"></div>
+          <div className="flex justify-between items-end mb-2 relative z-10">
+            <p className="text-xs font-extrabold text-[#00cfff]/70 uppercase tracking-widest">Equity</p>
             <span
-              className={`text-xs font-bold px-2 py-0.5 rounded ${
+              className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border ${
                 account.equity >= account.balance
-                  ? "bg-green-900 text-green-400"
-                  : "bg-red-900 text-red-400"
+                  ? "bg-green-900/20 text-green-400 border-green-500/50 shadow-[0_0_10px_rgba(74,222,128,0.2)]"
+                  : "bg-red-900/20 text-red-400 border-red-500/50 shadow-[0_0_10px_rgba(248,113,113,0.2)]"
               }`}
             >
               {(
@@ -710,24 +720,24 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               %
             </span>
           </div>
-          <p className="text-3xl font-mono font-bold text-white mb-4">
+          <p className="text-4xl font-mono font-bold text-white mb-6 relative z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
             ${account.equity.toFixed(2)}
           </p>
 
-          <div className="grid grid-cols-2 gap-4 border-t border-gray-700 pt-4">
+          <div className="grid grid-cols-2 gap-4 border-t border-[#00cfff]/10 pt-5 relative z-10">
             <div>
-              <p className="text-xs text-gray-500 uppercase">Balance</p>
+              <p className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest mb-1">Balance</p>
               <p className="text-sm font-mono text-gray-300">
                 ${account.balance.toFixed(2)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase">Open PnL</p>
+              <p className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest mb-1">Open PnL</p>
               <p
                 className={`text-sm font-mono font-bold ${
                   account.equity - account.balance >= 0
-                    ? "text-green-400"
-                    : "text-red-400"
+                    ? "text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]"
+                    : "text-red-400 drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]"
                 }`}
               >
                 ${(account.equity - account.balance).toFixed(2)}
@@ -737,13 +747,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         </div>
 
         {/* Trading Controls */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md relative">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm font-bold text-gray-300 uppercase">
+            <h3 className="text-sm font-extrabold text-[#00cfff] uppercase tracking-widest bg-[#00cfff]/10 px-3 py-1.5 rounded-lg border border-[#00cfff]/30">
               {activeSymbol}
             </h3>
             <div className="text-right">
-              <p className="text-2xl font-mono font-bold text-white">
+              <p className="text-2xl font-mono font-bold text-white drop-shadow-[0_0_5px_#00cfff]">
                 {marketState.isLoading
                   ? "..."
                   : marketState.price > 0
@@ -752,8 +762,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     : marketState.price.toFixed(2)
                   : "Unavailable"}
               </p>
-              <p className="text-[10px] text-gray-500">
-                {marketState.isLoading ? "Fetching..." : "Live Price"}
+              <p className="text-[9px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest">
+                {marketState.isLoading ? "FETCHING..." : "LIVE PRICE"}
               </p>
             </div>
           </div>
@@ -769,16 +779,16 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           {planLevel >= 2 || isAdmin ? (
             <button
               onClick={() => setShowRiskCalculator(true)}
-              className="w-full bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-2 transition-colors mb-4"
+              className="w-full bg-[#030308] border border-[#00cfff]/50 hover:border-[#00cfff] text-[#00cfff] text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 mb-5 uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.1)] hover:shadow-[0_0_20px_rgba(0,207,255,0.3)]"
             >
-              ⚠️ Risk Calculator
+              <span className="text-lg">⚖️</span> Risk Calculator
             </button>
           ) : (
             <button
               onClick={() => showFlash("Upgrade to Premium Plan to unlock Risk Calculator!", "error")}
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-2 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-2 transition-colors mb-4 cursor-not-allowed"
+              className="w-full bg-[#030308]/50 border border-gray-700 text-gray-500 text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all mb-5 uppercase tracking-widest cursor-not-allowed"
             >
-              🔒 Risk Calculator
+              <span className="text-lg opacity-50">🔒</span> Risk Calculator
             </button>
           )}
 
@@ -804,8 +814,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             onApplyPositionSize={handleApplyPositionSize}
           />
 
-          <div className="mb-6">
-            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+          <div className="mb-5 mt-4">
+            <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
               Trade Amount ($)
             </label>
             <input
@@ -817,13 +827,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   tradeAmount: parseFloat(e.target.value),
                 })
               }
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+              <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                 SL (%)
               </label>
               <input
@@ -835,11 +845,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     stopLossPct: parseFloat(e.target.value),
                   })
                 }
-                className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+              <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
                 TP (%)
               </label>
               <input
@@ -851,13 +861,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     takeProfitPct: parseFloat(e.target.value),
                   })
                 }
-                className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all"
               />
             </div>
           </div>
 
           <div className="mb-6">
-            <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+            <label className="block text-[10px] font-extrabold text-[#00cfff]/70 mb-2 uppercase tracking-widest">
               Entry Note / Reason (optional)
             </label>
             <input
@@ -867,15 +877,15 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 setConfig({ ...config, tradeNote: e.target.value })
               }
               placeholder="e.g. Breakout, RSI Divergence..."
-              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-3 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none text-sm transition-all placeholder-[#00cfff]/20"
             />
           </div>
 
           {/* Checklist indicator */}
           {!checklistConfirmed && (
-            <div className="mb-4 p-2 bg-yellow-900/30 border border-yellow-500/30 rounded text-center">
-              <p className="text-xs text-yellow-400">
-                Complete checklist before trading
+            <div className="mb-5 p-3 bg-[#030308] border border-yellow-500/50 rounded-xl text-center shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">
+                ⚠️ Complete checklist before trading
               </p>
             </div>
           )}
@@ -889,10 +899,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 challengeState.status === "FAILED" ||
                 challengeState.status === "PASSED"
               }
-              className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
+              className="bg-green-500 hover:bg-green-400 disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500 disabled:shadow-none border border-transparent text-[#030308] py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
             >
+              <span className="text-lg mb-1">📈</span>
               <span>BUY / LONG</span>
-              <span className="text-[10px] opacity-70 font-normal">
+              <span className="text-[9px] opacity-70 font-bold tracking-wider mt-1">
                 Profit if price goes UP
               </span>
             </button>
@@ -904,10 +915,11 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 challengeState.status === "FAILED" ||
                 challengeState.status === "PASSED"
               }
-              className="bg-red-600 hover:bg-red-500 disabled:bg-gray-700 text-white py-4 rounded-lg font-bold uppercase tracking-wider shadow-lg active:transform active:scale-95 transition-all flex flex-col items-center"
+              className="bg-red-500 hover:bg-red-400 disabled:bg-gray-800 disabled:border-gray-700 disabled:text-gray-500 disabled:shadow-none border border-transparent text-[#030308] py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
             >
+              <span className="text-lg mb-1">📉</span>
               <span>SELL / SHORT</span>
-              <span className="text-[10px] opacity-70 font-normal">
+              <span className="text-[9px] opacity-70 font-bold tracking-wider mt-1">
                 Profit if price goes DOWN
               </span>
             </button>
@@ -917,7 +929,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         <div className="flex gap-4">
           <button
             onClick={resetSession}
-            className="flex-1 py-2 text-xs text-gray-500 hover:text-white border border-gray-700 hover:bg-gray-700 rounded transition-colors"
+            className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-500 hover:text-red-400 border border-gray-700 hover:border-red-500/30 hover:bg-red-900/20 rounded-xl transition-all"
           >
             Reset Session
           </button>
@@ -925,14 +937,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             <button
               onClick={downloadCSV}
               disabled={account.history.length === 0}
-              className="flex-1 py-2 text-xs font-bold text-blue-400 hover:text-white border border-blue-900 hover:bg-blue-900/50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-[#00cfff] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Export CSV
             </button>
           ) : (
             <button
               disabled
-              className="flex-1 py-2 text-xs font-bold text-gray-600 border border-gray-700 rounded cursor-not-allowed"
+              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-600 border border-gray-700 rounded-xl cursor-not-allowed"
             >
               Export CSV
             </button>
@@ -943,51 +955,51 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
       {/* RIGHT COLUMN: POSITIONS & HISTORY */}
       <div className="lg:col-span-2 space-y-6">
         {/* Open Positions */}
-        <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden min-h-[200px]">
-          <div className="p-3 border-b border-gray-700 bg-gray-900 flex justify-between items-center">
-            <h3 className="text-xs font-bold text-gray-400 uppercase">
-              Open Positions
+        <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden min-h-[200px]">
+          <div className="p-4 border-b border-[#00cfff]/10 bg-[#030308]/80 flex justify-between items-center">
+            <h3 className="text-xs font-extrabold text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
+              <span className="text-lg">🎯</span> Open Positions
             </h3>
-            <span className="text-xs bg-blue-900 text-blue-300 px-2 rounded-full">
+            <span className="text-xs font-bold bg-[#00cfff]/20 text-[#00cfff] px-3 py-1 rounded-full border border-[#00cfff]/30">
               {account.positions.length}
             </span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-900/50">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="min-w-full divide-y divide-[#00cfff]/10">
+              <thead className="bg-[#030308]">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Entry
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Current
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     TP/SL
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Note
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     PnL
                   </th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-3 text-right text-xs font-bold text-[#00cfff]/70 uppercase tracking-wider">
                     Action
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-[#00cfff]/5">
                 {account.positions.length === 0 ? (
                   <tr>
                     <td
                       colSpan="8"
-                      className="px-4 py-8 text-center text-gray-500 text-sm"
+                      className="px-4 py-10 text-center text-[#00cfff]/40 text-sm font-medium uppercase tracking-widest"
                     >
                       No open positions. Place a trade to start.
                     </td>
@@ -1004,13 +1016,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                           pos.size;
 
                     return (
-                      <tr key={pos.id} className="hover:bg-gray-700/30">
+                      <tr key={pos.id} className="hover:bg-[#00cfff]/5 transition-colors">
                         <td className="px-4 py-3">
                           <span
-                            className={`px-2 py-1 rounded text-xs font-bold ${
+                            className={`px-2 py-1 rounded text-xs font-bold tracking-wider border ${
                               pos.type === "BUY"
-                                ? "bg-green-900/30 text-green-400"
-                                : "bg-red-900/30 text-red-400"
+                                ? "bg-green-900/20 text-green-400 border-green-500/30"
+                                : "bg-red-900/20 text-red-400 border-red-500/30"
                             }`}
                           >
                             {pos.type}
@@ -1019,17 +1031,17 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         <td className="px-4 py-3 text-sm font-mono text-gray-300">
                           {pos.entryPrice.toFixed(2)}
                         </td>
-                        <td className="px-4 py-3 text-sm font-mono text-white">
+                        <td className="px-4 py-3 text-sm font-mono text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
                           {marketState.price.toFixed(2)}
                         </td>
                         <td className="px-4 py-3 text-sm font-mono text-gray-400">
                           ${pos.size}
                         </td>
-                        <td className="px-4 py-3 text-[10px] font-mono text-gray-500">
-                          <div className="text-green-500">
+                        <td className="px-4 py-3 text-[10px] font-mono font-bold tracking-wider">
+                          <div className="text-green-500 drop-shadow-[0_0_3px_rgba(74,222,128,0.3)]">
                             TP: {pos.tpPrice.toFixed(2)}
                           </div>
-                          <div className="text-red-500">
+                          <div className="text-red-500 drop-shadow-[0_0_3px_rgba(248,113,113,0.3)] mt-0.5">
                             SL: {pos.slPrice.toFixed(2)}
                           </div>
                         </td>
@@ -1038,7 +1050,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         </td>
                         <td
                           className={`px-4 py-3 text-sm font-mono font-bold ${
-                            currentPnL >= 0 ? "text-green-400" : "text-red-400"
+                            currentPnL >= 0 ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : "text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"
                           }`}
                         >
                           {currentPnL >= 0 ? "+" : ""}
@@ -1047,7 +1059,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         <td className="px-4 py-3 text-right">
                           <button
                             onClick={() => closePosition(pos.id)}
-                            className="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded transition-colors"
+                            className="bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff] hover:border-[#00cfff] text-[#00cfff] hover:text-[#030308] font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-all shadow-[0_0_10px_rgba(0,207,255,0.1)] hover:shadow-[0_0_15px_rgba(0,207,255,0.4)]"
                           >
                             Close
                           </button>

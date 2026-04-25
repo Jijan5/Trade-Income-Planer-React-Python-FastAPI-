@@ -90,20 +90,24 @@ const ForgotPassword = ({ showFlash }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
-      <div className="max-w-md w-full bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-2xl">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">
-          {step === 1 && "Forgot Password"}
-          {step === 2 && "Enter PIN"}
-          {step === 3 && "Reset Password"}
+    <div className="min-h-screen flex items-center justify-center bg-[#030308] px-4 animate-fade-in relative overflow-hidden">
+      {/* Cyberpunk Background Elements */}
+      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#00cfff]/5 rounded-full blur-[150px] pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+      <div className="max-w-md w-full bg-[#0a0f1c]/90 backdrop-blur-xl p-10 rounded-3xl border border-[#00cfff]/30 shadow-[0_0_50px_rgba(0,207,255,0.1)] relative z-10">
+        <h2 className="text-2xl font-extrabold text-white mb-8 text-center uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+          {step === 1 && "FORGOT PASSWORD"}
+          {step === 2 && "ENTER PIN"}
+          {step === 3 && "RESET PASSWORD"}
         </h2>
 
         {message.text && (
           <div
-            className={`p-3 rounded mb-4 text-sm ${
+            className={`p-4 rounded-xl mb-6 text-[10px] font-extrabold uppercase tracking-widest text-center border shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
               message.type === "success"
-                ? "bg-green-900/50 text-green-400"
-                : "bg-red-900/50 text-red-400"
+                ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.2)]"
+                : "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
             }`}
           >
             {message.text}
@@ -111,37 +115,38 @@ const ForgotPassword = ({ showFlash }) => {
         )}
 
         {step === 1 && (
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
+          <form onSubmit={handleEmailSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-1">
-                Email Address
+              <label className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3">
+                EMAIL ADDRESS
               </label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all placeholder:text-[#00cfff]/20"
+                placeholder="YOUR EMAIL"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold transition-colors"
+              className="w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Sending..." : "Send PIN"}
+              {loading ? "SENDING..." : "SEND PIN"}
             </button>
           </form>
         )}
 
         {step === 2 && (
-          <form onSubmit={handlePinSubmit} className="space-y-4">
-            <p className="text-gray-400 text-sm text-center">
-              Check your VS Code terminal for the 6-digit PIN.
+          <form onSubmit={handlePinSubmit} className="space-y-6">
+            <p className="text-[10px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest text-center mb-6">
+              CHECK YOUR VS CODE TERMINAL FOR THE 6-DIGIT PIN.
             </p>
             <div>
-              <label className="block text-gray-400 text-sm mb-1">
-                6-Digit PIN
+              <label className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3 text-center">
+                6-DIGIT PIN
               </label>
               <input
                 type="text"
@@ -149,24 +154,25 @@ const ForgotPassword = ({ showFlash }) => {
                 maxLength="6"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-center tracking-widest text-xl focus:border-blue-500 outline-none"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-[#00cfff] text-center tracking-[1em] font-extrabold text-2xl focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all drop-shadow-[0_0_5px_#00cfff]"
+                placeholder="------"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold transition-colors"
+              className="w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Verifying..." : "Verify PIN"}
+              {loading ? "VERIFYING..." : "VERIFY PIN"}
             </button>
           </form>
         )}
 
         {step === 3 && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-1">
-                New Password
+              <label className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3">
+                NEW PASSWORD
               </label>
               <input
                 type="password"
@@ -175,12 +181,13 @@ const ForgotPassword = ({ showFlash }) => {
                 onChange={(e) =>
                   setPasswords({ ...passwords, new: e.target.value })
                 }
-                className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all"
+                placeholder="••••••••"
               />
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-1">
-                Confirm Password
+              <label className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3">
+                CONFIRM PASSWORD
               </label>
               <input
                 type="password"
@@ -189,24 +196,25 @@ const ForgotPassword = ({ showFlash }) => {
                 onChange={(e) =>
                   setPasswords({ ...passwords, confirm: e.target.value })
                 }
-                className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all"
+                placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-500 text-white py-2 rounded font-bold transition-colors"
+              className="w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Resetting..." : "Reset Password"}
+              {loading ? "RESETTING..." : "RESET PASSWORD"}
             </button>
           </form>
         )}
 
         <button
           onClick={() => navigate("/")}
-          className="w-full mt-4 text-gray-500 text-sm hover:text-white"
+          className="w-full mt-8 text-[#00cfff]/50 hover:text-[#00cfff] text-[10px] font-extrabold uppercase tracking-widest transition-all drop-shadow-[0_0_3px_rgba(0,207,255,0)] hover:drop-shadow-[0_0_5px_currentColor]"
         >
-          Back to Login
+          BACK TO LOGIN
         </button>
       </div>
     </div>

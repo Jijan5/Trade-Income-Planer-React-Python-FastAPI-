@@ -72,10 +72,10 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
     }
   };
 
-    const isEmoji = (str) => {
-      const emojiRegex = new RegExp('(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
-      return emojiRegex.test(str);
-    }
+  const isEmoji = (str) => {
+    const emojiRegex = new RegExp('(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
+    return emojiRegex.test(str);
+  }
 
   useEffect(() => {
     if (isEmoji(username)) {
@@ -84,9 +84,9 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
     }
   }, [username]);
 
-    useEffect(() => {
-        setUsernameError(validateUsername(username));
-    }, [username])
+  useEffect(() => {
+      setUsernameError(validateUsername(username));
+  }, [username])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,9 +102,10 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
     if (isUsernameAvailable !== true && !isLogin) {
       setUsernameError("Username has not been checked for availability, or is not available.")
+      setLoading(false);
       return;
     }
-      try {
+    try {
       if (isLogin) {
         // Login Request (Form Data format required by OAuth2PasswordRequestForm)
         const params = new URLSearchParams();
@@ -139,10 +140,8 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
       console.error(err);
       let msg = "An error occured.";
       if (err.response) {
-        // Server merespon dengan kode error (misal: 400, 401, 500)
         msg = err.response.data.detail || "Failed to process request.";
       } else if (err.request) {
-        // Tidak ada respon dari server (Backend mati atau terblokir CORS)
         msg =
           "Unable to connect to the server. Ensure that the Python backend is running.";
       }
@@ -163,21 +162,28 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
         body { display: block !important; margin: 0; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
       `}</style>
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4">
-        <div className="max-w-md w-full bg-gray-800 rounded-lg border border-gray-700 p-8 shadow-2xl relative">
+      <div className="min-h-screen flex items-center justify-center bg-[#030308] px-4 relative overflow-hidden font-sans">
+        
+        {/* Neon Background Effects matching LandingPage */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-[#00cfff]/5 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-purple-600/5 rounded-full blur-[120px]"></div>
+        </div>
+
+        <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-xl rounded-2xl border border-[#00cfff]/20 p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all">
           {onClose && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white font-bold text-xl"
+              className="absolute top-4 right-4 text-gray-500 hover:text-[#00cfff] transition-colors font-bold text-2xl leading-none"
             >
               &times;
             </button>
           )}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white">
+            <h2 className="text-3xl font-extrabold text-white tracking-tight">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h2>
-            <p className="text-gray-400 mt-2">
+            <p className="text-gray-400 mt-2 font-light">
               {isLogin
                 ? "Login to access your trading plan"
                 : "Start your journey to trading mastery"}
@@ -185,20 +191,20 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
           </div>
 
           {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-2 rounded mb-6 text-sm">
+            <div className="bg-red-900/30 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl mb-6 text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="bg-green-900/50 border border-green-500 text-green-200 px-4 py-2 rounded mb-6 text-sm animate-fade-in">
+            <div className="bg-green-900/30 border border-green-500/50 text-green-200 px-4 py-3 rounded-xl mb-6 text-sm shadow-[0_0_15px_rgba(34,197,94,0.1)] animate-fade-in">
               {success}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1.5">
                 Username
               </label>
               <input
@@ -206,26 +212,26 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all"
               />
               {!isLogin && (
                 <>
                   <button 
                     type="button" 
                     onClick={checkUsernameAvailability}
-                    className="text-xs bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 py-2 rounded transition-colors mt-2"
+                    className="text-xs bg-[#00cfff]/10 hover:bg-[#00cfff]/20 text-[#00cfff] border border-[#00cfff]/30 px-4 py-2 rounded-lg transition-all mt-2 shadow-[0_0_10px_rgba(0,207,255,0.05)]"
                   >
                     Check Username
                   </button>
                   {usernameError && <p className="text-red-400 text-xs mt-2">{usernameError}</p>}
                   {isUsernameAvailable === true && (
-                    <p className="text-green-400 text-xs mt-2">✓ Username can be used!.</p>
+                    <p className="text-[#00cfff] text-xs mt-2 font-medium">✓ Username can be used!</p>
                   )}
                   {isUsernameAvailable === false && (
-                    <p className="text-red-400 text-xs mt-2">✗ Username already exist.</p>
+                    <p className="text-red-400 text-xs mt-2 font-medium">✗ Username already exists.</p>
                   )}
                   {isUsernameAvailable === null && usernameError === "" && username !== "" && (
-                    <p className="text-gray-400 text-xs mt-2">Click check username to verify.</p>
+                    <p className="text-gray-400 text-xs mt-2 font-light">Click check username to verify.</p>
                   )}
                 </>
               )}
@@ -233,7 +239,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">
                   Full Name
                 </label>
                 <input
@@ -241,14 +247,14 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all"
                 />
               </div>
             )}
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">
                   Email
                 </label>
                 <input
@@ -256,32 +262,32 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all"
                 />
               </div>
             )}
 
             {!isLogin && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div ref={countryDropdownRef} className="relative">
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">
                     Country Code
                   </label>
                   <div 
-                    className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 cursor-pointer flex justify-between items-center"
+                    className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] cursor-pointer flex justify-between items-center transition-all"
                     onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                   >
                     <span>{countryCode}</span>
-                    <span className="text-xs text-gray-500">▼</span>
+                    <span className="text-xs text-[#00cfff]">▼</span>
                   </div>
                   
                   {isCountryDropdownOpen && (
-                    <div className="absolute top-full left-0 w-full bg-gray-800 border border-gray-600 rounded mt-1 z-50 max-h-60 overflow-y-auto shadow-xl">
-                      <div className="p-2 sticky top-0 bg-gray-800 border-b border-gray-700">
+                    <div className="absolute top-full left-0 w-full bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                      <div className="p-2 sticky top-0 bg-[#0a0f1c] border-b border-[#00cfff]/20 z-10">
                         <input 
                           type="text" 
-                          placeholder="Search country..." 
-                          className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-500"
+                          placeholder="Search..." 
+                          className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#00cfff] transition-all"
                           value={countrySearch}
                           onChange={(e) => setCountrySearch(e.target.value)}
                           autoFocus
@@ -291,7 +297,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                       {filteredCountries.map((country, idx) => (
                         <div 
                           key={`${country.name}-${idx}`}
-                          className="px-3 py-2 hover:bg-gray-700 cursor-pointer text-sm text-gray-300 flex justify-between items-center"
+                          className="px-4 py-2.5 hover:bg-[#00cfff]/10 cursor-pointer text-sm text-gray-300 flex justify-between items-center transition-colors"
                           onClick={() => {
                             setCountryCode(country.code);
                             setIsCountryDropdownOpen(false);
@@ -299,30 +305,30 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                           }}
                         >
                           <span className="truncate mr-2">{country.name}</span>
-                          <span className="text-gray-500 whitespace-nowrap">{country.code}</span>
+                          <span className="text-[#00cfff] whitespace-nowrap">{country.code}</span>
                         </div>
                       ))}
                       {filteredCountries.length === 0 && (
-                        <div className="px-3 py-2 text-sm text-gray-500 text-center">No results</div>
+                        <div className="px-3 py-3 text-sm text-gray-500 text-center">No results</div>
                       )}
                     </div>
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    WhatsApp Number
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                    WhatsApp
                   </label>
                   <input
                     type="tel"
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-sm font-medium text-gray-400">
                   Password
                 </label>
@@ -335,7 +341,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                         if (onClose) onClose();
                       }, 50);
                     }}
-                    className="text-xs text-blue-400 hover:underline"
+                    className="text-xs text-[#00cfff] hover:text-[#00b3e6] transition-colors hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
                   >
                     Forgot Password?
                   </button>
@@ -347,12 +353,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 pr-10"
+                  className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] pr-10 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white"
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-[#00cfff] transition-colors"
                 >
                   {showPassword ? (
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -370,7 +376,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1.5">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -379,12 +385,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 pr-10"
+                    className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] pr-10 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-white"
+                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-[#00cfff] transition-colors"
                   >
                     {showConfirmPassword ? (
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -404,7 +410,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors disabled:opacity-50"
+              className="w-full bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] font-extrabold py-3 px-4 rounded-xl transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:shadow-[0_0_20px_rgba(0,207,255,0.4)] mt-4"
             >
               {loading
                 ? "Processing..."
@@ -413,20 +419,20 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                 : "Sign Up"}
             </button>
             
-            <div className="space-y-3 mt-8">
+            <div className="space-y-4 mt-8">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-700" />
+                  <div className="w-full border-t border-[#00cfff]/20" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="px-2 bg-gray-800 text-gray-500">or continue with</span>
+                  <span className="px-3 bg-[#0a0f1c] text-gray-500 font-bold">or continue with</span>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <a
                   href="http://localhost:8000/auth/google"
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-gray-600 rounded-lg hover:bg-gray-800 hover:border-blue-500 transition-all text-white text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#030308] border border-[#00cfff]/20 rounded-xl hover:bg-[#00cfff]/5 hover:border-[#00cfff]/50 hover:shadow-[0_0_15px_rgba(0,207,255,0.1)] transition-all text-white text-sm font-bold"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -439,7 +445,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
                 <a
                   href="http://localhost:8000/auth/facebook"
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-gray-600 rounded-lg hover:bg-gray-800 hover:border-blue-500 transition-all text-white text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#030308] border border-[#00cfff]/20 rounded-xl hover:bg-[#00cfff]/5 hover:border-[#00cfff]/50 hover:shadow-[0_0_15px_rgba(0,207,255,0.1)] transition-all text-white text-sm font-bold"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877f2">
                     <path d="M20.007 4.006a10.007 10.007 0 0 0-10.007 10.007A9.999 9.999 0 0 1 9.892 19H7.993a1 1 0 0 1-1-1V17h2.899a3.993 3.993 0 0 1 3.993-3.993h.001a3.992 3.992 0 0 1 2.799 1.186A10 10 0 0 0 20.007 4.006ZM11 15.997V13h2v2.997h-2Zm0-3.001h2V10h-2v2.999Z"/>
@@ -450,14 +456,14 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
             </div>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400 text-sm">
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 text-sm font-light">
               {isLogin ? (
                 <>
                   Don't have an account?{" "}
                   <button
                     onClick={() => setIsLogin(false)}
-                    className="text-blue-400 hover:text-blue-300 font-medium"
+                    className="text-[#00cfff] hover:text-[#00b3e6] font-bold transition-colors hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
                   >
                     Register
                   </button>
@@ -467,7 +473,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   Already have an account?{" "}
                   <button
                     onClick={() => setIsLogin(true)}
-                    className="text-blue-400 hover:text-blue-300 font-medium"
+                    className="text-[#00cfff] hover:text-[#00b3e6] font-bold transition-colors hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
                   >
                     Login
                   </button>

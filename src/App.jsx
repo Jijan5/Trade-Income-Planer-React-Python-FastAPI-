@@ -11,7 +11,7 @@ import {
 import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
-import BinanceChartWidget from "./components/BinanceChartWidget";
+import TradingViewChartWidget from "./components/TradingViewChartWidget";
 import GoalPlanner from "./components/GoalPlanner";
 import ManualTradeSimulator from "./components/ManualTradeSimulator";
 import ChatAssistant from "./components/ChatAssistant";
@@ -32,7 +32,10 @@ import ContactUs from "./components/ContactUs";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
-import { NotificationProvider, useNotifications } from "./contexts/NotificationContext";
+import {
+  NotificationProvider,
+  useNotifications,
+} from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
 
@@ -42,7 +45,7 @@ const AdminRoute = ({ children }) => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[#030308] flex flex-col items-center justify-center text-[#00cfff]">
         Loading Security Check...
       </div>
     );
@@ -60,7 +63,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-[#030308] flex flex-col items-center justify-center text-[#00cfff]">
         Loading...
       </div>
     );
@@ -108,6 +111,23 @@ const assetCategories = {
     { label: "FLOKI", symbol: "FLOKIUSDT" },
     { label: "BONK", symbol: "BONKUSDT" },
   ],
+  Forex: [
+    { label: "EUR/USD", symbol: "EURUSD" },
+    { label: "GBP/USD", symbol: "GBPUSD" },
+    { label: "USD/JPY", symbol: "USDJPY" },
+    { label: "AUD/USD", symbol: "AUDUSD" },
+    { label: "USD/CAD", symbol: "USDCAD" },
+    { label: "USD/CHF", symbol: "USDCHF" },
+    { label: "NZD/USD", symbol: "NZDUSD" },
+  ],
+  Oil: [
+    { label: "WTI Crude Oil", symbol: "USOIL" },
+    { label: "Brent Crude", symbol: "UKOIL" },
+  ],
+  Commodities: [
+    { label: "Gold (XAU)", symbol: "XAUUSD" },
+    { label: "Silver (XAG)", symbol: "XAGUSD" },
+  ],
 };
 
 // Layout for Simulation Section (Chart + Sub-nav) - Moved OUTSIDE App component
@@ -128,9 +148,9 @@ const SimulationLayout = ({
         {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
         <div className="space-y-6 mb-8">
           {/* Asset Selection Dropdowns */}
-          <div className="flex flex-col sm:flex-row gap-6 bg-gray-800 p-4 rounded-lg border border-gray-700">
+          <div className="flex flex-col sm:flex-row gap-6 bg-[#0a0f1c]/60 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)]">
             <div className="w-full sm:w-1/4">
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
                 Market Category
               </label>
               <select
@@ -140,7 +160,7 @@ const SimulationLayout = ({
                   setActiveCategory(newCategory);
                   setActiveSymbol(assetCategories[newCategory][0].symbol);
                 }}
-                className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all cursor-pointer"
               >
                 {Object.keys(assetCategories).map((category) => (
                   <option key={category} value={category}>
@@ -151,13 +171,13 @@ const SimulationLayout = ({
             </div>
 
             <div className="w-full sm:w-1/4">
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
                 Select Asset
               </label>
               <select
                 value={activeSymbol}
                 onChange={(e) => setActiveSymbol(e.target.value)}
-                className="w-full bg-gray-900 text-white border border-gray-600 rounded px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all cursor-pointer"
               >
                 {assetCategories[activeCategory].map((asset) => (
                   <option key={asset.symbol} value={asset.symbol}>
@@ -169,51 +189,51 @@ const SimulationLayout = ({
           </div>
 
           {/* Chart Container */}
-          <div className="h-[600px] bg-gray-800 rounded-lg border border-gray-700 shadow-2xl overflow-hidden">
-            <BinanceChartWidget symbol={activeSymbol} />
+          <div className="h-[600px] bg-[#0a0f1c]/80 backdrop-blur-xl rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)] overflow-hidden">
+            <TradingViewChartWidget symbol={activeSymbol} />
           </div>
         </div>
 
         {/* SECTION 2: SIMULATION TOOLS */}
         <div className="space-y-8">
           {/* View Switcher */}
-          <div className="flex justify-center border-b border-gray-700">
+          <div className="flex justify-center border-b border-[#00cfff]/20">
             <Link
               to="/simulation/strategy"
-              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/strategy")
-                  ? "text-gray-500 border-b-2 border-blue-500"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
+                  : "text-gray-500 hover:text-[#00cfff]/80"
               }`}
             >
               Strategy Simulator {planLevel < 2 && !isAdmin && "🔒"}
             </Link>
             <Link
               to="/simulation/planner"
-              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/planner")
-                  ? "text-gray-500 border-b-2 border-blue-500"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
+                  : "text-gray-500 hover:text-[#00cfff]/80"
               }`}
             >
               Goal Planner {planLevel < 2 && !isAdmin && "🔒"}
             </Link>
             <Link
               to="/simulation/manual"
-              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/manual")
-                  ? "text-gray-500 border-b-2 border-blue-500"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
+                  : "text-gray-500 hover:text-[#00cfff]/80"
               }`}
             >
               Manual Trade
             </Link>
             <Link
               to="/simulation/history"
-              className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+              className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/history")
-                  ? "text-gray-500 border-b-2 border-blue-500"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
+                  : "text-gray-500 hover:text-[#00cfff]/80"
               }`}
             >
               History
@@ -247,7 +267,7 @@ const StrategyView = ({
         <div className="flex justify-end">
           <button
             onClick={() => onExport(simulationData)}
-            className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors shadow-lg"
+            className="bg-transparent hover:bg-[#00cfff]/10 border border-[#00cfff]/50 hover:border-[#00cfff] text-[#00cfff] px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(0,207,255,0.1)]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -268,7 +288,7 @@ const StrategyView = ({
         </div>
       </>
     ) : (
-      <div className="bg-gray-800 p-10 rounded-lg border border-gray-700 text-center h-[300px] flex flex-col justify-center items-center text-gray-500">
+      <div className="bg-[#0a0f1c]/60 backdrop-blur-md p-10 rounded-2xl border border-[#00cfff]/20 text-center h-[300px] flex flex-col justify-center items-center text-gray-500 shadow-[0_0_20px_rgba(0,207,255,0.05)]">
         <svg
           className="w-16 h-16 mb-4"
           fill="none"
@@ -369,12 +389,16 @@ function App() {
   // In production, set VITE_MIDTRANS_URL and VITE_MIDTRANS_CLIENT_KEY in .env
   useEffect(() => {
     // Get configuration from environment variables
-    const midtransUrl = import.meta.env.VITE_MIDTRANS_URL || "https://app.sandbox.midtrans.com/snap/snap.js";
+    const midtransUrl =
+      import.meta.env.VITE_MIDTRANS_URL ||
+      "https://app.sandbox.midtrans.com/snap/snap.js";
     const midtransClientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "";
-    
+
     // Only load if client key is configured
     if (!midtransClientKey) {
-      console.warn("Midtrans client key not configured. Payment feature disabled.");
+      console.warn(
+        "Midtrans client key not configured. Payment feature disabled."
+      );
       return;
     }
 
@@ -713,11 +737,10 @@ function App() {
   }
 
   return (
-      <NotificationProvider>
-        <PostInteractionProvider showFlash={showFlash}>
-          {/* Override default Vite styles that constrain width */}
-          <div className="min-h-screen bg-gray-900 text-gray-100 font-sans w-full flex flex-col">
-
+    <NotificationProvider>
+      <PostInteractionProvider showFlash={showFlash}>
+        {/* Override default Vite styles that constrain width */}
+        <div className="min-h-screen bg-[#030308] text-gray-100 font-sans w-full flex flex-col">
           {/* Override default Vite styles that constrain width */}
           <style>{`
         body { display: block !important; }
@@ -737,211 +760,268 @@ function App() {
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-          width: 10px;
-          height: 10px;
+          width: 8px;
+          height: 8px;
         }
         ::-webkit-scrollbar-track {
-          background: #111827; /* gray-900 */
+          background: #030308;
         }
         ::-webkit-scrollbar-thumb {
-          background: #374151; /* gray-700 */
-          border-radius: 5px;
+          background: rgba(0, 207, 255, 0.2);
+          border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-          background: #4b5563; /* gray-600 */
+          background: rgba(0, 207, 255, 0.5);
         }
       `}</style>
-        {/* Flash Message Notification */}
-        {flashMessage && (
-          <div
-            className={`fixed top-24 right-6 z-[100] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-500 transform ${
-              isFadingOut
-                ? "opacity-0 translate-y-[-20px]"
-                : "opacity-100 translate-y-0"
-            } ${
-              flashMessage.type === "success"
-                ? "bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400/50"
-                : flashMessage.type === "info"
-                ? "bg-gradient-to-r from-blue-600 to-sky-600 border border-blue-400/50"
-                : "bg-gradient-to-r from-red-600 to-rose-600 border border-red-400/50"
-            } text-white backdrop-blur-md`}
-          >
+          {/* Flash Message Notification */}
+          {flashMessage && (
             <div
-              className={`p-1 rounded-full ${
+              className={`fixed top-24 right-6 z-[100] px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-500 transform ${
+                isFadingOut
+                  ? "opacity-0 translate-y-[-20px]"
+                  : "opacity-100 translate-y-0"
+              } ${
                 flashMessage.type === "success"
-                  ? "bg-green-500/30"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400/50"
                   : flashMessage.type === "info"
-                  ? "bg-blue-500/30"
-                  : "bg-red-500/30"
-              }`}
+                  ? "bg-gradient-to-r from-blue-600 to-sky-600 border border-blue-400/50"
+                  : "bg-gradient-to-r from-red-600 to-rose-600 border border-red-400/50"
+              } text-white backdrop-blur-md`}
             >
-              {flashMessage.type === "success" ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : flashMessage.type === "info" ? (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </div>
-            <div>
-              <h4 className="font-bold text-sm">
-                {flashMessage.type === "success"
-                  ? "Success"
-                  : flashMessage.type === "info"
-                  ? "Info"
-                  : "Error"}
-              </h4>
-              <p className="text-xs opacity-90">{flashMessage.message}</p>
-            </div>
-          </div>
-        )}
-        {/* Navbar */}
-        <nav className="bg-gray-800 border-b border-gray-700 px-6 py-4 fixed top-0 left-0 right-0 z-50">
-          <div className="flex items-center justify-between w-full">
-            <div
-              className="flex items-center cursor-pointer"
-              onClick={() => navigate(token ? "/home" : "/")}
-            >
-              <img
-                src="/tip-brand.png"
-                alt="Trade Income Planner"
-                className="h-10"
-              />
-            </div>
-
-            {/* Main Navigation (Center) */}
-            <div className="hidden md:flex items-center space-x-1 bg-gray-900/50 p-1 rounded-full border border-gray-700/50">
-              {token &&
-                navItems.map((item) => (
-                  <button
-                    key={item.path}
-                    onClick={() => navigate(item.path)}
-                    title={item.title}
-                    className={`p-2.5 rounded-full transition-colors custom-icon ${
-                      location.pathname.startsWith(item.path)
-                        ? "text-white"
-                        : "text-gray-400 hover:text-white"
-                    }`}
+              <div
+                className={`p-1 rounded-full ${
+                  flashMessage.type === "success"
+                    ? "bg-green-500/30"
+                    : flashMessage.type === "info"
+                    ? "bg-blue-500/30"
+                    : "bg-red-500/30"
+                }`}
+              >
+                {flashMessage.type === "success" ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    {item.icon}
-                  </button>
-                ))}
-
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Admin Button - Only visible for admins */}
-              {userData?.role === "admin" && (
-                <button
-                  onClick={() => navigate("/admin")}
-                  className="hidden md:block text-xs bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all transform hover:scale-105 border border-red-400"
-                >
-                  🛡️ Admin Panel
-                </button>
-              )}
-              {/* Upgrade button - only show if logged in */}
-              {token && (
-                <button
-                  onClick={() => navigate("/subscription")}
-                  className="hidden md:block text-xs gap-2 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-all duration-200 transform hover:scale-105"
-                >
-                  👑 Upgrade Pro
-                </button>
-              )}
-
-              {token ? (
-                <>
-                  <button
-                    onClick={handleBellClick}
-                    className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50"
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : flashMessage.type === "info" ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <h4 className="font-bold text-sm">
+                  {flashMessage.type === "success"
+                    ? "Success"
+                    : flashMessage.type === "info"
+                    ? "Info"
+                    : "Error"}
+                </h4>
+                <p className="text-xs opacity-90">{flashMessage.message}</p>
+              </div>
+            </div>
+          )}
+          {/* Navbar */}
+          <nav className="bg-[#0a0f1c]/80 backdrop-blur-md border-b border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,207,255,0.05)] px-6 py-4 fixed top-0 left-0 right-0 z-50">
+            <div className="flex items-center justify-between w-full">
+              <div
+                className="flex items-center cursor-pointer"
+                onClick={() => navigate(token ? "/home" : "/")}
+              >
+                <img
+                  src="/tip-brand.png"
+                  alt="Trade Income Planner"
+                  className="h-10"
+                />
+              </div>
+
+              {/* Main Navigation (Center) */}
+              <div className="hidden md:flex items-center space-x-1 bg-[#030308]/60 p-1.5 rounded-full border border-[#00cfff]/20 shadow-[inset_0_0_10px_rgba(0,207,255,0.05)]">
+                {token &&
+                  navItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                      title={item.title}
+                      className={`p-2.5 rounded-full transition-all custom-icon ${
+                        location.pathname.startsWith(item.path)
+                          ? "text-[#00cfff] bg-[#00cfff]/10 drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
+                          : "text-gray-500 hover:text-[#00cfff]/80 hover:bg-[#00cfff]/5"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
-                  </button>
+                      {item.icon}
+                    </button>
+                  ))}
+              </div>
 
-                  {/* Desktop Profile & Logout */}
-                  <div
-                    className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-1.5 pr-3 rounded-full transition-colors border border-transparent hover:border-gray-600"
-                    onClick={() => navigate("/profile")}
+              <div className="flex items-center gap-4">
+                {/* Admin Button - Only visible for admins */}
+                {userData?.role === "admin" && (
+                  <button
+                    onClick={() => navigate("/admin")}
+                    className="hidden md:block text-xs bg-transparent border border-red-500/50 hover:border-red-500 text-red-500 hover:bg-red-500/10 px-5 py-2.5 rounded-xl font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)] transition-all transform hover:scale-105"
                   >
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt="Avatar"
-                        className="w-8 h-8 rounded-full object-cover border border-gray-500"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs border border-gray-500">
-                        {userData?.username?.substring(0, 2).toUpperCase() ||
-                          "U"}
+                    🛡️ Admin Panel
+                  </button>
+                )}
+                {/* Upgrade button - only show if logged in */}
+                {token && (
+                  <button
+                    onClick={() => navigate("/subscription")}
+                    className="hidden md:block text-xs gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-[#030308] px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
+                  >
+                    👑 Upgrade Pro
+                  </button>
+                )}
+
+                {token ? (
+                  <>
+                    <button
+                      onClick={handleBellClick}
+                      className="relative text-gray-400 hover:text-white p-2 rounded-full hover:bg-gray-700/50"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                      </svg>
+                      {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 h-5 w-5 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-gray-800">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Desktop Profile & Logout */}
+                    <div
+                      className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-[#00cfff]/10 p-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-[#00cfff]/30 hover:shadow-[0_0_10px_rgba(0,207,255,0.1)]"
+                      onClick={() => navigate("/profile")}
+                    >
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt="Avatar"
+                          className="w-8 h-8 rounded-full object-cover border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.3)]"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-[#030308] rounded-full flex items-center justify-center text-[#00cfff] font-bold text-xs border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.3)]">
+                          {userData?.username?.substring(0, 2).toUpperCase() ||
+                            "U"}
+                        </div>
+                      )}
+                      <div className="text-sm font-bold text-white hidden sm:flex items-center">
+                        {userData?.username || "User"}
+                        <VerifiedBadge user={userData} />
                       </div>
-                    )}
-                    <div className="text-sm font-bold text-white hidden sm:flex items-center">
-                      {userData?.username || "User"}
-                      <VerifiedBadge user={userData} />
                     </div>
-                  </div>
-                  <button
-                    onClick={logout}
-                    className="hidden md:block text-xs bg-red-600/20 hover:bg-red-600/40 text-red-400 border border-red-600/50 px-3 py-1 rounded transition-colors"
-                  >
-                    Logout
-                  </button>
+                    <button
+                      onClick={logout}
+                      className="hidden md:block text-xs bg-transparent border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl transition-all font-bold"
+                    >
+                      Logout
+                    </button>
 
-                  {/* Mobile Hamburger Button */}
+                    {/* Mobile Hamburger Button */}
+                    <button
+                      onClick={() => setIsMobileMenuOpen(true)}
+                      className="md:hidden text-gray-400 hover:text-white p-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-8 h-8"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                        />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setAuthInitialLogin(true);
+                        setShowAuth(true);
+                      }}
+                      className="text-xs bg-transparent text-white border border-white/10 hover:border-[#00cfff]/50 px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:bg-[#00cfff]/10"
+                    >
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        setAuthInitialLogin(false);
+                        setShowAuth(true);
+                      }}
+                      className="text-xs bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-5 py-2.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(0,207,255,0.2)] hover:shadow-[0_0_20px_rgba(0,207,255,0.4)]"
+                    >
+                      Sign Up
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </nav>
+
+          {/* Mobile Menu Modal */}
+          {isMobileMenuOpen && token && (
+            <div
+              className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <div
+                className="absolute right-0 top-0 h-full w-72 bg-[#0a0f1c]/95 border-l border-[#00cfff]/20 p-6 shadow-[-10px_0_30px_rgba(0,207,255,0.05)] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-xl font-extrabold text-white">Menu</h3>
                   <button
-                    onClick={() => setIsMobileMenuOpen(true)}
-                    className="md:hidden text-gray-400 hover:text-white p-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-gray-400 hover:text-[#00cfff] transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -949,499 +1029,468 @@ function App() {
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}
                       stroke="currentColor"
-                      className="w-8 h-8"
+                      className="w-6 h-6"
                     >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                        d="M6 18L18 6M6 6l12 12"
                       />
                     </svg>
                   </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      setAuthInitialLogin(true);
-                      setShowAuth(true);
-                    }}
-                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold transition-colors"
-                  >
-                    Login
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthInitialLogin(false);
-                      setShowAuth(true);
-                    }}
-                    className="text-xs bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 px-4 py-2 rounded transition-colors"
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </nav>
+                </div>
 
-        {/* Mobile Menu Modal */}
-        {isMobileMenuOpen && token && (
-          <div
-            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm md:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <div
-              className="absolute right-0 top-0 h-full w-72 bg-gray-800 border-l border-gray-700 p-6 shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-white">Menu</h3>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-gray-400 hover:text-white"
+                {/* Profile Summary */}
+                <div
+                  className="flex items-center gap-4 mb-8 p-4 bg-[#030308] border border-[#00cfff]/20 rounded-2xl cursor-pointer hover:bg-[#00cfff]/5 transition-all shadow-[0_0_15px_rgba(0,207,255,0.05)]"
+                  onClick={() => {
+                    navigate("/profile");
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Avatar"
+                      className="w-12 h-12 rounded-full object-cover border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)]"
                     />
-                  </svg>
+                  ) : (
+                    <div className="w-12 h-12 bg-[#0a0f1c] rounded-full flex items-center justify-center text-[#00cfff] font-bold text-lg border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)]">
+                      {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-white font-bold text-lg flex items-center gap-1">
+                      {userData?.username}
+                      <VerifiedBadge user={userData} />
+                    </p>
+                    <p className="text-gray-400 text-xs">{userData?.email}</p>
+                  </div>
+                </div>
+
+                {/* Menu Items */}
+                <div className="space-y-4 flex-1">
+                  {userData?.role === "admin" && (
+                    <button
+                      onClick={() => {
+                        navigate("/admin");
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-transparent border border-red-500/50 hover:border-red-500 text-red-500 hover:bg-red-500/10 py-3 rounded-xl font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)] transition-all flex items-center justify-center gap-2"
+                    >
+                      🛡️ Admin Panel
+                    </button>
+                  )}
+                  {token && (
+                    <button
+                      onClick={() => {
+                        navigate("/subscription");
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-[#030308] py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
+                    >
+                      👑 Upgrade Pro
+                    </button>
+                  )}
+                </div>
+
+                {/* Logout */}
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-transparent hover:bg-red-500 border border-red-500/30 text-red-500 hover:text-white py-3 rounded-xl font-bold transition-all mt-auto"
+                >
+                  Logout
                 </button>
               </div>
+            </div>
+          )}
 
-              {/* Profile Summary */}
-              <div
-                className="flex items-center gap-4 mb-8 p-4 bg-gray-700/50 rounded-xl cursor-pointer hover:bg-gray-700 transition-colors"
-                onClick={() => {
-                  navigate("/profile");
-                  setIsMobileMenuOpen(false);
-                }}
+          <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
+            <SuspensionHandler />
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  token ? (
+                    <Navigate to="/home" replace />
+                  ) : (
+                    <LandingPage
+                      onLogin={() => {
+                        setAuthInitialLogin(true);
+                        setShowAuth(true);
+                      }}
+                      onRegister={() => {
+                        setAuthInitialLogin(false);
+                        setShowAuth(true);
+                      }}
+                    />
+                  )
+                }
+              />
+              <Route
+                path="/forgot-password"
+                element={<ForgotPassword showFlash={showFlash} />}
+              />
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home
+                      communities={communities}
+                      highlightedPost={highlightedPost}
+                      setHighlightedPost={setHighlightedPost}
+                      showFlash={showFlash}
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/explore"
+                element={
+                  <ProtectedRoute>
+                    <Explore />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/post/:id"
+                element={
+                  <ProtectedRoute>
+                    <PostDetail showFlash={showFlash} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/community"
+                element={
+                  <ProtectedRoute>
+                    <Community
+                      communities={communities}
+                      highlightedPost={highlightedPost}
+                      setHighlightedPost={setHighlightedPost}
+                      showFlash={showFlash}
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/community/:id"
+                element={
+                  <ProtectedRoute>
+                    <Community
+                      communities={communities}
+                      highlightedPost={highlightedPost}
+                      setHighlightedPost={setHighlightedPost}
+                      showFlash={showFlash}
+                    />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/simulation"
+                element={
+                  <ProtectedRoute>
+                    <SimulationLayout
+                      activeCategory={activeCategory}
+                      setActiveCategory={setActiveCategory}
+                      activeSymbol={activeSymbol}
+                      setActiveSymbol={setActiveSymbol}
+                      showFlash={showFlash}
+                    />
+                  </ProtectedRoute>
+                }
               >
-                {avatarUrl ? (
+                <Route index element={<Navigate to="manual" replace />} />
+                <Route
+                  path="strategy"
+                  element={
+                    planLevel >= 2 || userData?.role === "admin" ? (
+                      <StrategyView
+                        onSimulate={handleSimulate}
+                        isLoading={loading}
+                        error={error}
+                        simulationData={simulationData}
+                        onExport={handleExportSimulationCSV}
+                      />
+                    ) : (
+                      <div className="text-center py-24 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)]">
+                        <h3 className="text-3xl font-extrabold text-white mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                          Feature Locked 🔒
+                        </h3>
+                        <p className="text-gray-400 mb-8 font-light">
+                          Upgrade to Premium to access the AI Strategy Simulator.
+                        </p>
+                        <button
+                          onClick={() => navigate("/subscription")}
+                          className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_25px_rgba(0,207,255,0.4)]"
+                        >
+                          Upgrade Now
+                        </button>
+                      </div>
+                    )
+                  }
+                />
+                <Route
+                  path="planner"
+                  element={
+                    planLevel >= 2 || userData?.role === "admin" ? (
+                      <GoalPlanner />
+                    ) : (
+                      <div className="text-center py-24 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)]">
+                        <h3 className="text-3xl font-extrabold text-white mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                          Feature Locked 🔒
+                        </h3>
+                        <p className="text-gray-400 mb-8 font-light">
+                          Upgrade to Premium to access Goal Planner.
+                        </p>
+                        <button
+                          onClick={() => navigate("/subscription")}
+                          className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_25px_rgba(0,207,255,0.4)]"
+                        >
+                          Upgrade Now
+                        </button>
+                      </div>
+                    )
+                  }
+                />
+                <Route
+                  path="manual"
+                  element={<ManualTradeSimulator activeSymbol={activeSymbol} />}
+                />
+                <Route path="history" element={<TradeHistory />} />
+              </Route>
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile showFlash={showFlash} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/subscription"
+                element={
+                  <ProtectedRoute>
+                    <Subscription onSubscribe={handleSubscribe} />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminDashboard />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/suspended"
+                element={
+                  token ? <SuspendedPage /> : <Navigate to="/" replace />
+                }
+              />
+              <Route
+                path="/contact-us"
+                element={<ContactUs showFlash={showFlash} />}
+              />
+            </Routes>
+          </div>
+          {/* 📱 MOBILE BOTTOM NAVIGATION */}
+          {token && (
+            <div className="fixed bottom-0 left-0 right-0 bg-[#0a0f1c]/90 backdrop-blur-md border-t border-[#00cfff]/20 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+              {token &&
+                navItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all w-full ${
+                      location.pathname.startsWith(item.path)
+                        ? "text-[#00cfff] bg-[#00cfff]/10 drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
+                        : "text-gray-500 hover:text-[#00cfff]/80"
+                    }`}
+                  >
+                    {item.icon}
+                    <span className="text-[10px] font-bold">{item.title}</span>
+                  </button>
+                ))}
+            </div>
+          )}
+          {/* Footer */}
+          <footer className="bg-[#030308] border-t border-[#00cfff]/20 mt-auto py-12 z-10 relative hidden md:block overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent"></div>
+            <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
+              <div className="text-center md:text-left">
+                <div className="flex justify-center md:justify-start mb-4">
                   <img
-                    src={avatarUrl}
-                    alt="Avatar"
-                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                    src="/tip-brand.png"
+                    alt="Trade Income Planner"
+                    className="h-12 drop-shadow-[0_0_10px_rgba(0,207,255,0.3)]"
                   />
-                ) : (
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-blue-500">
-                    {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                </div>
+                <p className="text-gray-400 text-sm mb-4 leading-relaxed font-light">
+                  Professional Equity Simulator & Trading Assistant with
+                  AI-driven insights and risk-free simulation.
+                </p>
+              </div>
+
+              {/* Feedback Form */}
+              <div className="md:col-span-2 bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md">
+                <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">
+                  Send Feedback
+                </h3>
+                <form onSubmit={handleFeedbackSubmit} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                    <input
+                      type="text"
+                      value={userData?.username || "Guest"}
+                      disabled
+                      className="sm:col-span-1 bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email"
+                      value={feedbackEmail}
+                      onChange={(e) => setFeedbackEmail(e.target.value)}
+                      disabled={!!userData}
+                      className={`sm:col-span-1 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all outline-none ${
+                        userData ? "text-gray-500 cursor-not-allowed border-[#00cfff]/10" : ""
+                      }`}
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Your Feedback / Suggestion..."
+                      value={feedbackMessage}
+                      onChange={(e) => setFeedbackMessage(e.target.value)}
+                      className="sm:col-span-2 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all outline-none"
+                      required
+                    />
                   </div>
-                )}
+                  <div className="text-right mt-2">
+                    <button
+                      type="submit"
+                      className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-[0_0_10px_rgba(0,207,255,0.2)] hover:shadow-[0_0_15px_rgba(0,207,255,0.4)]"
+                    >
+                      Send Feedback
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div className="max-w-7xl mx-auto mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div>
-                  <p className="text-white font-bold text-lg flex items-center gap-1">
-                    {userData?.username}
-                    <VerifiedBadge user={userData} />
-                  </p>
-                  <p className="text-gray-400 text-xs">{userData?.email}</p>
+                  <h4 className="font-semibold mb-4">Platform</h4>
+                  <ul className="space-y-2 text-sm text-gray-400">
+                    <li>
+                      <a
+                        href="/simulation/manual"
+                        className="hover:text-white transition-colors"
+                      >
+                        Trade Simulator
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/community"
+                        className="hover:text-white transition-colors"
+                      >
+                        Communities
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/simulation/history"
+                        className="hover:text-white transition-colors"
+                      >
+                        Performance Tracking
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4">Support</h4>
+                  <ul className="space-y-2 text-sm text-gray-400">
+                    <li>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors"
+                      >
+                        API Documentation
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="/contact-us"
+                        className="hover:text-white transition-colors"
+                      >
+                        Contact Us
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors"
+                      >
+                        Status
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4">Legal</h4>
+                  <ul className="space-y-2 text-sm text-gray-400">
+                    <li>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors"
+                      >
+                        Privacy Policy
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors"
+                      >
+                        Terms of Service
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        className="hover:text-white transition-colors"
+                      >
+                        Cookie Policy
+                      </a>
+                    </li>
+                  </ul>
                 </div>
               </div>
-
-              {/* Menu Items */}
-              <div className="space-y-4 flex-1">
-                {userData?.role === "admin" && (
-                  <button
-                    onClick={() => {
-                      navigate("/admin");
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    🛡️ Admin Panel
-                  </button>
-                )}
-                {token && (
-                  <button
-                    onClick={() => {
-                      navigate("/subscription");
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-white py-3 rounded-lg font-bold shadow-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    👑 Upgrade Pro
-                  </button>
-                )}
-              </div>
-
-              {/* Logout */}
-              <button
-                onClick={() => {
-                  logout();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full bg-gray-700 hover:bg-gray-600 text-red-400 border border-gray-600 py-3 rounded-lg font-bold transition-colors mt-auto"
-              >
-                Logout
-              </button>
             </div>
-          </div>
-        )}
-
-        <div className="w-full p-4 md:p-6 space-y-8 pt-28 md:pt-32 pb-32 md:pb-8">
-          <SuspensionHandler />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                token ? (
-                  <Navigate to="/home" replace />
-                ) : (
-                  <LandingPage
-                    onLogin={() => {
-                      setAuthInitialLogin(true);
-                      setShowAuth(true);
-                    }}
-                    onRegister={() => {
-                      setAuthInitialLogin(false);
-                      setShowAuth(true);
-                    }}
-                  />
-                )
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={<ForgotPassword showFlash={showFlash} />}
-            />
-            <Route
-              path="/home"
-              element={
-                <ProtectedRoute>
-                  <Home
-                    communities={communities}
-                    highlightedPost={highlightedPost}
-                    setHighlightedPost={setHighlightedPost}
-                    showFlash={showFlash}
-                  />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/explore"
-              element={
-                <ProtectedRoute>
-                  <Explore />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/post/:id"
-              element={
-                <ProtectedRoute>
-                  <PostDetail showFlash={showFlash} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/community"
-              element={
-                <ProtectedRoute>
-                  <Community
-                    communities={communities}
-                    highlightedPost={highlightedPost}
-                    setHighlightedPost={setHighlightedPost}
-                    showFlash={showFlash}
-                  />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/community/:id"
-              element={
-                <ProtectedRoute>
-                  <Community
-                    communities={communities}
-                    highlightedPost={highlightedPost}
-                    setHighlightedPost={setHighlightedPost}
-                    showFlash={showFlash}
-                  />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/simulation"
-              element={
-                <ProtectedRoute>
-                  <SimulationLayout
-                    activeCategory={activeCategory}
-                    setActiveCategory={setActiveCategory}
-                    activeSymbol={activeSymbol}
-                    setActiveSymbol={setActiveSymbol}
-                    showFlash={showFlash}
-                  />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="manual" replace />} />
-              <Route
-                path="strategy"
-                element={
-                  planLevel >= 2 || userData?.role === "admin" ? (
-                    <StrategyView
-                      onSimulate={handleSimulate}
-                      isLoading={loading}
-                      error={error}
-                      simulationData={simulationData}
-                      onExport={handleExportSimulationCSV}
-                    />
-                  ) : (
-                    <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
-                      <h3 className="text-2xl font-bold text-white mb-4">
-                        Feature Locked 🔒
-                      </h3>
-                      <p className="text-gray-400 mb-6">
-                        Upgrade to Premium to access Strategy Simulator.
-                      </p>
-                      <button
-                        onClick={() => navigate("/subscription")}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
-                      >
-                        Upgrade Now
-                      </button>
-                    </div>
-                  )
-                }
-              />
-              <Route
-                path="planner"
-                element={
-                  planLevel >= 2 || userData?.role === "admin" ? (
-                    <GoalPlanner />
-                  ) : (
-                    <div className="text-center py-20 bg-gray-800 rounded-lg border border-gray-700">
-                      <h3 className="text-2xl font-bold text-white mb-4">
-                        Feature Locked 🔒
-                      </h3>
-                      <p className="text-gray-400 mb-6">
-                        Upgrade to Premium to access Goal Planner.
-                      </p>
-                      <button
-                        onClick={() => navigate("/subscription")}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold"
-                      >
-                        Upgrade Now
-                      </button>
-                    </div>
-                  )
-                }
-              />
-              <Route
-                path="manual"
-                element={<ManualTradeSimulator activeSymbol={activeSymbol} />}
-              />
-              <Route path="history" element={<TradeHistory />} />
-            </Route>
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile showFlash={showFlash} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/subscription"
-              element={
-                <ProtectedRoute>
-                  <Subscription onSubscribe={handleSubscribe} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminDashboard />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="/suspended"
-              element={token ? <SuspendedPage /> : <Navigate to="/" replace />}
-            />
-            <Route
-              path="/contact-us"
-              element={<ContactUs showFlash={showFlash} />}
-            />
-          </Routes>
-        </div>
-        {/* 📱 MOBILE BOTTOM NAVIGATION */}
-        {token && (
-          <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-2xl">
-            {token &&
-              navItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`p-2 rounded-lg flex flex-col items-center gap-1 transition-colors w-full ${
-                    location.pathname.startsWith(item.path)
-                      ? "text-blue-400"
-                      : "text-gray-500 hover:text-gray-300"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="text-[10px] font-bold">{item.title}</span>
-                </button>
-              ))}
-          </div>
-        )}
-        {/* Footer */}
-        <footer className="bg-gray-800 border-t border-gray-700 mt-auto py-8 z-10 relative hidden md:block">
-          <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-            <div className="text-center md:text-left">
-              <div className="flex justify-center md:justify-start mb-2">
-                <img
-                  src="/tip-brand.png"
-                  alt="Trade Income Planner"
-                  className="h-15"
-                />
-              </div>
-              <p className="text-gray-400 text-sm mb-4">
-                Professional Equity Simulator & Trading Assistant with AI-driven
-                insights and risk-free simulation.
+            <div className="border-t border-gray-800 pt-8 text-center">
+              <p className="text-gray-500 text-sm">
+                &copy; {new Date().getFullYear()} Trade Income Planner. All
+                rights reserved.
               </p>
             </div>
+          </footer>
+          {/* AI Chat Assistant Widget */}
+          <ChatAssistant />
 
-            {/* Feedback Form */}
-            <div className="md:col-span-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700/50">
-              <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">
-                Send Feedback
-              </h3>
-              <form onSubmit={handleFeedbackSubmit} className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                  <input
-                    type="text"
-                    value={userData?.username || "Guest"}
-                    disabled
-                    className="sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Your Email"
-                    value={feedbackEmail}
-                    onChange={(e) => setFeedbackEmail(e.target.value)}
-                    disabled={!!userData}
-                    className={`sm:col-span-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none ${
-                      userData ? "text-gray-500 cursor-not-allowed" : ""
-                    }`}
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Your Feedback / Suggestion..."
-                    value={feedbackMessage}
-                    onChange={(e) => setFeedbackMessage(e.target.value)}
-                    className="sm:col-span-2 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                    required
-                  />
-                </div>
-                <div className="text-right">
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors"
-                  >
-                    Send
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-          <div className="max-w-7xl mx-auto mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-              <div>
-                <h4 className="font-semibold mb-4">Platform</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>
-                    <a href="/simulation/manual" className="hover:text-white transition-colors">
-                      Trade Simulator
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/community" className="hover:text-white transition-colors">
-                      Communities
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/simulation/history" className="hover:text-white transition-colors">
-                      Performance Tracking
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Support</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      API Documentation
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/contact-us"
-                      className="hover:text-white transition-colors"
-                    >
-                      Contact Us
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Status
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Legal</h4>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Privacy Policy
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Terms of Service
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#" className="hover:text-white transition-colors">
-                      Cookie Policy
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-gray-500 text-sm">
-              &copy; {new Date().getFullYear()} Trade Income Planner. All rights
-              reserved.
-            </p>
-          </div>
-        </footer>
-        {/* AI Chat Assistant Widget */}
-        <ChatAssistant />
-
-        {showNotifications && (
-          <NotificationsModal
-            notifications={notifications}
-            onClose={() => setShowNotifications(false)}
-            onNotificationClick={handleNotificationClick}
-          />
-        )}
-      </div>
-    </PostInteractionProvider>
-  </NotificationProvider>
+          {showNotifications && (
+            <NotificationsModal
+              notifications={notifications}
+              onClose={() => setShowNotifications(false)}
+              onNotificationClick={handleNotificationClick}
+            />
+          )}
+        </div>
+      </PostInteractionProvider>
+    </NotificationProvider>
   );
 }
 

@@ -33,36 +33,44 @@ def read_root():
 
 # Get market data for multiple symbols
 @router.get("/api/market-data", response_model=MarketDataResponse)
-async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP"):
-    """Fetch real-time market data from Binance"""
+async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP,EURUSD=X,CL=F,GC=F"):
+    """Fetch real-time market data from yfinance"""
     symbol_list = [s.strip().upper() for s in symbols.split(",")]
     market_data = []
     
     try:
         for symbol in symbol_list:
             try:
-                # Get 24hr ticker
-                url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}USDT"
-                response = requests.get(url, timeout=5)
-                if response.status_code == 200:
-                    data = response.json()
-                    change = float(data.get('priceChangePercent', 0))
-                    trend = "📈 Bullish" if change > 2 else "📉 Bearish" if change < -2 else "➡️ Sideways"
-                    
-                    market_data.append(MarketData(
-                        symbol=symbol,
-                        price=float(data.get('lastPrice', 0)),
-                        change_24h=change,
-                        high_24h=float(data.get('highPrice', 0)),
-                        low_24h=float(data.get('lowPrice', 0)),
-                        volume_24h=float(data.get('volume', 0)),
-                        trend=trend
-                    ))
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                hist = ticker.history(period="2d")  # 2d for change calculation
+                
+                price = info.get('regularMarketPrice') or info.get('currentPrice') or hist['Close'].iloc[-1] if not hist.empty else 0
+                high = info.get('dayHigh') or hist['High'].max() if not hist.empty else 0
+                low = info.get('dayLow') or hist['Low'].min() if not hist.empty else 0
+                volume = info.get('volume') or hist['Volume'].sum() if not hist.empty else 0
+                
+                if len(hist) > 1:
+                    change_pct = ((hist['Close'].iloc[-1] - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
+                else:
+                    change_pct = 0
+                
+                trend = "📈 Bullish" if change_pct > 2 else "📉 Bearish" if change_pct < -2 else "➡️ Sideways"
+                
+                market_data.append(MarketData(
+                    symbol=symbol,
+                    price=float(price),
+                    change_24h=float(change_pct),
+                    high_24h=float(high),
+                    low_24h=float(low),
+                    volume_24h=float(volume),
+                    trend=trend
+                ))
             except Exception as e:
                 print(f"Error fetching {symbol}: {e}")
                 continue
                 
-        return {"data": market_data, "timestamp": "live"}
+        return MarketDataResponse(data=market_data, timestamp="live")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -71,25 +79,31 @@ async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP"):
 async def get_single_market_data(symbol: str):
     """Fetch market data for a single symbol"""
     try:
-        url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol.upper()}USDT"
-        response = requests.get(url, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            change = float(data.get('priceChangePercent', 0))
-            trend = "bullish" if change > 2 else "bearish" if change < -2 else "sideways"
-            
-            return {
-                "symbol": symbol.upper(),
-                "price": float(data.get('lastPrice', 0)),
-                "change_24h": change,
-                "high_24h": float(data.get('highPrice', 0)),
-                "low_24h": float(data.get('lowPrice', 0)),
-                "volume_24h": float(data.get('volume', 0)),
-                "trend": trend,
-                "trend_emoji": "📈" if change > 2 else "📉" if change < -2 else "➡️"
-            }
-        else:
-            raise HTTPException(status_code=404, detail="Symbol not found")
+        ticker = yf.Ticker(symbol.upper())
+        info = ticker.info
+        hist = ticker.history(period="2d")
+        
+        price = info.get('regularMarketPrice') or info.get('currentPrice') or hist['Close'].iloc[-1] if not hist.empty else 0
+        high = info.get('dayHigh') or hist['High'].max() if not hist.empty else 0
+        low = info.get('dayLow') or hist['Low'].min() if not hist.empty else 0
+        volume = info.get('volume') or hist['Volume'].sum() if not hist.empty else 0
+        
+        change_pct = 0
+        if len(hist) > 1:
+            change_pct = ((hist['Close'].iloc[-1] - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
+        
+        trend = "bullish" if change_pct > 2 else "bearish" if change_pct < -2 else "sideways"
+        
+        return {
+            "symbol": symbol.upper(),
+            "price": float(price),
+            "change_24h": float(change_pct),
+            "high_24h": float(high),
+            "low_24h": float(low),
+            "volume_24h": float(volume),
+            "trend": trend,
+            "trend_emoji": "📈" if change_pct > 2 else "📉" if change_pct < -2 else "➡️"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

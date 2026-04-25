@@ -155,19 +155,20 @@ const ChatAssistant = () => {
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       {/* Market Data Panel */}
       {isOpen && showMarketPanel && (
-        <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in">
+        <div className="bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-900 to-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+          <div className="bg-[#030308] p-4 border-b border-[#00cfff]/20 flex justify-between items-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="w-8 h-8 bg-[#030308] border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
                 📈
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">Market Trends</h3>
-                <p className="text-[10px] text-green-400">Live from Binance</p>
+                <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">Market Trends</h3>
+                <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Live from Binance</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative z-10">
               <button
                 onClick={fetchMarketData}
                 disabled={loadingMarket}
@@ -190,7 +191,7 @@ const ChatAssistant = () => {
               </button>
               <button
                 onClick={() => setShowMarketPanel(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-[#00cfff]/50 hover:text-[#00cfff] hover:drop-shadow-[0_0_5px_#00cfff] transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -209,27 +210,28 @@ const ChatAssistant = () => {
           </div>
 
           {/* Market Data */}
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-900/50">
+          <div className="flex-1 overflow-y-auto p-4 bg-[#0a0f1c]/50 custom-scrollbar">
             {loadingMarket ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-gray-400">Loading market data...</div>
+              <div className="flex flex-col items-center justify-center h-full gap-3">
+                 <div className="w-6 h-6 border-2 border-[#00cfff]/30 border-t-[#00cfff] rounded-full animate-spin"></div>
+                 <div className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest">Loading market data...</div>
               </div>
             ) : marketData.length > 0 ? (
               <div className="space-y-3">
                 {marketData.map((coin, idx) => (
                   <div
                     key={idx}
-                    className="bg-gray-800 p-3 rounded-lg border border-gray-700"
+                    className="bg-[#030308]/80 p-4 rounded-xl border border-[#00cfff]/10 hover:border-[#00cfff]/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                   >
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-bold text-white">
+                    <div className="flex justify-between items-center mb-3 border-b border-[#00cfff]/10 pb-2">
+                      <span className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
                         {coin.symbol}/USDT
                       </span>
                       <span
-                        className={`font-bold ${
+                        className={`font-mono text-xs font-bold ${
                           coin.change_24h >= 0
-                            ? "text-green-400"
-                            : "text-red-400"
+                            ? "text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]"
+                            : "text-red-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]"
                         }`}
                       >
                         {coin.change_24h >= 0 ? "📈" : "📉"}{" "}
@@ -237,9 +239,9 @@ const ChatAssistant = () => {
                         {coin.change_24h.toFixed(2)}%
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Price:</span>
-                      <span className="text-white font-mono">
+                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
+                      <span className="text-[#00cfff]/50">Price:</span>
+                      <span className="text-white font-mono text-xs drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]">
                         $
                         {coin.price.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -247,9 +249,9 @@ const ChatAssistant = () => {
                         })}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">24h High:</span>
-                      <span className="text-green-400 font-mono">
+                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
+                      <span className="text-[#00cfff]/50">24h High:</span>
+                      <span className="text-green-400 font-mono text-xs">
                         $
                         {coin.high_24h.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -257,9 +259,9 @@ const ChatAssistant = () => {
                         })}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">24h Low:</span>
-                      <span className="text-red-400 font-mono">
+                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest">
+                      <span className="text-[#00cfff]/50">24h Low:</span>
+                      <span className="text-red-400 font-mono text-xs">
                         $
                         {coin.low_24h.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
@@ -267,38 +269,38 @@ const ChatAssistant = () => {
                         })}
                       </span>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-gray-700">
+                    <div className="mt-3 pt-3 border-t border-[#00cfff]/10">
                       <span
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md border ${
                           coin.trend.includes("Bullish")
-                            ? "bg-green-900 text-green-400"
+                            ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]"
                             : coin.trend.includes("Bearish")
-                            ? "bg-red-900 text-red-400"
-                            : "bg-gray-700 text-gray-400"
+                            ? "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(239,68,68,0.2)]"
+                            : "bg-[#030308] text-[#00cfff]/70 border-[#00cfff]/20"
                         }`}
                       >
-                        {coin.trend}
+                        {coin.trend.toUpperCase()}
                       </span>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
+              <div className="flex items-center justify-center h-full text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest">
                 No market data available
               </div>
             )}
           </div>
 
           {/* Quick Questions */}
-          <div className="p-3 bg-gray-800 border-t border-gray-700">
-            <p className="text-xs text-gray-500 mb-2">Quick Questions:</p>
+          <div className="p-4 bg-[#030308] border-t border-[#00cfff]/20">
+            <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#00cfff]/50 mb-3">QUICK QUESTIONS:</p>
             <div className="flex flex-wrap gap-2">
               {quickQuestions.map((q, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleQuickQuestion(q)}
-                  className="text-xs bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded transition-colors"
+                  className="text-[9px] font-extrabold uppercase tracking-wider bg-[#00cfff]/10 hover:bg-[#00cfff]/20 border border-[#00cfff]/30 hover:border-[#00cfff]/50 text-[#00cfff] hover:text-[#00e5ff] px-3 py-1.5 rounded-lg transition-all shadow-[0_0_5px_rgba(0,207,255,0.1)] hover:shadow-[0_0_10px_rgba(0,207,255,0.3)]"
                 >
                   {q}
                 </button>
@@ -310,39 +312,40 @@ const ChatAssistant = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in">
+        <div className="bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-900 to-gray-900 p-4 border-b border-gray-700 flex justify-between items-center">
-            <div className="flex items-center gap-3">
+          <div className="bg-[#030308] p-4 border-b border-[#00cfff]/20 flex justify-between items-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00cfff]/10 to-transparent pointer-events-none"></div>
+            <div className="flex items-center gap-3 relative z-10">
               <div className="relative">
-                <div className="w-3 h-3 bg-green-500 rounded-full absolute bottom-0 right-0 border-2 border-gray-900"></div>
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                <div className="w-2.5 h-2.5 bg-green-400 rounded-full absolute bottom-0 right-0 border border-[#030308] shadow-[0_0_5px_rgba(74,222,128,0.5)]"></div>
+                <div className="w-8 h-8 bg-[#00cfff]/20 border border-[#00cfff]/50 rounded-full flex items-center justify-center text-[#00cfff] font-extrabold text-[10px] shadow-[0_0_10px_rgba(0,207,255,0.3)]">
                   TIP
                 </div>
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">
+                <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
                   Tip (Trading Mentor)
                 </h3>
-                <p className="text-[10px] text-green-400">
+                <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">
                   AI Powered • Online
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3 relative z-10">
               {/* Market Trends Button */}
               <button
                 onClick={() => setShowMarketPanel(!showMarketPanel)}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`p-2 rounded-lg transition-all border ${
                   showMarketPanel
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    ? "bg-green-900/40 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]"
+                    : "bg-[#030308] border-[#00cfff]/30 text-[#00cfff]/70 hover:bg-[#00cfff]/10 hover:text-[#00cfff] hover:border-[#00cfff]/50"
                 }`}
                 title="View Market Trends"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  className="h-4 w-4"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -357,7 +360,7 @@ const ChatAssistant = () => {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-[#00cfff]/50 hover:text-[#00cfff] hover:drop-shadow-[0_0_5px_#00cfff] transition-all p-2"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -376,7 +379,7 @@ const ChatAssistant = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900/50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0f1c]/50 custom-scrollbar">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -385,11 +388,12 @@ const ChatAssistant = () => {
                 }`}
               >
                 <div
-                  className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[85%] p-4 rounded-2xl text-[11px] leading-relaxed shadow-sm font-medium ${
                     msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-none"
-                      : "bg-gray-700 text-gray-200 rounded-bl-none border border-gray-600"
+                      ? "bg-[#00cfff]/10 border border-[#00cfff]/30 text-white rounded-br-none shadow-[0_0_10px_rgba(0,207,255,0.1)]"
+                      : "bg-[#030308]/80 text-gray-200 rounded-bl-none border border-[#00cfff]/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                   }`}
+                  style={{ whiteSpace: "pre-wrap" }}
                 >
                   {msg.content}
                 </div>
@@ -397,10 +401,10 @@ const ChatAssistant = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-700 p-3 rounded-2xl rounded-bl-none flex gap-1 items-center h-10">
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-75"></div>
-                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-150"></div>
+                <div className="bg-[#030308]/80 border border-[#00cfff]/20 p-4 rounded-2xl rounded-bl-none flex gap-2 items-center h-10 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse shadow-[0_0_5px_#00cfff]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse delay-75 shadow-[0_0_5px_#00cfff]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse delay-150 shadow-[0_0_5px_#00cfff]"></div>
                 </div>
               </div>
             )}
@@ -410,19 +414,19 @@ const ChatAssistant = () => {
           {/* Input Area */}
           <form
             onSubmit={handleSubmit}
-            className="p-3 bg-gray-800 border-t border-gray-700 flex gap-2"
+            className="p-4 bg-[#030308] border-t border-[#00cfff]/20 flex gap-3"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about market trends..."
-              className="flex-1 bg-gray-900 text-white text-sm rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 border border-gray-600 placeholder-gray-500"
+              placeholder="ASK ABOUT MARKET TRENDS..."
+              className="flex-1 bg-[#0a0f1c] text-white text-[11px] font-mono rounded-xl px-4 py-3 focus:outline-none border border-[#00cfff]/30 focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] placeholder-[#00cfff]/30 uppercase tracking-wider transition-all"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white p-2 rounded-lg transition-colors flex items-center justify-center w-10"
+              className="bg-[#00cfff] hover:bg-[#00e5ff] disabled:bg-[#030308] disabled:border disabled:border-[#00cfff]/30 disabled:text-[#00cfff]/30 disabled:shadow-none text-[#030308] p-3 rounded-xl transition-all flex items-center justify-center w-12 shadow-[0_0_10px_rgba(0,207,255,0.4)]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -441,13 +445,15 @@ const ChatAssistant = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`${
-          isOpen ? "bg-gray-700 rotate-90" : "bg-blue-600 hover:bg-blue-500"
-        } text-white p-4 rounded-full shadow-lg shadow-blue-900/20 transition-all duration-300 flex items-center justify-center group`}
+          isOpen 
+            ? "bg-[#030308] border border-[#00cfff]/50 text-[#00cfff] rotate-90 hover:bg-[#00cfff]/10" 
+            : "bg-[#00cfff] text-[#030308] hover:bg-[#00e5ff] shadow-[0_0_20px_rgba(0,207,255,0.5)]"
+        } p-4 rounded-full transition-all duration-300 flex items-center justify-center group hover:scale-105 z-50`}
       >
         {isOpen ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
+            className="h-6 w-6 drop-shadow-[0_0_5px_#00cfff]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -477,7 +483,7 @@ const ChatAssistant = () => {
             </svg>
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#030308] border border-red-500 shadow-[0_0_5px_rgba(239,68,68,1)]"></span>
             </span>
           </div>
         )}

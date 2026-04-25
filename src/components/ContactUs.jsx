@@ -45,95 +45,99 @@ const ContactUs = ({ showFlash }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white py-20">
-      <div className="max-w-3xl mx-auto px-6">
-        <h1 className="text-3xl font-bold mb-8 text-center">Contact Us</h1>
-        <p className="mb-6 text-gray-400 text-center">
+    <div className="min-h-screen bg-[#030308] text-white py-20 animate-fade-in relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00cfff]/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+      <div className="max-w-3xl mx-auto px-6 relative z-10">
+        <h1 className="text-4xl font-extrabold mb-6 text-center uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">CONTACT US</h1>
+        <p className="mb-12 text-[#00cfff]/70 text-center font-medium max-w-2xl mx-auto">
           We'd love to hear from you! Please use the form below to send us a
           message or reach out via the contact information provided.
         </p>
 
-        <div className="rounded-lg bg-gray-800 shadow-lg p-8">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)] p-10">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
               <label
                 htmlFor="name"
-                className="block text-gray-300 text-sm font-bold mb-2"
+                className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3"
               >
-                Name
+                NAME
               </label>
               <input
                 type="text"
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-700"
-                placeholder="Your Name"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all placeholder:text-[#00cfff]/20"
+                placeholder="YOUR NAME"
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label
                 htmlFor="email"
-                className="block text-gray-300 text-sm font-bold mb-2"
+                className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3"
               >
-                Email
+                EMAIL
               </label>
               <input
                 type="email"
                 id="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-700"
-                placeholder="Your Email"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all placeholder:text-[#00cfff]/20"
+                placeholder="YOUR EMAIL"
               />
             </div>
-            <div className="mb-4">
+            <div>
               <label
                 htmlFor="subject"
-                className="block text-gray-300 text-sm font-bold mb-2"
+                className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3"
               >
-                Subject
+                SUBJECT
               </label>
               <input
                 type="text"
                 id="subject"
                 value={formData.subject}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-700"
-                placeholder="Subject"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all placeholder:text-[#00cfff]/20"
+                placeholder="SUBJECT"
               />
             </div>
-            <div className="mb-6">
+            <div>
               <label
                 htmlFor="message"
-                className="block text-gray-300 text-sm font-bold mb-2"
+                className="block text-[11px] text-[#00cfff]/70 font-extrabold uppercase tracking-widest mb-3"
               >
-                Message
+                MESSAGE
               </label>
               <textarea
                 id="message"
                 rows="5"
                 value={formData.message}
                 onChange={handleChange}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-gray-700"
-                placeholder="Your Message"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono text-sm transition-all placeholder:text-[#00cfff]/20 resize-none custom-scrollbar"
+                placeholder="YOUR MESSAGE..."
               ></textarea>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="pt-4">
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:bg-blue-400"
+                className="w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
                 disabled={loading}
               >
-                {loading ? "Sending..." : "Send Message"}
+                {loading ? "SENDING..." : "SEND MESSAGE"}
               </button>
             </div>
           </form>
 
-          <div className="mt-8 border-t border-gray-700 pt-8">
-            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-            <p className="text-gray-400">
-              Email: support@tradeincomeplanner.com
+          <div className="mt-12 border-t border-[#00cfff]/20 pt-8 text-center">
+            <h2 className="text-[11px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest mb-4">CONTACT INFORMATION</h2>
+            <p className="text-[#00cfff] font-mono font-bold drop-shadow-[0_0_3px_#00cfff]">
+              support@tradeincomeplanner.com
             </p>
           </div>
         </div>

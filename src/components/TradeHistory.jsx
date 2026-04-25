@@ -223,126 +223,128 @@ const TradeHistory = () => {
   const maxPnL = Math.max(...pnlChartData.map(d => Math.abs(d.pnl)), 1);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex justify-end">
         {planLevel >= 1 || isAdmin ? (
-          <button onClick={handleExportCSV} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded text-sm font-bold flex items-center gap-2">
+          <button onClick={handleExportCSV} className="bg-[#00cfff]/10 hover:bg-[#00cfff] text-[#00cfff] hover:text-[#030308] border border-[#00cfff]/50 px-5 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:shadow-[0_0_25px_rgba(0,207,255,0.5)] hover:-translate-y-0.5">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
-            Export CSV
+            EXPORT CSV
           </button>
         ) : (
-          <button disabled className="bg-gray-700 text-gray-500 px-4 py-2 rounded text-sm font-bold cursor-not-allowed">Export CSV 🔒</button>
+          <button disabled className="bg-[#030308] border border-gray-700 text-gray-500 px-5 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest cursor-not-allowed">EXPORT CSV 🔒</button>
         )}
       </div>
 
       {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase font-bold">Total PnL</p>
-          <p className={`text-2xl font-bold ${stats.totalPnl >= 0 ? "text-green-400" : "text-red-400"}`}>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+          <p className="text-[10px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2">Total PnL</p>
+          <p className={`text-3xl font-mono font-bold drop-shadow-[0_0_5px_currentColor] ${stats.totalPnl >= 0 ? "text-green-400" : "text-red-400"}`}>
             ${stats.totalPnl.toFixed(2)}
           </p>
-          <p className="text-xs text-gray-500 mt-1">{stats.totalTrades} trades</p>
+          <p className="text-[10px] text-[#00cfff]/50 mt-2 font-bold uppercase tracking-widest">{stats.totalTrades} trades</p>
         </div>
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase font-bold">Win Rate</p>
-          <p className="text-2xl font-bold text-blue-400">{stats.winRate.toFixed(1)}%</p>
-          <p className="text-xs text-gray-500 mt-1">{Math.floor(stats.totalTrades * stats.winRate / 100)}W / {Math.ceil(stats.totalTrades * (100 - stats.winRate) / 100)}L</p>
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+          <p className="text-[10px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2">Win Rate</p>
+          <p className="text-3xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">{stats.winRate.toFixed(1)}%</p>
+          <p className="text-[10px] text-[#00cfff]/50 mt-2 font-bold uppercase tracking-widest">{Math.floor(stats.totalTrades * stats.winRate / 100)}W / {Math.ceil(stats.totalTrades * (100 - stats.winRate) / 100)}L</p>
         </div>
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase font-bold">Current Streak</p>
-          <p className={`text-2xl font-bold ${stats.currentStreak > 0 ? "text-green-400" : stats.currentStreak < 0 ? "text-red-400" : "text-gray-400"}`}>
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+          <p className="text-[10px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2">Current Streak</p>
+          <p className={`text-3xl font-mono font-bold drop-shadow-[0_0_5px_currentColor] ${stats.currentStreak > 0 ? "text-green-400" : stats.currentStreak < 0 ? "text-red-400" : "text-gray-400"}`}>
             {stats.currentStreak > 0 ? `+${stats.currentStreak}` : stats.currentStreak < 0 ? stats.currentStreak : 0}
           </p>
-          <p className="text-xs text-gray-500 mt-1">Best: {stats.winStreak}W / {stats.lossStreak}L</p>
+          <p className="text-[10px] text-[#00cfff]/50 mt-2 font-bold uppercase tracking-widest">Best: {stats.winStreak}W / {stats.lossStreak}L</p>
         </div>
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase font-bold">Profit Factor</p>
-          <p className={`text-2xl font-bold ${stats.profitFactor >= 1 ? "text-green-400" : "text-red-400"}`}>
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+          <p className="text-[10px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2">Profit Factor</p>
+          <p className={`text-3xl font-mono font-bold drop-shadow-[0_0_5px_currentColor] ${stats.profitFactor >= 1 ? "text-green-400" : "text-red-400"}`}>
             {stats.profitFactor.toFixed(2)}
           </p>
-          <p className="text-xs text-gray-500 mt-1">Avg R/R: 1:{stats.avgRR.toFixed(1)}</p>
+          <p className="text-[10px] text-[#00cfff]/50 mt-2 font-bold uppercase tracking-widest">Avg R/R: 1:{stats.avgRR.toFixed(1)}</p>
         </div>
-        <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase font-bold">Total Trades</p>
-          <p className={`text-2xl font-bold ${stats.totalTrades}`}>
+        <div className="bg-[#0a0f1c]/80 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+          <p className="text-[10px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2">Total Trades</p>
+          <p className={`text-3xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]`}>
             {stats.totalTrades}
           </p>
         </div>
       </div>
 
       {/* Additional Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Avg Win</p>
-          <p className="text-green-400 font-bold">+${stats.avgWin.toFixed(2)}</p>
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Avg Win</p>
+          <p className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">+${stats.avgWin.toFixed(2)}</p>
         </div>
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Avg Loss</p>
-          <p className="text-red-400 font-bold">-${stats.avgLoss.toFixed(2)}</p>
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Avg Loss</p>
+          <p className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">-${stats.avgLoss.toFixed(2)}</p>
         </div>
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Largest Win</p>
-          <p className="text-green-400 font-bold">+${stats.largestWin.toFixed(2)}</p>
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Largest Win</p>
+          <p className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">+${stats.largestWin.toFixed(2)}</p>
         </div>
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Largest Loss</p>
-          <p className="text-red-400 font-bold">${stats.largestLoss.toFixed(2)}</p>
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Largest Loss</p>
+          <p className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">-${Math.abs(stats.largestLoss).toFixed(2)}</p>
         </div>
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Best Win Streak</p>
-          <p className="text-green-400 font-bold">{stats.winStreak}</p>
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Best Win Streak</p>
+          <p className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">{stats.winStreak}</p>
         </div>
-        <div className="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
-          <p className="text-[10px] text-gray-500 uppercase">Best Loss Streak</p>
-          <p className="text-red-400 font-bold">{stats.lossStreak}</p>
+        <div className="bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 text-center shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+          <p className="text-[9px] text-[#00cfff]/50 uppercase font-extrabold tracking-widest mb-1">Best Loss Streak</p>
+          <p className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_currentColor]">{stats.lossStreak}</p>
         </div>
       </div>
 
       {/* History List */}
       <div className="space-y-8">
         {Object.keys(groupedTrades).length === 0 ? (
-          <div className="text-center text-gray-500 py-10 bg-gray-800 rounded-lg border border-gray-700">
-            No trade history found. Start trading in Manual Simulator!
+          <div className="text-center text-[#00cfff]/50 py-16 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(0,207,255,0.05)]">
+            NO TRADE HISTORY FOUND. START TRADING IN MANUAL SIMULATOR!
           </div>
         ) : (
           Object.keys(groupedTrades).map((date) => (
-            <div key={date} className="space-y-3">
-              <h3 className="text-sm font-bold text-gray-400 flex items-center gap-2">
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            <div key={date} className="space-y-4">
+              <h3 className="text-[11px] font-extrabold text-[#00cfff] flex items-center gap-3 uppercase tracking-widest drop-shadow-[0_0_3px_rgba(0,207,255,0.5)]">
+                <span className="w-1.5 h-1.5 bg-[#00cfff] rounded-full shadow-[0_0_5px_#00cfff]"></span>
                 {format(new Date(date), "EEEE, d MMMM yyyy")}
               </h3>
-              <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-700">
-                  <thead className="bg-gray-900/50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Time</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Symbol</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Entry</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">Exit</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase">PnL</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">Result</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700">
-                    {groupedTrades[date].map((trade) => (
-                      <tr key={trade.id} className="hover:bg-gray-700/30">
-                        <td className="px-4 py-3 text-sm text-gray-500 font-mono">{format(new Date(trade.trade_date), "HH:mm")}</td>
-                        <td className="px-4 py-3 text-sm font-bold text-white">{trade.symbol}</td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-300 font-mono">{parseFloat(trade.entry_price).toFixed(trade.entry_price < 1 ? 6 : 2)}</td>
-                        <td className="px-4 py-3 text-sm text-right text-gray-300 font-mono">{parseFloat(trade.exit_price).toFixed(trade.exit_price < 1 ? 6 : 2)}</td>
-                        <td className={`px-4 py-3 text-sm text-right font-bold font-mono ${trade.pnl >= 0 ? "text-green-400" : "text-red-400"}`}>
-                          {trade.pnl >= 0 ? "+" : ""}{parseFloat(trade.pnl).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${trade.is_win ? "bg-green-900/50 text-green-400 border border-green-500/30" : "bg-red-900/50 text-red-400 border border-red-500/30"}`}>
-                            {trade.is_win ? "WIN" : "LOSS"}
-                          </span>
-                        </td>
+              <div className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 overflow-hidden shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="min-w-full divide-y divide-[#00cfff]/10">
+                    <thead className="bg-[#030308]">
+                      <tr>
+                        <th className="px-5 py-4 text-left text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">TIME</th>
+                        <th className="px-5 py-4 text-left text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">SYMBOL</th>
+                        <th className="px-5 py-4 text-right text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">ENTRY</th>
+                        <th className="px-5 py-4 text-right text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">EXIT</th>
+                        <th className="px-5 py-4 text-right text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">PNL</th>
+                        <th className="px-5 py-4 text-center text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">RESULT</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[#00cfff]/5">
+                      {groupedTrades[date].map((trade) => (
+                        <tr key={trade.id} className="hover:bg-[#00cfff]/5 transition-colors group">
+                          <td className="px-5 py-4 text-xs text-[#00cfff]/50 font-mono">{format(new Date(trade.trade_date), "HH:mm")}</td>
+                          <td className="px-5 py-4 text-sm font-extrabold text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]">{trade.symbol}</td>
+                          <td className="px-5 py-4 text-sm text-right text-gray-300 font-mono group-hover:text-white transition-colors">{parseFloat(trade.entry_price).toFixed(trade.entry_price < 1 ? 6 : 2)}</td>
+                          <td className="px-5 py-4 text-sm text-right text-gray-300 font-mono group-hover:text-white transition-colors">{parseFloat(trade.exit_price).toFixed(trade.exit_price < 1 ? 6 : 2)}</td>
+                          <td className={`px-5 py-4 text-sm text-right font-bold font-mono ${trade.pnl >= 0 ? "text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]" : "text-red-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]"}`}>
+                            {trade.pnl >= 0 ? "+" : ""}{parseFloat(trade.pnl).toFixed(2)}
+                          </td>
+                          <td className="px-5 py-4 text-center">
+                            <span className={`px-3 py-1 text-[9px] font-extrabold rounded-md uppercase tracking-widest border ${trade.is_win ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]" : "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(239,68,68,0.2)]"}`}>
+                              {trade.is_win ? "WIN" : "LOSS"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           ))

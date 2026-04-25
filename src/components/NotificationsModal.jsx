@@ -16,53 +16,53 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
 
   const getNotificationMessage = (notification) => {
     const actor = (
-      <strong className="text-white inline-flex items-center">
+      <strong className="text-[#00cfff] inline-flex items-center drop-shadow-[0_0_2px_#00cfff] font-extrabold uppercase tracking-widest text-[11px] mr-1">
         {notification.actor_username}
         <VerifiedBadge user={{ role: notification.actor_role, plan: notification.actor_plan }} />
       </strong>
     );
-    const preview = <em className="text-gray-400">"{notification.content_preview}..."</em>;
+    const preview = <em className="text-white italic ml-1 drop-shadow-[0_0_2px_rgba(255,255,255,0.3)]">"{notification.content_preview}..."</em>;
 
     switch (notification.type) {
       case 'react_post':
-        return <>{actor} reacted to your post.</>;
+        return <>{actor} <span className="text-[#00cfff]/70">reacted to your post.</span></>;
       case 'mention_post':
-        return <>{actor} mentioned you in a post: {preview}</>;
+        return <>{actor} <span className="text-[#00cfff]/70">mentioned you in a post:</span> {preview}</>;
       case 'mention_comment':
-        return <>{actor} mentioned you in a comment: {preview}</>;
+        return <>{actor} <span className="text-[#00cfff]/70">mentioned you in a comment:</span> {preview}</>;
       case 'reply_post':
-        return <>{actor} replied to your post.</>;
+        return <>{actor} <span className="text-[#00cfff]/70">replied to your post.</span></>;
       case 'reply_comment':
-        return <>{actor} replied to your comment: {preview}</>;
+        return <>{actor} <span className="text-[#00cfff]/70">replied to your comment:</span> {preview}</>;
       case 'system_broadcast':
-        return <>{notification.content_preview}</>;
+        return <span className="text-[#00cfff]/80">{notification.content_preview}</span>;
       default:
-        return 'You have a new notification.';
+        return <span className="text-[#00cfff]/70">You have a new notification.</span>;
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex justify-end bg-[#030308]/80 backdrop-blur-sm transition-all" onClick={onClose}>
       <div 
-        className="w-full max-w-sm h-full bg-gray-800 border-l border-gray-700 shadow-2xl flex flex-col animate-slide-in-right"
+        className="w-full max-w-sm h-full bg-[#0a0f1c]/95 border-l border-[#00cfff]/30 shadow-[-20px_0_50px_rgba(0,207,255,0.1)] flex flex-col animate-slide-in-right backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          <h3 className="font-bold text-white flex items-center gap-2">
-            Notifications
-            {unreadCount > 0 && <span className="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">{unreadCount}</span>}
+        <div className="p-5 border-b border-[#00cfff]/20 flex justify-between items-center bg-[#030308]/50">
+          <h3 className="font-extrabold text-white flex items-center gap-3 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+            NOTIFICATIONS
+            {unreadCount > 0 && <span className="bg-red-600/80 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.3)] text-white text-[9px] px-2 py-0.5 rounded-md">{unreadCount}</span>}
           </h3>
           <div>
-            <button onClick={markAllRead} className="text-blue-400 hover:text-blue-300 mr-2 text-sm">Mark All Read</button>
-            <button onClick={onClose} className="text-gray-400 hover:text-white">&times;</button>
+            <button onClick={markAllRead} className="text-[#00cfff]/70 hover:text-[#00cfff] mr-4 text-[10px] font-extrabold uppercase tracking-widest drop-shadow-[0_0_3px_currentColor] transition-all">MARK ALL READ</button>
+            <button onClick={onClose} className="text-[#00cfff]/50 hover:text-[#00cfff] transition-colors font-extrabold text-lg">&times;</button>
           </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           {notifications.length === 0 ? (
-            <p className="text-gray-500 text-center p-8">You have no notifications.</p>
+            <p className="text-[#00cfff]/50 text-center p-10 text-[10px] font-extrabold uppercase tracking-widest">NO NEW NOTIFICATIONS.</p>
           ) : (
-            <div>
+            <div className="divide-y divide-[#00cfff]/10">
               {notifications.map(notif => {
                 const isBroadcast = notif.type === 'system_broadcast';
                 const isExpanded = !!expanded[notif.id];
@@ -72,42 +72,42 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
                   <div 
                     key={notif.id} 
                     onClick={() => !isBroadcast && onNotificationClick(notif)}
-                    className={`p-4 border-b border-gray-700/50 flex items-start gap-3 transition-colors ${!notif.is_read ? 'bg-blue-900/20' : ''} ${isBroadcast ? 'cursor-default' : 'cursor-pointer hover:bg-gray-700/50'}`}
+                    className={`p-5 flex items-start gap-4 transition-colors ${!notif.is_read ? 'bg-[#00cfff]/10' : ''} ${isBroadcast ? 'cursor-default' : 'cursor-pointer hover:bg-[#00cfff]/5 group'}`}
                   >
-                    <div className="relative">
+                    <div className="relative mt-1">
                       {isBroadcast ? (
-                        <div className="w-8 h-8 bg-red-800 rounded-full flex items-center justify-center text-sm font-bold border-2 border-red-500">
+                        <div className="w-10 h-10 bg-[#030308] rounded-xl flex items-center justify-center text-lg border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)]">
                           📢
                         </div>
                       ) : notif.actor_avatar_url ? (
-                        <img src={`${API_BASE_URL}${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={`${API_BASE_URL}${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-10 h-10 rounded-xl object-cover border border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)] group-hover:border-[#00cfff]/70 transition-all" />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-xs font-bold">
+                        <div className="w-10 h-10 bg-[#030308] border border-[#00cfff]/30 rounded-xl flex items-center justify-center text-[10px] font-extrabold uppercase tracking-widest text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.1)] group-hover:border-[#00cfff]/70 transition-all">
                           {notif.actor_username.substring(0, 2).toUpperCase()}
                         </div>
                       )}
-                      {!notif.is_read && <span className="absolute top-0 left-0 block h-2 w-2 rounded-full bg-blue-500 ring-2 ring-gray-800"></span>}
+                      {!notif.is_read && <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-[#00cfff] ring-2 ring-[#0a0f1c] shadow-[0_0_8px_#00cfff]"></span>}
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm text-gray-300">
+                      <div className="text-[11px] leading-relaxed">
                         {isBroadcast ? (
                           <>
-                            <strong className="text-white flex items-center">
+                            <strong className="text-[#00cfff] drop-shadow-[0_0_2px_#00cfff] flex items-center font-extrabold uppercase tracking-widest mb-1">
                               {notif.actor_username}
                               <VerifiedBadge user={{ role: 'admin', plan: 'Free' }} />
                             </strong>
-                            <p className={`mt-1 leading-relaxed ${!isExpanded && isExpandable ? 'line-clamp-3' : ''}`}>
+                            <p className={`mt-1 text-[#00cfff]/80 font-medium ${!isExpanded && isExpandable ? 'line-clamp-3' : ''}`}>
                               {getNotificationMessage(notif)}
                             </p>
                             {isExpandable && (
-                              <button onClick={(e) => toggleExpand(e, notif.id)} className="text-blue-400 text-xs font-bold mt-2 hover:underline">
-                                {isExpanded ? 'Show Less' : 'Show More'}
+                              <button onClick={(e) => toggleExpand(e, notif.id)} className="text-[#00cfff] text-[9px] font-extrabold uppercase tracking-widest mt-2 hover:drop-shadow-[0_0_3px_#00cfff] transition-all">
+                                {isExpanded ? 'SHOW LESS' : 'SHOW MORE'}
                               </button>
                             )}
                           </>
                         ) : getNotificationMessage(notif)}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-[9px] text-[#00cfff]/40 mt-2 font-mono uppercase tracking-widest">
                         {(() => {
                           try {
                             return formatDistanceToNow(new Date(notif.created_at), { addSuffix: true });

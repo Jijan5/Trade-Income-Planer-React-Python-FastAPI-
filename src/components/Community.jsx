@@ -140,7 +140,10 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   };
 
   return (
-    <div key={post.id} id={`post-${post.id}`} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post">
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
             {/* Post Header & Menu */}
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
@@ -172,16 +175,16 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     </svg>
                   </button>
                   {activeMenu?.type === "post" && activeMenu?.id === post.id && (
-                    <div ref={menuRef} className="absolute right-0 mt-1 w-32 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden">
+                    <div ref={menuRef} className="absolute right-0 mt-2 w-36 border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.15)] z-20 overflow-hidden bg-[#030308]/95 backdrop-blur-md">
                       {currentUser === post.username || userData?.role === 'admin' ? (
                         <>
                           {currentUser === post.username && (
-                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-gray-300 hover:text-white">Edit</button>
+                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-3 text-sm text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors font-bold">Edit</button>
                           )}
-                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-red-400 hover:text-red-300">Delete</button>
+                          <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors font-bold">Delete</button>
                           </>
                       ) : (
-                        <button onClick={handleReportClick} className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-yellow-400 hover:text-yellow-300">Report</button>
+                        <button onClick={handleReportClick} className="w-full text-left px-4 py-3 text-sm text-yellow-400 hover:bg-yellow-500/10 transition-colors font-bold">Report</button>
                       )}
                     </div>
                   )}
@@ -189,11 +192,11 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             </div>
             {/* Post Content */}
             {editingItem?.type === "post" && editingItem?.id === post.id ? (
-              <div className="space-y-2">
-                <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none" rows={3} />
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-3 py-1">Cancel</button>
-                  <button onClick={handleLocalUpdatePost} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">Save</button>
+              <div className="space-y-3 relative z-10">
+                <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl p-4 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" rows={4} />
+                <div className="flex justify-end gap-3">
+                  <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-4 py-2 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
+                  <button onClick={handleLocalUpdatePost} className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] hover:bg-[#00e5ff] transition-all font-extrabold tracking-wide">Save</button>
                 </div>
               </div>
             ) : (
@@ -204,12 +207,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               </p>
             )}
             {post.image_url && (
-              <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
-                <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)} />
+              <div className="mt-4 rounded-xl overflow-hidden border border-[#00cfff]/10 relative z-10 group/img">
+                <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full h-auto max-h-[450px] object-cover cursor-pointer group-hover/img:scale-[1.02] transition-transform duration-500" onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)} />
               </div>
             )}
             {post.link_url && (
-              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-3 p-3 bg-gray-900/50 border border-gray-700 rounded text-blue-400 text-sm hover:underline truncate">🔗 {post.link_url}</a>
+              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-[#0a0f1c]/80 border border-[#00cfff]/20 rounded-xl text-[#00cfff] text-sm hover:bg-[#00cfff]/10 hover:shadow-[0_0_10px_rgba(0,207,255,0.1)] transition-all truncate relative z-10">🔗 {post.link_url}</a>
             )}
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
@@ -237,7 +240,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             </div>
             {/* Comments Section */}
             {isExpanded && (
-              <div className="mt-4 pt-4 border-t border-gray-700/50 animate-fade-in">
+              <div className="mt-5 pt-5 border-t border-[#00cfff]/10 animate-fade-in relative z-10">
                 {(() => {
                   const buildCommentTree = (comments) => {
                     const commentMap = {};
@@ -253,37 +256,37 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     const hasReplies = comment.children && comment.children.length > 0;
                     const isRepliesExpanded = expandedReplies[comment.id];
                     return (
-                      <div key={comment.id} className="mt-3" style={{ borderLeft: comment.parent_id ? "2px solid #374151" : "none", paddingLeft: comment.parent_id ? "1rem" : "0" }}>
-                        <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
+                      <div key={comment.id} className="mt-4" style={{ borderLeft: comment.parent_id ? "2px solid rgba(0, 207, 255, 0.2)" : "none", paddingLeft: comment.parent_id ? "1.5rem" : "0" }}>
+                        <div className="bg-[#030308]/60 border border-[#00cfff]/10 p-4 rounded-xl text-sm group relative hover:border-[#00cfff]/30 hover:shadow-[0_0_15px_rgba(0,207,255,0.05)] transition-all">
                           {editingItem?.type === "comment" && editingItem?.id === comment.id ? (
-                            <div className="space-y-2">
-                              <input type="text" value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none" />
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => setEditingItem(null)} className="text-xs text-gray-400 hover:text-white px-2 py-0.5">Cancel</button>
-                                <button onClick={handleUpdateComment} className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500">Save</button>
+                            <div className="space-y-3">
+                              <input type="text" value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#0a0f1c] border border-[#00cfff]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
+                              <div className="flex justify-end gap-3">
+                                <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 py-1.5 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-md transition-colors font-bold">Cancel</button>
+                                <button onClick={handleUpdateComment} className="text-xs bg-[#00cfff] text-[#030308] px-3 py-1.5 rounded-md hover:shadow-[0_0_10px_rgba(0,207,255,0.5)] font-bold transition-all">Save</button>
                               </div>
                             </div>
                           ) : (
-                            <div className="pr-6">
-                              <div className="flex items-center"><span className="font-bold text-blue-400 mr-1">{comment.username}</span><VerifiedBadge user={comment} /></div>
-                              <p className="text-gray-300">
+                            <div className="pr-8">
+                              <div className="flex items-center mb-1"><span className="font-bold text-[#00cfff] mr-2">{comment.username}</span><VerifiedBadge user={comment} /></div>
+                              <p className="text-gray-300 leading-relaxed">
                                 {(comment.content || "").split(/(@\w+)/g).map((part, i) =>
-                                  part.startsWith("@") ? (<strong key={i} className="text-blue-500 font-normal">{part}</strong>) : (part)
+                                  part.startsWith("@") ? (<strong key={i} className="text-[#00cfff] font-bold drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">{part}</strong>) : (part)
                                 )}
                               </p>
-                              {comment.is_edited && <span className="ml-2 text-[10px] text-gray-500 italic">(edited)</span>}
+                              {comment.is_edited && <span className="ml-2 text-[10px] text-gray-500 italic opacity-70">(edited)</span>}
                             </div>
                           )}
-                          <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-400">
+                          <div className="flex items-center gap-5 mt-3 text-[11px] text-gray-500">
                             <span>{(() => { try { return formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }); } catch (e) { return ""; } })()}</span>
-                            <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="hover:text-white font-bold">Reply</button>
+                            <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="hover:text-[#00cfff] font-bold transition-colors">Reply</button>
                             {(currentUser === comment.username || userData?.role === 'admin') && (
                               <div className="relative">
-                                <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
+                                <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-[#00cfff] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
                                 {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                  <div ref={menuRef} className="absolute left-0 mt-1 w-24 border bg-gray-800 border-gray-600 rounded shadow-xl z-20">
-                                  {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-3 py-1.5 text-xs text-gray-300">Edit</button>}
-                                  <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-3 py-1.5 text-xs text-red-400">Delete</button>
+                                  <div ref={menuRef} className="absolute left-0 mt-2 w-28 border border-[#00cfff]/30 bg-[#030308]/95 backdrop-blur-md rounded-lg shadow-[0_0_15px_rgba(0,207,255,0.1)] z-20 overflow-hidden">
+                                  {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-4 py-2 text-xs text-[#00cfff] hover:bg-[#00cfff]/10 font-bold transition-colors">Edit</button>}
+                                  <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 font-bold transition-colors">Delete</button>
                                   </div>
                                 )}
                               </div>
@@ -291,49 +294,52 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                           </div>
                         </div>
                         {replyingTo?.commentId === comment.id && (
-                          <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-2 ml-8 flex gap-2">
-                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none" autoFocus />
-                            <button type="submit" className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500">Reply</button>
-                            <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-gray-400 hover:text-white">Cancel</button>
+                          <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-3 ml-10 flex gap-3 relative z-10">
+                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-4 py-2 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" autoFocus />
+                            <button type="submit" className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] font-bold transition-all tracking-wide">Reply</button>
+                            <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 border border-transparent hover:border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
                           </form>
                         )}
                         {hasReplies && !isRepliesExpanded && (
-                          <button onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))} className="text-[11px] text-gray-400 hover:text-blue-400 font-bold mt-2 flex items-center gap-1 ml-2"><span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}</button>
+                          <button onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))} className="text-[11px] text-[#00cfff]/70 hover:text-[#00cfff] font-bold mt-3 flex items-center gap-2 ml-4 transition-colors"><span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}</button>
                         )}
-                        {hasReplies && isRepliesExpanded && <div className="mt-3">{comment.children.map(renderComment)}</div>}
+                        {hasReplies && isRepliesExpanded && <div className="mt-4">{comment.children.map(renderComment)}</div>}
                       </div>
                     )
                   };
                   return (
                     <>
-                      {visibleComments.length > 0 ? visibleComments.map(renderComment) : <p className="text-xs text-gray-500 italic">No comments yet.</p>}
-                      {commentTree.length > visibleLimit && <button onClick={() => setVisibleLimit(prev => prev + 10)} className="text-xs text-gray-400 hover:text-white font-bold mt-4 w-full text-left pl-1">View more comments ({commentTree.length - visibleLimit})</button>}
+                      {visibleComments.length > 0 ? visibleComments.map(renderComment) : <p className="text-xs text-gray-500 italic px-2">No comments yet.</p>}
+                      {commentTree.length > visibleLimit && <button onClick={() => setVisibleLimit(prev => prev + 10)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] font-bold mt-5 w-full text-left pl-2 transition-colors">View more comments ({commentTree.length - visibleLimit})</button>}
                     </>
                   )
                 })()}
-                <div className="flex gap-2 mt-3">
-                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
-                <button onClick={() => submitComment(post.id, commentText)} className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold">Send</button>
+                <div className="flex gap-3 mt-5 relative z-10">
+                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none transition-all" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
+                <button onClick={() => submitComment(post.id, commentText)} className="bg-[#00cfff] hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] text-[#030308] px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide">Send</button>
                 </div>
               </div>
             )}
             {/* Report Modal */}
             {showReportModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowReportModal(false)}>
-                <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-lg font-bold text-white mb-4">Report Post</h3>
-                  <div className="space-y-3 mb-4">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowReportModal(false)}>
+                <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-extrabold text-[#00cfff] mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
+                  <div className="space-y-4 mb-6">
                     {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
                       <label key={reason} className="flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${reportReason === reason ? 'border-[#00cfff] bg-[#00cfff]/20' : 'border-gray-600 group-hover:border-[#00cfff]/50'}`}>
+                          {reportReason === reason && <div className="w-2.5 h-2.5 rounded-full bg-[#00cfff] shadow-[0_0_5px_#00cfff]"></div>}
+                        </div>
                         <input 
                           type="radio" 
                           name={`reportReason-${post.id}`}
                           value={reason} 
                           checked={reportReason === reason} 
                           onChange={(e) => setReportReason(e.target.value)}
-                          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 focus:ring-blue-500"
+                          className="hidden"
                         />
-                        <span className="text-gray-300 text-sm group-hover:text-white">{reason}</span>
+                        <span className={`text-sm transition-colors ${reportReason === reason ? 'text-white font-bold' : 'text-gray-400 group-hover:text-gray-200'}`}>{reason}</span>
                       </label>
                     ))}
                   </div>
@@ -343,65 +349,71 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                       value={customReason}
                       onChange={(e) => setCustomReason(e.target.value)}
                       placeholder="Please describe the issue..."
-                      className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mb-4 h-24 resize-none"
+                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none mb-6 h-24 resize-none transition-all"
                     />
                   )}
 
-                  <div className="flex justify-end gap-3">
-                    <button onClick={() => setShowReportModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
-                    <button onClick={submitReport} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Report</button>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-[#00cfff]/10">
+                    <button onClick={() => setShowReportModal(false)} className="px-5 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                    <button onClick={submitReport} className="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Report</button>
                   </div>
                 </div>
               </div>
             )}
+
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowDeleteModal(false)}>
-                <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-lg font-bold text-white mb-2">Delete Post?</h3>
-                  <p className="text-gray-400 text-sm mb-6">Are you sure you want to delete this post? This action cannot be undone.</p>
-                  <div className="flex justify-center gap-3">
-                    <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
-                    <button onClick={confirmDelete} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Delete</button>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowDeleteModal(false)}>
+                <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-white mb-2">Delete Post?</h3>
+                  <p className="text-gray-400 text-sm mb-8">This action cannot be undone. This will permanently delete your post and all associated comments.</p>
+                  <div className="flex justify-center gap-4">
+                    <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                    <button onClick={confirmDelete} className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] text-sm font-bold transition-all">Delete</button>
                   </div>
                 </div>
               </div>
             )}
+
             {/* Share Modal */}
             {showShareModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowShareModal(false)}>
-                <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-lg font-bold text-white mb-4 text-center">Share Post</h3>
-                  <div className="grid grid-cols-4 gap-4 mb-4">
-                    <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-2 group">
-                      <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center border border-gray-700 group-hover:border-white transition-colors">
-                        <span className="text-xl text-white">𝕏</span>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowShareModal(false)}>
+                <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-extrabold text-[#00cfff] mb-8 text-center tracking-wider">Share Post</h3>
+                  <div className="grid grid-cols-4 gap-4 mb-8">
+                    <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-3 group">
+                      <div className="w-14 h-14 bg-[#030308] rounded-full flex items-center justify-center border border-gray-700 group-hover:border-white group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
+                        <span className="text-2xl text-white">𝕏</span>
                       </div>
-                      <span className="text-xs text-gray-400">X</span>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">X</span>
                     </button>
-                    <button onClick={() => handleShareOption('facebook')} className="flex flex-col items-center gap-2 group">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                        <span className="text-xl text-white">f</span>
+                    <button onClick={() => handleShareOption('facebook')} className="flex flex-col items-center gap-3 group">
+                      <div className="w-14 h-14 bg-[#1877F2]/10 rounded-full flex items-center justify-center border border-[#1877F2]/30 group-hover:bg-[#1877F2] group-hover:shadow-[0_0_15px_rgba(24,119,242,0.4)] transition-all">
+                        <span className="text-2xl text-[#1877F2] group-hover:text-white font-serif font-bold">f</span>
                       </div>
-                      <span className="text-xs text-gray-400">Facebook</span>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">Facebook</span>
                     </button>
-                    <button onClick={() => handleShareOption('instagram')} className="flex flex-col items-center gap-2 group">
-                      <div className="w-12 h-12 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full flex items-center justify-center group-hover:opacity-90 transition-opacity">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                    <button onClick={() => handleShareOption('instagram')} className="flex flex-col items-center gap-3 group">
+                      <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400/20 via-red-500/20 to-purple-500/20 rounded-full flex items-center justify-center border border-pink-500/30 group-hover:from-yellow-400 group-hover:via-red-500 group-hover:to-purple-500 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-pink-500 group-hover:text-white transition-colors">
                           <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                           <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                           <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                        </svg>                      </div>
-                      <span className="text-xs text-gray-400">Instagram</span>
-                    </button>
-                    <button onClick={() => handleShareOption('copy')} className="flex flex-col items-center gap-2 group">
-                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center group-hover:bg-gray-600 transition-colors">
-                        <span className="text-xl text-white">🔗</span>
+                        </svg>                      
                       </div>
-                      <span className="text-xs text-gray-400">Copy Link</span>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">Instagram</span>
+                    </button>
+                    <button onClick={() => handleShareOption('copy')} className="flex flex-col items-center gap-3 group">
+                      <div className="w-14 h-14 bg-[#00cfff]/10 rounded-full flex items-center justify-center border border-[#00cfff]/30 group-hover:bg-[#00cfff] group-hover:shadow-[0_0_15px_rgba(0,207,255,0.4)] transition-all">
+                        <span className="text-2xl text-[#00cfff] group-hover:text-[#030308] transition-colors">🔗</span>
+                      </div>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-[#00cfff]">Copy Link</span>
                     </button>
                   </div>
-                  <button onClick={() => setShowShareModal(false)} className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm font-bold text-white transition-colors">Cancel</button>
+                  <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-transparent border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-xl text-sm font-bold text-[#00cfff] transition-all">Cancel</button>
                 </div>
               </div>
             )}
@@ -888,45 +900,48 @@ const Community = ({
         {/* Header Feed */}
         <div
           style={getCardStyle(activeCommunity)}
-          className="p-6 rounded-lg border border-gray-700 flex items-center justify-between relative overflow-hidden transition-all shadow-xl"
+          className="p-8 rounded-2xl border border-[#00cfff]/20 flex items-center justify-between relative overflow-hidden transition-all shadow-[0_0_20px_rgba(0,207,255,0.1)] backdrop-blur-md"
         >
-          <div className="relative z-10 flex items-center gap-4">
+          {/* Glass overlay for when backgrounds are bright */}
+          <div className="absolute inset-0 bg-[#030308]/40 backdrop-blur-sm z-0"></div>
+          
+          <div className="relative z-10 flex items-center gap-6">
             {activeCommunity.avatar_url ? (
               <img
                 src={`${API_BASE_URL}${activeCommunity.avatar_url}`}
                 alt={activeCommunity.name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+                className="w-20 h-20 rounded-full object-cover border-2 border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-bold border-2 border-white/20">
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl font-extrabold border-2 border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md">
                 {activeCommunity.name.substring(0, 2).toUpperCase()}
               </div>
             )}
             <div>
               <button
                 onClick={() => navigate("/community")}
-                className="opacity-100 hover:opacity-100 text-sm mb-1 flex items-center gap-1 font-bold text-white"
+                className="opacity-100 hover:opacity-100 text-sm mb-2 flex items-center gap-2 font-bold text-white hover:text-[#00cfff] transition-colors drop-shadow-md"
               >
                 ← Back to Communities
               </button>
-              <h2 className="text-2xl font-bold">{activeCommunity.name}</h2>
-              <p className="opacity-80 text-sm">
+              <h2 className="text-3xl font-extrabold drop-shadow-lg tracking-wide">{activeCommunity.name}</h2>
+              <p className="opacity-90 text-sm mt-1 max-w-lg drop-shadow-md font-medium">
                 {activeCommunity.description}
               </p>
             </div>
           </div>
-          <div className="text-right flex flex-col items-end gap-2">
-            <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30 cursor-pointer hover:bg-blue-900/50 transition-colors" onClick={fetchMembers}>
-              {activeCommunity.members_count} Members
-            </span>
+          <div className="text-right flex flex-col items-end gap-3 relative z-10">
+            <button className="bg-[#030308]/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-md shadow-lg" onClick={fetchMembers}>
+              👥 {activeCommunity.members_count} Members
+            </button>
             {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
-               <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Creator View</span>
+               <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full uppercase font-bold tracking-wider backdrop-blur-md">Creator View</span>
             )}
           </div>
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md">
           <form onSubmit={handlePostSubmit}>
           <div className="relative">
               <textarea
@@ -935,16 +950,16 @@ const Community = ({
                 name="mainPostContent"
                 onPaste={handlePaste}
                 placeholder={`What's on your mind? Share a strategy or crypto news...`}
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[100px]"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] min-h-[120px] transition-all resize-none"
               />
               {/* Mention Box */}
               {mentionState.active && mentionState.suggestions.length > 0 && (
-                <div className="absolute z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-xl overflow-hidden mt-1 w-48 left-0 top-full">
+                <div className="absolute z-50 bg-[#030308]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] overflow-hidden mt-2 w-56 left-0 top-full">
                   {mentionState.suggestions.map((user) => (
                     <button
                       key={user.username}
                       onClick={() => insertMention(user.username)}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-blue-600 hover:text-white"
+                      className="w-full text-left px-4 py-3 text-sm font-bold text-gray-300 hover:bg-[#00cfff]/20 hover:text-[#00cfff] transition-colors"
                     >
                       {user.username}
                     </button>
@@ -955,16 +970,16 @@ const Community = ({
 
             {/* Image Preview */}
             {postImage.preview && (
-              <div className="mt-3 relative w-fit">
+              <div className="mt-4 relative w-fit group">
                 <img
                   src={postImage.preview}
                   alt="Preview"
-                  className="max-h-40 rounded-lg border border-gray-600"
+                  className="max-h-48 rounded-xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]"
                 />
                 <button
                   type="button"
                   onClick={() => setPostImage({ file: null, preview: "" })}
-                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none text-xs"
+                  className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg hover:bg-red-400 hover:scale-110 transition-all border border-red-400/50"
                 >
                   ✕
                 </button>
@@ -978,19 +993,19 @@ const Community = ({
                 placeholder="Paste a link URL..."
                 value={newPostLink}
                 onChange={(e) => setNewPostLink(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none mt-3"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none mt-4 transition-all"
               />
             )}
 
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-4">
               {/* Media Buttons */}
-              <div className="flex gap-4">
+              <div className="flex gap-5">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current.click()}
-                  className="text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
+                  className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
                 >
-                  📷 Upload
+                  <span className="text-lg">📷</span> Upload
                 </button>
                 <input
                   type="file"
@@ -1008,16 +1023,16 @@ const Community = ({
                 <button
                   type="button"
                   onClick={() => setShowLinkInput(!showLinkInput)}
-                  className="text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
+                  className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
                 >
-                  🔗 Add Link
+                  <span className="text-lg">🔗</span> Add Link
                 </button>
               </div>
 
               {/* Post Button */}
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold transition-colors"
+                className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-2.5 rounded-xl font-extrabold transition-all tracking-wide hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] hover:-translate-y-0.5"
               >
                 Post
               </button>
@@ -1036,11 +1051,11 @@ const Community = ({
         {/* Image Preview Modal */}
         {previewImage && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/95 backdrop-blur-md p-4"
             onClick={() => setPreviewImage(null)}
           >
             <button
-              className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+              className="absolute top-6 right-6 text-[#00cfff]/70 hover:text-[#00cfff] hover:scale-110 transition-all bg-[#0a0f1c]/50 p-2 rounded-full border border-[#00cfff]/20"
               onClick={() => setPreviewImage(null)}
             >
               <svg
@@ -1049,7 +1064,7 @@ const Community = ({
                 viewBox="0 0 24 24"
                 strokeWidth={2}
                 stroke="currentColor"
-                className="w-8 h-8"
+                className="w-6 h-6"
               >
                 <path
                   strokeLinecap="round"
@@ -1061,42 +1076,42 @@ const Community = ({
             <img
               src={previewImage}
               alt="Full Preview"
-              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] border border-[#00cfff]/20"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
         )}
         {/* Members Modal */}
         {showMembersModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-                <h3 className="text-lg font-bold text-white">Community Members</h3>
-                <button onClick={() => setShowMembersModal(false)} className="text-gray-400 hover:text-white">✕</button>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
+              <div className="flex justify-between items-center mb-6 border-b border-[#00cfff]/10 pb-4">
+                <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><span className="text-[#00cfff]">👥</span> Community Members</h3>
+                <button onClick={() => setShowMembersModal(false)} className="text-[#00cfff]/50 hover:text-[#00cfff] transition-colors text-xl font-bold">✕</button>
               </div>
               <div className="space-y-3">
                 {members.map(member => (
-                  <div key={member.user_id} className="flex items-center justify-between bg-gray-900/50 p-3 rounded border border-gray-700">
-                    <div className="flex items-center gap-3">
+                  <div key={member.user_id} className="flex items-center justify-between bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 hover:border-[#00cfff]/30 transition-all group">
+                    <div className="flex items-center gap-4">
                       {member.avatar_url ? (
-                        <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-8 h-8 rounded-full object-cover" />
+                        <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs font-bold text-white">
+                        <div className="w-10 h-10 bg-[#00cfff]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#00cfff] border border-[#00cfff]/20">
                           {member.username.substring(0, 2).toUpperCase()}
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-bold text-white">{member.username}</p>
-                        <p className="text-[10px] text-gray-500">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                        <p className="text-sm font-bold text-gray-200 group-hover:text-white transition-colors">{member.username}</p>
+                        <p className="text-[10px] text-gray-500 font-mono">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && member.username !== activeCommunity.creator_username && (
-                      <button onClick={() => handleKickMember(member.username)} className="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-2 py-1 rounded transition-colors">
+                      <button onClick={() => handleKickMember(member.username)} className="text-xs bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 px-3 py-1.5 rounded-lg transition-all font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)]">
                         Kick
                       </button>
                     )}
                     {member.username === activeCommunity.creator_username && (
-                      <span className="text-[10px] bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-900/50">Owner</span>
+                      <span className="text-[10px] bg-[#00cfff]/10 text-[#00cfff] px-3 py-1.5 rounded-lg border border-[#00cfff]/20 font-bold tracking-wide">OWNER</span>
                     )}
                   </div>
                 ))}
@@ -1107,13 +1122,16 @@ const Community = ({
 
         {/* Generic Confirmation Modal */}
         {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
-              <h3 className="text-lg font-bold text-white mb-2">Are you sure?</h3>
-              <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
-              <div className="flex gap-3 justify-center">
-                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
-                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Confirm</button>
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] max-w-sm w-full text-center relative overflow-hidden">
+              <div className="w-16 h-16 bg-[#00cfff]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
+                <span className="text-3xl text-[#00cfff]">?</span>
+              </div>
+              <h3 className="text-xl font-extrabold text-white mb-2">Are you sure?</h3>
+              <p className="text-gray-400 text-sm mb-8 leading-relaxed">{confirmModal.message}</p>
+              <div className="flex gap-4 justify-center">
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Confirm</button>
               </div>
             </div>
           </div>
@@ -1127,26 +1145,29 @@ const Community = ({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-lg">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
         <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <span className="text-blue-500">👥</span> Trader Communities
+          <h2 className="text-3xl font-extrabold text-white flex items-center gap-3 drop-shadow-md">
+            <span className="text-[#00cfff] drop-shadow-[0_0_10px_rgba(0,207,255,0.5)]">👥</span> Trader Communities
           </h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Join discussions, share signals, and grow together.
+          <p className="text-gray-300 text-sm mt-2 font-medium opacity-90">
+            Join discussions, share signals, and grow together in a cyberpunk ecosystem.
           </p>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <input
-            type="text"
-            placeholder="Search community..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-gray-900 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-full md:w-64"
-          />
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto relative z-10">
+          <div className="relative w-full sm:w-72 group">
+            <input
+              type="text"
+              placeholder="Search community..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#030308] border border-[#00cfff]/30 text-white pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all"
+            />
+            <span className="absolute left-4 top-3.5 text-xl opacity-50 group-focus-within:opacity-100 transition-opacity">🔍</span>
+          </div>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold transition-colors whitespace-nowrap"
+            className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-6 py-3 rounded-xl font-extrabold transition-all whitespace-nowrap shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 tracking-wide"
           >
             + Create
           </button>
@@ -1155,8 +1176,11 @@ const Community = ({
 
       {/* Community Cards Grid */}
       {loading ? (
-        <div className="text-center text-gray-500 py-10">
-          Loading communities...
+        <div className="flex justify-center items-center py-32">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-[#00cfff]/20 rounded-full"></div>
+              <div className="w-16 h-16 border-4 border-[#00cfff] border-t-transparent rounded-full animate-spin absolute top-0 left-0 shadow-[0_0_15px_rgba(0,207,255,0.5)]"></div>
+            </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1172,113 +1196,107 @@ const Community = ({
                     navigate(`/community/${comm.id}`);
                   }
                 }}
-                className={`rounded-xl border border-gray-700 p-6 transition-all group relative overflow-hidden cursor-pointer
-                ${comm.hover_animation === "scale" ? "hover:scale-105" : ""}
+                className={`rounded-2xl border border-[#00cfff]/20 p-8 transition-all duration-300 group relative overflow-hidden cursor-pointer
+                ${comm.hover_animation === "scale" ? "hover:scale-[1.02]" : ""}
                 ${
                   comm.hover_animation === "glow"
-                    ? "hover:shadow-[0_0_20px_var(--glow-color)]"
-                    : "hover:shadow-xl"
+                    ? "hover:shadow-[0_0_30px_var(--glow-color)] hover:border-[#00cfff]/50"
+                    : "hover:shadow-[0_0_20px_rgba(0,207,255,0.15)] hover:border-[#00cfff]/40"
                 }
-                ${comm.hover_animation === "none" ? "hover:-translate-y-1" : ""}
+                ${comm.hover_animation === "none" ? "hover:-translate-y-1 hover:border-[#00cfff]/40" : ""}
               `}
               >
+                {/* Glass overlay */}
+                <div className="absolute inset-0 bg-[#030308]/60 group-hover:bg-[#030308]/40 backdrop-blur-sm transition-all duration-500 z-0"></div>
+
                 {comm.is_vip && (
-                  <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg z-10 flex items-center gap-1">
-                    <span>✨</span> VIP
+                  <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-extrabold px-3 py-1 rounded-bl-xl z-10 flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.5)] tracking-widest">
+                    <span className="drop-shadow-sm">✨</span> VIP
                   </div>
                 )}
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-4 mb-6 relative z-10">
                   {comm.avatar_url ? (
                     <img
                     src={`${API_BASE_URL}${comm.avatar_url}`}
                     alt={comm.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-white/20 group-hover:border-white/40 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 group-hover:border-white/40 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-md">
                       {comm.name.substring(0, 2).toUpperCase()}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <h3
-                      className="text-xl font-bold truncate"
+                      className="text-2xl font-extrabold truncate drop-shadow-md"
                       style={{ color: comm.text_color }}
                     >
                       {comm.name}
                     </h3>
-                    <p className="text-xs opacity-70">
-                      by {comm.creator_username}
+                    <p className="text-sm opacity-80 font-medium">
+                      by <span className="text-[#00cfff]">{comm.creator_username}</span>
                     </p>
                   </div>
-                  <span className="bg-green-900/30 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/30 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  <span className="bg-[#10B981]/20 text-[#10B981] text-xs px-3 py-1 rounded-full border border-[#10B981]/40 flex items-center gap-2 font-bold backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                    <span className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse shadow-[0_0_5px_#10B981]"></span>
                     {comm.active_count} Online
                   </span>
                 </div>
 
                 <p
-                  className="text-sm mb-6 line-clamp-2 h-10 opacity-80"
+                  className="text-sm mb-8 line-clamp-2 h-10 opacity-90 relative z-10 font-medium leading-relaxed drop-shadow-sm"
                   style={{ color: comm.text_color }}
                 >
                   {comm.description}
                 </p>
 
-                <div className="flex items-center justify-between border-t border-gray-700 pt-4">
+                <div className="flex items-center justify-between border-t border-white/10 pt-5 relative z-10">
                   <div
-                    className="flex items-center gap-2 text-sm opacity-80"
+                    className="flex items-center gap-2 text-sm opacity-90 font-bold"
                     style={{ color: comm.text_color }}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 opacity-70"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                    </svg>
-                    <span className="font-mono font-bold">
+                    <span className="text-lg">👥</span>
+                    <span className="font-mono text-base">
                       {comm.members_count.toLocaleString()}
                     </span>{" "}
                     Members
                   </div>
                   {isAdmin ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                     <span
-                      className="text-sm font-bold opacity-70"
-                      style={{ color: comm.text_color }}
+                      className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-md"
                     >
-                      Admin Oversight
+                      Admin View
                     </span>
                     <button
                       onClick={(e) => handleDeleteCommunity(e, comm.id)}
-                      className="text-red-500 hover:text-red-400 p-1.5 rounded hover:bg-red-900/30 transition-colors"
+                      className="text-red-400 hover:text-white p-2 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all"
                       title="Delete Community"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                       </svg>
                     </button>
                   </div>
                   ) : isCreator ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <span
-                        className="text-sm font-bold opacity-70"
-                        style={{ color: comm.text_color }}
+                        className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-md"
                       >
                         Creator
                       </span>
                       <button
                         onClick={(e) => handleDeleteCommunity(e, comm.id)}
-                        className="text-red-500 hover:text-red-400 p-1.5 rounded hover:bg-red-900/30 transition-colors"
+                        className="text-red-400 hover:text-white p-2 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all"
                         title="Delete Community"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
                       </button>
                     </div>
                   ) : joinedCommunityIds.includes(comm.id) ? (
                     <button
                       onClick={(e) => requestExitCommunity(e, comm)}
-                      className="text-sm font-bold hover:underline opacity-80 hover:opacity-100"
+                      className="text-sm font-extrabold hover:underline opacity-80 hover:opacity-100 hover:drop-shadow-[0_0_5px_currentColor] transition-all"
                       style={{ color: comm.text_color }}
                     >
                       Exit Group
@@ -1301,28 +1319,31 @@ const Community = ({
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-2xl w-full animate-fade-in my-8">
-            <h3 className="text-xl font-bold text-white mb-4">
-              Create New Community
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 overflow-y-auto custom-scrollbar">
+          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
+            
+            <h3 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3">
+              <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">✨</span> Create New Community
             </h3>
-            <form onSubmit={handleCreate} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <form onSubmit={handleCreate} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column: Basic Info */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
-                      Avatar (Optional)
+                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+                      Avatar <span className="text-gray-500 normal-case font-normal">(Optional)</span>
                     </label>
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-[#030308] overflow-hidden border-2 border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]">
                         {previewCommAvatar ? (
                           <img
                             src={previewCommAvatar}
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="flex items-center justify-center h-full text-gray-500 text-xs">
+                          <span className="flex items-center justify-center h-full text-gray-500 text-xs font-bold">
                             No Img
                           </span>
                         )}
@@ -1337,12 +1358,12 @@ const Community = ({
                             setPreviewCommAvatar(URL.createObjectURL(file));
                           }
                         }}
-                        className="text-xs text-gray-400"
+                        className="text-xs text-[#00cfff]/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
                       Name
                     </label>
                     <input
@@ -1352,12 +1373,12 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, name: e.target.value })
                       }
-                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none"
+                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
                       placeholder="e.g. Bitcoin Whales Indonesia"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
                       Description
                     </label>
                     <textarea
@@ -1366,21 +1387,21 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, description: e.target.value })
                       }
-                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 focus:border-blue-500 outline-none h-24 resize-none"
+                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none h-28 resize-none transition-all"
                       placeholder="Describe your community goal..."
                     />
                   </div>
                 </div>
 
                 {/* Right Column: Appearance */}
-                <div className="space-y-4 border-l border-gray-700 pl-6">
-                  <h4 className="text-sm font-bold text-blue-400 uppercase">
-                    Appearance
+                <div className="space-y-6 md:border-l md:border-[#00cfff]/10 md:pl-8">
+                  <h4 className="text-sm font-extrabold text-gray-300 uppercase tracking-widest border-b border-[#00cfff]/10 pb-2">
+                    Appearance Config
                   </h4>
 
                   {/* Background Type */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                       Background Type
                     </label>
                     <select
@@ -1388,7 +1409,7 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, bgType: e.target.value })
                       }
-                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 text-sm"
+                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 text-sm focus:border-[#00cfff] outline-none transition-all"
                     >
                       <option value="color">Solid Color</option>
                       <option value="gradient">Gradient</option>
@@ -1399,7 +1420,7 @@ const Community = ({
                   {/* Background Value */}
                   {newComm.bgType === "image" ? (
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Upload Background
                       </label>
                       <input
@@ -1412,24 +1433,24 @@ const Community = ({
                             setPreviewCommBg(URL.createObjectURL(file));
                           }
                         }}
-                        className="text-xs text-gray-400 w-full"
+                        className="text-xs text-[#00cfff]/70 w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
                       />
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         {newComm.bgType === "color"
                           ? "Color Hex"
                           : "Gradient CSS"}
                       </label>
                       {newComm.bgType === "gradient" ? (
-                        <div className="space-y-2">
-                          <div className="flex gap-2">
+                        <div className="space-y-3 p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
+                          <div className="flex gap-4">
                             <div className="flex-1">
-                              <label className="text-[10px] text-gray-500 uppercase">
+                              <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">
                                 Start Color
                               </label>
-                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                              <div className="flex items-center gap-2 bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg p-1.5 focus-within:border-[#00cfff] transition-colors">
                                 <input
                                   type="color"
                                   value={newComm.gradientStart}
@@ -1441,18 +1462,18 @@ const Community = ({
                                       bgValue: `linear-gradient(${prev.gradientDir}, ${newVal}, ${prev.gradientEnd})`,
                                     }));
                                   }}
-                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer rounded"
                                 />
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-[#00cfff] font-mono">
                                   {newComm.gradientStart}
                                 </span>
                               </div>
                             </div>
                             <div className="flex-1">
-                              <label className="text-[10px] text-gray-500 uppercase">
+                              <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">
                                 End Color
                               </label>
-                              <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                              <div className="flex items-center gap-2 bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg p-1.5 focus-within:border-[#00cfff] transition-colors">
                                 <input
                                   type="color"
                                   value={newComm.gradientEnd}
@@ -1464,16 +1485,16 @@ const Community = ({
                                       bgValue: `linear-gradient(${prev.gradientDir}, ${prev.gradientStart}, ${newVal})`,
                                     }));
                                   }}
-                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                                  className="h-6 w-6 bg-transparent border-0 cursor-pointer rounded"
                                 />
-                                <span className="text-xs text-gray-400">
+                                <span className="text-xs text-[#00cfff] font-mono">
                                   {newComm.gradientEnd}
                                 </span>
                               </div>
                             </div>
                           </div>
                           <div>
-                            <label className="text-[10px] text-gray-500 uppercase">
+                            <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">
                               Direction
                             </label>
                             <select
@@ -1486,7 +1507,7 @@ const Community = ({
                                   bgValue: `linear-gradient(${newVal}, ${prev.gradientStart}, ${prev.gradientEnd})`,
                                 }));
                               }}
-                              className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs"
+                              className="w-full bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg text-white p-2 text-xs focus:border-[#00cfff] outline-none transition-colors"
                             >
                               <option value="to right">To Right →</option>
                               <option value="to left">To Left ←</option>
@@ -1498,7 +1519,7 @@ const Community = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 w-fit">
                           <input
                             type="color"
                             value={newComm.bgValue}
@@ -1508,23 +1529,20 @@ const Community = ({
                                 bgValue: e.target.value,
                               })
                             }
-                            className={`bg-gray-900 border border-gray-600 rounded text-white p-1 h-9 ${
-                              newComm.bgType === "color"
-                                ? "w-16"
-                                : "w-full text-xs"
-                            }`}
+                            className={`bg-transparent border-0 cursor-pointer rounded h-8 w-10`}
                           />
+                          <span className="text-xs font-mono text-[#00cfff] pr-2">{newComm.bgValue}</span>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Text Color
                       </label>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 focus-within:border-[#00cfff] transition-colors">
                         <input
                           type="color"
                           value={newComm.textColor}
@@ -1534,15 +1552,15 @@ const Community = ({
                               textColor: e.target.value,
                             })
                           }
-                          className="h-8 w-8 bg-transparent border-0 cursor-pointer"
+                          className="h-6 w-8 bg-transparent border-0 cursor-pointer rounded"
                         />
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[#00cfff] font-mono">
                           {newComm.textColor}
                         </span>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Font
                       </label>
                       <select
@@ -1550,7 +1568,7 @@ const Community = ({
                         onChange={(e) =>
                           setNewComm({ ...newComm, fontFamily: e.target.value })
                         }
-                        className="w-full bg-gray-900 border border-gray-600 rounded text-white p-1 text-xs"
+                        className="w-full bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl text-white p-2.5 text-sm focus:border-[#00cfff] outline-none transition-colors"
                       >
                         <option value="sans">Sans Serif</option>
                         <option value="serif">Serif</option>
@@ -1560,7 +1578,7 @@ const Community = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                       Hover Animation
                     </label>
                     <select
@@ -1571,7 +1589,7 @@ const Community = ({
                           hoverAnimation: e.target.value,
                         })
                       }
-                      className="w-full bg-gray-900 border border-gray-600 rounded text-white p-2 text-sm"
+                      className="w-full bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl text-white p-3 text-sm focus:border-[#00cfff] outline-none transition-colors"
                     >
                       <option value="none">None (Lift)</option>
                       <option value="scale">Scale Up</option>
@@ -1579,11 +1597,11 @@ const Community = ({
                     </select>
                   </div>
                   {newComm.hoverAnimation === "glow" && (
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 mb-1 uppercase">
+                    <div className="animate-fade-in">
+                      <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Glow Color
                       </label>
-                      <div className="flex items-center gap-2 bg-gray-900 border border-gray-600 rounded p-1">
+                      <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 w-fit focus-within:border-[#00cfff] transition-colors">
                         <input
                           type="color"
                           value={newComm.hoverColor}
@@ -1593,9 +1611,9 @@ const Community = ({
                               hoverColor: e.target.value,
                             })
                           }
-                          className="h-6 w-6 bg-transparent border-0 cursor-pointer"
+                          className="h-6 w-8 bg-transparent border-0 cursor-pointer rounded"
                         />
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[#00cfff] font-mono pr-2">
                           {newComm.hoverColor}
                         </span>
                       </div>
@@ -1603,10 +1621,13 @@ const Community = ({
                   )}
                   {/* VIP Style Toggle (Platinum Only) */}
                   {(getPlanLevel(userData?.plan) >= 3 || userData?.role === 'admin') && (
-                    <div className="pt-2 border-t border-gray-700">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="w-4 h-4 text-yellow-500 rounded focus:ring-yellow-500" />
-                        <span className="text-xs font-bold text-yellow-400 uppercase flex items-center gap-1">
+                    <div className="pt-4 border-t border-[#00cfff]/10 mt-2">
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${isVip ? 'bg-yellow-500 border-yellow-500' : 'bg-[#030308] border-gray-600 group-hover:border-yellow-500/50'}`}>
+                          {isVip && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                        </div>
+                        <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="hidden" />
+                        <span className={`text-xs font-extrabold uppercase flex items-center gap-1 transition-colors ${isVip ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]' : 'text-gray-500 group-hover:text-yellow-500/70'}`}>
                           ✨ Enable VIP Style (Animated)
                         </span>
                       </label>
@@ -1616,8 +1637,8 @@ const Community = ({
               </div>
 
               {/* Live Preview */}
-              <div className="border-t border-gray-700 pt-4">
-                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
+              <div className="border-t border-[#00cfff]/20 pt-6">
+                <label className="block text-sm font-extrabold text-[#00cfff] mb-4 uppercase tracking-widest text-center">
                   Live Preview
                 </label>
                 <div
@@ -1639,13 +1660,13 @@ const Community = ({
                     backgroundPosition: "center",
                     backgroundColor: newComm.bg_type === "color" ? newComm.bgValue : 'transparent',
                     "--glow-color": newComm.hoverColor,
-                    border: isVip ? "3px solid #fbbf24" : "1px solid #4b5563",
+                    border: isVip ? "3px solid #fbbf24" : "1px solid rgba(0, 207, 255, 0.3)",
                   }}
-                  className={`rounded-xl border border-gray-600 p-6 relative overflow-hidden transition-all duration-300 w-full max-w-sm mx-auto
-                  ${newComm.hoverAnimation === "scale" ? "hover:scale-105" : ""}
+                  className={`rounded-2xl p-8 relative overflow-hidden transition-all duration-300 w-full max-w-md mx-auto group cursor-default
+                  ${newComm.hoverAnimation === "scale" ? "hover:scale-[1.02]" : ""}
                   ${newComm.hoverAnimation === "glow"
-                      ? "hover:shadow-[0_0_20px_var(--glow-color)]"
-                      : "hover:shadow-xl"
+                      ? "hover:shadow-[0_0_30px_var(--glow-color)]"
+                      : "hover:shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                   }
                   ${
                     newComm.hoverAnimation === "none"
@@ -1655,49 +1676,51 @@ const Community = ({
                   ${isVip ? "animate-pulse-slow shadow-[0_0_30px_rgba(251,191,36,0.2)]" : ""}
                 `}
                 >
-                  <div className="flex items-center gap-3 mb-4">
+                  <div className="absolute inset-0 bg-[#030308]/30 backdrop-blur-[2px] group-hover:bg-transparent transition-all duration-500 z-0"></div>
+
+                  <div className="flex items-center gap-4 mb-6 relative z-10">
                     {previewCommAvatar ? (
                       <img
                         src={previewCommAvatar}
-                        className="w-12 h-12 rounded-full object-cover border-2 border-white/20"
+                        className="w-16 h-16 rounded-full object-cover border-2 border-white/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-xl font-bold border-2 border-white/20">
+                      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-md">
                         {newComm.name
                           ? newComm.name.substring(0, 2).toUpperCase()
                           : "NA"}
                       </div>
                     )}
                     <div>
-                      <h3 className="text-xl font-bold">
+                      <h3 className="text-2xl font-extrabold drop-shadow-md">
                         {newComm.name || "Community Name"}
                       </h3>
-                      <p className="text-xs opacity-70">by You</p>
+                      <p className="text-sm opacity-80 font-medium">by <span className="text-[#00cfff]">You</span></p>
                     </div>
                   </div>
-                  <p className="text-sm mb-6 opacity-80">
+                  <p className="text-sm mb-8 opacity-90 leading-relaxed font-medium drop-shadow-sm relative z-10">
                     {newComm.description ||
                       "Community description will appear here..."}
                   </p>
-                  <div className="flex items-center justify-between border-t border-white/10 pt-4 opacity-80">
-                    <span className="text-sm">1 Member</span>
-                    <span className="text-sm font-bold">Join Group →</span>
+                  <div className="flex items-center justify-between border-t border-white/20 pt-5 opacity-90 font-bold relative z-10">
+                    <span className="text-sm flex items-center gap-2"><span className="text-lg">👥</span> 1 Member</span>
+                    <span className="text-sm">Join Group →</span>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-bold"
+                  className="flex-1 bg-transparent border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] py-3 rounded-xl font-bold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold"
+                  className="flex-1 bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] py-3 rounded-xl font-extrabold transition-all hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] tracking-wide"
                 >
-                  Create
+                  Create Community
                 </button>
               </div>
             </form>
@@ -1706,28 +1729,31 @@ const Community = ({
       )}
       {/* Exit Confirmation Modal */}
       {showExitModal && communityToExit && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full animate-fade-in text-center">
-            <h3 className="text-lg font-bold text-white mb-2">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4">
+          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full animate-fade-in text-center relative overflow-hidden">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+              <span className="text-3xl text-red-500">🚪</span>
+            </div>
+            <h3 className="text-xl font-extrabold text-white mb-2">
               Exit Community?
             </h3>
-            <p className="text-gray-400 text-sm mb-6">
+            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
               Are you sure you want to leave{" "}
-              <span className="text-white font-bold">
+              <span className="text-[#00cfff] font-bold">
                 {communityToExit.name}
               </span>
               ?
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowExitModal(false)}
-                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold"
+                className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all"
               >
                 No, Cancel
               </button>
               <button
                 onClick={confirmExitCommunity}
-                className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold"
+                className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] text-sm font-bold transition-all"
               >
                 Yes, Exit
               </button>
@@ -1737,13 +1763,16 @@ const Community = ({
       )}
       {/* Generic Confirmation Modal for List View (Delete Community) */}
       {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
-              <h3 className="text-lg font-bold text-white mb-2">Are you sure?</h3>
-              <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
-              <div className="flex gap-3 justify-center">
-                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold">Cancel</button>
-                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold">Confirm</button>
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] max-w-sm w-full text-center relative overflow-hidden">
+              <div className="w-16 h-16 bg-[#00cfff]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
+                <span className="text-3xl text-[#00cfff]">?</span>
+              </div>
+              <h3 className="text-xl font-extrabold text-white mb-2">Are you sure?</h3>
+              <p className="text-gray-400 text-sm mb-8 leading-relaxed">{confirmModal.message}</p>
+              <div className="flex gap-4 justify-center">
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Confirm</button>
               </div>
             </div>
           </div>

@@ -132,17 +132,17 @@ const ResultsDashboard = ({ data }) => {
     <div className="space-y-6">
       {/* What-If Simulator (Brutally Honest Projection) */}
       {monte_carlo && (
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 shadow-xl relative overflow-hidden">
-          <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500' : 'bg-green-500'}`}></div>
-          <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-            🔮 What-If Future Projection
+        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md relative overflow-hidden">
+          <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-green-500 shadow-[0_0_10px_#22c55e]'}`}></div>
+          <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
+            <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">🔮</span> What-If Future Projection
           </h3>
           
-          <div className={`p-5 rounded-lg border ${ruinProb > 20 ? 'bg-red-900/20 border-red-500/30' : 'bg-blue-900/20 border-blue-500/30'}`}>
+          <div className={`p-6 rounded-xl border ${ruinProb > 20 ? 'bg-red-900/10 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-[#00cfff]/5 border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]'}`}>
             <p className="text-xl font-medium text-gray-200 leading-relaxed">
-              "With your current strategy, there is a <span className={`font-bold text-2xl ${ruinProb > 0 ? 'text-red-400' : 'text-green-400'}`}>{ruinProb}% probability</span> will depleted."
+              "With your current strategy, there is a <span className={`font-mono font-bold text-2xl ${ruinProb > 0 ? 'text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : 'text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]'}`}>{ruinProb}% probability</span> will depleted."
               {ruinProb > 0 && (
-                <> Based on your strategy and a ruin probability of {ruinProb}%, depletion is projected to occur within <span className="text-white font-bold">
+                <> Based on your strategy and a ruin probability of {ruinProb}%, depletion is projected to occur within <span className="text-white font-mono font-bold">
                 {(summary.day_simulated * (1 - ruinProb / 100)).toFixed(0)} days
                 </span>.
                 </>
@@ -156,89 +156,89 @@ const ResultsDashboard = ({ data }) => {
             </p> */}
             
             {ruinProb > 50 && (
-              <p className="mt-3 text-sm text-red-400 font-bold uppercase tracking-wider flex items-center gap-2">
-                <span className="text-xl">💀</span> Critical Warning: This is gambling, not trading.
+              <p className="mt-4 text-sm text-red-400 font-extrabold uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
+                <span className="text-2xl">💀</span> Critical Warning: This is gambling, not trading.
               </p>
             )}
-            <p className="text-xs text-gray-500 mt-4 italic">
+            <p className="text-xs text-gray-500 mt-5 italic font-mono">
               *Based on {monte_carlo.iterations} Monte Carlo simulations of your specific parameters.
             </p>
           </div>
         </div>
       )}
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
         <div className="p-3">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Inital Capital
           </p>
-          <p className="text-xl font-mono font-bold text-white">
+          <p className="text-xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
             ${summary.initial_balance}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Closing Balance
           </p>
-          <p className="text-xl font-mono font-bold text-green-400">
+          <p className="text-xl font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
             ${summary.final_balance}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Net Profit
           </p>
-          <p className="text-xl font-mono font-bold text-blue-400">
+          <p className="text-xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
             +${summary.total_profit}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             ROI Growth
           </p>
-          <p className="text-xl font-mono font-bold text-purple-400">
+          <p className="text-xl font-mono font-bold text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]">
             {summary.total_roi}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Max Drawdown
           </p>
-          <p className="text-xl font-mono font-bold text-red-400">
+          <p className="text-xl font-mono font-bold text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
             -{summary.max_drawdown || "0.00%"}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Profit Factor
           </p>
           <p
             className={`text-xl font-mono font-bold ${
               parseFloat(summary.profit_factor) >= 1.5
-                ? "text-green-400"
-                : "text-yellow-400"
+                ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
+                : "text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]"
             }`}
           >
             {summary.profit_factor}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Expectancy
           </p>
-          <p className="text-xl font-mono font-bold text-blue-300">
+          <p className="text-xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
             ${summary.expectancy}
           </p>
         </div>
-        <div className="p-3 border-l border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wider">
+        <div className="p-3 border-l border-[#00cfff]/10">
+          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
             Risk of Ruin
           </p>
           <p
             className={`text-xl font-mono font-bold ${
               parseFloat(summary.risk_of_ruin) < 1
-                ? "text-green-400"
-                : "text-red-500"
+                ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
+                : "text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
             }`}
           >
             {summary.risk_of_ruin}
@@ -250,39 +250,39 @@ const ResultsDashboard = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monte Carlo Simulation */}
         {monte_carlo && (
-          <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider flex items-center gap-2">
+          <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+            <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
               Monte Carlo Simulation{" "}
-              <span className="text-xs text-gray-500 normal-case">
+              <span className="text-[10px] text-gray-500 normal-case font-mono">
                 (500 Iterations)
               </span>
             </h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">
+              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
+                <span className="text-sm font-medium text-gray-400">
                   Worst Case (Bottom 5%)
                 </span>
-                <span className="font-mono font-bold text-red-400">
+                <span className="font-mono font-bold text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
                   ${monte_carlo.worst_case}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">
+              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
+                <span className="text-sm font-medium text-gray-400">
                   Median (Most Likely)
                 </span>
-                <span className="font-mono font-bold text-blue-400">
+                <span className="font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
                   ${monte_carlo.median}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-900/50 rounded border border-gray-700/50">
-                <span className="text-sm text-gray-400">
+              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
+                <span className="text-sm font-medium text-gray-400">
                   Best Case (Top 5%)
                 </span>
-                <span className="font-mono font-bold text-green-400">
+                <span className="font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
                   ${monte_carlo.best_case}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-[10px] text-gray-500 mt-2 font-mono italic">
               *This simulation randomizes the win/loss sequence to see the possible variations in your fate.
               </p>
             </div>
@@ -290,8 +290,8 @@ const ResultsDashboard = ({ data }) => {
         )}
 
         {/* Risk Analysis / Warnings */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-          <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider">
+        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+          <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest">
             Risk Analysis
           </h3>
           <div className="space-y-3">
@@ -299,22 +299,22 @@ const ResultsDashboard = ({ data }) => {
               warnings.map((w, idx) => (
                 <div
                   key={idx}
-                  className={`p-3 rounded border flex items-start gap-3 ${
+                  className={`p-4 rounded-xl border flex items-start gap-3 ${
                     w.type === "danger"
-                      ? "bg-red-900/20 border-red-500/30 text-red-200"
-                      : "bg-yellow-900/20 border-yellow-500/30 text-yellow-200"
+                      ? "bg-red-900/10 border-red-500/30 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+                      : "bg-yellow-900/10 border-yellow-500/30 text-yellow-200 shadow-[0_0_10px_rgba(250,204,21,0.1)]"
                   }`}
                 >
-                  <span className="text-lg">
+                  <span className="text-lg drop-shadow-[0_0_5px_currentColor]">
                     {w.type === "danger" ? "VX" : "⚠"}
                   </span>
-                  <span className="text-sm font-medium">{w.msg}</span>
+                  <span className="text-sm font-bold tracking-wide">{w.msg}</span>
                 </div>
               ))
             ) : (
-              <div className="p-4 bg-green-900/20 border border-green-500/30 rounded text-green-200 flex items-center gap-3">
-                <span className="text-lg">✓</span>
-                <span className="text-sm font-medium">
+              <div className="p-5 bg-green-900/10 border border-green-500/30 rounded-xl text-green-400 flex items-center gap-3 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                <span className="text-xl drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]">✓</span>
+                <span className="text-sm font-bold tracking-wide">
                   Strategy looks healthy! No critical risks detected.
                 </span>
               </div>
@@ -324,16 +324,16 @@ const ResultsDashboard = ({ data }) => {
       </div>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap justify-between items-center bg-gray-800 p-2 rounded-lg border border-gray-700">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap justify-between items-center bg-[#0a0f1c]/60 p-3 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+        <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all ${
                 filter === f.id
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
-                  : "bg-gray-700 text-gray-400 hover:bg-gray-600 hover:text-gray-200"
+                  ? "bg-[#00cfff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)]"
+                  : "bg-[#030308] border border-[#00cfff]/20 text-[#00cfff]/50 hover:bg-[#00cfff]/10 hover:text-[#00cfff] hover:border-[#00cfff]/50"
               }`}
             >
               {f.label}
@@ -342,7 +342,7 @@ const ResultsDashboard = ({ data }) => {
         </div>
         <button
           onClick={downloadCSV}
-          className="px-4 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors flex items-center gap-2"
+          className="px-5 py-2 mt-2 sm:mt-0 bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] text-[#00cfff] text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
         >
           <svg
             className="w-4 h-4"
@@ -362,102 +362,116 @@ const ResultsDashboard = ({ data }) => {
       </div>
 
       {/* Chart */}
-      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 h-[400px]">
-        <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider">
+      <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[400px]">
+        <h3 className="text-sm font-extrabold mb-4 text-[#00cfff] uppercase tracking-widest">
           Equity Growth Projections
         </h3>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={aggregatedData}>
             <defs>
               <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#00cfff" stopOpacity={0.5} />
+                <stop offset="95%" stopColor="#00cfff" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#374151"
+              stroke="#00cfff"
+              strokeOpacity={0.1}
               vertical={false}
             />
             <XAxis
               dataKey="day"
-              stroke="#9ca3af"
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              stroke="#00cfff"
+              strokeOpacity={0.5}
+              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               domain={["auto", "auto"]}
               tickFormatter={(value) => `$${value}`}
-              stroke="#9ca3af"
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              stroke="#00cfff"
+              strokeOpacity={0.5}
+              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1f2937",
-                borderColor: "#374151",
-                color: "#f3f4f6",
+                backgroundColor: "rgba(3, 3, 8, 0.9)",
+                borderColor: "rgba(0, 207, 255, 0.3)",
+                color: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 0 15px rgba(0, 207, 255, 0.15)",
+                fontFamily: 'monospace'
               }}
-              itemStyle={{ color: "#60a5fa" }}
+              itemStyle={{ color: "#00cfff", fontWeight: 'bold' }}
               formatter={(value) => [`$${value}`, "Equity"]}
               labelFormatter={(label) => `Day ${label}`}
             />
             <Area
               type="monotone"
               dataKey="end_balance"
-              stroke="#3b82f6"
+              stroke="#00cfff"
               fillOpacity={1}
               fill="url(#colorBalance)"
               strokeWidth={3}
+              style={{ filter: "drop-shadow(0 0 8px rgba(0,207,255,0.4))" }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* PnL Chart */}
-      <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 h-[400px]">
-        <h3 className="text-sm font-semibold mb-4 text-gray-300 uppercase tracking-wider">
+      <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[400px]">
+        <h3 className="text-sm font-extrabold mb-4 text-[#00cfff] uppercase tracking-widest">
           Daily Profit / Loss
         </h3>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={aggregatedData}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#374151"
+              stroke="#00cfff"
+              strokeOpacity={0.1}
               vertical={false}
             />
             <XAxis
               dataKey="day"
-              stroke="#9ca3af"
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              stroke="#00cfff"
+              strokeOpacity={0.5}
+              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
               tickFormatter={(value) => `$${value}`}
-              stroke="#9ca3af"
-              tick={{ fill: "#9ca3af", fontSize: 12 }}
+              stroke="#00cfff"
+              strokeOpacity={0.5}
+              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
               axisLine={false}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#1f2937",
-                borderColor: "#374151",
-                color: "#f3f4f6",
+                backgroundColor: "rgba(3, 3, 8, 0.9)",
+                borderColor: "rgba(0, 207, 255, 0.3)",
+                color: "#fff",
+                borderRadius: "12px",
+                boxShadow: "0 0 15px rgba(0, 207, 255, 0.15)",
+                fontFamily: 'monospace'
               }}
-              cursor={{ fill: "#374151", opacity: 0.4 }}
+              cursor={{ fill: "rgba(0, 207, 255, 0.05)" }}
               formatter={(value) => [`$${value}`, "PnL"]}
               labelFormatter={(label) => `Day ${label}`}
             />
-            <ReferenceLine y={0} stroke="#4b5563" />
-            <Bar dataKey="profit_loss" name="Profit/Loss">
+            <ReferenceLine y={0} stroke="rgba(0, 207, 255, 0.3)" />
+            <Bar dataKey="profit_loss" name="Profit/Loss" radius={[4, 4, 0, 0]}>
               {aggregatedData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={parseFloat(entry.profit_loss) >= 0 ? "#4ade80" : "#f87171"}
+                  style={{ filter: `drop-shadow(0 0 5px ${parseFloat(entry.profit_loss) >= 0 ? "rgba(74,222,128,0.5)" : "rgba(248,113,113,0.5)"})` }}
                 />
               ))}
             </Bar>
@@ -466,56 +480,56 @@ const ResultsDashboard = ({ data }) => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+      <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden">
         {/* Table Tabs */}
-        <div className="flex border-b border-gray-700">
+        <div className="flex border-b border-[#00cfff]/20">
           <button
             onClick={() => setViewMode("daily")}
-            className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+            className={`flex-1 sm:flex-none px-6 py-4 text-xs font-extrabold uppercase tracking-widest transition-all ${
               viewMode === "daily"
-                ? "bg-gray-700 text-white"
-                : "text-gray-400 hover:bg-gray-700/50"
+                ? "bg-[#00cfff]/10 text-[#00cfff] border-b-2 border-[#00cfff]"
+                : "text-[#00cfff]/50 hover:bg-[#00cfff]/5 hover:text-[#00cfff]"
             }`}
           >
             Daily Breakdown
           </button>
           <button
             onClick={() => setViewMode("journal")}
-            className={`px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+            className={`flex-1 sm:flex-none px-6 py-4 text-xs font-extrabold uppercase tracking-widest transition-all ${
               viewMode === "journal"
-                ? "bg-gray-700 text-white"
-                : "text-gray-400 hover:bg-gray-700/50"
+                ? "bg-[#00cfff]/10 text-[#00cfff] border-b-2 border-[#00cfff]"
+                : "text-[#00cfff]/50 hover:bg-[#00cfff]/5 hover:text-[#00cfff]"
             }`}
           >
             Trade Journal (Log)
           </button>
         </div>
-        <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+        <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
           {viewMode === "daily" ? (
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-900 sticky top-0">
+            <table className="min-w-full divide-y divide-[#00cfff]/10">
+              <thead className="bg-[#030308]/80 backdrop-blur-md sticky top-0 z-10 border-b border-[#00cfff]/20">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     Day
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     Start Balance
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     P/L
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     End Balance
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     ROI
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-gray-800 divide-y divide-gray-700">
+              <tbody className="bg-transparent divide-y divide-[#00cfff]/5">
                 {aggregatedData.map((row) => (
-                  <tr key={row.day} className="hover:bg-gray-700/30">
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300">
+                  <tr key={row.day} className="hover:bg-[#00cfff]/5 transition-colors">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-mono">
                       {row.day}
                     </td>
                     <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono">
@@ -531,10 +545,10 @@ const ResultsDashboard = ({ data }) => {
                       {parseFloat(row.profit_loss) >= 0 ? "+" : ""}
                       {row.profit_loss}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-gray-200 font-mono">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-white font-mono">
                       ${row.end_balance}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-[#00cfff] font-mono">
                       {row.roi}
                     </td>
                   </tr>
@@ -542,49 +556,49 @@ const ResultsDashboard = ({ data }) => {
               </tbody>
             </table>
           ) : (
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-900 sticky top-0">
+            <table className="min-w-full divide-y divide-[#00cfff]/10">
+              <thead className="bg-[#030308]/80 backdrop-blur-md sticky top-0 z-10 border-b border-[#00cfff]/20">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     #
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     Day
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     Result
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     P/L ($)
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
                     Balance
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-gray-800 divide-y divide-gray-700">
+              <tbody className="bg-transparent divide-y divide-[#00cfff]/5">
                 {trade_log &&
                   trade_log.map((trade) => (
-                    <tr key={trade.trade_no} className="hover:bg-gray-700/30">
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                    <tr key={trade.trade_no} className="hover:bg-[#00cfff]/5 transition-colors">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-[#00cfff]/50 font-mono">
                         #{trade.trade_no}
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono">
                         Day {trade.day}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap text-sm">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-bold ${
+                          className={`px-3 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest ${
                             trade.result === "WIN"
-                              ? "bg-green-900/50 text-green-400"
-                              : "bg-red-900/50 text-red-400"
+                              ? "bg-green-900/20 text-green-400 border border-green-500/30"
+                              : "bg-red-900/20 text-red-400 border border-red-500/30"
                           }`}
                         >
                           {trade.result}
                         </span>
                       </td>
                       <td
-                        className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-medium ${
+                        className={`px-6 py-3 whitespace-nowrap text-sm font-mono font-bold ${
                           parseFloat(trade.pnl) >= 0
                             ? "text-green-400"
                             : "text-red-400"
@@ -593,7 +607,7 @@ const ResultsDashboard = ({ data }) => {
                         {parseFloat(trade.pnl) >= 0 ? "+" : ""}
                         {trade.pnl}
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-mono">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-white font-mono">
                         ${trade.balance}
                       </td>
                     </tr>

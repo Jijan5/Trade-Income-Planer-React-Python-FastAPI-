@@ -120,37 +120,38 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-gray-800 rounded-xl border border-gray-600 w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col">
-        <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900 shrink-0">
-          <h2 className="text-base sm:text-lg font-bold text-white">
-            Trading Glossary
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-[#0a0f1c]/95 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_30px_rgba(0,207,255,0.15)] w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
+        <div className="p-4 sm:p-5 border-b border-[#00cfff]/20 flex justify-between items-center bg-[#030308]/80 shrink-0">
+          <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff] text-xl">📖</span> Trading Glossary
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-xl font-bold px-2"
+            className="text-[#00cfff]/50 hover:text-[#00cfff] text-xl font-bold px-2 transition-colors drop-shadow-[0_0_5px_rgba(0,207,255,0)] hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
           >
-            X
+            ✕
           </button>
         </div>
 
-        <div className="p-3 sm:p-4 flex-1 overflow-hidden flex flex-col min-h-0">
+        <div className="p-4 sm:p-5 flex-1 overflow-hidden flex flex-col min-h-0 bg-[#0a0f1c]/40">
           <input
             type="text"
-            placeholder="Search terms..."
+            placeholder="SEARCH TERMS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-600 rounded-lg text-white p-2 sm:p-3 mb-3 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 sm:p-4 mb-4 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none text-sm font-mono uppercase tracking-widest transition-all placeholder-[#00cfff]/30"
           />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 overflow-y-auto flex-1 min-h-0 pr-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto flex-1 min-h-0 pr-2 custom-scrollbar">
             {filteredTerms.map(([key, value]) => (
               <button
                 key={key}
                 onClick={() => setSelectedTerm(value)}
-                className="text-left p-2 sm:p-3 bg-gray-700/50 hover:bg-gray-700 rounded-lg border border-gray-600 hover:border-blue-500 transition-colors"
+                className="text-left p-3 bg-[#030308]/60 hover:bg-[#00cfff]/10 rounded-xl border border-[#00cfff]/20 hover:border-[#00cfff]/50 transition-all hover:shadow-[0_0_10px_rgba(0,207,255,0.1)] hover:-translate-y-0.5"
               >
-                <span className="text-xs sm:text-sm font-bold text-blue-400">
+                <span className="text-xs sm:text-sm font-extrabold text-[#00cfff] uppercase tracking-wider drop-shadow-[0_0_3px_rgba(0,207,255,0.3)]">
                   {value.term}
                 </span>
               </button>
@@ -159,26 +160,26 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
         </div>
 
         {selectedTerm && (
-          <div className="p-3 sm:p-4 border-t border-gray-700 bg-gray-900/50 shrink-0">
-            <h3 className="text-base sm:text-lg font-bold text-white mb-2">
+          <div className="p-4 sm:p-5 border-t border-[#00cfff]/20 bg-[#030308]/90 shrink-0 animate-fade-in relative">
+            <h3 className="text-lg sm:text-xl font-extrabold text-[#00cfff] mb-3 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
               {selectedTerm.term}
             </h3>
-            <p className="text-gray-300 text-sm mb-3">
+            <p className="text-gray-300 text-sm mb-4 leading-relaxed font-medium">
               {selectedTerm.definition}
             </p>
-            <div className="bg-blue-900/30 p-3 rounded-lg border border-blue-500/30">
-              <span className="text-xs text-blue-400 uppercase font-bold block mb-1">
-                Example:
+            <div className="bg-[#00cfff]/5 p-4 rounded-xl border border-[#00cfff]/20 shadow-[inset_0_0_10px_rgba(0,207,255,0.05)]">
+              <span className="text-[10px] text-[#00cfff] uppercase font-extrabold tracking-widest block mb-2 border-b border-[#00cfff]/20 pb-1">
+                Example
               </span>
-              <p className="text-gray-300 text-sm italic">
-                {selectedTerm.example}
+              <p className="text-gray-300 text-sm italic leading-relaxed">
+                "{selectedTerm.example}"
               </p>
             </div>
             <button
               onClick={() => setSelectedTerm(null)}
-              className="mt-3 text-sm text-gray-400 hover:text-white"
+              className="mt-4 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors flex items-center gap-1"
             >
-              Back to list
+              <span>←</span> Back to list
             </button>
           </div>
         )}
@@ -250,75 +251,83 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-gray-800 rounded-xl border border-gray-600 w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col">
-        <div className="p-3 sm:p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900 shrink-0">
-          <h2 className="text-base sm:text-lg font-bold text-white">
-            Pre-Trade Checklist
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-[#0a0f1c]/95 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_30px_rgba(0,207,255,0.15)] w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
+        <div className="p-4 sm:p-5 border-b border-[#00cfff]/20 flex justify-between items-center bg-[#030308]/80 shrink-0">
+          <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
+            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff] text-xl">✅</span> Pre-Trade Checklist
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-xl font-bold px-2"
+            className="text-[#00cfff]/50 hover:text-[#00cfff] text-xl font-bold px-2 transition-colors"
           >
-            X
+            ✕
           </button>
         </div>
 
-        <div className="p-3 sm:p-4 space-y-2 sm:space-y-3 overflow-y-auto flex-1">
-          <p className="text-xs sm:text-sm text-gray-400 mb-2">
-            Complete all required items before trading:
+        <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1 custom-scrollbar bg-[#0a0f1c]/40">
+          <p className="text-xs font-bold text-[#00cfff]/70 uppercase tracking-widest mb-3 border-b border-[#00cfff]/10 pb-2">
+            Complete required items before trading:
           </p>
 
           {DEFAULT_CHECKLIST.map((item) => (
             <label
               key={item.id}
-              className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border cursor-pointer transition-colors ${
+              className={`flex items-start gap-3 p-3 sm:p-4 rounded-xl border cursor-pointer transition-all ${
                 checkedItems[item.id]
-                  ? "bg-green-900/20 border-green-500/50"
-                  : "bg-gray-700/30 border-gray-600 hover:border-gray-500"
+                  ? "bg-green-900/20 border-green-500/50 shadow-[0_0_10px_rgba(74,222,128,0.1)]"
+                  : "bg-[#030308]/50 border-[#00cfff]/20 hover:border-[#00cfff]/40"
               }`}
             >
-              <input
-                type="checkbox"
-                checked={checkedItems[item.id] || false}
-                onChange={() => toggleItem(item.id)}
-                className="mt-0.5 sm:mt-1 w-4 h-4 rounded text-green-600 focus:ring-green-500"
-              />
+              <div className="relative flex items-start">
+                <input
+                  type="checkbox"
+                  checked={checkedItems[item.id] || false}
+                  onChange={() => toggleItem(item.id)}
+                  className="mt-0.5 sm:mt-1 w-5 h-5 rounded border-[#00cfff]/50 bg-[#030308] accent-green-500 focus:ring-green-500 focus:ring-offset-0 cursor-pointer appearance-none checked:bg-green-500 checked:border-green-500 transition-colors"
+                />
+                {checkedItems[item.id] && (
+                  <svg className="absolute top-[3px] left-[3px] w-3.5 h-3.5 sm:top-[5px] sm:left-[3px] text-[#030308] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
               <span
-                className={`text-xs sm:text-sm ${
-                  checkedItems[item.id] ? "text-green-300" : "text-gray-300"
+                className={`text-xs sm:text-sm font-medium leading-relaxed ${
+                  checkedItems[item.id] ? "text-green-400 drop-shadow-[0_0_2px_rgba(74,222,128,0.3)]" : "text-gray-300"
                 }`}
               >
                 {item.text}
-                {item.required && <span className="text-red-400 ml-1">*</span>}
+                {item.required && <span className="text-red-400 ml-1 font-bold">*</span>}
               </span>
             </label>
           ))}
         </div>
 
-        <div className="p-3 sm:p-4 border-t border-gray-700 bg-gray-900 shrink-0">
+        <div className="p-4 sm:p-5 border-t border-[#00cfff]/20 bg-[#030308]/90 shrink-0">
           {showConfirmed ? (
-            <div className="text-center py-2">
-              <span className="text-2xl block mb-1">Ready to Trade!</span>
-              <p className="text-green-400 font-bold">Checklist Complete!</p>
+            <div className="text-center py-3 animate-fade-in">
+              <span className="text-3xl block mb-2 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">🚀</span>
+              <p className="text-green-400 font-extrabold uppercase tracking-widest text-lg drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">Ready to Trade!</p>
             </div>
           ) : (
             <button
               onClick={handleConfirm}
               disabled={!allRequiredChecked}
-              className={`w-full py-2 sm:py-3 rounded-lg font-bold transition-colors text-sm sm:text-base ${
+              className={`w-full py-3 sm:py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all text-sm sm:text-base ${
                 allRequiredChecked
-                  ? "bg-green-600 hover:bg-green-500 text-white"
-                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  ? "bg-green-500 hover:bg-green-400 text-[#030308] shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] hover:-translate-y-0.5"
+                  : "bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed"
               }`}
             >
               {allRequiredChecked
-                ? "Confirm and Ready to Trade"
-                : "Complete Required Items First"}
+                ? "Confirm & Ready To Trade"
+                : "Complete Required Items"}
             </button>
           )}
-          <p className="text-[10px] text-gray-500 text-center mt-2">
-            * Required items must be checked
+          <p className="text-[10px] font-bold text-gray-500 text-center mt-3 uppercase tracking-widest">
+            <span className="text-red-400">*</span> Required items must be checked
           </p>
         </div>
       </div>
@@ -399,60 +408,72 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
   const progress = ((currentStep + 1) / TUTORIAL_STEPS.length) * 100;
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-gray-800 rounded-xl border border-blue-500/50 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-2xl">
-        <div className="bg-gray-900 h-1.5 sm:h-2 rounded-t-xl">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
+      <div className="bg-[#0a0f1c]/95 rounded-2xl border border-[#00cfff]/40 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-[0_0_40px_rgba(0,207,255,0.2)] overflow-hidden relative">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
+        <div className="bg-[#030308] h-1.5 sm:h-2">
           <div
-            className="bg-blue-500 h-full transition-all duration-300 rounded-t-xl"
+            className="bg-[#00cfff] h-full transition-all duration-500 shadow-[0_0_10px_#00cfff] relative"
             style={{ width: `${progress}%` }}
-          />
+          >
+             <div className="absolute inset-0 bg-white/40 w-full animate-[shimmer_2s_infinite]"></div>
+          </div>
         </div>
 
-        <div className="p-4 sm:p-8 text-center">
-          <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">{step.icon}</div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">
+        <div className="p-6 sm:p-10 text-center relative z-10">
+          <div className="text-5xl sm:text-7xl mb-6 sm:mb-8 drop-shadow-[0_0_15px_rgba(0,207,255,0.5)] animate-fade-in" key={currentStep}>
+            {step.icon}
+          </div>
+          <h2 className="text-xl sm:text-3xl font-extrabold text-white mb-4 sm:mb-5 uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff] animate-fade-in" key={`h-${currentStep}`}>
             {step.title}
           </h2>
-          <p className="text-gray-300 whitespace-pre-line mb-4 sm:mb-6 text-sm sm:text-base">
+          <p className="text-gray-300 font-medium whitespace-pre-line mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed animate-fade-in" key={`p-${currentStep}`}>
             {step.content}
           </p>
 
-          <div className="flex justify-center gap-1.5 sm:gap-2 mb-4 sm:mb-6">
+          <div className="flex justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
             {TUTORIAL_STEPS.map((_, idx) => (
               <div
                 key={idx}
-                className={`w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full transition-colors ${
-                  idx <= currentStep ? "bg-blue-500" : "bg-gray-600"
+                className={`w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full transition-all duration-300 ${
+                  idx === currentStep ? "bg-[#00cfff] shadow-[0_0_8px_#00cfff] scale-125" : idx < currentStep ? "bg-[#00cfff]/50" : "bg-gray-700"
                 }`}
               />
             ))}
           </div>
 
-          <div className="flex justify-between items-center gap-2">
+          <div className="flex justify-between items-center gap-3">
             <button
               onClick={handleSkip}
-              className="text-gray-500 hover:text-gray-300 text-xs sm:text-sm px-3 py-2"
+              className="text-[#00cfff]/50 hover:text-[#00cfff] text-xs sm:text-sm font-extrabold uppercase tracking-widest px-4 py-3 transition-colors"
             >
-              Skip Tutorial
+              SKIP
             </button>
             <button
               onClick={handleNext}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-lg font-bold transition-colors text-sm sm:text-base"
+              className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-6 sm:px-8 py-3 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 text-sm sm:text-base"
             >
               {currentStep < TUTORIAL_STEPS.length - 1
-                ? "Next"
-                : "Start Trading!"}
+                ? "NEXT STEP"
+                : "START TRADING"}
             </button>
           </div>
 
-          <label className="flex items-center justify-center gap-2 mt-3 sm:mt-4 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="w-3 h-3 sm:w-4 sm:h-4 rounded"
-            />
-            <span className="text-xs text-gray-500">
+          <label className="flex items-center justify-center gap-2 mt-6 sm:mt-8 cursor-pointer group">
+            <div className="relative flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(e) => setDontShowAgain(e.target.checked)}
+                className="w-4 h-4 rounded border-[#00cfff]/50 bg-[#030308] appearance-none cursor-pointer checked:bg-[#00cfff] checked:border-[#00cfff] transition-colors"
+              />
+              {dontShowAgain && (
+                <svg className="absolute w-3 h-3 text-[#030308] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest group-hover:text-gray-400 transition-colors">
               Do not show this again
             </span>
           </label>
@@ -468,24 +489,24 @@ export const BeginnerHelpButtons = ({
   onOpenTutorial,
 }) => {
   return (
-    <div className="flex gap-2 mb-4">
+    <div className="flex gap-3 mb-5">
       <button
         onClick={onOpenTutorial}
-        className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold py-2 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-1 sm:gap-2 transition-colors"
+        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        Tutorial
+        <span className="text-sm">🎓</span> Tutorial
       </button>
       <button
         onClick={onOpenChecklist}
-        className="flex-1 bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-1 sm:gap-2 transition-colors"
+        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        Checklist
+        <span className="text-sm">✅</span> Checklist
       </button>
       <button
         onClick={onOpenGlossary}
-        className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-2 sm:px-3 rounded-lg flex items-center justify-center gap-1 sm:gap-2 transition-colors"
+        className="flex-1 bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        Glossary
+        <span className="text-sm">📖</span> Glossary
       </button>
     </div>
   );

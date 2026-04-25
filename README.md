@@ -50,11 +50,11 @@
 
 ### Integrations
 
-- **Binance:** Real-time market data is fetched from Binance to provide accurate trading simulations.
+- **TradingView:** Real-time market data is fetched from Binance to provide accurate trading simulations.
 - **Midtrans:** Secure payment gateway integration for handling subscriptions and payments.
 - **Google Gemini:** AI-powered insights and analysis are provided through integration with Google Gemini.
 
-## Technology Stack
+## Tech Stack
 
 - **Frontend:** React, Tailwind CSS, Recharts, Axios, date-fns
 - **Backend:** FastAPI, Python, SQLModel, Pydantic

@@ -275,59 +275,60 @@ const AdminDashboard = () => {
       {/* Custom Flash Notification */}
       {flash && (
         <div
-          className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl border flex items-center gap-3 animate-fade-in ${
+          className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border flex items-center gap-3 animate-fade-in backdrop-blur-md ${
             flash.type === "success"
-              ? "bg-gray-800 border-green-500 text-green-400"
-              : "bg-gray-800 border-red-500 text-red-400"
+              ? "bg-[#030308]/90 border-green-500/50 text-green-400 shadow-[0_0_15px_rgba(74,222,128,0.2)]"
+              : "bg-[#030308]/90 border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
           }`}
         >
-          <span className="text-2xl">
-            {flash.type === "success" ? "✅" : "❌"}
+          <span className="text-2xl drop-shadow-[0_0_5px_currentColor]">
+            {flash.type === "success" ? "✔" : "✖"}
           </span>
           <div>
-            <h4 className="font-bold text-sm uppercase">{flash.type}</h4>
-            <p className="text-sm text-gray-300">{flash.message}</p>
+            <h4 className="font-extrabold text-[10px] uppercase tracking-widest">{flash.type}</h4>
+            <p className="text-[11px] text-gray-300 font-medium">{flash.message}</p>
           </div>
         </div>
       )}
 
       {/* Confirmation Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+          <div className={`bg-[#0a0f1c]/95 border p-8 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] max-w-sm w-full text-center ${confirmModal.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`}>
             <h3
-              className={`text-lg font-bold mb-2 ${
+              className={`text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 ${
                 confirmModal.type === "success"
-                  ? "text-green-400"
-                  : "text-white"
+                  ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
+                  : "text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
               }`}
             >
+              <span className="text-4xl">{confirmModal.type === "success" ? "✔" : "⚠"}</span>
               {confirmModal.type === "success"
-                ? "Confirm Action"
-                : "Are you sure?"}
+                ? "CONFIRM ACTION"
+                : "ARE YOU SURE?"}
             </h3>
-            <p className="text-gray-400 text-sm mb-6">{confirmModal.message}</p>
-            <div className="flex gap-3 justify-center">
+            <p className="text-gray-400 text-sm mb-8 font-medium">{confirmModal.message}</p>
+            <div className="flex gap-4 justify-center">
               <button
                 onClick={() =>
                   setConfirmModal({ ...confirmModal, isOpen: false })
                 }
-                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 onClick={() => {
                   confirmModal.onConfirm();
                   setConfirmModal({ ...confirmModal, isOpen: false });
                 }}
-                className={`px-4 py-2 rounded text-white text-sm font-bold transition-colors ${
+                className={`px-6 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest transition-all ${
                   confirmModal.type === "success"
-                    ? "bg-green-600 hover:bg-green-500"
-                    : "bg-red-600 hover:bg-red-500"
+                    ? "bg-green-600/20 text-green-400 border border-green-500/50 hover:bg-green-600 hover:text-white shadow-[0_0_15px_rgba(74,222,128,0.2)] hover:shadow-[0_0_25px_rgba(74,222,128,0.5)]"
+                    : "bg-red-600/20 text-red-400 border border-red-500/50 hover:bg-red-600 hover:text-white shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)]"
                 }`}
               >
-                Confirm
+                CONFIRM
               </button>
             </div>
           </div>
@@ -335,57 +336,26 @@ const AdminDashboard = () => {
       )}
 
       {/* SIDEBAR - SCROLLABLE */}
-      {/* Added overflow-y-auto and fixed height calculation to make it scrollable */}
-      <div className="w-full md:w-64 bg-gray-800 rounded-lg border border-gray-700 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-lg z-20">
-        <div className="p-4 border-b border-gray-700 bg-gray-900/50 sticky top-0 z-10 backdrop-blur-sm flex justify-between items-center">
+      <div className="w-full md:w-64 bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md z-20 custom-scrollbar">
+        <div className="p-6 border-b border-[#00cfff]/10 bg-[#030308]/60 sticky top-0 z-10 flex justify-between items-center">
           <div>
-            <h2 className="text-xl font-bold text-white">Admin Panel</h2>
-            <p className="text-xs text-gray-400">
-              Welcome, {userData?.username}
+            <h2 className="text-lg font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">Admin Panel</h2>
+            <p className="text-[10px] text-[#00cfff]/70 uppercase tracking-widest mt-1 font-bold">
+              SYS_ADMIN: {userData?.username}
             </p>
           </div>
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="md:hidden text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-700 focus:outline-none"
+            className="md:hidden text-[#00cfff]/50 hover:text-[#00cfff] p-2 rounded-lg hover:bg-[#00cfff]/10 focus:outline-none transition-all"
           >
             {isSidebarOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
             )}
           </button>
         </div>
-        <nav
-          className={`p-2 space-y-1 ${
-            isSidebarOpen ? "block" : "hidden"
-          } md:block`}
-        >
+        <nav className={`p-3 space-y-1 ${isSidebarOpen ? "block" : "hidden"} md:block`}>
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -393,13 +363,13 @@ const AdminDashboard = () => {
                 setActiveTab(item.id);
                 setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-bold transition-all ${
+              className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest transition-all ${
                 activeTab === item.id
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                  ? "bg-[#00cfff]/10 text-[#00cfff] border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.2)]"
+                  : "text-[#00cfff]/50 hover:bg-[#00cfff]/5 hover:text-[#00cfff] border border-transparent"
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
+              <span className="text-lg drop-shadow-[0_0_3px_currentColor]">{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -407,108 +377,110 @@ const AdminDashboard = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 bg-gray-800 rounded-lg border border-gray-700 p-6 min-h-[500px] shadow-lg">
+      <div className="flex-1 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-8 min-h-[500px] shadow-[0_0_20px_rgba(0,207,255,0.05)] overflow-hidden">
         {activeTab === "dashboard" && stats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-            <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
-              <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">
-                Total Users
+            <div className="bg-[#030308]/60 p-6 rounded-2xl border border-[#00cfff]/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+              <h3 className="text-[#00cfff]/50 text-[10px] uppercase font-extrabold tracking-widest mb-3">
+                TOTAL USERS
               </h3>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-4xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
                 {stats.totalUsers}
               </p>
             </div>
-            <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
-              <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">
-                Active Subs
+            <div className="bg-[#030308]/60 p-6 rounded-2xl border border-[#00cfff]/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+              <h3 className="text-[#00cfff]/50 text-[10px] uppercase font-extrabold tracking-widest mb-3">
+                ACTIVE SUBS
               </h3>
-              <p className="text-3xl font-bold text-green-400">
+              <p className="text-4xl font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
                 {stats.activeSubs}
               </p>
             </div>
-            <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
-              <h3 className="text-gray-400 text-xs uppercase font-bold mb-2">
-                Est. MRR
+            <div className="bg-[#030308]/60 p-6 rounded-2xl border border-[#00cfff]/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+              <h3 className="text-[#00cfff]/50 text-[10px] uppercase font-extrabold tracking-widest mb-3">
+                EST. MRR
               </h3>
-              <p className="text-3xl font-bold text-blue-400">${stats.mrr}</p>
+              <p className="text-4xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">
+                ${stats.mrr}
+              </p>
             </div>
           </div>
         )}
 
         {activeTab === "users" && (
-          <div className="overflow-x-auto animate-fade-in">
+          <div className="overflow-x-auto animate-fade-in custom-scrollbar">
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="SEARCH USERS..."
               onChange={(e) => setSearchUsers(e.target.value)}
-              className="mb-4 bg-gray-900 border border-gray-600 text-white px-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-full"
+              className="mb-6 bg-[#030308] border border-[#00cfff]/30 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] w-full font-mono text-xs placeholder:text-[#00cfff]/30 uppercase tracking-widest transition-all"
             />
-            <table className="w-full text-left text-sm text-gray-400">
-              <thead className="bg-gray-900 text-gray-200 uppercase font-bold">
+            <table className="w-full text-left text-sm text-gray-300">
+              <thead className="bg-[#030308] text-[#00cfff] text-[10px] uppercase font-extrabold tracking-widest border-b border-[#00cfff]/20">
                 <tr>
-                  <th className="p-3 rounded-tl-lg">User</th>
-                  <th className="p-3">Plan</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 rounded-tr-lg">Action</th>
+                  <th className="p-4 rounded-tl-xl">USER</th>
+                  <th className="p-4">PLAN</th>
+                  <th className="p-4">STATUS</th>
+                  <th className="p-4 rounded-tr-xl">ACTION</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-[#00cfff]/10">
                 {filteredUsers().map((u) => (
                   <tr
                     key={u.id}
-                    className="hover:bg-gray-700/50 transition-colors"
+                    className="hover:bg-[#00cfff]/5 transition-colors group"
                   >
-                    <td className="p-3">
-                      <div className="font-bold text-white">{u.username}</div>
-                      <div className="text-xs">{u.email}</div>
+                    <td className="p-4">
+                      <div className="font-extrabold text-white text-sm">{u.username}</div>
+                      <div className="text-[11px] text-[#00cfff]/70 font-mono mt-0.5">{u.email}</div>
                       {u.full_name && (
-                        <div className="text-[10px] text-gray-500">
+                        <div className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">
                           {u.full_name}
                         </div>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-4">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-bold ${
+                        className={`px-3 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest border ${
                           u.plan === "Platinum"
-                            ? "bg-purple-900 text-purple-300"
+                            ? "bg-purple-900/20 text-purple-400 border-purple-500/30"
                             : u.plan === "Premium"
-                            ? "bg-blue-900 text-blue-300"
-                            : "bg-gray-700"
+                            ? "bg-blue-900/20 text-[#00cfff] border-[#00cfff]/30"
+                            : "bg-[#030308] text-gray-400 border-gray-700"
                         }`}
                       >
                         {u.plan}
                       </span>
                       {u.plan_billing_cycle && (
-                        <div className="text-[10px] mt-1">
+                        <div className="text-[9px] text-[#00cfff]/50 font-bold uppercase tracking-widest mt-2">
                           {u.plan_billing_cycle}
                         </div>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-4">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] uppercase ${
+                        className={`px-3 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest border ${
                           u.status === "active"
-                            ? "bg-green-900/50 text-green-400"
-                            : "bg-red-900/50 text-red-400"
+                            ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]"
+                            : "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(239,68,68,0.2)]"
                         }`}
                       >
                         {u.status}
                       </span>
                     </td>
-                    <td className="p-3">
-                      <div className="flex gap-2">
+                    <td className="p-4">
+                      <div className="flex gap-3 opacity-50 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handleEditUser(u)}
-                          className="text-blue-400 hover:text-white font-bold text-xs border border-blue-900 hover:bg-blue-900 px-3 py-1 rounded transition-colors"
+                          className="text-[#00cfff] hover:text-white font-extrabold text-[10px] uppercase tracking-widest border border-[#00cfff]/30 hover:bg-[#00cfff]/20 px-4 py-1.5 rounded-lg transition-all shadow-[0_0_10px_rgba(0,207,255,0.1)]"
                         >
-                          Edit
+                          EDIT
                         </button>
                         <button
                           onClick={() => handleDeleteUser(u.id)}
-                          className="text-red-400 hover:text-white font-bold text-xs border border-red-900 hover:bg-red-900 px-3 py-1 rounded transition-colors"
+                          className="text-red-400 hover:text-white font-extrabold text-[10px] uppercase tracking-widest border border-red-500/30 hover:bg-red-600/30 px-4 py-1.5 rounded-lg transition-all shadow-[0_0_10px_rgba(239,68,68,0.1)]"
                         >
-                          Delete
+                          DEL
                         </button>
                       </div>
                     </td>
@@ -520,30 +492,30 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "subscriptions" && (
-          <div className="overflow-x-auto animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Active Subscriptions
+          <div className="overflow-x-auto animate-fade-in custom-scrollbar">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+              ACTIVE SUBSCRIPTIONS
             </h3>
-            <table className="w-full text-left text-sm text-gray-400">
-              <thead className="bg-gray-900 text-gray-200 uppercase font-bold">
+            <table className="w-full text-left text-sm text-gray-300">
+              <thead className="bg-[#030308] text-[#00cfff] text-[10px] uppercase font-extrabold tracking-widest border-b border-[#00cfff]/20">
                 <tr>
-                  <th className="p-3">User</th>
-                  <th className="p-3">Plan</th>
-                  <th className="p-3">Billing</th>
-                  <th className="p-3">Expires</th>
+                  <th className="p-4 rounded-tl-xl">USER</th>
+                  <th className="p-4">PLAN</th>
+                  <th className="p-4">BILLING</th>
+                  <th className="p-4 rounded-tr-xl">EXPIRES</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700">
+              <tbody className="divide-y divide-[#00cfff]/10">
                 {users
                   .filter((u) => u.plan !== "Free")
                   .map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-700/50">
-                      <td className="p-3 font-bold text-white">{u.username}</td>
-                      <td className="p-3">
-                        <span className="text-blue-400">{u.plan}</span>
+                    <tr key={u.id} className="hover:bg-[#00cfff]/5 transition-colors">
+                      <td className="p-4 font-extrabold text-white">{u.username}</td>
+                      <td className="p-4">
+                        <span className="text-[#00cfff] font-bold drop-shadow-[0_0_3px_#00cfff]">{u.plan}</span>
                       </td>
-                      <td className="p-3">{u.plan_billing_cycle || "-"}</td>
-                      <td className="p-3">
+                      <td className="p-4 font-mono text-xs text-[#00cfff]/70">{u.plan_billing_cycle || "-"}</td>
+                      <td className="p-4 font-mono text-xs text-gray-400">
                         {u.plan_expires_at
                           ? new Date(u.plan_expires_at).toLocaleDateString()
                           : "-"}
@@ -552,8 +524,8 @@ const AdminDashboard = () => {
                   ))}
                 {users.filter((u) => u.plan !== "Free").length === 0 && (
                   <tr>
-                    <td colSpan="4" className="p-4 text-center">
-                      No active subscriptions.
+                    <td colSpan="4" className="p-8 text-center text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest">
+                      NO ACTIVE SUBSCRIPTIONS
                     </td>
                   </tr>
                 )}
@@ -563,27 +535,27 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "content" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">Recent Posts</h3>
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">RECENT POSTS</h3>
             {posts.map((post) => (
               <div
                 key={post.id}
-                className="bg-gray-900 p-4 rounded border border-gray-700 flex justify-between items-start"
+                className="bg-[#030308]/60 p-5 rounded-xl border border-[#00cfff]/10 flex justify-between items-start hover:border-[#00cfff]/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
               >
                 <div>
-                  <p className="text-sm font-bold text-blue-400">
-                    {post.username}
+                  <p className="text-xs font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">
+                    @{post.username}
                   </p>
-                  <p className="text-gray-300 mt-1">{post.content}</p>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-gray-300 mt-2 font-medium leading-relaxed">{post.content}</p>
+                  <p className="text-[10px] text-[#00cfff]/50 font-mono mt-3 uppercase tracking-widest">
                     {new Date(post.created_at).toLocaleString()}
                   </p>
                 </div>
                 <button
                   onClick={() => handleDeletePost(post.id)}
-                  className="text-red-400 hover:text-white text-xs border border-red-900 bg-red-900/20 px-3 py-1 rounded"
+                  className="text-red-400 hover:text-white text-[10px] font-extrabold uppercase tracking-widest border border-red-500/30 bg-red-900/20 px-4 py-2 rounded-lg transition-all shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:bg-red-600 hover:border-red-500"
                 >
-                  Delete
+                  DEL
                 </button>
               </div>
             ))}
@@ -591,42 +563,42 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "reports" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">User Reports</h3>
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">USER REPORTS</h3>
             {reports.length === 0 ? (
-              <p className="text-gray-500">No reports found.</p>
+              <p className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest p-8 text-center border border-[#00cfff]/10 rounded-xl bg-[#030308]/50">NO REPORTS FOUND.</p>
             ) : (
               reports.map((report) => (
                 <div
                   key={report.id}
-                  className="bg-gray-900 p-4 rounded border border-red-900/50 flex justify-between items-center"
+                  className="bg-[#030308]/80 p-5 rounded-xl border border-red-500/30 flex justify-between items-center shadow-[0_0_15px_rgba(239,68,68,0.1)]"
                 >
                   <div>
-                    <p className="text-sm text-red-400 font-bold">
-                      Reported by: {report.reporter_username}
+                    <p className="text-[11px] text-red-400 font-extrabold uppercase tracking-widest drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]">
+                      REPORTED BY: @{report.reporter_username}
                     </p>
-                    <p className="text-gray-300">Reason: {report.reason}</p>
-                    <p className="text-xs text-gray-500">
-                      Target ID:{" "}
+                    <p className="text-gray-300 mt-2 font-medium">REASON: {report.reason}</p>
+                    <p className="text-[10px] text-[#00cfff]/50 font-mono mt-2 uppercase tracking-widest">
+                      TARGET:{" "}
                       {report.post_id
-                        ? `Post #${report.post_id}`
-                        : `Comment #${report.comment_id}`}
+                        ? `POST #${report.post_id}`
+                        : `COMMENT #${report.comment_id}`}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     {report.post_id && (
                       <button
                         onClick={() => handleDeletePost(report.post_id)}
-                        className="text-red-400 border border-red-900 px-3 py-1 rounded text-xs"
+                        className="text-red-400 hover:text-white border border-red-500/50 bg-red-900/20 px-4 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:bg-red-600"
                       >
-                        Delete Content
+                        DEL CONTENT
                       </button>
                     )}
                     <button
                       onClick={() => handleDismissReport(report.id)}
-                      className="text-gray-400 border border-gray-700 px-3 py-1 rounded text-xs"
+                      className="text-[#00cfff]/70 hover:text-white border border-[#00cfff]/30 bg-[#00cfff]/5 px-4 py-2 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all hover:bg-[#00cfff]/20"
                     >
-                      Dismiss
+                      DISMISS
                     </button>
                   </div>
                 </div>
@@ -636,27 +608,27 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "feedbacks" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              User Feedbacks
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+              USER FEEDBACK
             </h3>
             {feedbacks.length === 0 ? (
-              <p className="text-gray-500">No feedbacks yet.</p>
+              <p className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest p-8 text-center border border-[#00cfff]/10 rounded-xl bg-[#030308]/50">NO FEEDBACKS YET.</p>
             ) : (
               feedbacks.map((fb, idx) => (
                 <div
                   key={fb.id || idx}
-                  className="bg-gray-900 p-4 rounded border border-gray-700"
+                  className="bg-[#030308]/60 p-5 rounded-xl border border-[#00cfff]/10 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                 >
-                  <div className="flex justify-between mb-2">
-                    <span className="text-blue-400 font-bold text-sm">
+                  <div className="flex justify-between mb-3 border-b border-[#00cfff]/10 pb-2">
+                    <span className="text-[#00cfff] font-extrabold text-[11px] font-mono tracking-widest drop-shadow-[0_0_3px_#00cfff]">
                       {fb.email}
                     </span>
-                    <span className="text-gray-500 text-xs">
+                    <span className="text-[#00cfff]/50 text-[10px] font-mono uppercase tracking-widest">
                       {fb.date || new Date(fb.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-gray-300">{fb.message}</p>
+                  <p className="text-gray-300 font-medium leading-relaxed text-sm">{fb.message}</p>
                 </div>
               ))
             )}
@@ -668,44 +640,46 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "appeals" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              Suspension Appeals
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+              SUSPENSION APPEALS
             </h3>
             {users.filter((u) => u.appeal_status === "pending").length === 0 ? (
-              <p className="text-gray-500">No pending appeals.</p>
+              <p className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest p-8 text-center border border-[#00cfff]/10 rounded-xl bg-[#030308]/50">NO PENDING APPEALS.</p>
             ) : (
               users
                 .filter((u) => u.appeal_status === "pending")
                 .map((u) => (
                   <div
                     key={u.id}
-                    className="bg-gray-900 p-4 rounded border border-yellow-600/50"
+                    className="bg-[#030308]/80 p-6 rounded-2xl border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]"
                   >
-                    <div className="flex justify-between items-start mb-3">
+                    <div className="flex justify-between items-start mb-4">
                       <div>
-                        <p className="text-lg font-bold text-white">
+                        <p className="text-lg font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]">
                           {u.username}{" "}
-                          <span className="text-xs text-gray-500">
+                          <span className="text-[10px] text-[#00cfff]/50 font-mono ml-2 lowercase tracking-normal">
                             ({u.email})
                           </span>
                         </p>
-                        <p className="text-xs text-red-400 mt-1">
-                          Suspended Until:{" "}
+                        <p className="text-[10px] text-red-400 mt-2 font-bold uppercase tracking-widest font-mono">
+                          SUSPENDED UNTIL:{" "}
+                          <span className="text-white">
                           {u.suspended_until
                             ? new Date(u.suspended_until).toLocaleString()
-                            : "Indefinite"}
+                            : "INDEFINITE"}
+                          </span>
                         </p>
-                        <p className="text-xs text-gray-400">
-                          Reason: {u.suspension_reason}
+                        <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">
+                          REASON: <span className="text-yellow-400">{u.suspension_reason}</span>
                         </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <button
                           onClick={() => {
                             setConfirmModal({
                               isOpen: true,
-                              message: `Approve appeal for ${u.username}? This will unsuspend the user immediately.`,
+                              message: `APPROVE appeal for ${u.username}? This will unsuspend the user immediately.`,
                               type: "success",
                               onConfirm: async () => {
                                 try {
@@ -717,7 +691,6 @@ const AdminDashboard = () => {
                                     appeal_response:
                                       "Your appeal has been approved. Welcome back.",
                                   };
-                                  // Clean payload for UserUpdateAdmin
                                   delete payload.id;
                                   delete payload.created_at;
                                   delete payload.updated_at;
@@ -725,27 +698,18 @@ const AdminDashboard = () => {
                                   delete payload.avatar_url;
                                   delete payload.reset_token;
                                   delete payload.reset_token_expires;
-                                  await api.put(
-                                    `/admin/users/${u.id}`,
-                                    payload
-                                  );
+                                  await api.put(`/admin/users/${u.id}`, payload);
                                   fetchUsers();
-                                  showFlash(
-                                    "Appeal approved. User unsuspended.",
-                                    "success"
-                                  );
+                                  showFlash("Appeal approved. User unsuspended.", "success");
                                 } catch (e) {
-                                  showFlash(
-                                    "Failed to approve appeal.",
-                                    "error"
-                                  );
+                                  showFlash("Failed to approve appeal.", "error");
                                 }
                               },
                             });
                           }}
-                          className="bg-green-600 hover:bg-green-500 text-white px-3 py-1 rounded text-xs font-bold"
+                          className="bg-green-600/20 border border-green-500/50 hover:bg-green-600 text-green-400 hover:text-white px-5 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(74,222,128,0.2)]"
                         >
-                          Approve
+                          APPROVE
                         </button>
                         <button
                           onClick={async () => {
@@ -757,7 +721,6 @@ const AdminDashboard = () => {
                                 appeal_status: "rejected",
                                 appeal_response: reason,
                               };
-                              // Clean payload
                               delete payload.id;
                               delete payload.created_at;
                               delete payload.updated_at;
@@ -772,17 +735,17 @@ const AdminDashboard = () => {
                               showFlash("Failed to reject appeal.", "error");
                             }
                           }}
-                          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded text-xs font-bold"
+                          className="bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white px-5 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]"
                         >
-                          Reject
+                          REJECT
                         </button>
                       </div>
                     </div>
-                    <div className="bg-gray-800 p-3 rounded border border-gray-700">
-                      <p className="text-xs text-gray-400 uppercase font-bold mb-1">
-                        Appeal Message:
+                    <div className="bg-[#0a0f1c]/50 p-4 rounded-xl border border-[#00cfff]/10 shadow-inner">
+                      <p className="text-[9px] text-[#00cfff]/70 uppercase font-extrabold tracking-widest mb-2 border-b border-[#00cfff]/10 pb-1">
+                        APPEAL MESSAGE:
                       </p>
-                      <p className="text-gray-300 text-sm italic">
+                      <p className="text-gray-300 text-sm italic font-medium leading-relaxed">
                         "{u.appeal_message}"
                       </p>
                     </div>
@@ -793,26 +756,26 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "broadcast" && (
-          <div className="max-w-xl animate-fade-in">
-            <h3 className="text-lg font-bold text-white mb-4">
-              System Broadcast
+          <div className="max-w-2xl mx-auto animate-fade-in">
+            <h3 className="text-lg font-extrabold text-white mb-6 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+              SYSTEM BROADCAST
             </h3>
-            <div className="bg-gray-900 p-6 rounded-lg border border-gray-700">
-              <label className="block text-sm font-bold text-gray-400 mb-2">
-                Message to All Users
+            <div className="bg-[#030308]/80 p-8 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_20px_rgba(0,207,255,0.1)]">
+              <label className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-3">
+                MESSAGE TO ALL USERS
               </label>
               <textarea
                 value={broadcastMessage}
                 onChange={(e) => setBroadcastMessage(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none h-32 resize-none"
-                placeholder="Type your announcement here..."
+                className="w-full bg-[#0a0f1c] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none h-40 resize-none font-mono text-sm placeholder:text-[#00cfff]/20 transition-all custom-scrollbar"
+                placeholder="TYPE YOUR ANNOUNCEMENT HERE..."
               />
-              <div className="mt-4 flex justify-end">
+              <div className="mt-6 flex justify-end">
                 <button
                   onClick={handleBroadcast}
-                  className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-bold transition-colors"
+                  className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5"
                 >
-                  Send Broadcast
+                  SEND BROADCAST
                 </button>
               </div>
             </div>
@@ -822,34 +785,34 @@ const AdminDashboard = () => {
 
       {/* EDIT USER MODAL */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-gray-800 p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-600 shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-4">
-              Edit User:{" "}
-              <span className="text-blue-400">{editingUser.username}</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-[#0a0f1c]/95 p-8 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-[#00cfff]/30 shadow-[0_0_30px_rgba(0,207,255,0.15)] custom-scrollbar">
+            <h3 className="text-xl font-extrabold text-white mb-8 border-b border-[#00cfff]/20 pb-4 uppercase tracking-widest flex items-center gap-3">
+              <span className="text-[#00cfff]">⚙</span> EDIT USER:{" "}
+              <span className="text-[#00cfff] drop-shadow-[0_0_3px_#00cfff]">{editingUser.username}</span>
             </h3>
-            <form onSubmit={handleUpdateUser} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Plan Level
+            <form onSubmit={handleUpdateUser} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="relative">
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    PLAN LEVEL
                   </label>
                   <select
                     value={editFormData.plan}
                     onChange={(e) =>
                       setEditFormData({ ...editFormData, plan: e.target.value })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono appearance-none transition-all cursor-pointer text-xs"
                   >
-                    <option value="Free">Free</option>
-                    <option value="Basic">Basic</option>
-                    <option value="Premium">Premium</option>
-                    <option value="Platinum">Platinum</option>
+                    <option value="Free">FREE</option>
+                    <option value="Basic">BASIC</option>
+                    <option value="Premium">PREMIUM</option>
+                    <option value="Platinum">PLATINUM</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Billing Cycle
+                <div className="relative">
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    BILLING CYCLE
                   </label>
                   <select
                     value={editFormData.plan_billing_cycle}
@@ -859,16 +822,16 @@ const AdminDashboard = () => {
                         plan_billing_cycle: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono appearance-none transition-all cursor-pointer text-xs"
                   >
-                    <option value="">None</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Yearly">Yearly</option>
+                    <option value="">NONE</option>
+                    <option value="Monthly">MONTHLY</option>
+                    <option value="Yearly">YEARLY</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Expires At
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    EXPIRES AT
                   </label>
                   <input
                     type="date"
@@ -879,12 +842,12 @@ const AdminDashboard = () => {
                         plan_expires_at: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all text-xs"
                   />
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Account Status
+                <div className="relative">
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    ACCOUNT STATUS
                   </label>
                   <select
                     value={editFormData.status}
@@ -894,15 +857,15 @@ const AdminDashboard = () => {
                         status: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className={`w-full bg-[#030308] border ${editFormData.status === 'suspended' ? 'border-red-500/50 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)] focus:border-red-500' : 'border-[#00cfff]/30 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)]'} rounded-xl p-3 outline-none font-mono appearance-none transition-all cursor-pointer text-xs`}
                   >
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
+                    <option value="active">ACTIVE</option>
+                    <option value="suspended">SUSPENDED</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Full Name
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    FULL NAME
                   </label>
                   <input
                     type="text"
@@ -913,12 +876,12 @@ const AdminDashboard = () => {
                         full_name: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 uppercase mb-1 font-bold">
-                    Phone Number
+                  <label className="block text-[10px] text-[#00cfff]/70 uppercase tracking-widest mb-2 font-extrabold">
+                    PHONE NUMBER
                   </label>
                   <input
                     type="text"
@@ -929,19 +892,19 @@ const AdminDashboard = () => {
                         phone_number: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-blue-500 outline-none"
+                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none font-mono transition-all text-xs"
                   />
                 </div>
               </div>
               {/* Suspension Fields */}
               {editFormData.status === "suspended" && (
-                <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/30 mt-4 space-y-4 animate-fade-in">
-                  <h4 className="font-bold text-red-300">Suspension Details</h4>
+                <div className="bg-red-900/10 p-6 rounded-xl border border-red-500/30 mt-6 space-y-6 animate-fade-in shadow-[inset_0_0_20px_rgba(239,68,68,0.05)]">
+                  <h4 className="font-extrabold text-red-400 uppercase tracking-widest drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]">SUSPENSION DETAILS</h4>
                   <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-2 font-bold">
-                      Reason
+                    <label className="block text-[10px] text-red-400/70 uppercase mb-3 font-extrabold tracking-widest">
+                      REASON
                     </label>
-                    <div className="space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                       {[
                         "Spamming",
                         "Inappropriate Content",
@@ -950,7 +913,7 @@ const AdminDashboard = () => {
                       ].map((reason) => (
                         <label
                           key={reason}
-                          className="flex items-center gap-2 text-gray-300"
+                          className="flex items-center gap-3 text-gray-300 cursor-pointer hover:bg-red-900/20 p-2 rounded-lg transition-colors border border-transparent hover:border-red-500/20"
                         >
                           <input
                             type="radio"
@@ -965,9 +928,9 @@ const AdminDashboard = () => {
                                 suspension_reason_preset: e.target.value,
                               })
                             }
-                            className="w-4 h-4 text-red-500 bg-gray-700 border-gray-600 focus:ring-red-600"
+                            className="w-4 h-4 text-red-500 bg-[#030308] border-red-500/50 focus:ring-red-600 focus:ring-2 focus:ring-offset-1 focus:ring-offset-[#0a0f1c]"
                           />
-                          {reason.charAt(0).toUpperCase() + reason.slice(1)}
+                          <span className="uppercase">{reason}</span>
                         </label>
                       ))}
                     </div>
@@ -980,19 +943,19 @@ const AdminDashboard = () => {
                             suspension_reason_other: e.target.value,
                           })
                         }
-                        placeholder="Specify other reason..."
-                        className="mt-2 w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-red-500 outline-none"
+                        placeholder="SPECIFY OTHER REASON..."
+                        className="mt-4 w-full bg-[#030308] border border-red-500/50 rounded-xl p-3 text-white text-xs font-mono focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.2)] outline-none placeholder:text-red-500/30 transition-all custom-scrollbar h-20 resize-none"
                       ></textarea>
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 uppercase mb-2 font-bold">
-                      Duration (Leave 0 for Indefinite)
+                    <label className="block text-[10px] text-red-400/70 uppercase mb-3 font-extrabold tracking-widest">
+                      DURATION (LEAVE 0 FOR INDEFINITE)
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">
-                          Days
+                        <label className="block text-[9px] text-red-400/50 mb-1 font-extrabold tracking-widest uppercase">
+                          DAYS
                         </label>
                         <input
                           type="number"
@@ -1003,26 +966,26 @@ const AdminDashboard = () => {
                               suspension_duration_days: e.target.value,
                             })
                           }
-                          className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white focus:border-red-500 outline-none"
+                          className="w-full bg-[#030308] border border-red-500/50 rounded-xl p-3 text-white focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.2)] outline-none font-mono text-xs transition-all"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-700">
+              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-[#00cfff]/20">
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-white font-bold transition-colors"
+                  className="px-8 py-3 bg-[#030308] hover:bg-[#00cfff]/10 border border-[#00cfff]/30 rounded-xl text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all"
                 >
-                  Cancel
+                  CANCEL
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold transition-colors"
+                  className="px-8 py-3 bg-[#00cfff] hover:bg-[#00e5ff] rounded-xl text-[#030308] text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 transition-all"
                 >
-                  Save Changes
+                  SAVE CHANGES
                 </button>
               </div>
             </form>

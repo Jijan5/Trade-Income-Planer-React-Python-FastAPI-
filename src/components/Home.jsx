@@ -278,18 +278,18 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-gray-800 p-5 rounded-lg border border-gray-700"
+        className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]"
       >
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
             {post.avatar_url ? (
               <img
                 src={`${API_BASE_URL}${post.avatar_url}`}
                 alt={post.username}
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-10 h-10 rounded-full object-cover border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.2)]"
               />
             ) : (
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs">
+              <div className="w-10 h-10 bg-[#030308] border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.2)] rounded-full flex items-center justify-center text-[#00cfff] font-bold text-sm">
                 {post.username.substring(0, 2).toUpperCase()}
               </div>
             )}
@@ -348,21 +348,21 @@ const PostItem = React.memo(
             {activeMenu?.type === "post" && activeMenu?.id === post.id && (
               <div
                 ref={menuRef}
-                className="absolute right-0 mt-1 w-32 border border-gray-700 rounded-lg shadow-xl z-20 overflow-hidden"
+                className="absolute right-0 mt-1 w-32 bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/20 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.15)] z-20 overflow-hidden"
               >
                 {currentUser === post.username || userData?.role === "admin" ? (
                   <>
                     {currentUser === post.username && (
                       <button
                         onClick={() => startEditPost(post)}
-                        className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-gray-300 hover:text-white"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors"
                       >
                         Edit
                       </button>
                     )}
                     <button
                       onClick={handleLocalDeletePost}
-                      className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-red-400 hover:text-red-300"
+                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-white hover:bg-red-500/20 transition-colors"
                     >
                       Delete
                     </button>
@@ -370,7 +370,7 @@ const PostItem = React.memo(
                 ) : (
                   <button
                     onClick={handleReportClick}
-                    className="w-full text-left px-4 py-2 text-sm bg-gray-800 text-yellow-400 hover:text-yellow-300"
+                    className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10 transition-colors"
                   >
                     Report
                   </button>
@@ -380,25 +380,25 @@ const PostItem = React.memo(
           </div>
         </div>
         {editingItem?.type === "post" && editingItem?.id === post.id ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <textarea
               value={editingItem.content}
               onChange={(e) =>
                 setEditingItem({ ...editingItem, content: e.target.value })
               }
-              className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none"
               rows={3}
             />
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setEditingItem(null)}
-                className="text-xs text-gray-400 hover:text-white px-3 py-1"
+                className="text-xs text-gray-400 hover:text-[#00cfff] px-3 py-2 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLocalUpdatePost}
-                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500"
+                className="text-xs bg-[#00cfff] text-[#030308] font-bold px-4 py-2 rounded-lg shadow-[0_0_10px_rgba(0,207,255,0.2)] hover:bg-[#00b3e6] transition-colors"
               >
                 Save
               </button>
@@ -418,18 +418,18 @@ const PostItem = React.memo(
           </p>
         )}
         {post.image_url && (
-          <div className="mt-3 rounded-lg overflow-hidden border border-gray-700">
+          <div className="mt-4 rounded-xl overflow-hidden border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
             <AuthenticatedImage
               src={post.image_url}
               alt="Post attachment"
-              className="w-full h-auto max-h-[400px] object-cover cursor-pointer hover:opacity-90"
+              className="w-full h-auto max-h-[400px] object-cover cursor-pointer transition-transform duration-500 hover:scale-[1.02]"
               onClick={() => setPreviewImage(post.image_url)} // Preview will also use the blob
             />
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-700/5">
+        <div className="flex items-center gap-6 mt-5 pt-4 border-t border-[#00cfff]/10">
           <div className="relative group">
             <button
               onMouseDown={() => handlePressStart(post.id)} // This just opens the modal
@@ -438,12 +438,12 @@ const PostItem = React.memo(
               onTouchEnd={handleLocalPressEnd}
               className={`reaction-trigger flex items-center gap-2 transition-colors ${
                 post.user_reaction
-                  ? "text-blue-400"
-                  : "text-gray-400 hover:text-blue-400"
+                  ? "text-[#00cfff]"
+                  : "text-gray-400 hover:text-[#00cfff]"
               }`}
             >
               {post.user_reaction ? (
-                <span className="text-xl">
+                <span className="text-xl drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
                   {getReactionEmoji(post.user_reaction)}
                 </span>
               ) : (
@@ -467,7 +467,7 @@ const PostItem = React.memo(
               </span>
             </button>
             {reactionModalPostId === post.id && (
-              <div className="absolute bottom-full left-0 mb-2 flex border border-gray-600 bg-gray-800 rounded-full p-1 shadow-xl gap-1 z-10 animate-fade-in w-max reaction-modal">
+              <div className="absolute bottom-full left-0 mb-2 flex border border-[#00cfff]/30 bg-[#0a0f1c]/95 backdrop-blur-md rounded-full p-1 shadow-[0_0_20px_rgba(0,207,255,0.2)] gap-1 z-10 animate-fade-in w-max reaction-modal">
                 {reactions.map((r) => (
                   <button
                     key={r.type}
@@ -557,12 +557,12 @@ const PostItem = React.memo(
                     className="mt-3"
                     style={{
                       borderLeft: comment.parent_id
-                        ? "2px solid #374151"
+                        ? "2px solid rgba(0, 207, 255, 0.2)"
                         : "none",
                       paddingLeft: comment.parent_id ? "1rem" : "0",
                     }}
                   >
-                    <div className="bg-gray-900/50 p-3 rounded text-sm group relative">
+                    <div className="bg-[#030308]/60 p-4 rounded-xl text-sm group relative border border-[#00cfff]/10">
                       {editingItem?.type === "comment" &&
                       editingItem?.id === comment.id ? (
                         <div className="space-y-2">
@@ -575,18 +575,18 @@ const PostItem = React.memo(
                                 content: e.target.value,
                               })
                             }
-                            className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm focus:border-blue-500 outline-none"
+                            className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none"
                           />
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => setEditingItem(null)}
-                              className="text-xs text-gray-400 hover:text-white px-2 py-0.5"
+                              className="text-xs text-gray-400 hover:text-[#00cfff] px-2 py-1 transition-colors"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={handleUpdateComment}
-                              className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded hover:bg-blue-500"
+                              className="text-xs bg-[#00cfff] text-[#030308] font-bold px-3 py-1 rounded-lg hover:bg-[#00b3e6] transition-colors"
                             >
                               Save
                             </button>
@@ -672,11 +672,11 @@ const PostItem = React.memo(
                               activeMenu?.id === comment.id && (
                                 <div
                                   ref={menuRef}
-                                  className="absolute left-0 mt-1 w-24 border bg-gray-800 border-gray-600 rounded shadow-xl z-20"
+                                  className="absolute left-0 mt-1 w-24 border bg-[#0a0f1c]/95 backdrop-blur-md border-[#00cfff]/20 rounded-lg shadow-[0_0_15px_rgba(0,207,255,0.1)] z-20 overflow-hidden"
                                 >
                                   <button
                                     onClick={() => startEditComment(comment)}
-                                    className="w-full text-left px-3 py-1.5 text-xs text-gray-300"
+                                    className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors"
                                   >
                                     Edit
                                   </button>
@@ -684,7 +684,7 @@ const PostItem = React.memo(
                                     onClick={() =>
                                       handleDeleteComment(comment.id, post.id)
                                     }
-                                    className="w-full text-left px-3 py-1.5 text-xs text-red-400"
+                                    className="w-full text-left px-3 py-2 text-xs text-red-400 hover:text-white hover:bg-red-500/20 transition-colors"
                                   >
                                     Delete
                                   </button>
@@ -704,7 +704,7 @@ const PostItem = React.memo(
                             comment.id
                           );
                         }}
-                        className="mt-2 ml-8 flex gap-2"
+                        className="mt-3 ml-8 flex gap-2"
                       >
                         <input
                           type="text"
@@ -712,12 +712,12 @@ const PostItem = React.memo(
                           value={replyContent}
                           onChange={(e) => setReplyContent(e.target.value)}
                           placeholder={`Replying to ${comment.username}...`}
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-blue-500 outline-none"
+                          className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-3 py-1.5 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all"
                           autoFocus
                         />
                         <button
                           type="submit"
-                          className="text-xs bg-blue-600 text-white px-3 rounded hover:bg-blue-500"
+                          className="text-xs bg-[#00cfff] text-[#030308] px-4 font-bold rounded-lg hover:bg-[#00b3e6] shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-colors"
                         >
                           Reply
                         </button>
@@ -727,7 +727,7 @@ const PostItem = React.memo(
                             setReplyingTo(null);
                             setReplyContent("");
                           }}
-                          className="text-xs text-gray-400 hover:text-white"
+                          className="text-xs text-gray-400 hover:text-[#00cfff] px-2 transition-colors"
                         >
                           Cancel
                         </button>
@@ -779,7 +779,7 @@ const PostItem = React.memo(
                 </>
               );
             })()}
-            <div className="flex gap-2 mt-3">
+            <div className="flex gap-3 mt-4">
               <input
                 type="text"
                 placeholder="Write a comment..."
@@ -791,14 +791,14 @@ const PostItem = React.memo(
                     [post.id]: e.target.value,
                   }))
                 }
-                className="flex-1 bg-gray-900 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all"
                 onKeyPress={(e) =>
                   e.key === "Enter" && submitComment(post.id, commentText)
                 }
               />
               <button
                 onClick={() => submitComment(post.id, commentText)}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded text-sm font-bold"
+                className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-5 py-2.5 rounded-xl text-sm font-bold shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_15px_rgba(0,207,255,0.4)]"
               >
                 Send
               </button>
@@ -808,14 +808,14 @@ const PostItem = React.memo(
         {/* Report Modal */}
         {showReportModal && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
             onClick={() => setShowReportModal(false)}
           >
             <div
-              className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full"
+              className="bg-[#0a0f1c]/95 border border-[#00cfff]/20 p-6 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-white mb-4">Report Post</h3>
+              <h3 className="text-xl font-extrabold text-[#00cfff] mb-4">Report Post</h3>
               <div className="space-y-3 mb-4">
                 {[
                   "Inappropriate Content",
@@ -835,7 +835,7 @@ const PostItem = React.memo(
                       value={reason}
                       checked={reportReason === reason}
                       onChange={(e) => setReportReason(e.target.value)}
-                      className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-500 focus:ring-blue-500"
+                      className="w-4 h-4 text-[#00cfff] bg-[#030308] border-[#00cfff]/30 focus:ring-[#00cfff]"
                     />
                     <span className="text-gray-300 text-sm group-hover:text-white">
                       {reason}
@@ -849,20 +849,20 @@ const PostItem = React.memo(
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                   placeholder="Please describe the issue..."
-                  className="w-full bg-gray-900 border border-gray-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mb-4 h-24 resize-none"
+                  className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none mb-4 h-24 resize-none transition-all"
                 />
               )}
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold"
+                  className="px-5 py-2.5 rounded-xl bg-transparent border border-[#00cfff]/30 text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors text-sm font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={submitReport}
-                  className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold"
+                  className="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500 hover:text-white transition-colors text-sm font-bold"
                 >
                   Report
                 </button>
@@ -873,30 +873,30 @@ const PostItem = React.memo(
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
             onClick={() => setShowDeleteModal(false)}
           >
             <div
-              className="bg-gray-800 border border-gray-600 p-6 rounded-xl shadow-2xl max-w-sm w-full text-center"
+              className="bg-[#0a0f1c]/95 border border-[#00cfff]/20 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-white mb-2">
+              <h3 className="text-2xl font-extrabold text-white mb-2">
                 Delete Post?
               </h3>
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-gray-400 text-sm mb-8 font-light">
                 Are you sure you want to delete this post? This action cannot be
                 undone.
               </p>
-              <div className="flex justify-center gap-3">
+              <div className="flex justify-center gap-4">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold"
+                  className="px-6 py-2.5 rounded-xl bg-transparent border border-[#00cfff]/30 text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors text-sm font-bold w-full"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold"
+                  className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-500 border border-red-500/50 hover:bg-red-500 hover:text-white transition-colors text-sm font-bold w-full"
                 >
                   Delete
                 </button>
@@ -1248,23 +1248,23 @@ const Home = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
       {/* 📱 Mobile View Switcher */}
-      <div className="lg:hidden col-span-1 flex bg-gray-800 p-1 rounded-lg border border-gray-700 sticky top-24 z-30 shadow-lg">
+      <div className="lg:hidden col-span-1 flex bg-[#0a0f1c]/80 backdrop-blur-md p-1.5 rounded-xl border border-[#00cfff]/20 sticky top-24 z-30 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
         <button
           onClick={() => setMobileView("feed")}
-          className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
             mobileView === "feed"
-              ? "bg-blue-600 text-white shadow"
-              : "text-gray-400"
+              ? "bg-[#00cfff] text-[#030308] shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+              : "text-gray-400 hover:text-[#00cfff]/80"
           }`}
         >
           Feed
         </button>
         <button
           onClick={() => setMobileView("widgets")}
-          className={`flex-1 py-2 text-sm font-bold rounded-md transition-all ${
+          className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
             mobileView === "widgets"
-              ? "bg-blue-600 text-white shadow"
-              : "text-gray-400"
+              ? "bg-[#00cfff] text-[#030308] shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+              : "text-gray-400 hover:text-[#00cfff]/80"
           }`}
         >
           Market & Groups
@@ -1278,8 +1278,8 @@ const Home = ({
       >
         <div className="space-y-6 sticky top-24">
           {/* Market Price Widget */}
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg overflow-hidden relative h-32">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
+          <div className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-5 shadow-[0_0_15px_rgba(0,207,255,0.05)] overflow-hidden relative h-32">
+            <h3 className="text-xs font-extrabold text-[#00cfff] uppercase mb-2 tracking-wider">
               Market Watch
             </h3>
             <MarketWidget
@@ -1289,8 +1289,8 @@ const Home = ({
           </div>
 
           {/* News Widget */}
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg h-64 relative overflow-hidden">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">
+          <div className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-5 shadow-[0_0_15px_rgba(0,207,255,0.05)] h-64 relative overflow-hidden">
+            <h3 className="text-xs font-extrabold text-[#00cfff] uppercase mb-2 tracking-wider">
               Crypto News
             </h3>
             <NewsWidget news={news} />
@@ -1305,7 +1305,7 @@ const Home = ({
         } lg:block lg:col-span-2 space-y-6`}
       >
         {/* Create Post Box */}
-        <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
+        <div className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
           <form onSubmit={handlePostSubmit}>
             <textarea
               value={newPostContent}
@@ -1313,31 +1313,34 @@ const Home = ({
               onChange={(e) => setNewPostContent(e.target.value)}
               onPaste={handlePaste}
               placeholder={`What's happening, ${currentUser || "Guest"}?`}
-              className="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 min-h-[80px]"
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all min-h-[100px] resize-none"
             />
             {postImage.preview && (
-              <div className="mt-3 relative w-fit">
+              <div className="mt-4 relative w-fit">
                 <img
                   src={postImage.preview}
                   alt="Preview"
-                  className="max-h-40 rounded-lg border border-gray-600"
+                  className="max-h-40 rounded-xl border border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]"
                 />
                 <button
                   type="button"
                   onClick={() => setPostImage({ file: null, preview: "" })}
-                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 leading-none text-xs"
+                  className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-400 transition-colors text-white rounded-full p-1.5 leading-none text-xs shadow-lg"
                 >
                   ✕
                 </button>
               </div>
             )}
-            <div className="flex justify-between items-center mt-2">
+            <div className="flex justify-between items-center mt-4">
               <button
                 type="button"
                 onClick={() => fileInputRef.current.click()}
-                className="text-gray-400 hover:text-blue-400 text-sm flex items-center gap-1"
+                className="text-[#00cfff]/80 hover:text-[#00cfff] text-sm font-bold flex items-center gap-2 transition-colors px-2 py-1 rounded hover:bg-[#00cfff]/10"
               >
-                📷 Upload
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+                Media
               </button>
               <input
                 type="file"
@@ -1354,7 +1357,7 @@ const Home = ({
               />
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-1.5 rounded-lg font-bold text-sm"
+                className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-8 py-2.5 rounded-xl font-extrabold text-sm shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_20px_rgba(0,207,255,0.4)]"
               >
                 Post
               </button>
@@ -1371,11 +1374,11 @@ const Home = ({
           showFlash={showFlash}
         />
         {hasMorePosts && (
-          <div className="text-center mt-4">
+          <div className="text-center mt-6">
             <button
               onClick={() => fetchGlobalPosts(postsPage)}
               disabled={loadingPosts}
-              className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-bold text-sm disabled:opacity-50"
+              className="bg-transparent border border-[#00cfff]/30 text-[#00cfff] hover:bg-[#00cfff]/10 hover:border-[#00cfff] px-8 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all shadow-[0_0_10px_rgba(0,207,255,0.05)]"
             >
               {loadingPosts ? "Loading..." : "Load More"}
             </button>
@@ -1393,27 +1396,27 @@ const Home = ({
           <div className="sticky top-24 space-y-6">
             {/* Created Communities */}
             {createdCommunities.length > 0 && (
-              <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
-                <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                  <span className="text-yellow-500">👑</span> Created
+              <div className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-5 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+                <h3 className="text-sm font-extrabold text-[#00cfff] mb-4 flex items-center gap-2 tracking-wider">
+                  <span className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">👑</span> Created
                   Communities
                 </h3>
-                <div className="space-y-3 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                   {createdCommunities.map((comm) => (
                     <div
                       key={comm.id}
                       onClick={() => navigate(`/community/${comm.id}`)}
-                      className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
+                      className="flex items-center justify-between p-3 border border-transparent hover:border-[#00cfff]/20 hover:bg-[#00cfff]/5 rounded-xl cursor-pointer group transition-all"
                     >
                       <div>
-                        <p className="text-sm font-bold text-gray-300 group-hover:text-white">
+                        <p className="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">
                           {comm.name}
                         </p>
                         <p className="text-[10px] text-gray-500">
                           {comm.members_count} Members
                         </p>
                       </div>
-                      <span className="text-gray-500 group-hover:text-blue-400">
+                      <span className="text-gray-500 group-hover:text-[#00cfff] transition-colors">
                         →
                       </span>
                     </div>
@@ -1423,13 +1426,13 @@ const Home = ({
             )}
 
             {/* Joined Communities */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
-              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                <span className="text-blue-500">👥</span> Your Communities
+            <div className="bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-5 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+              <h3 className="text-sm font-extrabold text-[#00cfff] mb-4 flex items-center gap-2 tracking-wider">
+                <span className="text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">👥</span> Your Communities
               </h3>
-              <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                 {myCommunities.length === 0 ? (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 italic p-2">
                     You haven't joined any communities yet.
                   </p>
                 ) : (
@@ -1437,17 +1440,17 @@ const Home = ({
                     <div
                       key={comm.id}
                       onClick={() => navigate(`/community/${comm.id}`)}
-                      className="flex items-center justify-between p-2 hover:bg-gray-700 rounded cursor-pointer group transition-colors"
+                      className="flex items-center justify-between p-3 border border-transparent hover:border-[#00cfff]/20 hover:bg-[#00cfff]/5 rounded-xl cursor-pointer group transition-all"
                     >
                       <div>
-                        <p className="text-sm font-bold text-gray-300 group-hover:text-white">
+                        <p className="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">
                           {comm.name}
                         </p>
                         <p className="text-[10px] text-gray-500">
                           {comm.members_count} Members
                         </p>
                       </div>
-                      <span className="text-gray-500 group-hover:text-blue-400">
+                      <span className="text-gray-500 group-hover:text-[#00cfff] transition-colors">
                         →
                       </span>
                     </div>
