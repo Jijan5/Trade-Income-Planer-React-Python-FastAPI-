@@ -281,13 +281,22 @@ def analyze_trade_health(request):
         
         # Risk analysis
         avg_risk = sum(t.risk_amount for t in trades) / total_trades if total_trades > 0 else 0
-        risk_score = 80 if avg_risk <= trades[0].balance * 0.02 else 40 if avg_risk <= trades[0].balance * 0.05 else 20
+        risk_score = 80 if avg_risk <= trades[0].balance * Decimal("0.02") else 40 if avg_risk <= trades[0].balance * Decimal("0.05") else 20
         
         # Emotional: check revenge (increasing size after loss)
-        emotional_score = 80
-        if total_trades >= 2:
-            for i in range(1, total_trades):
-                if not trades[i-1].is_win and trades[i].risk_amount > trades[i-1].risk_amount * 1.2:
+        emotional_score = 100
+        consecutive_losses = 0
+        if total_trades > 0:
+            for i in range(total_trades):
+                if not trades[i].is_win:
+                    consecutive_losses += 1
+                else:
+                    consecutive_losses = 0
+                    
+                if consecutive_losses >= 3:
+                    emotional_score = min(emotional_score, 80)
+                    
+                if i > 0 and not trades[i-1].is_win and trades[i].risk_amount > trades[i-1].risk_amount * Decimal("1.2"):
                     emotional_score = 30
                     break
         

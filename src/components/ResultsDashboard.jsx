@@ -1,22 +1,19 @@
-import React, { useState, useMemo } from "react";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  Cell,
-  ReferenceLine,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import React, { useState, useMemo, useRef } from "react";
+import { BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import SimulationChart from "./SimulationChart";
 
 const ResultsDashboard = ({ data }) => {
   if (!data) return null;
 
   const { summary, daily_breakdown, monte_carlo, trade_log } = data;
+
+  // A stable key that changes on every new simulation run so SimulationChart fully remounts
+  const runKey = useMemo(() => {
+    if (!daily_breakdown?.length) return 'empty';
+    const first = daily_breakdown[0];
+    const last = daily_breakdown[daily_breakdown.length - 1];
+    return `${first.end_balance}-${last.end_balance}-${daily_breakdown.length}-${Date.now()}`;
+  }, [daily_breakdown]);
 
   const [filter, setFilter] = useState("daily");
   const [viewMode, setViewMode] = useState("daily"); // 'daily' or 'journal'
@@ -361,67 +358,8 @@ const ResultsDashboard = ({ data }) => {
         </button>
       </div>
 
-      {/* Chart */}
-      <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[400px]">
-        <h3 className="text-sm font-extrabold mb-4 text-[#00cfff] uppercase tracking-widest">
-          Equity Growth Projections
-        </h3>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={aggregatedData}>
-            <defs>
-              <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00cfff" stopOpacity={0.5} />
-                <stop offset="95%" stopColor="#00cfff" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#00cfff"
-              strokeOpacity={0.1}
-              vertical={false}
-            />
-            <XAxis
-              dataKey="day"
-              stroke="#00cfff"
-              strokeOpacity={0.5}
-              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              domain={["auto", "auto"]}
-              tickFormatter={(value) => `$${value}`}
-              stroke="#00cfff"
-              strokeOpacity={0.5}
-              tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "rgba(3, 3, 8, 0.9)",
-                borderColor: "rgba(0, 207, 255, 0.3)",
-                color: "#fff",
-                borderRadius: "12px",
-                boxShadow: "0 0 15px rgba(0, 207, 255, 0.15)",
-                fontFamily: 'monospace'
-              }}
-              itemStyle={{ color: "#00cfff", fontWeight: 'bold' }}
-              formatter={(value) => [`$${value}`, "Equity"]}
-              labelFormatter={(label) => `Day ${label}`}
-            />
-            <Area
-              type="monotone"
-              dataKey="end_balance"
-              stroke="#00cfff"
-              fillOpacity={1}
-              fill="url(#colorBalance)"
-              strokeWidth={3}
-              style={{ filter: "drop-shadow(0 0 8px rgba(0,207,255,0.4))" }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+      {/* Custom Canvas Chart — remounts on every new simulation run */}
+      <SimulationChart key={runKey} data={aggregatedData} />
 
       {/* PnL Chart */}
       <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[400px]">
@@ -478,6 +416,43 @@ const ResultsDashboard = ({ data }) => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Drawdown Chart */}
+      {(() => {
+        let peak = -Infinity;
+        const ddData = aggregatedData.map(d => {
+          const bal = parseFloat(d.end_balance);
+          if (bal > peak) peak = bal;
+          const dd = peak > 0 ? ((peak - bal) / peak) * 100 : 0;
+          return { day: d.day, drawdown: parseFloat(dd.toFixed(2)) };
+        });
+        return (
+          <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[300px]">
+            <h3 className="text-sm font-extrabold mb-4 text-red-400 uppercase tracking-widest drop-shadow-[0_0_3px_rgba(248,113,113,0.4)]">
+              Drawdown %
+            </h3>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={ddData}>
+                <defs>
+                  <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef5350" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#ef5350" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ef5350" strokeOpacity={0.07} vertical={false} />
+                <XAxis dataKey="day" stroke="#ef5350" strokeOpacity={0.4} tick={{ fill: "rgba(248,113,113,0.5)", fontSize: 11, fontFamily: 'monospace' }} tickLine={false} axisLine={false} />
+                <YAxis tickFormatter={v => `-${v}%`} stroke="#ef5350" strokeOpacity={0.4} tick={{ fill: "rgba(248,113,113,0.5)", fontSize: 11, fontFamily: 'monospace' }} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "rgba(3,3,8,0.9)", borderColor: "rgba(239,83,80,0.4)", color: "#fff", borderRadius: "12px", fontFamily: 'monospace' }}
+                  formatter={v => [`-${v}%`, "Drawdown"]}
+                  labelFormatter={l => `Day ${l}`}
+                />
+                <Area type="monotone" dataKey="drawdown" stroke="#ef5350" strokeWidth={2} fillOpacity={1} fill="url(#ddGrad)" style={{ filter: "drop-shadow(0 0 6px rgba(239,83,80,0.4))" }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        );
+      })()}
 
       {/* Table Section */}
       <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden">
