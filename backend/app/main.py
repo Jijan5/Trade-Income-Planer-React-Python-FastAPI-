@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from .database import create_db_and_tables
 from .routers import auth, users, posts, communities, simulation, admin, general, payment
@@ -88,6 +89,10 @@ app.add_middleware(
 
 # Add security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
+
+# SessionMiddleware is required by Authlib for OAuth2 state/nonce
+_SESSION_SECRET = os.getenv("SECRET_KEY", "changeme-use-a-strong-random-secret")
+app.add_middleware(SessionMiddleware, secret_key=_SESSION_SECRET)
 
 # Add configurable rate limiting (default 100/min per IP, env override)
 RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))

@@ -76,8 +76,8 @@ export const AuthProvider = ({ children }) => {
       fetchUnreadCount();
       // Polling unread count every 15 seconds
       const unreadInterval = setInterval(fetchUnreadCount, 15000);
-      // Polling user profile every 5 seconds (for suspension/plan updates)
-      const profileInterval = setInterval(fetchUserProfile, 5000);
+      // Polling user profile every 30 seconds (for suspension/plan updates)
+      const profileInterval = setInterval(fetchUserProfile, 30000);
 
       return () => {
         clearInterval(unreadInterval);
@@ -92,12 +92,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token, fetchUserProfile, fetchUnreadCount]);
 
-  const login = (newToken) => {
+  const login = useCallback((newToken) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
     setLoading(true);
     // fetchUserProfile();
-  };
+  }, []);
   useEffect(() => {
     // Cleanup blob URL on component unmount or when avatar changes
     return () => {

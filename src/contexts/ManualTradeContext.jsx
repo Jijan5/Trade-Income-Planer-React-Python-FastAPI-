@@ -32,7 +32,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
     const [config, setConfig] = useState(() => loadState()?.config || defaultState.config);
     const [account, setAccount] = useState(() => loadState()?.account || defaultState.account);
     const [challengeState, setChallengeState] = useState(() => loadState()?.challengeState || defaultState.challengeState);
-    const [isSessionActive, setIsSessionActive] = useState(() => loadState()?.isSessionActive || defaultState.isSessionActive);
+    const [isSessionActive, setIsSessionActive] = useState(() => loadState()?.isSessionActive ?? defaultState.isSessionActive);
 
     const [marketState, setMarketState] = useState({
         price: 0,
@@ -96,7 +96,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         }
     }, [config.enableRules, config.maxDailyLoss, config.maxConsecutiveLosses, triggerLockout]);
 
-    const saveTradeToDb = async (tradeData) => {
+    const saveTradeToDb = useCallback(async (tradeData) => {
         const token = localStorage.getItem("token");
         if (!token) return;
         try {
@@ -111,7 +111,7 @@ export const ManualTradeProvider = ({ children, activeSymbol }) => {
         } catch (error) {
             console.error("Failed to save trade to DB", error);
         }
-    };
+    }, []);
 
     const closePosition = useCallback((id, reason = 'MANUAL') => {
         setAccount(prev => {

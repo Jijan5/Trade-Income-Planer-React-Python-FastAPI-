@@ -13,6 +13,7 @@ MarkupSafe
 python-multipart
 uvicorn
 pydantic
+itsdangerous
 yfinance
 google-generativeai
 google-genai

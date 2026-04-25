@@ -17,9 +17,11 @@ export const NotificationProvider = ({ children }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
   const { token, userData, setUnreadCount: setGlobalUnreadCount } = useAuth();
+  const userId = userData?.id;
+  const username = userData?.username;
 
   const connectSocket = useCallback(() => {
-    if (!token || !userData?.id) return;
+    if (!token || !userId) return;
 
     const newSocket = io(
       `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}`,
@@ -41,7 +43,7 @@ export const NotificationProvider = ({ children }) => {
 
     newSocket.on("connect", () => {
       console.log("Socket connected:", newSocket.id);
-      newSocket.emit("join_notifications", { user_id: userData.id });
+      newSocket.emit("join_notifications", { user_id: userId });
     });
 
     newSocket.on("new_notification", (data) => {
@@ -57,7 +59,7 @@ export const NotificationProvider = ({ children }) => {
     setSocket(newSocket);
 
     return () => newSocket.close();
-  }, [token, userData, setGlobalUnreadCount]);
+  }, [token, userId, setGlobalUnreadCount]);
 
   // Fixed useEffect - no re-render loop
 

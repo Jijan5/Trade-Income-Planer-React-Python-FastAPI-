@@ -9,7 +9,7 @@ const SuspendedPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const suspendedUntil = userData.suspended_until ? new Date(userData.suspended_until) : null;
+    const suspendedUntil = userData?.suspended_until ? new Date(userData.suspended_until) : null;
     const isPermanent = !suspendedUntil;
 
     const handleAppealSubmit = async (e) => {

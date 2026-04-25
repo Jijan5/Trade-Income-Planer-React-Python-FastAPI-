@@ -66,9 +66,9 @@ const ChatAssistant = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  // Fetch market data when panel opens
-  // Fetch trades
+  // Fetch trades — only when the user is authenticated
   useEffect(() => {
+    if (!userData) return; // Skip if not logged in — avoids 401
     const fetchTrades = async () => {
       try {
         const res = await api.get("/manual-trades");
@@ -78,7 +78,7 @@ const ChatAssistant = () => {
       }
     };
     fetchTrades();
-  }, []);
+  }, [userData]); // Re-fetch when user changes (e.g. after login)
 
   useEffect(() => {
     if (showMarketPanel && marketData.length === 0) {

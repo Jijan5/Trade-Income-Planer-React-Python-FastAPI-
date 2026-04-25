@@ -442,16 +442,6 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   </svg>
                   Google
                 </a>
-
-                <a
-                  href="http://localhost:8000/auth/facebook"
-                  className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#030308] border border-[#00cfff]/20 rounded-xl hover:bg-[#00cfff]/5 hover:border-[#00cfff]/50 hover:shadow-[0_0_15px_rgba(0,207,255,0.1)] transition-all text-white text-sm font-bold"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877f2">
-                    <path d="M20.007 4.006a10.007 10.007 0 0 0-10.007 10.007A9.999 9.999 0 0 1 9.892 19H7.993a1 1 0 0 1-1-1V17h2.899a3.993 3.993 0 0 1 3.993-3.993h.001a3.992 3.992 0 0 1 2.799 1.186A10 10 0 0 0 20.007 4.006ZM11 15.997V13h2v2.997h-2Zm0-3.001h2V10h-2v2.999Z"/>
-                  </svg>
-                  Facebook
-                </a>
               </div>
             </div>
           </form>

@@ -155,79 +155,90 @@ async def contact_us(message_data: ContactMessageCreate, session: Session = Depe
     
     return {"status": "success", "message": "Your message has been sent successfully."}
 
-# OAuth2 Social Login
+# ─────────────────────────────────────────────
+# Google OAuth2 (Authlib)
+# ─────────────────────────────────────────────
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
-from starlette.responses import RedirectResponse
-from fastapi import Query
+from starlette.responses import RedirectResponse, Response
 from ..dependencies import get_current_user
 from ..auth import create_access_token
-from ..models import User
-from ..database import get_session
 import os
 
-# OAuth2 Social Login - DISABLED (add real keys to backend/app/.env)
-# from .config import config
-# oauth = OAuth(config)
+_GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+_GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
-@router.get('/auth/google')
-async def google_login():
-    return {"error": "Google OAuth: Add GOOGLE_CLIENT_ID to backend/"}
+_oauth = OAuth()
+if _GOOGLE_CLIENT_ID and _GOOGLE_CLIENT_SECRET:
+    _oauth.register(
+        name="google",
+        client_id=_GOOGLE_CLIENT_ID,
+        client_secret=_GOOGLE_CLIENT_SECRET,
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
 
-@router.get('/auth/facebook')
-async def facebook_login():
-    return {"error": "Facebook OAuth: Add FACEBOOK_APP_ID to backend/"}
+@router.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Silence the 404 that browsers request after an OAuth redirect."""
+    return Response(status_code=204)
 
-# OAuth2 Social Login - DISABLED until .env configured
+@router.get("/auth/google")
+async def google_login(request: Request):
+    if not _GOOGLE_CLIENT_ID or not _GOOGLE_CLIENT_SECRET:
+        raise HTTPException(
+            status_code=501,
+            detail="Google OAuth is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env",
+        )
+    redirect_uri = request.url_for("google_callback")
+    return await _oauth.google.authorize_redirect(request, redirect_uri)
 
-@router.get('/auth/google/callback')
+@router.get("/auth/google/callback", name="google_callback")
 async def google_callback(request: Request, session: Session = Depends(get_session)):
-    token = await GOOGLE.authorize_access_token(request)
-    user_info = await GOOGLE.userinfo(token)
-    
-    email = user_info['email']
-    username = user_info['name'].replace(' ', '_').lower()[:20]
-    
-    user = session.exec(select(User).where(User.email == email)).first()
-    if not user:
-        user = User(
-            tenant_id=1,
-            username=username,
-            email=email,
-            full_name=user_info['name'],
-            hashed_password="social_auth",  # Dummy hash
-            provider='google'
-        )
-        session.add(user)
-        session.commit()
-    
-    access_token = create_access_token(data={"sub": user.username})
-    
-    redirect_url = f"http://localhost:5173/auth/callback/google?token={access_token}"
-    return RedirectResponse(url=redirect_url)
+    try:
+        token = await _oauth.google.authorize_access_token(request)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"OAuth error: {exc}")
 
-@router.get('/auth/facebook/callback')
-async def facebook_callback(request: Request, session: Session = Depends(get_session)):
-    token = await FACEBOOK.authorize_access_token(request)
-    user_info = await FACEBOOK.get('me', token=token).json()
-    
-    email = user_info.get('email', f'fb_{user_info["id"]}@facebook.com')
-    username = user_info['name'].replace(' ', '_').lower()[:20]
-    
-    user = session.exec(select(User).where(User.email == email)).first()
-    if not user:
-        user = User(
+    user_info = token.get("userinfo")
+    if not user_info:
+        raise HTTPException(status_code=400, detail="Failed to fetch user info from Google")
+
+    email = user_info["email"]
+    full_name = user_info.get("name", "")
+    # Derive a clean username from the Google name (fallback to email prefix)
+    raw_name = user_info.get("given_name") or full_name or email.split("@")[0]
+    base_username = raw_name.replace(" ", "_").lower()[:20]
+
+    # Find or create the user
+    existing = session.exec(select(User).where(User.email == email)).first()
+    if not existing:
+        # Ensure username is unique — append a short suffix if needed
+        candidate = base_username
+        suffix = 1
+        while session.exec(select(User).where(User.username == candidate)).first():
+            candidate = f"{base_username[:17]}_{suffix}"
+            suffix += 1
+
+        existing = User(
             tenant_id=1,
-            username=username,
+            username=candidate,
             email=email,
-            full_name=user_info['name'],
-            hashed_password="social_auth",
-            provider='facebook'
+            full_name=full_name,
+            hashed_password="social_auth_google",
+            provider="google",
         )
-        session.add(user)
+        session.add(existing)
         session.commit()
-    
-    access_token = create_access_token(data={"sub": user.username})
-    
-    redirect_url = f"http://localhost:5173/auth/callback/facebook?token={access_token}"
-    return RedirectResponse(url=redirect_url)
+        session.refresh(existing)
+
+    access_token = create_access_token(
+        data={"sub": existing.username, "role": existing.role, "tenant_id": existing.tenant_id}
+    )
+    frontend_url = os.getenv("VITE_FRONTEND_URL", "http://localhost:5173")
+    return RedirectResponse(url=f"{frontend_url}/auth/callback/google?token={access_token}")
+
+# Keep facebook stub for potential future use
+@router.get("/auth/facebook")
+async def facebook_login():
+    raise HTTPException(status_code=501, detail="Facebook OAuth is not yet configured.")

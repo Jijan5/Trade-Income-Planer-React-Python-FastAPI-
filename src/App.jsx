@@ -487,7 +487,7 @@ function App() {
     [feedbackEmail, feedbackMessage, userData, showFlash]
   );
 
-  const handleBellClick = async () => {
+  const handleBellClick = useCallback(async () => {
     setShowNotifications(!showNotifications);
     if (!showNotifications) {
       // If we are opening it
@@ -504,7 +504,7 @@ function App() {
         console.error("Failed to fetch/mark notifications", error);
       }
     }
-  };
+  }, [showNotifications, unreadCount, setUnreadCount]);
 
   const handleNotificationClick = (notification) => {
     setShowNotifications(false);
@@ -741,39 +741,7 @@ function App() {
       <PostInteractionProvider showFlash={showFlash}>
         {/* Override default Vite styles that constrain width */}
         <div className="min-h-screen bg-[#030308] text-gray-100 font-sans w-full flex flex-col">
-          {/* Override default Vite styles that constrain width */}
-          <style>{`
-        body { display: block !important; }
-        #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
 
-        @keyframes slide-in-right {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-in-right { animation: slide-in-right 0.3s ease-out forwards; }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #030308;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: rgba(0, 207, 255, 0.2);
-          border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(0, 207, 255, 0.5);
-        }
-      `}</style>
           {/* Flash Message Notification */}
           {flashMessage && (
             <div

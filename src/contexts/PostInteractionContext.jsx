@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import api from '../lib/axios';
 import { useAuth } from './AuthContext';
 
@@ -101,7 +101,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
             return { success: false, isLongPress: true }; // Return status long press
         }    
         return await handleReaction(post, post.user_reaction || "like", false);
-    }, [handleReaction, showFlash]);
+    }, [handleReaction]);
 
     const toggleComments = useCallback(async (postId) => {
         const isExpanded = !!expandedComments[postId];
@@ -226,7 +226,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         setActiveMenu(null);
     }, []);
 
-    const value = {
+    const value = useMemo(() => ({
         currentUser,
         userData,
         reactions,
@@ -265,7 +265,18 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
         mentionDebounceTimer,
         previewImage,
         setPreviewImage,
-    };
+    }), [
+        currentUser, userData, reactions, getReactionEmoji,
+        handleReaction, handlePressStart, handlePressEnd,
+        reactionModalPostId, toggleComments, expandedComments,
+        commentsData, submitComment, newCommentText,
+        handleShare, handleDeletePost, handleUpdatePost,
+        handleDeleteComment, handleUpdateComment, handleReportPost,
+        toggleMenu, activeMenu, editingItem,
+        startEditPost, startEditComment,
+        replyingTo, replyContent,
+        mentionState, previewImage,
+    ]);
 
     return (
         <PostInteractionContext.Provider value={value}>
