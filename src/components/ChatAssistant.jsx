@@ -6,8 +6,8 @@ import { useAuth } from "../contexts/AuthContext";
 const ChatAssistant = () => {
   const { userData } = useAuth();
   const [trades, setTrades] = useState([]);
-
-
+  const [chartImage, setChartImage] = useState(null); // { file, preview, base64 }
+  const imageFileRef = useRef(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [showMarketPanel, setShowMarketPanel] = useState(false);
@@ -31,9 +31,11 @@ const ChatAssistant = () => {
 
   const createTradesSummary = useCallback(() => {
     if (!hasTrades) return null;
-    const wins = recentTrades.filter((t) => t.finalPnL > 0);
-    const losses = recentTrades.filter((t) => t.finalPnL <= 0);
-    const totalPnl = recentTrades.reduce((sum, t) => sum + t.finalPnL, 0);
+    // Normalize: backend uses 'pnl', simulation may use 'finalPnL'
+    const getPnl = (t) => parseFloat(t.finalPnL ?? t.pnl ?? 0);
+    const wins = recentTrades.filter((t) => getPnl(t) > 0);
+    const losses = recentTrades.filter((t) => getPnl(t) <= 0);
+    const totalPnl = recentTrades.reduce((sum, t) => sum + getPnl(t), 0);
     const winRate = ((wins.length / recentTrades.length) * 100).toFixed(1);
 
     return {
@@ -41,18 +43,16 @@ const ChatAssistant = () => {
       total_pnl: totalPnl.toFixed(2),
       win_rate: `${winRate}%`,
       avg_win: wins.length
-        ? (wins.reduce((sum, t) => sum + t.finalPnL, 0) / wins.length).toFixed(
-            2
-          )
+        ? (wins.reduce((sum, t) => sum + getPnl(t), 0) / wins.length).toFixed(2)
         : 0,
       avg_loss: losses.length
         ? Math.abs(
-            losses.reduce((sum, t) => sum + t.finalPnL, 0) / losses.length
+            losses.reduce((sum, t) => sum + getPnl(t), 0) / losses.length
           ).toFixed(2)
         : 0,
       recent: recentTrades.slice(0, 5).map((t) => ({
         symbol: t.symbol,
-        pnl: t.finalPnL.toFixed(2),
+        pnl: getPnl(t).toFixed(2),
         reason: t.reason || "Manual",
       })),
     };
@@ -89,8 +89,9 @@ const ChatAssistant = () => {
   const fetchMarketData = async () => {
     setLoadingMarket(true);
     try {
+      // Fetch all asset classes: crypto, forex, commodities
       const response = await api.get(
-        "/market-data?symbols=BTC,ETH,BNB,SOL,XRP"
+        "/market-data?symbols=BTC,ETH,BNB,SOL,XRP,EURUSD=X,GBPUSD=X,USDJPY=X,GC=F,CL=F"
       );
       setMarketData(response.data.data || []);
     } catch (err) {
@@ -102,22 +103,36 @@ const ChatAssistant = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() && !chartImage) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage = {
+      role: "user",
+      content: input || "Please analyze this chart.",
+      image: chartImage?.preview || null,
+    };
     setMessages((prev) => [...prev, userMessage]);
+    const submittedInput = input;
+    const submittedImage = chartImage;
     setInput("");
+    setChartImage(null);
     setIsLoading(true);
 
+    // Build market context string from visible market panel data
+    const marketContext = marketData.length > 0
+      ? marketData.map(c => `${c.symbol}: $${c.price?.toLocaleString()} (${c.change_24h >= 0 ? '+' : ''}${c.change_24h?.toFixed(2)}%) ${c.trend}`).join(" | ")
+      : null;
+
     const payload = {
-      message: input,
+      message: submittedInput || "Please analyze this chart image.",
       trades_summary: createTradesSummary(),
+      image_base64: submittedImage?.base64 || null,
       user_context: userData
         ? {
             username: userData.username,
             plan: userData.plan || "free",
+            market_data: marketContext,
           }
-        : null,
+        : { market_data: marketContext },
     };
 
     try {
@@ -147,6 +162,37 @@ const ChatAssistant = () => {
     "Best crypto to trade?",
   ];
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target.result.split(",")[1]; // strip data:image/...;base64,
+      setChartImage({ file, preview: ev.target.result, base64 });
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ""; // allow re-selecting the same file
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const file = items[i].getAsFile();
+        if (!file) continue;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const base64 = ev.target.result.split(",")[1];
+          setChartImage({ file, preview: ev.target.result, base64 });
+        };
+        reader.readAsDataURL(file);
+        e.preventDefault(); // prevent pasting image text/url if any
+        break;
+      }
+    }
+  };
+
   const handleQuickQuestion = (question) => {
     setInput(question);
   };
@@ -165,7 +211,7 @@ const ChatAssistant = () => {
               </div>
               <div>
                 <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">Market Trends</h3>
-                <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Live from Binance</p>
+                <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Live Market Data</p>
               </div>
             </div>
             <div className="flex gap-2 relative z-10">
@@ -225,7 +271,7 @@ const ChatAssistant = () => {
                   >
                     <div className="flex justify-between items-center mb-3 border-b border-[#00cfff]/10 pb-2">
                       <span className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
-                        {coin.symbol}/USDT
+                        {coin.symbol}
                       </span>
                       <span
                         className={`font-mono text-xs font-bold ${
@@ -388,14 +434,22 @@ const ChatAssistant = () => {
                 }`}
               >
                 <div
-                  className={`max-w-[85%] p-4 rounded-2xl text-[11px] leading-relaxed shadow-sm font-medium ${
+                  className={`max-w-[85%] rounded-2xl text-[11px] leading-relaxed shadow-sm font-medium overflow-hidden ${
                     msg.role === "user"
                       ? "bg-[#00cfff]/10 border border-[#00cfff]/30 text-white rounded-br-none shadow-[0_0_10px_rgba(0,207,255,0.1)]"
                       : "bg-[#030308]/80 text-gray-200 rounded-bl-none border border-[#00cfff]/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                   }`}
-                  style={{ whiteSpace: "pre-wrap" }}
                 >
-                  {msg.content}
+                  {msg.image && (
+                    <img
+                      src={msg.image}
+                      alt="Chart"
+                      className="w-full max-h-48 object-cover border-b border-[#00cfff]/20"
+                    />
+                  )}
+                  <div className="p-4" style={{ whiteSpace: "pre-wrap" }}>
+                    {msg.content}
+                  </div>
                 </div>
               </div>
             ))}
@@ -414,29 +468,76 @@ const ChatAssistant = () => {
           {/* Input Area */}
           <form
             onSubmit={handleSubmit}
-            className="p-4 bg-[#030308] border-t border-[#00cfff]/20 flex gap-3"
+            className="p-4 bg-[#030308] border-t border-[#00cfff]/20 flex flex-col gap-3"
           >
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="ASK ABOUT MARKET TRENDS..."
-              className="flex-1 bg-[#0a0f1c] text-white text-[11px] font-mono rounded-xl px-4 py-3 focus:outline-none border border-[#00cfff]/30 focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] placeholder-[#00cfff]/30 uppercase tracking-wider transition-all"
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="bg-[#00cfff] hover:bg-[#00e5ff] disabled:bg-[#030308] disabled:border disabled:border-[#00cfff]/30 disabled:text-[#00cfff]/30 disabled:shadow-none text-[#030308] p-3 rounded-xl transition-all flex items-center justify-center w-12 shadow-[0_0_10px_rgba(0,207,255,0.4)]"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 transform rotate-90"
-                viewBox="0 0 20 20"
-                fill="currentColor"
+            {/* Chart Image Preview */}
+            {chartImage && (
+              <div className="relative w-fit group">
+                <img
+                  src={chartImage.preview}
+                  alt="Chart Preview"
+                  className="max-h-28 rounded-xl border border-[#00cfff]/40 shadow-[0_0_10px_rgba(0,207,255,0.2)] object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setChartImage(null)}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-all border border-red-400/50"
+                >
+                  ✕
+                </button>
+                <div className="absolute bottom-2 left-2 bg-[#030308]/80 backdrop-blur-sm text-[#00cfff] text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-[#00cfff]/30">
+                  📊 Chart Ready
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              {/* Image Upload Button */}
+              <button
+                type="button"
+                onClick={() => imageFileRef.current?.click()}
+                title="Upload chart image"
+                className={`p-3 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${
+                  chartImage
+                    ? "bg-[#00cfff]/20 border-[#00cfff]/60 text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+                    : "bg-[#0a0f1c] border-[#00cfff]/20 text-[#00cfff]/40 hover:text-[#00cfff] hover:border-[#00cfff]/50 hover:bg-[#00cfff]/10"
+                }`}
               >
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-              </svg>
-            </button>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <input
+                ref={imageFileRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleImageSelect}
+              />
+
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onPaste={handlePaste}
+                placeholder={chartImage ? "Ask anything about this chart..." : "Ask about market trends..."}
+                className="flex-1 bg-[#0a0f1c] text-white text-[11px] font-mono rounded-xl px-4 py-3 focus:outline-none border border-[#00cfff]/30 focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] placeholder-[#00cfff]/30 tracking-wider transition-all"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || (!input.trim() && !chartImage)}
+                className="bg-[#00cfff] hover:bg-[#00e5ff] disabled:bg-[#030308] disabled:border disabled:border-[#00cfff]/30 disabled:text-[#00cfff]/30 disabled:shadow-none text-[#030308] p-3 rounded-xl transition-all flex items-center justify-center w-12 shadow-[0_0_10px_rgba(0,207,255,0.4)]"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 transform rotate-90"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                </svg>
+              </button>
+            </div>
           </form>
         </div>
       )}

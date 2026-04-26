@@ -34,52 +34,81 @@ def read_root():
 
 # Get market data for multiple symbols
 @router.get("/api/market-data", response_model=MarketDataResponse)
-async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP,EURUSD=X,CL=F,GC=F"):
-    """Fetch real-time market data from yfinance"""
-    symbol_list = [s.strip().upper() for s in symbols.split(",")]
+async def get_market_data(symbols: str = "BTC,ETH,BNB,SOL,XRP,EURUSD=X,GBPUSD=X,GC=F,CL=F"):
+    """Fetch real-time market data from yfinance for all asset classes"""
+    symbol_list = [s.strip() for s in symbols.split(",")]
     market_data = []
+
+    # Human-readable display labels
+    display_name_map = {
+        "GC=F": "Gold (XAU/USD)",
+        "SI=F": "Silver (XAG/USD)",
+        "CL=F": "WTI Oil",
+        "BZ=F": "Brent Oil",
+        "EURUSD=X": "EUR/USD",
+        "GBPUSD=X": "GBP/USD",
+        "USDJPY=X": "USD/JPY",
+        "AUDUSD=X": "AUD/USD",
+        "USDCAD=X": "USD/CAD",
+        "BTC": "BTC/USDT",
+        "ETH": "ETH/USDT",
+        "BNB": "BNB/USDT",
+        "SOL": "SOL/USDT",
+        "XRP": "XRP/USDT",
+        "DOGE": "DOGE/USDT",
+        "ADA": "ADA/USDT",
+    }
     
     try:
         for symbol in symbol_list:
             try:
-                # Format for yfinance
-                yf_symbol = symbol.upper().replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
-                yf_symbol = yf_symbol.replace("USDT", "USD")
-                
-                if 'XAU' in yf_symbol or 'GOLD' in yf_symbol:
-                    yf_symbol = 'GC=F'
-                elif 'XAG' in yf_symbol or 'SILVER' in yf_symbol:
-                    yf_symbol = 'SI=F'
-                elif 'OIL' in yf_symbol:
-                    yf_symbol = 'CL=F'
-                elif yf_symbol.endswith("USD") and "-" not in yf_symbol and len(yf_symbol) > 3:
-                    if not any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
-                        yf_symbol = f"{yf_symbol[:-3]}-USD"
-                elif yf_symbol in ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "PEPE", "UNI"]:
-                    yf_symbol = f"{yf_symbol}-USD"
+                original = symbol.upper()
+                # If it's already a native yfinance symbol (has = sign), pass it through directly
+                if "=" in original:
+                    yf_symbol = original
+                else:
+                    yf_symbol = original.replace("BINANCE:", "").replace("PEPE24478", "PEPE").replace("UNI7083", "UNI")
+                    yf_symbol = yf_symbol.replace("USDT", "USD")
                     
-                if not '=' in yf_symbol and "-" not in yf_symbol:
-                    if any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
-                        yf_symbol += '=X'
+                    if 'XAU' in yf_symbol or 'GOLD' in yf_symbol:
+                        yf_symbol = 'GC=F'
+                    elif 'XAG' in yf_symbol or 'SILVER' in yf_symbol:
+                        yf_symbol = 'SI=F'
+                    elif 'OIL' in yf_symbol or 'WTI' in yf_symbol:
+                        yf_symbol = 'CL=F'
+                    elif yf_symbol.endswith("USD") and "-" not in yf_symbol and len(yf_symbol) > 3:
+                        if not any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                            yf_symbol = f"{yf_symbol[:-3]}-USD"
+                    elif yf_symbol in ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "PEPE", "UNI"]:
+                        yf_symbol = f"{yf_symbol}-USD"
+                        
+                    if "=" not in yf_symbol and "-" not in yf_symbol:
+                        if any(pair in yf_symbol for pair in ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD']):
+                            yf_symbol += '=X'
+
+                display_label = display_name_map.get(original, original)
 
                 ticker = yf.Ticker(yf_symbol)
                 info = ticker.info
                 hist = ticker.history(period="2d")  # 2d for change calculation
                 
-                price = info.get('regularMarketPrice') or info.get('currentPrice') or hist['Close'].iloc[-1] if not hist.empty else 0
-                high = info.get('dayHigh') or hist['High'].max() if not hist.empty else 0
-                low = info.get('dayLow') or hist['Low'].min() if not hist.empty else 0
-                volume = info.get('volume') or hist['Volume'].sum() if not hist.empty else 0
+                if hist.empty:
+                    continue
+                    
+                price = info.get('regularMarketPrice') or info.get('currentPrice') or hist['Close'].iloc[-1]
+                high = info.get('dayHigh') or hist['High'].max()
+                low = info.get('dayLow') or hist['Low'].min()
+                volume = info.get('volume') or hist['Volume'].sum()
                 
                 if len(hist) > 1:
                     change_pct = ((hist['Close'].iloc[-1] - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100
                 else:
                     change_pct = 0
                 
-                trend = "📈 Bullish" if change_pct > 2 else "📉 Bearish" if change_pct < -2 else "➡️ Sideways"
+                trend = "📈 Bullish" if change_pct > 0.5 else "📉 Bearish" if change_pct < -0.5 else "➡️ Sideways"
                 
                 market_data.append(MarketData(
-                    symbol=symbol,
+                    symbol=display_label,
                     price=float(price),
                     change_24h=float(change_pct),
                     high_24h=float(high),
@@ -153,48 +182,152 @@ async def chat_with_ai(request: ChatRequest):
     response_text = "AI service unavailable."
     
     # Check if user is asking about market trends
-    market_keywords = ['trend', 'market', 'price', 'bull', 'bear', 'going up', 'going down', 'analysis', 'crypto', 'bitcoin', 'ethereum']
+    market_keywords = ['trend', 'market', 'price', 'bull', 'bear', 'going up', 'going down', 'analysis', 'crypto', 'bitcoin', 'ethereum', 'btc', 'eth', 'bnb', 'sol', 'xrp', 'forex', 'oil', 'gold', 'silver', 'eurusd', 'gbpusd', 'usdjpy', 'audusd', 'usdcad']
     needs_market_data = any(keyword in request.message.lower() for keyword in market_keywords)
     
-    # Fetch market data if needed
+    # Use market data from frontend panel if provided
+    frontend_market_data = None
+    if request.user_context and request.user_context.get("market_data"):
+        frontend_market_data = request.user_context["market_data"]
+
+    # Fetch live market data from Binance if needed and not already provided
     market_context = ""
-    if needs_market_data:
+    if frontend_market_data:
+        market_context = f"\n\nCurrent Market Data (from Live Panel):\n{frontend_market_data}"
+    elif needs_market_data:
+        msg_lower = request.message.lower()
+        market_info = []
+
+        # --- Detect Forex intent ---
+        forex_keywords = ['forex', 'eurusd', 'gbpusd', 'usdjpy', 'audusd', 'usdcad', 'currency', 'eur', 'gbp', 'jpy', 'aud', 'cad']
+        needs_forex = any(k in msg_lower for k in forex_keywords)
+
+        # --- Detect Commodities / Oil intent ---
+        commodity_keywords = ['oil', 'gold', 'silver', 'xau', 'xag', 'commodity', 'commodities', 'crude', 'wti', 'brent']
+        needs_commodity = any(k in msg_lower for k in commodity_keywords)
+
+        # --- Detect Crypto intent (default if nothing specific) ---
+        crypto_keywords = ['crypto', 'bitcoin', 'btc', 'ethereum', 'eth', 'bnb', 'sol', 'xrp', 'doge', 'coin']
+        needs_crypto = any(k in msg_lower for k in crypto_keywords) or (not needs_forex and not needs_commodity)
+
         try:
-            symbols = ["BTC", "ETH", "BNB", "SOL", "XRP"]
-            market_info = []
-            for symbol in symbols:
-                try:
-                    url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}USDT"
-                    response = requests.get(url, timeout=3)
-                    if response.status_code == 200:
-                        data = response.json()
-                        change = float(data.get('priceChangePercent', 0))
-                        trend = "📈" if change > 2 else "📉" if change < -2 else "➡️"
-                        market_info.append(f"{symbol}: ${float(data.get('lastPrice', 0)):,.2f} ({change:+.2f}%) {trend}")
-                except:
-                    continue
+            # Fetch crypto from Binance
+            if needs_crypto:
+                crypto_symbols = ["BTC", "ETH", "BNB", "SOL", "XRP"]
+                for symbol in crypto_symbols:
+                    try:
+                        url = f"https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}USDT"
+                        resp = requests.get(url, timeout=3)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            change = float(data.get('priceChangePercent', 0))
+                            trend = "📈 Bullish" if change > 2 else "📉 Bearish" if change < -2 else "➡️ Sideways"
+                            market_info.append(f"{symbol}/USDT: ${float(data.get('lastPrice', 0)):,.4f} ({change:+.2f}%) {trend}")
+                    except:
+                        continue
+
+            # Fetch Forex pairs from yfinance
+            if needs_forex:
+                forex_pairs = {
+                    "EURUSD": "EURUSD=X",
+                    "GBPUSD": "GBPUSD=X",
+                    "USDJPY": "USDJPY=X",
+                    "AUDUSD": "AUDUSD=X",
+                    "USDCAD": "USDCAD=X",
+                }
+                for label, yf_sym in forex_pairs.items():
+                    try:
+                        ticker = yf.Ticker(yf_sym)
+                        hist = ticker.history(period="2d")
+                        if not hist.empty:
+                            price = hist['Close'].iloc[-1]
+                            change = ((hist['Close'].iloc[-1] - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100 if len(hist) > 1 else 0
+                            trend = "📈 Bullish" if change > 0.5 else "📉 Bearish" if change < -0.5 else "➡️ Sideways"
+                            market_info.append(f"{label}: {price:.5f} ({change:+.3f}%) {trend}")
+                    except:
+                        continue
+
+            # Fetch Commodities from yfinance
+            if needs_commodity:
+                commodities = {
+                    "Gold (XAU)": "GC=F",
+                    "Silver (XAG)": "SI=F",
+                    "WTI Oil": "CL=F",
+                }
+                for label, yf_sym in commodities.items():
+                    try:
+                        ticker = yf.Ticker(yf_sym)
+                        hist = ticker.history(period="2d")
+                        if not hist.empty:
+                            price = hist['Close'].iloc[-1]
+                            change = ((hist['Close'].iloc[-1] - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2]) * 100 if len(hist) > 1 else 0
+                            trend = "📈 Bullish" if change > 0.5 else "📉 Bearish" if change < -0.5 else "➡️ Sideways"
+                            market_info.append(f"{label}: ${price:,.2f} ({change:+.2f}%) {trend}")
+                    except:
+                        continue
+
             if market_info:
-                market_context = f"\n\nCurrent Market Data (from Binance):\n" + "\n".join(market_info)
+                market_context = "\n\nLive Market Data:\n" + "\n".join(market_info)
+
         except Exception as e:
             print(f"Market data fetch error: {e}")
 
+    # Build trades context
+    trades_context = ""
+    if request.trades_summary:
+        ts = request.trades_summary
+        trades_context = f"\n\nUser's Trade Summary (last 20 trades):\n- Total Trades: {ts.get('total_trades')}\n- Win Rate: {ts.get('win_rate')}\n- Total PnL: ${ts.get('total_pnl')}\n- Avg Win: ${ts.get('avg_win')} | Avg Loss: ${ts.get('avg_loss')}"
+
+    # Build user context
+    user_info = ""
+    if request.user_context:
+        username = request.user_context.get("username", "Trader")
+        plan = request.user_context.get("plan", "free")
+        user_info = f"\n\nUser: {username} (Plan: {plan})"
+
     if api_key:
         try:
+            import base64 as b64lib
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-2.5-flash')
             
-            prompt = f"""
-            You are Tip, a professional AI Trading Mentor for the 'Trade Income Planner' app.
-            Answer the user's question about trading, finance, risk management, psychology, cryptocurrency, market data, and more.
-            If the user asks about market trends or crypto prices, provide analysis based on the market data provided.
-            If the user speaks Indonesian, reply in Indonesian. If English, reply in English.
-            Keep it concise, helpful, friendly, and educational.
-            
-            {market_context}
-            
-            User Question: {request.message}
-            """
-            response = model.generate_content(prompt)
+            base_prompt = f"""You are Tip, a professional AI Trading Mentor for the 'Trade Income Planner' app.
+Answer the user's question about trading, finance, risk management, psychology, cryptocurrency, market data, and more.
+If market data is provided below, use it to give specific, data-backed analysis. Reference actual prices and trends in your response.
+If the user speaks Indonesian, reply in Indonesian. If English, reply in English.
+Keep responses concise, helpful, friendly, and educational. Avoid using excessive markdown symbols like ** or ##.
+{user_info}
+{market_context}
+{trades_context}
+
+User Question: {request.message}"""
+
+            if request.image_base64:
+                # Gemini Vision: analyze chart image
+                chart_prompt = f"""You are Tip, a professional AI Trading Mentor. The user has uploaded a trading chart image.
+
+Analyze the chart carefully and answer the user's question. In your analysis cover:
+1. Overall trend direction (uptrend / downtrend / sideways)
+2. Key support and resistance levels visible
+3. Any chart patterns (head & shoulders, double top/bottom, triangle, flag, etc.)
+4. Candlestick patterns if visible
+5. Probability assessment: where is the price likely to go next?
+6. Suggested trade setup: entry zone, stop loss, take profit
+7. Overall sentiment: Bullish / Bearish / Neutral and confidence level
+
+If the user speaks Indonesian, reply in Indonesian. If English, reply in English.
+Keep it educational, specific, and data-driven. Avoid using excessive markdown symbols like ** or ##.
+{user_info}
+{trades_context}
+
+User Question: {request.message}"""
+
+                image_bytes = b64lib.b64decode(request.image_base64)
+                image_part = {"mime_type": "image/jpeg", "data": image_bytes}
+                response = model.generate_content([chart_prompt, image_part])
+            else:
+                response = model.generate_content(base_prompt)
+
             return {"response": response.text}
         except Exception as e:
             print(f"Gemini API Error: {e}")

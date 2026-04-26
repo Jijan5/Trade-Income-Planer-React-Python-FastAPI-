@@ -63,6 +63,9 @@ class GoalPlannerResponse(BaseModel):
 
 class ChatRequest(BaseModel):
   message: str
+  trades_summary: Optional[dict] = None
+  user_context: Optional[dict] = None
+  image_base64: Optional[str] = None
 
 class ChatResponse(BaseModel):
   response: str

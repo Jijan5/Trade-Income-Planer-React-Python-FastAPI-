@@ -239,7 +239,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
           >
             <motion.div variants={fadeUp} className="inline-flex items-center px-5 py-2.5 rounded-full bg-[#00cfff]/10 backdrop-blur-md shadow-[0_0_15px_rgba(0,207,255,0.1)] text-[#00cfff] text-sm font-semibold uppercase tracking-wider">
               <span className="w-2 h-2 bg-[#00cfff] rounded-full mr-3 shadow-[0_0_8px_#00cfff] animate-pulse"></span>
-              The #1 Platform for Training Crypto Traders
+              The #1 Platform for Training Crypto, Forex, and Commodities Traders
             </motion.div>
             
             <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1]">
