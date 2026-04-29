@@ -230,7 +230,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="flex flex-col items-center justify-center text-center px-6 py-32 lg:py-48 min-h-[90vh]">
+        <section className="flex flex-col items-center justify-center text-center px-6 py-32 lg:py-1 min-h-[90vh]">
           <motion.div 
             variants={staggerContainer}
             initial="hidden"
