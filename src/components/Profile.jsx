@@ -665,7 +665,6 @@ const Profile = ({ showFlash }) => {
             </div>
           )}
         </div>
-        </div>
       </div>
     )}
 
