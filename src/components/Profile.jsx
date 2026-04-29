@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import { countryCodes } from "../utils/countryCodes";
 import AuthenticatedImage from "./AuthenticatedImage";
+import ImageCropModal from "./ImageCropModal";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -45,6 +46,9 @@ const Profile = ({ showFlash }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const fileInputRef = useRef(null);
+
+  const [cropTarget, setCropTarget] = useState(null); // 'userAvatar' | 'editCommAvatar'
+  const [rawCropFile, setRawCropFile] = useState(null);
 
   // My Communities State
   const [myCommunities, setMyCommunities] = useState([]);
@@ -117,8 +121,9 @@ const Profile = ({ showFlash }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setAvatarFile(file);
-      setPreviewAvatar(URL.createObjectURL(file));
+      setRawCropFile(file);
+      setCropTarget("userAvatar");
+      e.target.value = null;
     }
   };
 
@@ -450,9 +455,13 @@ const Profile = ({ showFlash }) => {
                       <div className="w-14 h-14 rounded-full bg-[#030308] overflow-hidden border border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]">
                       {previewEditCommAvatar ? <img src={previewEditCommAvatar} className="w-full h-full object-cover" alt="Preview" /> : <div className="w-full h-full flex items-center justify-center text-[#00cfff]/50 text-[10px] font-extrabold">NO IMG</div>}
                       </div>
-                      <input type="file" accept="image/*" onChange={(e) => {
+                      <input type="file" accept="image/gif,image/png,image/jpeg,image/webp,image/*" onChange={(e) => {
                         const file = e.target.files[0];
-                        if(file) { setEditCommAvatar(file); setPreviewEditCommAvatar(URL.createObjectURL(file)); }
+                        if(file) { 
+                          setRawCropFile(file);
+                          setCropTarget("editCommAvatar");
+                          e.target.value = null;
+                        }
                       }} className="text-[10px] font-extrabold text-[#00cfff]/50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[10px] file:font-extrabold file:uppercase file:tracking-widest file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 cursor-pointer" />
                     </div>
                   </div>
@@ -656,7 +665,41 @@ const Profile = ({ showFlash }) => {
             </div>
           )}
         </div>
+        </div>
       </div>
+    )}
+
+    {/* Crop Modal for both User Avatar and Edit Community Avatar */}
+    {cropTarget === "userAvatar" && rawCropFile && (
+      <ImageCropModal 
+        file={rawCropFile} 
+        onApply={(croppedBlob, previewUrl) => {
+          setAvatarFile(croppedBlob);
+          setPreviewAvatar(previewUrl);
+          setCropTarget(null);
+          setRawCropFile(null);
+        }} 
+        onCancel={() => {
+          setCropTarget(null);
+          setRawCropFile(null);
+        }} 
+      />
+    )}
+
+    {cropTarget === "editCommAvatar" && rawCropFile && (
+      <ImageCropModal 
+        file={rawCropFile} 
+        onApply={(croppedBlob, previewUrl) => {
+          setEditCommAvatar(croppedBlob);
+          setPreviewEditCommAvatar(previewUrl);
+          setCropTarget(null);
+          setRawCropFile(null);
+        }} 
+        onCancel={() => {
+          setCropTarget(null);
+          setRawCropFile(null);
+        }} 
+      />
     )}
     </div>
   );

@@ -213,6 +213,7 @@ class Community(SQLModel, table=True):
     font_family: str = SQLField(default="sans") # 'sans', 'serif', 'mono'
     hover_animation: str = SQLField(default="none") # 'scale', 'glow', 'none'
     hover_color: str = SQLField(default="#3b82f6")
+    bg_focal_point: str = SQLField(default="50% 50%")
     
 class NotificationRead(BaseModel):
     id: int

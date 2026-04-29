@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import ImageCropModal from "./ImageCropModal";
+import FocalPointModal from "./FocalPointModal";
 import api from "../lib/axios";
 import { formatDistanceToNow } from 'date-fns';
 import { useParams, useNavigate } from "react-router-dom";
@@ -477,7 +479,11 @@ const Community = ({
     gradientStart: "#4facfe",
     gradientEnd: "#00f2fe",
     gradientDir: "to right",
+    bgFocalPoint: "50% 50%",
   });
+
+  const [cropTarget, setCropTarget] = useState(null);
+  const [rawCropFile, setRawCropFile] = useState(null);
   const [isVip, setIsVip] = useState(false);
   const [commAvatar, setCommAvatar] = useState(null);
   const [commBgImage, setCommBgImage] = useState(null);
@@ -608,8 +614,10 @@ const Community = ({
     if (isVip && (planLevel >= 3 || isAdmin)) formData.append("is_vip", "true");
 
     if (commAvatar) formData.append("avatar_file", commAvatar);
-    if (commBgImage && newComm.bgType === "image")
+    if (commBgImage && newComm.bgType === "image") {
       formData.append("bg_image_file", commBgImage);
+      formData.append("bg_focal_point", newComm.bgFocalPoint);
+    }
     try {
       await api.post("/communities", formData, {
         headers: { "Content-Type": undefined },
@@ -628,6 +636,7 @@ const Community = ({
         gradientStart: "#4facfe",
         gradientEnd: "#00f2fe",
         gradientDir: "to right",
+        bgFocalPoint: "50% 50%",
       });
       setIsVip(false);
       setCommAvatar(null);
@@ -650,6 +659,7 @@ const Community = ({
         gradientStart: "#4facfe",
         gradientEnd: "#00f2fe",
         gradientDir: "to right",
+        bgFocalPoint: "50% 50%",
       });
       setCommAvatar(null);
       setCommBgImage(null);
@@ -876,7 +886,7 @@ const Community = ({
     if (comm.bg_type === "image" && comm.bg_value) {
       style.backgroundImage = `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${API_BASE_URL}${comm.bg_value})`;
       style.backgroundSize = "cover";
-      style.backgroundPosition = "center";
+      style.backgroundPosition = comm.bg_focal_point || "center";
     } else if (comm.bg_type === "gradient") {
       style.background = comm.bg_value;
     } else {
@@ -1323,7 +1333,7 @@ const Community = ({
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 overflow-y-auto custom-scrollbar">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-[#030308]/90 backdrop-blur-md p-4 pt-20 overflow-y-auto custom-scrollbar">
           <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
             
@@ -1354,12 +1364,13 @@ const Community = ({
                       </div>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/gif,image/png,image/jpeg,image/webp,image/*"
                         onChange={(e) => {
                           const file = e.target.files[0];
                           if (file) {
-                            setCommAvatar(file);
-                            setPreviewCommAvatar(URL.createObjectURL(file));
+                            setRawCropFile(file);
+                            setCropTarget("avatar");
+                            e.target.value = null; // reset to allow picking same file again
                           }
                         }}
                         className="text-xs text-[#00cfff]/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
@@ -1429,12 +1440,13 @@ const Community = ({
                       </label>
                       <input
                         type="file"
-                        accept="image/*"
+                        accept="image/gif,image/png,image/jpeg,image/webp,image/*"
                         onChange={(e) => {
                           const file = e.target.files[0];
                           if (file) {
-                            setCommBgImage(file);
-                            setPreviewCommBg(URL.createObjectURL(file));
+                            setRawCropFile(file);
+                            setCropTarget("background");
+                            e.target.value = null; // reset to allow picking same file again
                           }
                         }}
                         className="text-xs text-[#00cfff]/70 w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
@@ -1661,8 +1673,8 @@ const Community = ({
                         ? newComm.bgValue
                         : newComm.bgValue,
                     backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    backgroundColor: newComm.bg_type === "color" ? newComm.bgValue : 'transparent',
+                    backgroundPosition: newComm.bgType === "image" ? newComm.bgFocalPoint : "center",
+                    backgroundColor: newComm.bgType === "color" ? newComm.bgValue : 'transparent',
                     "--glow-color": newComm.hoverColor,
                     border: isVip ? "3px solid #fbbf24" : "1px solid rgba(0, 207, 255, 0.3)",
                   }}
@@ -1780,6 +1792,40 @@ const Community = ({
               </div>
             </div>
           </div>
+      )}
+      {/* Crop / Focus Point Modals */}
+      {cropTarget === "avatar" && rawCropFile && (
+        <ImageCropModal 
+          file={rawCropFile} 
+          onApply={(croppedBlob, previewUrl) => {
+            setCommAvatar(croppedBlob);
+            setPreviewCommAvatar(previewUrl);
+            setCropTarget(null);
+            setRawCropFile(null);
+          }} 
+          onCancel={() => {
+            setCropTarget(null);
+            setRawCropFile(null);
+          }} 
+        />
+      )}
+
+      {cropTarget === "background" && rawCropFile && (
+        <FocalPointModal 
+          file={rawCropFile} 
+          initialFocalPoint={newComm.bgFocalPoint}
+          onApply={(file, previewUrl, focalString) => {
+            setCommBgImage(file);
+            setPreviewCommBg(previewUrl);
+            setNewComm({...newComm, bgFocalPoint: focalString});
+            setCropTarget(null);
+            setRawCropFile(null);
+          }} 
+          onCancel={() => {
+            setCropTarget(null);
+            setRawCropFile(null);
+          }} 
+        />
       )}
     </div>
   );

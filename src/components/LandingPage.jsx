@@ -1,40 +1,85 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  TrendingUp, Target, Gamepad2, BarChart3,
+  BarChart2, Bot, Users, LayoutTemplate,
+  Calculator, Scale, Lightbulb, CheckSquare, BookOpen, GraduationCap, TriangleAlert
+} from "lucide-react";
+
+const FeatureCarousel = ({ images }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  return (
+    <div className="relative w-full h-full overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex]}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 w-full h-full object-cover"
+          alt="Feature showcase"
+        />
+      </AnimatePresence>
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        {images.map((_, i) => (
+          <div 
+            key={i} 
+            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-6 bg-[#00cfff]' : 'w-2 bg-white/30'}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const LandingPage = ({ onLogin, onRegister }) => {
   // Feature data for the detailed features section
   const features = [
     {
       id: "simulation",
-      icon: "📈",
+      icon: TrendingUp,
       title: "Strategy Simulation",
       description: "Test your trading strategies with historical data and real-time market conditions. Run compound simulations to see how your account would grow over time.",
       features: ["Historical Backtesting", "Compound Growth", "Multiple Timeframes", "Risk Parameter Testing"],
-      color: "cyan"
+      color: "cyan",
+      images: ["/images/sim_1_chart_1777453666869.png", "/images/sim_2_params_1777453689203.png", "/images/sim_3_results_1777453706097.png"]
     },
     {
       id: "goal",
-      icon: "🎯",
+      icon: Target,
       title: "Goal Planner",
       description: "Set realistic trading goals and track your progress. Calculate required returns to reach your financial targets with our advanced planning tools.",
       features: ["Smart Goal Setting", "Customizable Timelines"],
-      color: "blue"
+      color: "blue",
+      images: ["/images/goal_1_progress_1777453722526.png", "/images/goal_2_timeline_1777453750003.png", "/images/goal_3_target_1777453774206.png"]
     },
     {
       id: "manual",
-      icon: "🎮",
+      icon: Gamepad2,
       title: "Manual Trade Simulator",
       description: "Practice trading with live market data without risking real money. Our comprehensive tools help beginners learn the ropes.",
       features: ["Live Market Execution", "Position Size Calculator", "Risk/Reward Ratio", "Trading Glossary"],
-      color: "cyan"
+      color: "cyan",
+      images: ["/images/manual_1_exec_1777453794346.png", "/images/manual_2_risk_1777453812530.png", "/images/manual_3_calc_1777453841091.png"]
     },
     {
       id: "history",
-      icon: "📊",
+      icon: BarChart3,
       title: "Trade History & Analytics",
       description: "Track your performance with comprehensive analytics. Visualize your progress with dynamic charts and detailed statistics.",
       features: ["Dynamic Dashboard", "PnL Charts", "Win Rate Visualization", "CSV Export"],
-      color: "blue"
+      color: "blue",
+      images: ["/images/history_1_pnl_1777453857621.png", "/images/history_2_winrate_1777453875146.png", "/images/history_3_log_1777454054882.png"]
     }
   ];
 
@@ -294,9 +339,9 @@ const LandingPage = ({ onLogin, onRegister }) => {
               className="grid grid-cols-1 md:grid-cols-3 gap-8"
             >
               {[
-                { icon: "📊", title: "Advanced Trade Simulator", desc: "Practice with live market data and historical scenarios. Test strategies across multiple timeframes without financial risk." },
-                { icon: "🤖", title: "AI-Powered Analytics", desc: "Receive personalized insights on your trading patterns, risk management, and psychological biases to optimize performance." },
-                { icon: "👥", title: "Elite Trading Communities", desc: "Connect with verified traders, share strategies, and access exclusive signals in a collaborative professional network." }
+                { icon: BarChart2, title: "Advanced Trade Simulator", desc: "Practice with live market data and historical scenarios. Test strategies across multiple timeframes without financial risk." },
+                { icon: Bot, title: "AI-Powered Analytics", desc: "Receive personalized insights on your trading patterns, risk management, and psychological biases to optimize performance." },
+                { icon: Users, title: "Elite Trading Communities", desc: "Connect with verified traders, share strategies, and access exclusive signals in a collaborative professional network." }
               ].map((item, idx) => (
                 <motion.div 
                   key={idx}
@@ -306,8 +351,8 @@ const LandingPage = ({ onLogin, onRegister }) => {
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative z-10">
-                    <div className="w-16 h-16 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all duration-500">
-                      {item.icon}
+                    <div className="w-16 h-16 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all duration-500">
+                      <item.icon className="w-8 h-8 text-[#00cfff]" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
                     <p className="text-gray-400 leading-relaxed font-light">
@@ -345,7 +390,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                   {/* Content Side */}
                   <motion.div variants={fadeUp} className="flex-1 space-y-8">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-[#00cfff]/10 shadow-[0_0_30px_rgba(0,207,255,0.1)]">
-                      <span className="text-4xl">{feature.icon}</span>
+                      <feature.icon className="w-10 h-10 text-[#00cfff]" />
                     </div>
                     <h3 className="text-3xl md:text-4xl font-bold">{feature.title}</h3>
                     <p className="text-gray-400 text-xl leading-relaxed font-light">
@@ -374,27 +419,17 @@ const LandingPage = ({ onLogin, onRegister }) => {
 
                   {/* Image Side */}
                   <motion.div variants={fadeUp} className="flex-1 w-full">
-                    <div className="relative rounded-[2rem] overflow-hidden bg-[#0a0f1c]/40 backdrop-blur-lg shadow-[0_20px_50px_rgba(0,0,0,0.3)] group">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-[#00cfff]/10 to-transparent opacity-50"></div>
-                      <div className="aspect-video flex flex-col items-center justify-center p-12 relative z-10">
-                        <motion.div 
-                          initial={{ scale: 0.9, opacity: 0.5 }}
-                          whileInView={{ scale: 1, opacity: 1 }}
-                          transition={{ duration: 1 }}
-                          className="text-7xl mb-6 filter drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-                        >
-                          {feature.icon}
-                        </motion.div>
-                        <div className="text-center text-gray-400">
-                          <p className="text-2xl font-bold mb-3 text-white">{feature.title}</p>
-                          <p className="text-sm font-light">Image placeholder - Add your screenshot here</p>
-                        </div>
-                        {/* Decorative elements */}
-                        <div className="absolute top-8 right-8 w-32 h-32 bg-[#00cfff]/10 rounded-full blur-3xl"></div>
-                        <div className="absolute bottom-8 left-8 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
-                      </div>
+                    <div className="relative rounded-[2rem] overflow-hidden bg-[#0a0f1c]/40 backdrop-blur-lg shadow-[0_20px_50px_rgba(0,0,0,0.3)] group aspect-video">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-[#00cfff]/10 to-transparent opacity-50 z-10 pointer-events-none mix-blend-overlay"></div>
+                      
+                      <FeatureCarousel images={feature.images} />
+                      
+                      {/* Decorative elements overlay */}
+                      <div className="absolute top-8 right-8 w-32 h-32 bg-[#00cfff]/20 rounded-full blur-3xl z-10 pointer-events-none"></div>
+                      <div className="absolute bottom-8 left-8 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl z-10 pointer-events-none"></div>
+                      
                       {/* Subtle hover border glow */}
-                      <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,207,255,0.05)] group-hover:shadow-[inset_0_0_0_1px_rgba(0,207,255,0.2)] transition-shadow duration-500 rounded-[2rem]"></div>
+                      <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,207,255,0.05)] group-hover:shadow-[inset_0_0_0_2px_rgba(0,207,255,0.4)] transition-shadow duration-500 rounded-[2rem] z-20 pointer-events-none"></div>
                     </div>
                   </motion.div>
                 </motion.div>
@@ -411,8 +446,8 @@ const LandingPage = ({ onLogin, onRegister }) => {
               variants={fadeUp}
               className="text-center mb-20"
             >
-              <div className="inline-flex items-center px-5 py-2.5 rounded-full bg-[#00cfff]/10 text-[#00cfff] text-sm font-bold uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
-                🎮 Beginner Friendly
+              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00cfff]/10 text-[#00cfff] text-sm font-bold uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
+                <Gamepad2 className="w-5 h-5" /> Beginner Friendly
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Manual Trade Simulator Features</h2>
               <p className="text-gray-400 text-xl max-w-2xl mx-auto font-light">
@@ -426,15 +461,15 @@ const LandingPage = ({ onLogin, onRegister }) => {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             >
               {[
-                { icon: "📊", title: "Position Size Calculator", desc: "Calculate the right position size based on your risk tolerance and account balance." },
-                { icon: "⚖️", title: "Risk/Reward Display", desc: "See your potential risk vs reward before entering any trade." },
-                { icon: "📋", title: "Trade Setup Templates", desc: "Choose from proven strategies like Breakout, Reversal, Range, and more." },
-                { icon: "💡", title: "Beginner Tips", desc: "Get contextual tips based on your trading performance and experience level." },
-                { icon: "✅", title: "Pre-Trade Checklist", desc: "Follow a structured checklist before every trade to maintain discipline." },
-                { icon: "📖", title: "Trading Glossary", desc: "Learn trading terminology with our comprehensive built-in glossary." },
-                { icon: "🎓", title: "Tutorial Overlay", desc: "Step-by-step guided walkthrough for first-time users." },
-                { icon: "🤖", title: "AI Trading Coach", desc: "Get AI-powered analysis of your trading patterns and personalized recommendations." },
-                { icon: "⚠️", title: "Risk Management Calculator", desc: "Calculate position size, risk per trade, stop loss & take profit levels with educational tips for beginners." }
+                { icon: Calculator, title: "Position Size Calculator", desc: "Calculate the right position size based on your risk tolerance and account balance." },
+                { icon: Scale, title: "Risk/Reward Display", desc: "See your potential risk vs reward before entering any trade." },
+                { icon: LayoutTemplate, title: "Trade Setup Templates", desc: "Choose from proven strategies like Breakout, Reversal, Range, and more." },
+                { icon: Lightbulb, title: "Beginner Tips", desc: "Get contextual tips based on your trading performance and experience level." },
+                { icon: CheckSquare, title: "Pre-Trade Checklist", desc: "Follow a structured checklist before every trade to maintain discipline." },
+                { icon: BookOpen, title: "Trading Glossary", desc: "Learn trading terminology with our comprehensive built-in glossary." },
+                { icon: GraduationCap, title: "Tutorial Overlay", desc: "Step-by-step guided walkthrough for first-time users." },
+                { icon: Bot, title: "AI Trading Coach", desc: "Get AI-powered analysis of your trading patterns and personalized recommendations." },
+                { icon: TriangleAlert, title: "Risk Management Calculator", desc: "Calculate position size, risk per trade, stop loss & take profit levels with educational tips for beginners." }
               ].map((feature, idx) => (
                 <motion.div 
                   key={idx}
@@ -443,8 +478,8 @@ const LandingPage = ({ onLogin, onRegister }) => {
                   className="bg-[#0a0f1c]/50 p-8 rounded-3xl backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col h-full relative overflow-hidden group"
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="w-14 h-14 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
-                    {feature.icon}
+                  <div className="w-14 h-14 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,207,255,0.05)] text-[#00cfff]">
+                    <feature.icon className="w-7 h-7" />
                   </div>
                   <h3 className="font-bold text-xl mb-3">{feature.title}</h3>
                   <p className="text-gray-400 font-light leading-relaxed flex-grow">{feature.desc}</p>

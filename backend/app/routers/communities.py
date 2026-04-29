@@ -134,6 +134,7 @@ async def create_community(
     font_family: str = Form("sans"),
     hover_animation: str = Form("none"),
     hover_color: str = Form("#3b82f6"),
+    bg_focal_point: str = Form("50% 50%"),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_active_user),
@@ -170,6 +171,7 @@ async def create_community(
         font_family=font_family,
         hover_animation=hover_animation,
         hover_color=hover_color,
+        bg_focal_point=bg_focal_point,
         members_count=1,
         active_count=1,
         tenant_id = user.tenant_id
@@ -195,6 +197,7 @@ async def update_community(
     font_family: Optional[str] = Form(None),
     hover_animation: Optional[str] = Form(None),
     hover_color: Optional[str] = Form(None),
+    bg_focal_point: Optional[str] = Form(None),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_active_user),
@@ -213,6 +216,7 @@ async def update_community(
     if font_family: community.font_family = font_family
     if hover_animation: community.hover_animation = hover_animation
     if hover_color: community.hover_color = hover_color
+    if bg_focal_point: community.bg_focal_point = bg_focal_point
 
     if avatar_file:
         os.makedirs("static/avatars", exist_ok=True)
@@ -220,7 +224,7 @@ async def update_community(
         file_path = os.path.join("static/avatars", filename)
         async with aiofiles.open(file_path, "wb") as buffer:
             contents = await avatar_file.read()
-            buffer.write(contents)
+            await buffer.write(contents)
         community.avatar_url = f"/static/avatars/{filename}"
 
     if bg_type == "image" and bg_image_file:

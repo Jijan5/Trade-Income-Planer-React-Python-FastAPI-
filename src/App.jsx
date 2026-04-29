@@ -1446,8 +1446,8 @@ function App() {
               </p>
             </div>
           </footer>
-          {/* AI Chat Assistant Widget */}
-          <ChatAssistant />
+          {/* AI Chat Assistant Widget (hidden on landing page) */}
+          {location.pathname !== "/" && <ChatAssistant />}
 
           {showNotifications && (
             <NotificationsModal
