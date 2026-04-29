@@ -8,6 +8,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, YAxis } from
 
 const TradeHistory = () => {
   const [trades, setTrades] = useState([]);
+  const [timeFilter, setTimeFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalPnl: 0, winRate: 0, lossRate: 0, breakevenRate: 0, totalTrades: 0,
@@ -32,7 +33,6 @@ const TradeHistory = () => {
     try {
       const res = await api.get("/manual-trades");
       setTrades(res.data);
-      calculateStats(res.data);
     } catch (error) {
       console.error("Failed to fetch trade history", error);
     } finally {
@@ -40,8 +40,34 @@ const TradeHistory = () => {
     }
   };
 
+  const filteredTrades = useMemo(() => {
+    const now = new Date();
+    return trades.filter(t => {
+      if (timeFilter === "all") return true;
+      const tradeDate = new Date(t.trade_date);
+      const diffTime = Math.abs(now - tradeDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (timeFilter === "30") return diffDays <= 30;
+      if (timeFilter === "7") return diffDays <= 7;
+      return true;
+    });
+  }, [trades, timeFilter]);
+
+  useEffect(() => {
+    calculateStats(filteredTrades);
+  }, [filteredTrades]);
+
   const calculateStats = (data) => {
-    if (!data.length) return;
+    if (!data || !data.length) {
+      setStats({
+        totalPnl: 0, winRate: 0, lossRate: 0, breakevenRate: 0, totalTrades: 0,
+        avgWin: 0, avgLoss: 0, largestWin: 0, largestLoss: 0,
+        bestTrade: { pnl: 0, symbol: '-' }, worstTrade: { pnl: 0, symbol: '-' },
+        winStreak: 0, lossStreak: 0, currentStreak: 0,
+        profitFactor: 0, avgRR: 0, winsCount: 0, lossesCount: 0, breakevensCount: 0
+      });
+      return;
+    }
     
     const pnls = data.map(t => parseFloat(t.pnl));
     const wins = data.filter(t => parseFloat(t.pnl) > 0);
@@ -115,14 +141,14 @@ const TradeHistory = () => {
   };
 
   const pnlChartData = useMemo(() => {
-    if (!trades.length) return [];
-    const sorted = [...trades].reverse();
+    if (!filteredTrades.length) return [];
+    const sorted = [...filteredTrades].reverse();
     let running = 0;
     return sorted.map((t) => {
       running += parseFloat(t.pnl);
       return { pnl: running };
     });
-  }, [trades]);
+  }, [filteredTrades]);
 
   const pieData = [
     { name: 'Wins', value: stats.winsCount, color: '#00e5ff' },
@@ -132,10 +158,10 @@ const TradeHistory = () => {
 
   const handleExportCSV = () => {
     if (planLevel < 1 && !isAdmin) return showFlash("Upgrade to Basic Plan to export CSV.", "error");
-    if (trades.length === 0) return showFlash("No trades to export.", "info");
+    if (filteredTrades.length === 0) return showFlash("No trades to export.", "info");
     const headers = ["Date", "Time", "Symbol", "Entry Price", "Exit Price", "PnL", "Result", "Notes"];
     const csvRows = [headers.join(",")];
-    trades.forEach(trade => {
+    filteredTrades.forEach(trade => {
       const date = new Date(trade.trade_date);
       const row = [
         format(date, "yyyy-MM-dd"),
@@ -170,10 +196,14 @@ const TradeHistory = () => {
           Overview & Performance
         </h2>
         <div className="flex gap-3 items-center">
-            <select className="bg-[#030308] border border-[#00cfff]/30 text-white text-xs font-bold uppercase tracking-widest rounded-lg px-4 py-2 outline-none focus:border-[#00cfff] transition-all">
-                <option>All Time</option>
-                <option>Last 30 Days</option>
-                <option>Last 7 Days</option>
+            <select 
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                className="bg-[#030308] border border-[#00cfff]/30 text-white text-xs font-bold uppercase tracking-widest rounded-lg px-4 py-2 outline-none focus:border-[#00cfff] transition-all"
+            >
+                <option value="all">All Time</option>
+                <option value="30">Last 30 Days</option>
+                <option value="7">Last 7 Days</option>
             </select>
             {planLevel >= 1 || isAdmin ? (
             <button onClick={handleExportCSV} className="bg-[#00cfff]/10 hover:bg-[#00cfff] text-[#00cfff] hover:text-[#030308] border border-[#00cfff]/50 px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-widest flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(0,207,255,0.2)]">
@@ -347,8 +377,8 @@ const TradeHistory = () => {
             <h3 className="text-xs font-extrabold text-gray-300 uppercase tracking-widest">Recent Trades</h3>
             <span className="text-gray-400 font-bold tracking-widest cursor-pointer hover:text-white">•••</span>
         </div>
-        <div className="overflow-x-auto custom-scrollbar">
-          {trades.length === 0 ? (
+        <div className="overflow-x-auto custom-scrollbar max-h-[600px]">
+          {filteredTrades.length === 0 ? (
             <div className="text-center text-gray-500 py-16 text-[11px] font-extrabold uppercase tracking-widest">
               NO TRADE HISTORY FOUND.
             </div>
@@ -366,7 +396,7 @@ const TradeHistory = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-800/50 bg-[#111827]">
-                {trades.slice(0, 10).map((trade) => {
+                {filteredTrades.map((trade) => {
                   const type = getTradeType(trade);
                   const pnl = parseFloat(trade.pnl);
                   return (

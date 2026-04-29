@@ -38,6 +38,7 @@ import {
 } from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
+import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon } from "lucide-react";
 
 // 🛡️ SECURITY: Protected Route for Admin
 const AdminRoute = ({ children }) => {
@@ -642,82 +643,22 @@ function App() {
       {
         path: "/home",
         title: "Home",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-            />
-          </svg>
-        ),
+        icon: <HomeIcon className="w-5 h-5" strokeWidth={1.5} />,
       },
       {
         path: "/explore",
         title: "Explore",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18V6.375c0-.621.504-1.125 1.125-1.125H9.75"
-            />
-          </svg>
-        ),
+        icon: <ExploreIcon className="w-5 h-5" strokeWidth={1.5} />,
       },
       {
         path: "/community",
         title: "Community",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962c.51.056 1.02.083 1.531.083s1.02-.027 1.531-.083m-3.062 0c.203.18.45.33.712.453m-7.5 0a9.094 9.094 0 013.741-.479 3 3 0 014.682-2.72M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-7.5 3.75h15a9.094 9.094 0 00-15 0z"
-            />
-          </svg>
-        ),
+        icon: <CommunityIcon className="w-5 h-5" strokeWidth={1.5} />,
       },
       {
         path: "/simulation",
         title: "Simulation",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
-            />
-          </svg>
-        ),
+        icon: <SimulationIcon className="w-5 h-5" strokeWidth={2} />,
       },
     ],
     []
@@ -841,10 +782,10 @@ function App() {
                       key={item.path}
                       onClick={() => navigate(item.path)}
                       title={item.title}
-                      className={`p-2.5 rounded-full transition-all custom-icon ${
+                      className={`p-3 rounded-full transition-all duration-300 ${
                         location.pathname.startsWith(item.path)
-                          ? "text-[#00cfff] bg-[#00cfff]/10 drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
-                          : "text-gray-500 hover:text-[#00cfff]/80 hover:bg-[#00cfff]/5"
+                          ? "text-[#00cfff] bg-[#00cfff]/10 shadow-[0_0_20px_rgba(0,207,255,0.25)] drop-shadow-[0_0_8px_rgba(0,207,255,0.8)] scale-110"
+                          : "text-gray-500 hover:text-[#00cfff]/80 hover:bg-[#00cfff]/5 hover:scale-105"
                       }`}
                     >
                       {item.icon}
