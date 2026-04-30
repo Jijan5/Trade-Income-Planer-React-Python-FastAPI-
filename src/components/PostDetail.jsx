@@ -18,6 +18,7 @@ const PostDetail = ({ showFlash }) => {
   const [error, setError] = useState(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   // Interaction States
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -112,14 +113,20 @@ const PostDetail = ({ showFlash }) => {
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Delete comment?")) return;
+  const handleDeleteComment = (commentId) => {
+    setCommentToDelete(commentId);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
     try {
-      await api.delete(`/comments/${commentId}`);
-      setComments(comments.filter(c => c.id !== commentId));
+      await api.delete(`/comments/${commentToDelete}`);
+      setComments(comments.filter(c => c.id !== commentToDelete));
       setPost({ ...post, comments_count: Math.max(0, post.comments_count - 1) });
+      setCommentToDelete(null);
     } catch (error) {
       showFlash("Failed to delete comment.", "error");
+      setCommentToDelete(null);
     }
   };
 
@@ -311,6 +318,22 @@ const PostDetail = ({ showFlash }) => {
             <div className="flex justify-center gap-4">
               <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
               <button onClick={confirmDeletePost} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">DELETE</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Comment Modal */}
+      {commentToDelete && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setCommentToDelete(null)}>
+          <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] flex flex-col items-center gap-3">
+              <span className="text-4xl">⚠</span> DELETE COMMENT?
+            </h3>
+            <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS COMMENT? THIS ACTION CANNOT BE UNDONE.</p>
+            <div className="flex justify-center gap-4">
+              <button onClick={() => setCommentToDelete(null)} className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
+              <button onClick={confirmDeleteComment} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">DELETE</button>
             </div>
           </div>
         </div>
