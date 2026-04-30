@@ -47,6 +47,7 @@ export default function SimulationChart({ data }) {
   const [tool, setTool] = useState('pointer');
   const [chartType, setChartType] = useState('candle');
   const [ind, setInd] = useState({ sma10: false, sma20: false, bb: false });
+  const [promptModal, setPromptModal] = useState({ isOpen: false, x: 0, y: 0, text: '' });
   const [, forceUpdate] = useState(0);
 
   const candles = useMemo(() => {
@@ -255,9 +256,8 @@ export default function SimulationChart({ data }) {
       render(); renderOverlay(null); return;
     }
     if (tool === 'text') {
-      const label = prompt('Enter label:') || 'Label';
-      drawingsRef.current.push({ type: 'text', x1: x, y1: y, text: label });
-      render(); return;
+      setPromptModal({ isOpen: true, x, y, text: '' });
+      return;
     }
     drawStartRef.current = { type: tool, x, y };
   };
@@ -301,10 +301,54 @@ export default function SimulationChart({ data }) {
   };
   const toggleInd = k => setInd(prev => ({ ...prev, [k]: !prev[k] }));
 
+  const handleAddText = () => {
+    const label = promptModal.text.trim() || 'Label';
+    drawingsRef.current.push({ type: 'text', x1: promptModal.x, y1: promptModal.y, text: label });
+    render();
+    setPromptModal({ isOpen: false, x: 0, y: 0, text: '' });
+  };
+
   return (
-    <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden"
+    <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden relative"
       style={{ animation: 'chartFadeIn 0.5s ease-out forwards' }}>
       <style>{`@keyframes chartFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      
+      {/* Prompt Modal for Text Tool */}
+      {promptModal.isOpen && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#030308]/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.2)] max-w-xs w-full text-center">
+            <h3 className="text-sm font-extrabold mb-4 uppercase tracking-widest text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
+              ADD TEXT LABEL
+            </h3>
+            <input 
+              type="text" 
+              value={promptModal.text} 
+              onChange={(e) => setPromptModal({...promptModal, text: e.target.value})} 
+              className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2 text-white text-xs font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all mb-6 text-center placeholder:text-[#00cfff]/30"
+              placeholder="Enter label..."
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddText();
+                if (e.key === 'Escape') setPromptModal({...promptModal, isOpen: false});
+              }}
+            />
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setPromptModal({ ...promptModal, isOpen: false })}
+                className="flex-1 py-2 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[10px] font-extrabold uppercase tracking-widest transition-all"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={handleAddText}
+                className="flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)]"
+              >
+                ADD
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-[#00cfff]/20 bg-[#030308]/40">
         <span className="text-[11px] font-extrabold text-[#00cfff] uppercase tracking-widest">Equity Curve</span>

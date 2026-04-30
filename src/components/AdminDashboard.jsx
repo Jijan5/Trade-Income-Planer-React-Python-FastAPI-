@@ -31,6 +31,7 @@ const AdminDashboard = () => {
     type: "danger",
   });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [rejectModal, setRejectModal] = useState({ isOpen: false, user: null, reason: "" });
 
   const fetchStats = async () => {
     try {
@@ -329,6 +330,54 @@ const AdminDashboard = () => {
                 }`}
               >
                 CONFIRM
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Appeal Modal */}
+      {rejectModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center">
+            <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
+              <span className="text-4xl">⚠</span>
+              REJECT APPEAL
+            </h3>
+            <p className="text-gray-400 text-sm mb-4 font-medium">Please enter a reason for rejecting the appeal:</p>
+            <input 
+              type="text" 
+              value={rejectModal.reason} 
+              onChange={(e) => setRejectModal({...rejectModal, reason: e.target.value})} 
+              className="w-full bg-[#030308] border border-red-500/30 rounded-xl px-4 py-3 text-white text-xs font-mono focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.2)] outline-none transition-all mb-8"
+              placeholder="Rejection reason..."
+              autoFocus
+            />
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => setRejectModal({ isOpen: false, user: null, reason: "" })}
+                className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rejectModal.reason.trim()) { showFlash("Reason is required.", "error"); return; }
+                  try {
+                    const u = rejectModal.user;
+                    const payload = { ...u, appeal_status: "rejected", appeal_response: rejectModal.reason };
+                    delete payload.id; delete payload.created_at; delete payload.updated_at; delete payload.hashed_password; delete payload.avatar_url; delete payload.reset_token; delete payload.reset_token_expires;
+                    await api.put(`/admin/users/${u.id}`, payload);
+                    fetchUsers();
+                    showFlash("Appeal rejected.", "success");
+                    setRejectModal({ isOpen: false, user: null, reason: "" });
+                  } catch (e) {
+                    showFlash("Failed to reject appeal.", "error");
+                  }
+                }}
+                className="px-6 py-2.5 rounded-xl text-[11px] font-extrabold uppercase tracking-widest transition-all bg-red-600/20 text-red-400 border border-red-500/50 hover:bg-red-600 hover:text-white shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)]"
+              >
+                REJECT
               </button>
             </div>
           </div>
@@ -712,28 +761,8 @@ const AdminDashboard = () => {
                           APPROVE
                         </button>
                         <button
-                          onClick={async () => {
-                            const reason = prompt("Enter rejection reason:");
-                            if (!reason) return;
-                            try {
-                              const payload = {
-                                ...u,
-                                appeal_status: "rejected",
-                                appeal_response: reason,
-                              };
-                              delete payload.id;
-                              delete payload.created_at;
-                              delete payload.updated_at;
-                              delete payload.hashed_password;
-                              delete payload.avatar_url;
-                              delete payload.reset_token;
-                              delete payload.reset_token_expires;
-                              await api.put(`/admin/users/${u.id}`, payload);
-                              fetchUsers();
-                              showFlash("Appeal rejected.", "success");
-                            } catch (e) {
-                              showFlash("Failed to reject appeal.", "error");
-                            }
+                          onClick={() => {
+                            setRejectModal({ isOpen: true, user: u, reason: "" });
                           }}
                           className="bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white px-5 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]"
                         >
