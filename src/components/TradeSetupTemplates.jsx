@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import { Rocket, RefreshCcw, BarChart2, TrendingUp, Zap, Waves, ClipboardList, Lightbulb } from "lucide-react";
 
 // TRADE SETUP TEMPLATES - Different R/R Ratios
 const TRADE_SETUPS = {
   breakout: {
     id: "breakout",
     name: "Breakout Trading",
-    icon: "🚀",
+    icon: <Rocket className="w-8 h-8" />,
     description: "Enter when price breaks above resistance or below support",
     bestFor: "Trending markets",
     riskLevel: "Medium-High",
@@ -24,7 +25,7 @@ const TRADE_SETUPS = {
   reversal: {
     id: "reversal",
     name: "Reversal Trading",
-    icon: "🔄",
+    icon: <RefreshCcw className="w-8 h-8" />,
     description: "Trade against the trend at potential reversal points",
     bestFor: "End of trends",
     riskLevel: "High",
@@ -43,7 +44,7 @@ const TRADE_SETUPS = {
   range: {
     id: "range",
     name: "Range Trading",
-    icon: "📊",
+    icon: <BarChart2 className="w-8 h-8" />,
     description: "Buy at support, sell at resistance in sideways markets",
     bestFor: "Sideways markets",
     riskLevel: "Low-Medium",
@@ -62,7 +63,7 @@ const TRADE_SETUPS = {
   trendFollowing: {
     id: "trendFollowing",
     name: "Trend Following",
-    icon: "📈",
+    icon: <TrendingUp className="w-8 h-8" />,
     description: "Trade in the direction of the trend using moving averages",
     bestFor: "Strong trending markets",
     riskLevel: "Medium",
@@ -81,7 +82,7 @@ const TRADE_SETUPS = {
   scalping: {
     id: "scalping",
     name: "Scalping",
-    icon: "⚡",
+    icon: <Zap className="w-8 h-8" />,
     description: "Quick trades for small profits in volatile markets",
     bestFor: "Highly volatile markets",
     riskLevel: "Very High",
@@ -100,7 +101,7 @@ const TRADE_SETUPS = {
   swing: {
     id: "swing",
     name: "Swing Trading",
-    icon: "🌊",
+    icon: <Waves className="w-8 h-8" />,
     description: "Hold positions for days to weeks to capture swings",
     bestFor: "Medium-term traders",
     riskLevel: "Medium",
@@ -128,7 +129,7 @@ export const TradeSetupTemplates = ({
   return (
     <div className="bg-[#0a0f1c]/60 p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md mb-4">
       <div className="flex items-center gap-2 mb-3 border-b border-[#00cfff]/10 pb-3">
-        <span className="text-xl">📋</span>
+        <ClipboardList className="w-5 h-5 text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]" />
         <h4 className="text-[10px] font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">Trade Setup Templates</h4>
       </div>
       <p className="text-[10px] text-[#00cfff]/50 mb-4 font-extrabold uppercase tracking-widest">Select a setup to automatically configure your trade parameters:</p>
@@ -136,7 +137,7 @@ export const TradeSetupTemplates = ({
         {Object.values(TRADE_SETUPS).map((template) => (
           <div key={template.id} className={`border rounded-xl overflow-hidden transition-all duration-300 ${selectedTemplate === template.id ? `border-[#00cfff] bg-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]` : "border-[#00cfff]/10 bg-[#030308]/60 hover:bg-[#00cfff]/5 hover:border-[#00cfff]/30"}`}>
             <button onClick={() => { if (expandedTemplate === template.id) { setExpandedTemplate(null); } else { setExpandedTemplate(template.id); onSelectTemplate(template.id); } }} className="w-full p-4 flex items-center gap-4 text-left">
-              <span className="text-3xl drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{template.icon}</span>
+              <span className="text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">{template.icon}</span>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <span className={`text-sm font-extrabold uppercase tracking-widest ${selectedTemplate === template.id ? 'text-[#00cfff] drop-shadow-[0_0_3px_#00cfff]' : 'text-white'}`}>{template.name}</span>
@@ -151,7 +152,7 @@ export const TradeSetupTemplates = ({
                 <ol className="text-[11px] font-medium text-gray-300 space-y-2 mb-4">
                   {template.steps.map((step, idx) => (<li key={idx} className="flex gap-2 items-start"><span className="text-[#00cfff] font-bold">{idx + 1}.</span><span>{step}</span></li>))}
                 </ol>
-                <div className="bg-[#030308]/80 p-3 rounded-xl mb-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest border border-[#00cfff]/20"><span className="text-[#00cfff]">💡 </span>{template.tip}</div>
+                <div className="bg-[#030308]/80 p-3 rounded-xl mb-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest border border-[#00cfff]/20 flex items-start gap-2"><Lightbulb className="w-4 h-4 text-[#00cfff] shrink-0 mt-0.5" />{template.tip}</div>
                 <div className="grid grid-cols-3 gap-3 text-[10px] font-extrabold uppercase tracking-widest mb-4">
                   <div className="bg-red-900/20 p-3 rounded-xl border border-red-500/30 text-center"><span className="text-red-400/50 block mb-1">SL</span><span className="text-red-400 font-mono text-sm">{template.slPct}%</span></div>
                   <div className="bg-green-900/20 p-3 rounded-xl border border-green-500/30 text-center"><span className="text-green-400/50 block mb-1">TP</span><span className="text-green-400 font-mono text-sm">{template.tpPct}%</span></div>
@@ -171,7 +172,7 @@ export const QuickTemplateSelector = ({ selectedTemplate, onSelectTemplate, onAp
   return (
     <div className="mb-5">
       <label className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-2 flex items-center gap-1">
-        <span className="text-sm">📋</span> Trade Setup Template
+        <ClipboardList className="w-4 h-4" /> Trade Setup Template
       </label>
       <select 
         value={selectedTemplate || ""} 

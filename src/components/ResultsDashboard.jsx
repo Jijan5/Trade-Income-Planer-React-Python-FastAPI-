@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
 import { BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
+import { Sparkles, Skull, TriangleAlert, CheckCircle } from "lucide-react";
 import SimulationChart from "./SimulationChart";
 
 const ResultsDashboard = ({ data }) => {
@@ -125,6 +126,15 @@ const ResultsDashboard = ({ data }) => {
   // What-If Projection Data
   const ruinProb = monte_carlo && monte_carlo.ruin_probability ? parseFloat(monte_carlo.ruin_probability) : 0;
 
+  const mcChartData = useMemo(() => {
+    if (!monte_carlo) return [];
+    return [
+      { name: 'Worst Case', value: parseFloat(monte_carlo.worst_case), fill: '#f87171', shadow: 'rgba(248,113,113,0.5)' },
+      { name: 'Median', value: parseFloat(monte_carlo.median), fill: '#00cfff', shadow: 'rgba(0,207,255,0.5)' },
+      { name: 'Best Case', value: parseFloat(monte_carlo.best_case), fill: '#4ade80', shadow: 'rgba(74,222,128,0.5)' }
+    ];
+  }, [monte_carlo]);
+
   return (
     <div className="space-y-6">
       {/* What-If Simulator (Brutally Honest Projection) */}
@@ -132,7 +142,7 @@ const ResultsDashboard = ({ data }) => {
         <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md relative overflow-hidden">
           <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-green-500 shadow-[0_0_10px_#22c55e]'}`}></div>
           <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
-            <span className="text-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">🔮</span> What-If Future Projection
+            <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" /> What-If Future Projection
           </h3>
           
           <div className={`p-6 rounded-xl border ${ruinProb > 20 ? 'bg-red-900/10 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-[#00cfff]/5 border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]'}`}>
@@ -154,7 +164,7 @@ const ResultsDashboard = ({ data }) => {
             
             {ruinProb > 50 && (
               <p className="mt-4 text-sm text-red-400 font-extrabold uppercase tracking-widest flex items-center gap-2 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
-                <span className="text-2xl">💀</span> Critical Warning: This is gambling, not trading.
+                <Skull className="w-6 h-6" /> Critical Warning: This is gambling, not trading.
               </p>
             )}
             <p className="text-xs text-gray-500 mt-5 italic font-mono">
@@ -164,156 +174,198 @@ const ResultsDashboard = ({ data }) => {
         </div>
       )}
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
-        <div className="p-3">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Inital Capital
-          </p>
-          <p className="text-xl font-mono font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
-            ${summary.initial_balance}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Closing Balance
-          </p>
-          <p className="text-xl font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
-            ${summary.final_balance}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Net Profit
-          </p>
-          <p className="text-xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
-            +${summary.total_profit}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            ROI Growth
-          </p>
-          <p className="text-xl font-mono font-bold text-purple-400 drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]">
-            {summary.total_roi}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Max Drawdown
-          </p>
-          <p className="text-xl font-mono font-bold text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
-            -{summary.max_drawdown || "0.00%"}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Profit Factor
-          </p>
-          <p
-            className={`text-xl font-mono font-bold ${
-              parseFloat(summary.profit_factor) >= 1.5
-                ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
-                : "text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]"
-            }`}
-          >
-            {summary.profit_factor}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Expectancy
-          </p>
-          <p className="text-xl font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
-            ${summary.expectancy}
-          </p>
-        </div>
-        <div className="p-3 border-l border-[#00cfff]/10">
-          <p className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1">
-            Risk of Ruin
-          </p>
-          <p
-            className={`text-xl font-mono font-bold ${
-              parseFloat(summary.risk_of_ruin) < 1
-                ? "text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]"
-                : "text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
-            }`}
-          >
-            {summary.risk_of_ruin}
-          </p>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-[#0a0f1c]/60 p-4 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+        {[
+          {
+            label: "Initial Capital",
+            value: `$${summary.initial_balance}`,
+            color: "text-white",
+            shadow: "drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]",
+            tooltip: "The starting balance for your simulation.",
+            border: false
+          },
+          {
+            label: "Closing Balance",
+            value: `$${summary.final_balance}`,
+            color: parseFloat(summary.final_balance) >= parseFloat(summary.initial_balance) ? "text-green-400" : "text-red-400",
+            shadow: parseFloat(summary.final_balance) >= parseFloat(summary.initial_balance) ? "drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            tooltip: "The final balance after all trades.",
+            border: true
+          },
+          {
+            label: "Net Profit",
+            value: `${parseFloat(summary.total_profit) >= 0 ? '+' : '-'}$${Math.abs(parseFloat(summary.total_profit)).toFixed(2)}`,
+            color: parseFloat(summary.total_profit) >= 0 ? "text-[#00cfff]" : "text-red-400",
+            shadow: parseFloat(summary.total_profit) >= 0 ? "drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            tooltip: "Total profit or loss over the simulation period.",
+            border: true
+          },
+          {
+            label: "ROI Growth",
+            value: summary.total_roi,
+            color: parseFloat(summary.total_roi) >= 0 ? "text-purple-400" : "text-red-400",
+            shadow: parseFloat(summary.total_roi) >= 0 ? "drop-shadow-[0_0_5px_rgba(192,132,252,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            tooltip: "Return on Investment as a percentage.",
+            border: true
+          },
+          {
+            label: "Max Drawdown",
+            value: `-${summary.max_drawdown || "0.00%"}`,
+            color: "text-red-400",
+            shadow: "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            tooltip: "The maximum observed loss from a peak to a trough.",
+            border: true
+          },
+          {
+            label: "Profit Factor",
+            value: summary.profit_factor,
+            color: parseFloat(summary.profit_factor) >= 1.5 ? "text-green-400" : (parseFloat(summary.profit_factor) >= 1 ? "text-yellow-400" : "text-red-400"),
+            shadow: parseFloat(summary.profit_factor) >= 1.5 ? "drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : (parseFloat(summary.profit_factor) >= 1 ? "drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]"),
+            tooltip: "Gross Profit divided by Gross Loss. >1.5 is excellent.",
+            border: true
+          },
+          {
+            label: "Expectancy",
+            value: `${parseFloat(summary.expectancy) >= 0 ? '' : '-'}$${Math.abs(parseFloat(summary.expectancy)).toFixed(2)}`,
+            color: parseFloat(summary.expectancy) >= 0 ? "text-[#00cfff]" : "text-red-400",
+            shadow: parseFloat(summary.expectancy) >= 0 ? "drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            tooltip: "Average amount won or lost per trade.",
+            border: true
+          },
+          {
+            label: "Risk of Ruin",
+            value: summary.risk_of_ruin,
+            color: parseFloat(summary.risk_of_ruin) < 1 ? "text-green-400" : "text-red-500",
+            shadow: parseFloat(summary.risk_of_ruin) < 1 ? "drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]" : "drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]",
+            tooltip: "Probability of depleting your account balance.",
+            border: true
+          }
+        ].map((card, idx) => (
+          <div key={idx} className={`relative p-3 rounded-xl transition-all duration-300 hover:bg-[#00cfff]/10 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(0,207,255,0.15)] cursor-help group flex flex-col justify-center ${card.border ? 'md:border-l border-[#00cfff]/10' : ''}`}>
+            <p className="text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1 group-hover:text-[#00cfff] transition-colors">
+              {card.label}
+            </p>
+            <p className={`text-xl font-mono font-bold ${card.color} ${card.shadow} transition-all duration-300 group-hover:scale-105 origin-left`}>
+              {card.value}
+            </p>
+            {/* Tooltip */}
+            <div className="absolute top-[110%] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 w-max max-w-[200px] bg-[#030308] border border-[#00cfff]/30 text-white text-[10px] p-2 rounded-lg shadow-[0_0_15px_rgba(0,207,255,0.3)] text-center font-medium">
+              {card.tooltip}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Monte Carlo & Warnings Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monte Carlo Simulation */}
         {monte_carlo && (
-          <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+          <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md flex flex-col">
             <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
               Monte Carlo Simulation{" "}
               <span className="text-[10px] text-gray-500 normal-case font-mono">
                 (500 Iterations)
               </span>
             </h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
-                <span className="text-sm font-medium text-gray-400">
-                  Worst Case (Bottom 5%)
-                </span>
-                <span className="font-mono font-bold text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
-                  ${monte_carlo.worst_case}
-                </span>
+            <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div className="space-y-4 flex flex-col justify-center">
+                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-red-500/20 hover:border-red-500/50 hover:bg-red-900/10 transition-all cursor-default">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-red-400/70">
+                    Worst Case <span className="text-[9px] lowercase opacity-70">(bottom 5%)</span>
+                  </span>
+                  <span className="font-mono font-bold text-red-400 drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]">
+                    ${monte_carlo.worst_case}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/20 hover:border-[#00cfff]/50 hover:bg-[#00cfff]/10 transition-all cursor-default">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#00cfff]/70">
+                    Median <span className="text-[9px] lowercase opacity-70">(most likely)</span>
+                  </span>
+                  <span className="font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
+                    ${monte_carlo.median}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-green-500/20 hover:border-green-500/50 hover:bg-green-900/10 transition-all cursor-default">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-green-400/70">
+                    Best Case <span className="text-[9px] lowercase opacity-70">(top 5%)</span>
+                  </span>
+                  <span className="font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
+                    ${monte_carlo.best_case}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
-                <span className="text-sm font-medium text-gray-400">
-                  Median (Most Likely)
-                </span>
-                <span className="font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
-                  ${monte_carlo.median}
-                </span>
+              <div className="h-full min-h-[200px] flex items-center bg-[#030308]/50 p-4 rounded-xl border border-[#00cfff]/10">
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={mcChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#9ca3af", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }} />
+                    <YAxis tickFormatter={(val) => `$${val >= 1000 ? (val/1000).toFixed(1)+'k' : val}`} axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "monospace" }} />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ backgroundColor: "#0a0f1c", borderColor: "#00cfff", color: "#fff", borderRadius: "12px", fontFamily: "monospace", boxShadow: "0 0 20px rgba(0,207,255,0.2)" }} formatter={(val) => [`$${val}`, 'Value']} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={35}>
+                      {mcChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} style={{ filter: `drop-shadow(0 0 8px ${entry.shadow})` }} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
-              <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
-                <span className="text-sm font-medium text-gray-400">
-                  Best Case (Top 5%)
-                </span>
-                <span className="font-mono font-bold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
-                  ${monte_carlo.best_case}
-                </span>
-              </div>
-              <p className="text-[10px] text-gray-500 mt-2 font-mono italic">
-              *This simulation randomizes the win/loss sequence to see the possible variations in your fate.
-              </p>
             </div>
+            <p className="text-[10px] text-[#00cfff]/50 mt-5 font-mono italic text-center border-t border-[#00cfff]/10 pt-4">
+              *This simulation randomizes the win/loss sequence to visualize the probability distribution of potential outcomes.
+            </p>
           </div>
         )}
 
         {/* Risk Analysis / Warnings */}
-        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
-          <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest">
+        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md flex flex-col">
+          <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
             Risk Analysis
+            <span className="relative flex h-2 w-2 ml-2">
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${warnings.length > 0 ? 'bg-red-400' : 'bg-green-400'}`}></span>
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${warnings.length > 0 ? 'bg-red-500' : 'bg-green-500'}`}></span>
+            </span>
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4 flex-1 flex flex-col justify-center">
             {warnings.length > 0 ? (
               warnings.map((w, idx) => (
                 <div
                   key={idx}
-                  className={`p-4 rounded-xl border flex items-start gap-3 ${
+                  className={`relative p-5 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-[#030308]/80 ${
                     w.type === "danger"
-                      ? "bg-red-900/10 border-red-500/30 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
-                      : "bg-yellow-900/10 border-yellow-500/30 text-yellow-200 shadow-[0_0_10px_rgba(250,204,21,0.1)]"
+                      ? "border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.15)] group"
+                      : "border border-yellow-500/50 shadow-[0_0_20px_rgba(250,204,21,0.15)] group"
                   }`}
                 >
-                  <span className="text-lg drop-shadow-[0_0_5px_currentColor]">
-                    {w.type === "danger" ? "VX" : "⚠"}
-                  </span>
-                  <span className="text-sm font-bold tracking-wide">{w.msg}</span>
+                  <div className={`absolute top-0 left-0 w-1 h-full ${w.type === "danger" ? "bg-red-500 shadow-[0_0_10px_#ef4444]" : "bg-yellow-500 shadow-[0_0_10px_#eab308]"}`}></div>
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl border ${w.type === "danger" ? "bg-red-900/30 text-red-400 border-red-500/30 group-hover:bg-red-500 group-hover:text-white" : "bg-yellow-900/30 text-yellow-400 border-yellow-500/30 group-hover:bg-yellow-500 group-hover:text-black"} transition-colors duration-300`}>
+                      <span className="flex items-center justify-center drop-shadow-[0_0_5px_currentColor]">
+                        {w.type === "danger" ? <Skull className="w-6 h-6" /> : <TriangleAlert className="w-6 h-6" />}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className={`text-[10px] font-extrabold uppercase tracking-widest mb-1 ${w.type === "danger" ? "text-red-400" : "text-yellow-400"}`}>
+                        {w.type === "danger" ? "Critical Risk Detected" : "Warning"}
+                      </h4>
+                      <p className="text-xs font-medium text-gray-300 tracking-wide leading-relaxed">{w.msg}</p>
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
-              <div className="p-5 bg-green-900/10 border border-green-500/30 rounded-xl text-green-400 flex items-center gap-3 shadow-[0_0_10px_rgba(34,197,94,0.1)]">
-                <span className="text-xl drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]">✓</span>
-                <span className="text-sm font-bold tracking-wide">
-                  Strategy looks healthy! No critical risks detected.
-                </span>
+              <div className="relative p-6 rounded-xl overflow-hidden bg-[#030308]/80 border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.1)] hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-300">
+                <div className="absolute inset-0 bg-green-500/5 backdrop-blur-sm"></div>
+                <div className="absolute top-0 left-0 w-1 h-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                <div className="relative flex items-center gap-5">
+                  <div className="p-4 rounded-full bg-green-900/30 text-green-400 border border-green-500/30">
+                    <CheckCircle className="w-8 h-8 drop-shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-extrabold text-green-400 uppercase tracking-widest mb-1 drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]">Strategy is Healthy</h4>
+                    <p className="text-sm font-medium text-gray-400 tracking-wide">
+                      No critical risks detected. Your parameters fall within safe and realistic bounds.
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

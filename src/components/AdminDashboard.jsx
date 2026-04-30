@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import ContactMessages from "./ContactMessages";
+import { LayoutDashboard, Users, CreditCard, FileText, Flag, MessageSquare, Mail, Megaphone, Scale, TriangleAlert, X, Check } from "lucide-react";
 
 const AdminDashboard = () => {
   const { userData } = useAuth();
@@ -260,15 +261,15 @@ const AdminDashboard = () => {
   };
 
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "users", label: "User Management", icon: "👥" },
-    { id: "subscriptions", label: "Subscriptions", icon: "💳" },
-    { id: "content", label: "Content Moderation", icon: "📝" },
-    { id: "reports", label: "Reports", icon: "🚩" },
-    { id: "feedbacks", label: "Feedbacks", icon: "💬" },
-    { id: "contactMessages", label: "Contact Messages", icon: "📧" },
-    { id: "broadcast", label: "Broadcast", icon: "📢" },
-    { id: "appeals", label: "Appeals", icon: "⚖️" },
+    { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
+    { id: "users", label: "User Management", icon: <Users className="w-4 h-4" /> },
+    { id: "subscriptions", label: "Subscriptions", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "content", label: "Content Moderation", icon: <FileText className="w-4 h-4" /> },
+    { id: "reports", label: "Reports", icon: <Flag className="w-4 h-4" /> },
+    { id: "feedbacks", label: "Feedbacks", icon: <MessageSquare className="w-4 h-4" /> },
+    { id: "contactMessages", label: "Contact Messages", icon: <Mail className="w-4 h-4" /> },
+    { id: "broadcast", label: "Broadcast", icon: <Megaphone className="w-4 h-4" /> },
+    { id: "appeals", label: "Appeals", icon: <Scale className="w-4 h-4" /> },
   ];
 
   return (

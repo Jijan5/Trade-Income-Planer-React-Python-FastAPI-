@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Check, Bot, ShieldCheck, TriangleAlert, TrendingUp } from "lucide-react";
 
 const Subscription = ({ onSubscribe }) => {
   const [billingCycle, setBillingCycle] = useState("monthly"); // 'monthly' or 'yearly'
@@ -11,8 +12,8 @@ const Subscription = ({ onSubscribe }) => {
       yearlyPrice: 119,
       description: "For traders who want more data and control.",
       features: [
-        "Export Trade History (CSV) ✅",
-        "Prop Firm Challenge Simulator ✅",
+        "Export Trade History (CSV)",
+        "Prop Firm Challenge Simulator",
       ],
       color: "blue",
       recommended: false,
@@ -25,10 +26,10 @@ const Subscription = ({ onSubscribe }) => {
       description: "The complete toolkit for serious growth.",
       features: [
         "Everything in Basic",
-        "🤖 AI Trading Coach Analysis",
-        "👮 Discipline Mode (Trading Rules)",
-        "⚠ Risk Management Calculator",
-        "📈 Strategy Simulator & Goal Planner",
+        "AI Trading Coach Analysis",
+        "Discipline Mode (Trading Rules)",
+        "Risk Management Calculator",
+        "Strategy Simulator & Goal Planner",
         "Create up to 3 Communities"
       ],
       color: "purple",
@@ -42,7 +43,7 @@ const Subscription = ({ onSubscribe }) => {
       description: "Ultimate status and customization.",
       features: [
         "Everything in Premium",
-        "✅ Verified User Badge",
+        "Verified User Badge",
         "Unlimited Community Creation",
         "Priority Support"
       ],
@@ -135,8 +136,8 @@ const Subscription = ({ onSubscribe }) => {
               <ul className="space-y-4">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-3 text-xs text-gray-300 font-medium">
-                    <span className={`flex-shrink-0 text-sm ${plan.recommended ? 'text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]' : 'text-[#00cfff]/50'}`}>✔</span>
-                    <span className="leading-tight">{feature.replace("✅", "").replace("🤖", "").replace("👮", "").replace("⚠", "").replace("📈", "").trim()}</span>
+                    <Check className={`flex-shrink-0 w-4 h-4 mt-0.5 ${plan.recommended ? 'text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]' : 'text-[#00cfff]/50'}`} />
+                    <span className="leading-tight">{feature}</span>
                   </li>
                 ))}
               </ul>

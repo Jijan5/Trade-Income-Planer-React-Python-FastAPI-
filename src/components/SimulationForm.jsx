@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Settings, TriangleAlert, X, Info } from "lucide-react";
 
 const SimulationForm = ({ onSimulate, isLoading }) => {
   const [formData, setFormData] = useState({
@@ -137,10 +138,10 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               onClick={() => setActiveTooltip(null)}
               className="absolute top-4 right-4 text-[#00cfff]/50 hover:text-[#00cfff] hover:rotate-90 transition-all duration-300"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
             <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#00cfff]/10 flex items-center justify-center border border-[#00cfff]/20 text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.2)]">ℹ</div>
+              <div className="w-8 h-8 rounded-full bg-[#00cfff]/10 flex items-center justify-center border border-[#00cfff]/20 text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.2)]"><Info className="w-5 h-5" /></div>
               {activeTooltip.title}
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed">
@@ -156,7 +157,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-[#00cfff]/10 pb-6 gap-6">
           <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">
-            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">⚙</span> Configuration
+            <Settings className="w-6 h-6 text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]" /> Configuration
           </h2>
 
           {/* Preset Buttons */}
@@ -266,7 +267,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
             />
             {formData.risk_per_trade > 2 && (
               <div className="mt-2 text-[10px] font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5 bg-yellow-500/10 p-1.5 rounded border border-yellow-500/20">
-                <span>⚠</span>
+                <TriangleAlert className="w-3 h-3" />
                 <span>High risk. Pros rarely risk {">"} 2%.</span>
               </div>
             )}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BookOpen, CheckSquare, GraduationCap, X, Rocket, ArrowLeft } from "lucide-react";
 
 const TRADING_TERMS = {
   long: {
@@ -125,13 +126,13 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="p-4 sm:p-5 border-b border-[#00cfff]/20 flex justify-between items-center bg-[#030308]/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff] text-xl">📖</span> Trading Glossary
+            <BookOpen className="w-5 h-5 text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]" /> Trading Glossary
           </h2>
           <button
             onClick={onClose}
-            className="text-[#00cfff]/50 hover:text-[#00cfff] text-xl font-bold px-2 transition-colors drop-shadow-[0_0_5px_rgba(0,207,255,0)] hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
+            className="text-[#00cfff]/50 hover:text-[#00cfff] font-bold p-1.5 transition-colors drop-shadow-[0_0_5px_rgba(0,207,255,0)] hover:drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -179,7 +180,7 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
               onClick={() => setSelectedTerm(null)}
               className="mt-4 text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors flex items-center gap-1"
             >
-              <span>←</span> Back to list
+              <ArrowLeft className="w-4 h-4" /> Back to list
             </button>
           </div>
         )}
@@ -256,13 +257,13 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="p-4 sm:p-5 border-b border-[#00cfff]/20 flex justify-between items-center bg-[#030308]/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-            <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff] text-xl">✅</span> Pre-Trade Checklist
+            <CheckSquare className="w-5 h-5 text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]" /> Pre-Trade Checklist
           </h2>
           <button
             onClick={onClose}
-            className="text-[#00cfff]/50 hover:text-[#00cfff] text-xl font-bold px-2 transition-colors"
+            className="text-[#00cfff]/50 hover:text-[#00cfff] font-bold p-1.5 transition-colors"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -308,7 +309,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
         <div className="p-4 sm:p-5 border-t border-[#00cfff]/20 bg-[#030308]/90 shrink-0">
           {showConfirmed ? (
             <div className="text-center py-3 animate-fade-in">
-              <span className="text-3xl block mb-2 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">🚀</span>
+              <Rocket className="w-10 h-10 mx-auto mb-2 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
               <p className="text-green-400 font-extrabold uppercase tracking-widest text-lg drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">Ready to Trade!</p>
             </div>
           ) : (
@@ -494,19 +495,19 @@ export const BeginnerHelpButtons = ({
         onClick={onOpenTutorial}
         className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        <span className="text-sm">🎓</span> Tutorial
+        <GraduationCap className="w-4 h-4" /> Tutorial
       </button>
       <button
         onClick={onOpenChecklist}
         className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        <span className="text-sm">✅</span> Checklist
+        <CheckSquare className="w-4 h-4" /> Checklist
       </button>
       <button
         onClick={onOpenGlossary}
         className="flex-1 min-w-[100px] bg-[#0a0f1c]/80 border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] text-[#00cfff] text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.05)] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:-translate-y-0.5"
       >
-        <span className="text-sm">📖</span> Glossary
+        <BookOpen className="w-4 h-4" /> Glossary
       </button>
     </div>
   );

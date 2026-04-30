@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useAuth } from "../contexts/AuthContext";
 import { getPlanLevel } from "../utils/permissions";
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, YAxis } from 'recharts';
+import { Lock } from "lucide-react";
 
 const TradeHistory = () => {
   const [trades, setTrades] = useState([]);
@@ -211,7 +212,7 @@ const TradeHistory = () => {
                 EXPORT
             </button>
             ) : (
-            <button disabled className="bg-[#030308] border border-gray-700 text-gray-500 px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-widest cursor-not-allowed">EXPORT 🔒</button>
+            <button disabled className="bg-[#030308] border border-gray-700 text-gray-500 px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-widest cursor-not-allowed flex items-center gap-2"><Lock className="w-3 h-3" /> EXPORT</button>
             )}
         </div>
       </div>

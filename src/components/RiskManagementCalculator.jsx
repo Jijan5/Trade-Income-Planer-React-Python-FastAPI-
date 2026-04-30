@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Wallet, ShieldAlert, OctagonX, Target, BarChart, Zap, Lightbulb, TrendingUp, TrendingDown, CheckCircle, TriangleAlert, XCircle } from 'lucide-react';
 
 const RiskManagementCalculator = ({ 
   accountBalance: propAccountBalance, 
@@ -71,27 +72,27 @@ const RiskManagementCalculator = ({
   // Educational content for each field
   const educationalContent = {
     accountBalance: {
-      title: "💰 What is Account Balance?",
+      title: <span className="flex items-center gap-1"><Wallet className="w-4 h-4"/> What is Account Balance?</span>,
       content: "Your account balance is the total amount of money you have available for trading. For beginners, it's recommended to start with virtual money or a small amount you can afford to lose.",
       tip: "Never trade with money you need for daily expenses!"
     },
     riskPercent: {
-      title: "⚠️ What is Risk Per Trade?",
+      title: <span className="flex items-center gap-1"><TriangleAlert className="w-4 h-4"/> What is Risk Per Trade?</span>,
       content: "Risk per trade is the percentage of your account you're willing to lose if a trade goes against you. Professional traders typically risk only 1-2% per trade.",
       tip: "The 2% rule: If you lose 2% of your account 50 times in a row, you'd still have most of your money!"
     },
     stopLoss: {
-      title: "🛑 What is Stop Loss?",
+      title: <span className="flex items-center gap-1"><OctagonX className="w-4 h-4"/> What is Stop Loss?</span>,
       content: "A stop loss is an automatic order that closes your trade when the price moves against you by a certain amount. It limits your potential loss.",
       tip: "Always use a stop loss! It's your safety net."
     },
     takeProfit: {
-      title: "🎯 What is Take Profit?",
+      title: <span className="flex items-center gap-1"><Target className="w-4 h-4"/> What is Take Profit?</span>,
       content: "Take profit is the price level where you automatically close a winning trade to secure your profits. It's the opposite of stop loss.",
       tip: "Always have a target profit. Greed can turn winners into losers!"
     },
     positionSize: {
-      title: "📊 What is Position Size?",
+      title: <span className="flex items-center gap-1"><BarChart className="w-4 h-4"/> What is Position Size?</span>,
       content: "Position size is how much money you're putting into a single trade. It determines how much you could win or lose.",
       tip: "Position Size = Risk Amount ÷ Stop Loss %"
     }
@@ -115,7 +116,7 @@ const RiskManagementCalculator = ({
     return (
       <div className="bg-[#0a0f1c]/60 p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
         <h3 className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <span className="text-sm">⚡</span> Risk Calculator
+          <Zap className="w-4 h-4" /> Risk Calculator
         </h3>
         
         <div className="space-y-4">
@@ -171,7 +172,7 @@ const RiskManagementCalculator = ({
               <span className="text-[10px] font-extrabold uppercase tracking-widest">Back</span>
             </button>
             <h3 className="text-sm font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_8px_#00cfff] flex items-center gap-2">
-              <span className="text-lg">⚡</span> Risk Management
+              <Zap className="w-5 h-5" /> Risk Management
             </h3>
           </div>
         </div>
@@ -195,7 +196,7 @@ const RiskManagementCalculator = ({
               <div className="mb-4 p-4 bg-[#030308]/90 rounded-xl border border-[#00cfff]/50 shadow-[0_0_15px_rgba(0,207,255,0.1)] backdrop-blur-md">
                 <h4 className="font-extrabold text-[#00cfff] text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.accountBalance.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.accountBalance.content}</p>
-                <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-block font-bold mt-1">💡 {educationalContent.accountBalance.tip}</p>
+                <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.accountBalance.tip}</p>
               </div>
             )}
             <input
@@ -233,7 +234,7 @@ const RiskManagementCalculator = ({
               <div className="mb-4 p-4 bg-[#030308]/90 rounded-xl border border-[#00cfff]/50 shadow-[0_0_15px_rgba(0,207,255,0.1)] backdrop-blur-md">
                 <h4 className="font-extrabold text-[#00cfff] text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.riskPercent.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.riskPercent.content}</p>
-                <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-block font-bold mt-1">💡 {educationalContent.riskPercent.tip}</p>
+                <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.riskPercent.tip}</p>
               </div>
             )}
             <input
@@ -280,23 +281,23 @@ const RiskManagementCalculator = ({
             <div className="flex gap-3 mb-5">
               <button
                 onClick={() => setTradeType('BUY')}
-                className={`flex-1 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
+                className={`flex-1 flex justify-center items-center gap-2 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
                   tradeType === 'BUY' 
                     ? 'bg-green-500/20 text-green-400 border border-green-500 shadow-[0_0_15px_rgba(74,222,128,0.2)]' 
                     : 'bg-[#030308] text-[#00cfff]/50 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 hover:text-[#00cfff]'
                 }`}
               >
-                <span className="mr-1 text-sm">📈</span> BUY (LONG)
+                <TrendingUp className="w-4 h-4" /> BUY (LONG)
               </button>
               <button
                 onClick={() => setTradeType('SELL')}
-                className={`flex-1 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
+                className={`flex-1 flex justify-center items-center gap-2 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
                   tradeType === 'SELL' 
                     ? 'bg-red-500/20 text-red-400 border border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.2)]' 
                     : 'bg-[#030308] text-[#00cfff]/50 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 hover:text-[#00cfff]'
                 }`}
               >
-                <span className="mr-1 text-sm">📉</span> SELL (SHORT)
+                <TrendingDown className="w-4 h-4" /> SELL (SHORT)
               </button>
             </div>
 
@@ -331,7 +332,7 @@ const RiskManagementCalculator = ({
                 {showInfo === 'stopLoss' && (
                   <div className="mb-3 p-3 bg-[#030308]/90 rounded-xl border border-[#00cfff]/50 shadow-[0_0_15px_rgba(0,207,255,0.1)] backdrop-blur-md">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.stopLoss.content}</p>
-                    <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-block font-bold">💡 {educationalContent.stopLoss.tip}</p>
+                    <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.stopLoss.tip}</p>
                   </div>
                 )}
                 <input
@@ -357,7 +358,7 @@ const RiskManagementCalculator = ({
                 {showInfo === 'takeProfit' && (
                   <div className="mb-3 p-3 bg-[#030308]/90 rounded-xl border border-[#00cfff]/50 shadow-[0_0_15px_rgba(0,207,255,0.1)] backdrop-blur-md">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.takeProfit.content}</p>
-                    <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-block font-bold">💡 {educationalContent.takeProfit.tip}</p>
+                    <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.takeProfit.tip}</p>
                   </div>
                 )}
                 <input
@@ -376,7 +377,7 @@ const RiskManagementCalculator = ({
             <div className="bg-[#00cfff]/5 p-5 rounded-xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#00cfff]/5 rounded-full blur-3xl pointer-events-none"></div>
               <h4 className="text-[10px] font-extrabold text-[#00cfff] uppercase tracking-widest mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_#00cfff]">
-                <span className="text-lg">📊</span> Your Trading Plan
+                <BarChart className="w-5 h-5" /> Your Trading Plan
               </h4>
               
               <div className="grid grid-cols-2 gap-4">
@@ -407,7 +408,7 @@ const RiskManagementCalculator = ({
                   {showInfo === 'positionSize' && (
                     <div className="mb-3 p-3 bg-[#030308]/90 rounded-xl border border-[#00cfff]/50 shadow-[0_0_15px_rgba(0,207,255,0.1)] backdrop-blur-md">
                       <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.positionSize.content}</p>
-                      <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-block font-bold">💡 {educationalContent.positionSize.tip}</p>
+                      <p className="text-[#00cfff] text-[10px] uppercase tracking-widest bg-[#00cfff]/10 p-2 rounded border border-[#00cfff]/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.positionSize.tip}</p>
                     </div>
                   )}
                   <div className="text-2xl font-mono font-extrabold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
@@ -425,7 +426,7 @@ const RiskManagementCalculator = ({
               {entryPrice && calculations.stopLossPrice > 0 && (
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div className="bg-red-900/10 p-4 rounded-xl border border-red-500/20 shadow-[inset_0_0_15px_rgba(248,113,113,0.02)]">
-                    <div className="text-[10px] font-extrabold text-red-400/70 uppercase tracking-widest mb-1 flex items-center gap-1">🛑 Stop Loss</div>
+                    <div className="text-[10px] font-extrabold text-red-400/70 uppercase tracking-widest mb-1 flex items-center gap-1"><OctagonX className="w-3 h-3" /> Stop Loss</div>
                     <div className="text-xl font-mono font-bold text-red-400 drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">
                       ${calculations.stopLossPrice.toFixed(2)}
                     </div>
@@ -434,7 +435,7 @@ const RiskManagementCalculator = ({
                     </div>
                   </div>
                   <div className="bg-green-900/10 p-4 rounded-xl border border-green-500/20 shadow-[inset_0_0_15px_rgba(74,222,128,0.02)]">
-                    <div className="text-[10px] font-extrabold text-green-400/70 uppercase tracking-widest mb-1 flex items-center gap-1">🎯 Take Profit</div>
+                    <div className="text-[10px] font-extrabold text-green-400/70 uppercase tracking-widest mb-1 flex items-center gap-1"><Target className="w-3 h-3" /> Take Profit</div>
                     <div className="text-xl font-mono font-bold text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">
                       ${calculations.takeProfitPrice.toFixed(2)}
                     </div>
@@ -483,10 +484,10 @@ const RiskManagementCalculator = ({
                     : 'text-red-400 bg-red-900 border-red-500/50'
                 }`}>
                   {calculations.riskRewardRatio >= 2 
-                    ? '✅ Great! At least 2:1 ratio - profitable with 50% win rate'
+                    ? <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4"/> Great! At least 2:1 ratio - profitable with 50% win rate</span>
                     : calculations.riskRewardRatio >= 1 
-                    ? '⚠️ Okay ratio - needs >50% win rate to be profitable'
-                    : '❌ Poor ratio - very high win rate required'}
+                    ? <span className="flex items-center gap-1"><TriangleAlert className="w-4 h-4"/> Okay ratio - needs {">"}50% win rate to be profitable</span>
+                    : <span className="flex items-center gap-1"><XCircle className="w-4 h-4"/> Poor ratio - very high win rate required</span>}
                 </p>
               </div>
             </div>
@@ -509,7 +510,7 @@ const RiskManagementCalculator = ({
           {/* Beginner Tips */}
           <div className="bg-[#00cfff]/5 p-5 rounded-xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] mt-4">
             <h4 className="text-[10px] font-extrabold text-[#00cfff] uppercase tracking-widest mb-3 flex items-center gap-2 drop-shadow-[0_0_5px_#00cfff]">
-              <span className="text-lg">💡</span> Beginner Tips
+              <Lightbulb className="w-5 h-5" /> Beginner Tips
             </h4>
             <ul className="text-xs text-gray-300 space-y-3 font-medium leading-relaxed">
               <li className="flex items-start gap-2"><span className="text-[#00cfff] mt-0.5">•</span> <span><strong className="text-white">Start with 1-2% risk</strong> - Protects your account from losing streaks</span></li>

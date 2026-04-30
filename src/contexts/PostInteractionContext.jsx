@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import api from '../lib/axios';
+import { TriangleAlert, Flag } from 'lucide-react';
 import { useAuth } from './AuthContext';
 
 const PostInteractionContext = createContext();
@@ -304,7 +305,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setConfirmModal({ isOpen: false, commentId: null, postId: null })}>
                     <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] flex flex-col items-center gap-3">
-                            <span className="text-4xl">⚠</span> DELETE COMMENT?
+                            <TriangleAlert className="w-10 h-10" /> DELETE COMMENT?
                         </h3>
                         <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS COMMENT? THIS ACTION CANNOT BE UNDONE.</p>
                         <div className="flex justify-center gap-4">
@@ -320,7 +321,7 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setReportModal({ isOpen: false, postId: null, reason: "" })}>
                     <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
-                            <span className="text-4xl">🚩</span> REPORT POST
+                            <Flag className="w-10 h-10" /> REPORT POST
                         </h3>
                         <p className="text-gray-400 text-sm mb-4 font-medium">Please let us know why you are reporting this post:</p>
                         <input 
