@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/axios';
+import { Ban } from 'lucide-react';
 
 const SuspendedPage = () => {
     const { userData, logout } = useAuth();
@@ -36,7 +37,9 @@ const SuspendedPage = () => {
             <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-red-900/10 rounded-full blur-[150px] pointer-events-none"></div>
             
             <div className="max-w-2xl w-full bg-[#0a0f1c]/90 backdrop-blur-xl rounded-3xl border border-red-500/50 p-10 shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center relative z-10">
-                <div className="w-24 h-24 mx-auto bg-red-900/20 rounded-full flex items-center justify-center border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)] mb-8 text-5xl">⛔</div>
+                <div className="w-24 h-24 mx-auto bg-red-900/20 rounded-full flex items-center justify-center border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)] mb-8">
+                    <Ban className="w-12 h-12 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]" strokeWidth={2.5} />
+                </div>
                 <h1 className="text-3xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">ACCOUNT SUSPENDED</h1>
                 <p className="text-red-400/70 mb-8 font-medium">Your account has been temporarily suspended due to a violation of our community guidelines.</p>
 
@@ -64,18 +67,18 @@ const SuspendedPage = () => {
                         <p className="text-sm text-green-400/70">Your appeal is pending review by our admin team. Thank you for your patience.</p>
                     </div>
                 ) : (
-                    <div className="bg-[#030308] p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] text-left">
-                        <h3 className="text-[11px] font-extrabold text-[#00cfff] mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_currentColor]">SUBMIT AN APPEAL</h3>
-                        <p className="text-sm text-[#00cfff]/70 mb-6">If you believe this was a mistake, you can submit an appeal for review.</p>
+                    <div className="bg-[#030308] p-8 rounded-2xl border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.05)] text-left">
+                        <h3 className="text-[11px] font-extrabold text-red-500 mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_currentColor]">SUBMIT AN APPEAL</h3>
+                        <p className="text-sm text-red-500/70 mb-6">If you believe this was a mistake, you can submit an appeal for review.</p>
                         <form onSubmit={handleAppealSubmit}>
                             <textarea
                                 value={appealMessage}
                                 onChange={(e) => setAppealMessage(e.target.value)}
                                 placeholder="EXPLAIN WHY YOUR SUSPENSION SHOULD BE RECONSIDERED..."
-                                className="w-full bg-[#0a0f1c] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none h-32 resize-none text-sm font-mono placeholder:text-[#00cfff]/20 transition-all custom-scrollbar"
+                                className="w-full bg-[#0a0f1c] border border-red-500/30 rounded-xl p-4 text-white focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.2)] outline-none h-32 resize-none text-sm font-mono placeholder:text-red-500/20 transition-all custom-scrollbar"
                             />
                             {error && <p className="text-red-400 text-xs mt-3 font-extrabold uppercase tracking-widest">{error}</p>}
-                            <button type="submit" disabled={loading} className="mt-6 w-full bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-6 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button type="submit" disabled={loading} className="mt-6 w-full bg-red-500 hover:bg-red-400 text-[#030308] px-6 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
                                 {loading ? "SUBMITTING..." : "SUBMIT APPEAL"}
                             </button>
                         </form>

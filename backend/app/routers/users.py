@@ -66,7 +66,7 @@ async def update_user_profile(
 async def search_users(q: str = "", session: Session = Depends(get_session), user: User = Depends(get_current_user)):
     if not q:
         return []
-    users = session.exec(select(User).where(User.tenant_id == user.tenant_id, User.username.ilike(f"{q}%")).limit(5)).all()
+    users = session.exec(select(User).where(User.tenant_id == user.tenant_id, User.username.ilike(f"%{q}%")).limit(5)).all()
     return [{"username": user.username, "avatar_url": user.avatar_url} for user in users]
 
 @router.get("/api/users/me/communities", response_model=list[Community])

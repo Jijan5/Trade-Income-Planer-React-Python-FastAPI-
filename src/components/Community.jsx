@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
+import MentionInput from "./MentionInput";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -142,7 +143,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   };
 
   return (
-    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post">
+    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[60] transition-all">
             {/* Ambient Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 
@@ -195,7 +196,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             {/* Post Content */}
             {editingItem?.type === "post" && editingItem?.id === post.id ? (
               <div className="space-y-3 relative z-10">
-                <textarea value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl p-4 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" rows={4} />
+                <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl p-4 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" rows={4} />
                 <div className="flex justify-end gap-3">
                   <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-4 py-2 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
                   <button onClick={handleLocalUpdatePost} className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] hover:bg-[#00e5ff] transition-all font-extrabold tracking-wide">Save</button>
@@ -262,7 +263,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                         <div className="bg-[#030308]/60 border border-[#00cfff]/10 p-4 rounded-xl text-sm group relative hover:border-[#00cfff]/30 hover:shadow-[0_0_15px_rgba(0,207,255,0.05)] transition-all">
                           {editingItem?.type === "comment" && editingItem?.id === comment.id ? (
                             <div className="space-y-3">
-                              <input type="text" value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#0a0f1c] border border-[#00cfff]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
+                              <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#0a0f1c] border border-[#00cfff]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none shadow-[0_0_10px_rgba(0,207,255,0.1)]" rows={1} />
                               <div className="flex justify-end gap-3">
                                 <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 py-1.5 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-md transition-colors font-bold">Cancel</button>
                                 <button onClick={handleUpdateComment} className="text-xs bg-[#00cfff] text-[#030308] px-3 py-1.5 rounded-md hover:shadow-[0_0_10px_rgba(0,207,255,0.5)] font-bold transition-all">Save</button>
@@ -297,7 +298,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                         </div>
                         {replyingTo?.commentId === comment.id && (
                           <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-3 ml-10 flex gap-3 relative z-10">
-                            <input type="text" name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-4 py-2 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" autoFocus />
+                            <MentionInput name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-4 py-2 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" autoFocus rows={1} />
                             <button type="submit" className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] font-bold transition-all tracking-wide">Reply</button>
                             <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 border border-transparent hover:border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
                           </form>
@@ -317,7 +318,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                   )
                 })()}
                 <div className="flex gap-3 mt-5 relative z-10">
-                <input type="text" placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none transition-all" onKeyPress={(e) => e.key === "Enter" && submitComment(post.id, commentText)} />
+                <MentionInput placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none transition-all" onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(post.id, commentText); } }} rows={1} />
                 <button onClick={() => submitComment(post.id, commentText)} className="bg-[#00cfff] hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] text-[#030308] px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide">Send</button>
                 </div>
               </div>
@@ -778,43 +779,6 @@ const Community = ({
     }
   };
 
-  const handleInputChange = async (e) => {
-    const val = e.target.value;
-    setNewPostContent(val);
-
-    // Mention Logic
-    const selectionStart = e.target.selectionStart;
-    const textBefore = val.substring(0, selectionStart);
-    const lastAt = textBefore.lastIndexOf('@');
-
-    if (lastAt !== -1) {
-      const query = textBefore.substring(lastAt + 1);
-      // Simple check: stop searching if space is typed
-      if (!/\s/.test(query)) {
-        try {
-          const res = await api.get(`/users/search?q=${query}`);
-          setMentionState({
-            active: true,
-            query,
-            suggestions: res.data,
-            position: { top: '100%', left: 0 } // Position handled by CSS relative to parent
-          });
-        } catch (err) { /* ignore */ }
-      } else {
-        setMentionState(prev => ({ ...prev, active: false }));
-      }
-    } else {
-      setMentionState(prev => ({ ...prev, active: false }));
-    }
-  };
-
-  const insertMention = (username) => {
-    const parts = newPostContent.split('@');
-    parts.pop(); // Remove the partial query
-    const newValue = parts.join('@') + `@${username} `;
-    setNewPostContent(newValue);
-    setMentionState(prev => ({ ...prev, active: false }));
-  };
 
   // Handle Create Post
   const handlePostSubmit = async (e) => {
@@ -951,33 +915,19 @@ const Community = ({
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-6">
+        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-6 relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
             <div className="flex gap-4 sm:gap-5">
               <div className="flex-1 min-w-0">
                 <div className="relative">
-                  <textarea
+                  <MentionInput
                     value={newPostContent}
-                    onChange={handleInputChange}
+                    onChange={(e) => setNewPostContent(e.target.value)}
                     name="mainPostContent"
                     onPaste={handlePaste}
                     placeholder={`What's on your mind? Share a strategy or crypto news...`}
                     className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] min-h-[120px] transition-all resize-none"
                   />
-                  {/* Mention Box */}
-                  {mentionState.active && mentionState.suggestions.length > 0 && (
-                    <div className="absolute z-50 bg-[#030308]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] overflow-hidden mt-2 w-56 left-0 top-full">
-                      {mentionState.suggestions.map((user) => (
-                        <button
-                          key={user.username}
-                          onClick={() => insertMention(user.username)}
-                          className="w-full text-left px-4 py-3 text-sm font-bold text-gray-300 hover:bg-[#00cfff]/20 hover:text-[#00cfff] transition-colors"
-                        >
-                          {user.username}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Image Preview */}

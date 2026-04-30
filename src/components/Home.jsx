@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthenticatedImage from "./AuthenticatedImage"; // Import the new component
+import MentionInput from "./MentionInput";
 import { usePostInteractions } from "../contexts/PostInteractionContext";
 
 // Base URL for resource statis (img/avatar)
@@ -278,7 +279,7 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]"
+        className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[60] transition-all"
       >
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
@@ -381,7 +382,7 @@ const PostItem = React.memo(
         </div>
         {editingItem?.type === "post" && editingItem?.id === post.id ? (
           <div className="space-y-3">
-            <textarea
+            <MentionInput
               value={editingItem.content}
               onChange={(e) =>
                 setEditingItem({ ...editingItem, content: e.target.value })
@@ -566,8 +567,7 @@ const PostItem = React.memo(
                       {editingItem?.type === "comment" &&
                       editingItem?.id === comment.id ? (
                         <div className="space-y-2">
-                          <input
-                            type="text"
+                          <MentionInput
                             value={editingItem.content}
                             onChange={(e) =>
                               setEditingItem({
@@ -576,6 +576,7 @@ const PostItem = React.memo(
                               })
                             }
                             className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none"
+                            rows={1}
                           />
                           <div className="flex justify-end gap-2">
                             <button
@@ -706,14 +707,14 @@ const PostItem = React.memo(
                         }}
                         className="mt-3 ml-8 flex gap-2"
                       >
-                        <input
-                          type="text"
+                        <MentionInput
                           name="replyInput"
                           value={replyContent}
                           onChange={(e) => setReplyContent(e.target.value)}
                           placeholder={`Replying to ${comment.username}...`}
                           className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-3 py-1.5 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all"
                           autoFocus
+                          rows={1}
                         />
                         <button
                           type="submit"
@@ -780,8 +781,7 @@ const PostItem = React.memo(
               );
             })()}
             <div className="flex gap-3 mt-4">
-              <input
-                type="text"
+              <MentionInput
                 placeholder="Write a comment..."
                 name={`commentInput-${post.id}`}
                 value={commentText || ""}
@@ -792,9 +792,13 @@ const PostItem = React.memo(
                   }))
                 }
                 className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all"
-                onKeyPress={(e) =>
-                  e.key === "Enter" && submitComment(post.id, commentText)
-                }
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submitComment(post.id, commentText);
+                  }
+                }}
+                rows={1}
               />
               <button
                 onClick={() => submitComment(post.id, commentText)}
@@ -1305,9 +1309,9 @@ const Home = ({
         } lg:block lg:col-span-2 space-y-6`}
       >
         {/* Create Post Box */}
-        <div className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)]">
+        <div className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
-            <textarea
+            <MentionInput
               value={newPostContent}
               name="mainPostContent"
               onChange={(e) => setNewPostContent(e.target.value)}

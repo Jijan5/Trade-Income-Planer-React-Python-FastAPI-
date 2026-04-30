@@ -4,6 +4,7 @@ import api from "../lib/axios";
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
+import MentionInput from "./MentionInput";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
@@ -166,13 +167,13 @@ const PostDetail = ({ showFlash }) => {
       
       {replyingTo === comment.id && (
         <div className="mt-3 ml-4 flex gap-3 animate-fade-in">
-          <input 
-            type="text" 
+          <MentionInput 
             value={replyContent} 
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder={`REPLY TO @${comment.username}...`}
             className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2 text-[10px] text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] font-mono placeholder:text-[#00cfff]/30 transition-all"
             autoFocus
+            rows={1}
           />
           <button onClick={() => submitComment(replyContent, comment.id)} className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(0,207,255,0.3)] transition-all">REPLY</button>
           <button onClick={() => setReplyingTo(null)} className="text-[#00cfff]/50 hover:text-[#00cfff] text-[10px] font-extrabold uppercase tracking-widest transition-colors">CANCEL</button>
@@ -273,13 +274,18 @@ const PostDetail = ({ showFlash }) => {
         
         {/* Add Comment */}
         <div className="flex gap-4 mb-8">
-          <input 
-            type="text" 
+          <MentionInput 
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="WRITE A COMMENT..."
             className="flex-1 bg-[#0a0f1c]/80 backdrop-blur-md border border-[#00cfff]/30 rounded-xl px-5 py-4 text-white text-xs font-mono placeholder:text-[#00cfff]/30 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
-            onKeyPress={(e) => e.key === 'Enter' && submitComment(newComment)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                submitComment(newComment);
+              }
+            }}
+            rows={1}
           />
           <button 
             onClick={() => submitComment(newComment)}

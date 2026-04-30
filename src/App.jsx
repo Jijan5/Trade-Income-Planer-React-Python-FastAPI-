@@ -761,7 +761,7 @@ function App() {
             </div>
           )}
           {/* Navbar */}
-          <nav className="bg-[#0a0f1c]/80 backdrop-blur-md border-b border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,207,255,0.05)] px-6 py-4 fixed top-0 left-0 right-0 z-50">
+          <nav className={`bg-[#0a0f1c]/80 backdrop-blur-md border-b px-6 py-4 fixed top-0 left-0 right-0 z-50 ${location.pathname === "/suspended" ? "border-red-500/50 shadow-[0_4px_30px_rgba(239,68,68,0.15)]" : "border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,207,255,0.05)]"}`}>
             <div className="flex items-center justify-between w-full">
               <div
                 className="flex items-center cursor-pointer"
@@ -1209,7 +1209,7 @@ function App() {
           </div>
           {/* 📱 MOBILE BOTTOM NAVIGATION */}
           {token && (
-            <div className="fixed bottom-0 left-0 right-0 bg-[#0a0f1c]/90 backdrop-blur-md border-t border-[#00cfff]/20 md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+            <div className={`fixed bottom-0 left-0 right-0 bg-[#0a0f1c]/90 backdrop-blur-md border-t md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.5)] ${location.pathname === "/suspended" ? "border-red-500/50" : "border-[#00cfff]/20"}`}>
               {token &&
                 navItems.map((item) => (
                   <button
@@ -1228,8 +1228,8 @@ function App() {
             </div>
           )}
           {/* Footer */}
-          <footer className="bg-[#030308] border-t border-[#00cfff]/20 mt-auto py-12 z-10 relative hidden md:block overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent"></div>
+          <footer className={`bg-[#030308] border-t mt-auto py-12 z-10 relative hidden md:block overflow-hidden ${location.pathname === "/suspended" ? "border-red-500/50" : "border-[#00cfff]/20"}`}>
+            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent to-transparent ${location.pathname === "/suspended" ? "via-red-500/30" : "via-[#00cfff]/30"}`}></div>
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
               <div className="text-center md:text-left">
                 <div className="flex justify-center md:justify-start mb-4">

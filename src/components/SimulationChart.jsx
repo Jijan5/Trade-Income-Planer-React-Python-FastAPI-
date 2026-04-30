@@ -274,16 +274,22 @@ export default function SimulationChart({ data }) {
     render(); renderOverlay(null);
   };
 
-  const onWheel = e => {
-    e.preventDefault();
-    const v = viewRef.current;
-    const factor = e.deltaY > 0 ? 1.15 : 0.87;
-    const newVis = Math.round(Math.min(Math.max(10, v.visible * factor), candles.length));
-    const newStart = Math.max(0, Math.min(candles.length - newVis, v.startIdx + Math.round((v.visible - newVis) / 2)));
-    viewRef.current = { startIdx: newStart, visible: newVis };
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(() => { render(); renderOverlay(null); });
-  };
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const v = viewRef.current;
+      const factor = e.deltaY > 0 ? 1.15 : 0.87;
+      const newVis = Math.round(Math.min(Math.max(10, v.visible * factor), candles.length));
+      const newStart = Math.max(0, Math.min(candles.length - newVis, v.startIdx + Math.round((v.visible - newVis) / 2)));
+      viewRef.current = { startIdx: newStart, visible: newVis };
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => { render(); renderOverlay(null); });
+    };
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [candles, render, renderOverlay]);
 
   const onMouseLeave = () => { mouseRef.current = { x: -1, y: -1 }; renderOverlay(null); };
 
@@ -341,7 +347,7 @@ export default function SimulationChart({ data }) {
           <canvas ref={mainRef} className="absolute inset-0" />
           <canvas ref={overlayRef} className="absolute inset-0"
             onMouseMove={onMouseMove} onMouseDown={onMouseDown} onMouseUp={onMouseUp}
-            onMouseLeave={onMouseLeave} onWheel={onWheel} style={{ cursor: 'inherit' }} />
+            onMouseLeave={onMouseLeave} style={{ cursor: 'inherit' }} />
         </div>
       </div>
 
