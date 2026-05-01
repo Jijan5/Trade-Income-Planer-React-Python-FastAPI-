@@ -143,7 +143,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   };
 
   return (
-    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[60] transition-all">
+    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all">
             {/* Ambient Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 

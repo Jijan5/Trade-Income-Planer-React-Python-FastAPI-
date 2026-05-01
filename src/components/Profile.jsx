@@ -393,7 +393,21 @@ const Profile = ({ showFlash }) => {
           />
         </div>
 
-        <div className="pt-6 flex justify-end">
+        <div className="pt-6 flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => {/* TODO: open UI Lab panel */}}
+            className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all border border-[#00cfff]/40 text-[#00cfff] bg-[#00cfff]/5 hover:bg-[#00cfff]/15 hover:border-[#00cfff] hover:shadow-[0_0_20px_rgba(0,207,255,0.3)] hover:-translate-y-0.5 text-xs"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+            </svg>
+            Customize Platform
+          </button>
           <button
             type="submit"
             disabled={loading}

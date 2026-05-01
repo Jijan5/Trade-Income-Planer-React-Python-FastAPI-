@@ -279,7 +279,7 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[60] transition-all"
+        className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
       >
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
