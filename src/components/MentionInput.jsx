@@ -120,20 +120,20 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
             />
             
             {showSuggestions && (
-                <div className="absolute z-[100] mt-1 w-64 max-h-64 overflow-y-auto bg-[#0a0f1c]/95 backdrop-blur-xl border border-[#00cfff]/50 rounded-xl shadow-[0_10px_50px_rgba(0,207,255,0.3)] custom-scrollbar">
-                    <div className="px-3 py-2 border-b border-[#00cfff]/20 text-[10px] text-[#00cfff] font-extrabold uppercase tracking-widest bg-[#030308]/50">
+                <div className="absolute z-[100] mt-1 w-64 max-h-64 overflow-y-auto bg-engine-panel/95 backdrop-blur-xl border border-engine-neon/50 rounded-xl shadow-[0_10px_50px_rgba(var(--engine-neon-rgb),0.3)] custom-scrollbar">
+                    <div className="px-3 py-2 border-b border-engine-neon/20 text-[10px] text-engine-neon font-extrabold uppercase tracking-widest bg-engine-bg/50">
                         Select a User
                     </div>
                     {suggestions.map((user, idx) => (
                         <div
                             key={user.username}
                             onClick={() => handleSuggestionClick(user.username)}
-                            className={`flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-[#00cfff]/20 ${idx !== suggestions.length - 1 ? 'border-b border-[#00cfff]/10' : ''}`}
+                            className={`flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-engine-button/20 ${idx !== suggestions.length - 1 ? 'border-b border-engine-neon/10' : ''}`}
                         >
                             {user.avatar_url ? (
-                                <img src={`${user.avatar_url.startsWith('http') ? '' : API_BASE_URL}${user.avatar_url}`} alt={user.username} className="w-8 h-8 rounded-full border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)] object-cover" />
+                                <img src={`${user.avatar_url.startsWith('http') ? '' : API_BASE_URL}${user.avatar_url}`} alt={user.username} className="w-8 h-8 rounded-full border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] object-cover" />
                             ) : (
-                                <div className="w-8 h-8 bg-[#030308] rounded-full border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)] flex items-center justify-center text-[#00cfff] text-xs font-bold">
+                                <div className="w-8 h-8 bg-engine-bg rounded-full border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] flex items-center justify-center text-engine-neon text-xs font-bold">
                                     {user.username.substring(0, 2).toUpperCase()}
                                 </div>
                             )}

@@ -143,17 +143,17 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   };
 
   return (
-    <div key={post.id} id={`post-${post.id}`} className="bg-[#0a0f1c]/60 backdrop-blur-md p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all">
+    <div key={post.id} id={`post-${post.id}`} className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all">
             {/* Ambient Background Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-engine-neon/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 
             {/* Post Header & Menu */}
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
                 {post.avatar_url ? (
-                  <img src={post.avatar_url.startsWith('http') ? post.avatar_url : `${API_BASE_URL}${post.avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover border border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
+                  <img src={post.avatar_url.startsWith('http') ? post.avatar_url : `${API_BASE_URL}${post.avatar_url}`} alt={post.username} className="w-8 h-8 rounded-full object-cover border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]" />
                 ) : (
-                  <div className="w-8 h-8 bg-[#030308] border border-[#00cfff]/30 rounded-full flex items-center justify-center text-[#00cfff] font-extrabold uppercase tracking-widest text-[10px] shadow-[0_0_10px_rgba(0,207,255,0.1)]">
+                  <div className="w-8 h-8 bg-engine-bg border border-engine-neon/30 rounded-full flex items-center justify-center text-engine-neon font-extrabold uppercase tracking-widest text-[10px] shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]">
                     {post.username.substring(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -178,11 +178,11 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     </svg>
                   </button>
                   {activeMenu?.type === "post" && activeMenu?.id === post.id && (
-                    <div ref={menuRef} className="absolute right-0 mt-2 w-36 border border-[#00cfff]/30 rounded-xl shadow-[0_0_20px_rgba(0,207,255,0.15)] z-20 overflow-hidden bg-[#030308]/95 backdrop-blur-md">
+                    <div ref={menuRef} className="absolute right-0 mt-2 w-36 border border-engine-neon/30 rounded-xl shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.15)] z-20 overflow-hidden bg-engine-bg/95 backdrop-blur-md">
                       {currentUser === post.username || userData?.role === 'admin' ? (
                         <>
                           {currentUser === post.username && (
-                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-3 text-sm text-[#00cfff] hover:bg-[#00cfff]/10 transition-colors font-bold">Edit</button>
+                            <button onClick={() => startEditPost(post)} className="w-full text-left px-4 py-3 text-sm text-engine-neon hover:bg-engine-button/10 transition-colors font-bold">Edit</button>
                           )}
                           <button onClick={handleLocalDeletePost} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors font-bold">Delete</button>
                           </>
@@ -196,10 +196,10 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             {/* Post Content */}
             {editingItem?.type === "post" && editingItem?.id === post.id ? (
               <div className="space-y-3 relative z-10">
-                <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl p-4 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" rows={4} />
+                <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-engine-bg/80 border border-engine-neon/30 rounded-xl p-4 text-white text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all" rows={4} />
                 <div className="flex justify-end gap-3">
-                  <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-4 py-2 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
-                  <button onClick={handleLocalUpdatePost} className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] hover:bg-[#00e5ff] transition-all font-extrabold tracking-wide">Save</button>
+                  <button onClick={() => setEditingItem(null)} className="text-xs text-engine-neon/70 hover:text-engine-neon px-4 py-2 border border-engine-neon/20 hover:bg-engine-button/10 rounded-lg transition-colors font-bold">Cancel</button>
+                  <button onClick={handleLocalUpdatePost} className="text-xs bg-engine-button text-engine-bg px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.6)] hover:bg-[#00e5ff] transition-all font-extrabold tracking-wide">Save</button>
                 </div>
               </div>
             ) : (
@@ -210,12 +210,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               </p>
             )}
             {post.image_url && (
-              <div className="mt-4 rounded-xl overflow-hidden border border-[#00cfff]/10 relative z-10 group/img">
+              <div className="mt-4 rounded-xl overflow-hidden border border-engine-neon/10 relative z-10 group/img">
                 <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full h-auto max-h-[450px] object-cover cursor-pointer group-hover/img:scale-[1.02] transition-transform duration-500" onClick={() => setPreviewImage(`${API_BASE_URL}${post.image_url}`)} />
               </div>
             )}
             {post.link_url && (
-              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-[#0a0f1c]/80 border border-[#00cfff]/20 rounded-xl text-[#00cfff] text-sm hover:bg-[#00cfff]/10 hover:shadow-[0_0_10px_rgba(0,207,255,0.1)] transition-all truncate relative z-10">🔗 {post.link_url}</a>
+              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-engine-panel/80 border border-engine-neon/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] transition-all truncate relative z-10">🔗 {post.link_url}</a>
             )}
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
@@ -243,7 +243,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             </div>
             {/* Comments Section */}
             {isExpanded && (
-              <div className="mt-5 pt-5 border-t border-[#00cfff]/10 animate-fade-in relative z-10">
+              <div className="mt-5 pt-5 border-t border-engine-neon/10 animate-fade-in relative z-10">
                 {(() => {
                   const buildCommentTree = (comments) => {
                     const commentMap = {};
@@ -260,21 +260,21 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     const isRepliesExpanded = expandedReplies[comment.id];
                     return (
                       <div key={comment.id} className="mt-4" style={{ borderLeft: comment.parent_id ? "2px solid rgba(0, 207, 255, 0.2)" : "none", paddingLeft: comment.parent_id ? "1.5rem" : "0" }}>
-                        <div className="bg-[#030308]/60 border border-[#00cfff]/10 p-4 rounded-xl text-sm group relative hover:border-[#00cfff]/30 hover:shadow-[0_0_15px_rgba(0,207,255,0.05)] transition-all">
+                        <div className="bg-engine-bg/60 border border-engine-neon/10 p-4 rounded-xl text-sm group relative hover:border-engine-neon/30 hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] transition-all">
                           {editingItem?.type === "comment" && editingItem?.id === comment.id ? (
                             <div className="space-y-3">
-                              <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-[#0a0f1c] border border-[#00cfff]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#00cfff] outline-none shadow-[0_0_10px_rgba(0,207,255,0.1)]" rows={1} />
+                              <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-engine-panel border border-engine-neon/40 rounded-lg px-3 py-2 text-white text-sm focus:border-engine-neon outline-none shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]" rows={1} />
                               <div className="flex justify-end gap-3">
-                                <button onClick={() => setEditingItem(null)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 py-1.5 border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-md transition-colors font-bold">Cancel</button>
-                                <button onClick={handleUpdateComment} className="text-xs bg-[#00cfff] text-[#030308] px-3 py-1.5 rounded-md hover:shadow-[0_0_10px_rgba(0,207,255,0.5)] font-bold transition-all">Save</button>
+                                <button onClick={() => setEditingItem(null)} className="text-xs text-engine-neon/70 hover:text-engine-neon px-3 py-1.5 border border-engine-neon/20 hover:bg-engine-button/10 rounded-md transition-colors font-bold">Cancel</button>
+                                <button onClick={handleUpdateComment} className="text-xs bg-engine-button text-engine-bg px-3 py-1.5 rounded-md hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.5)] font-bold transition-all">Save</button>
                               </div>
                             </div>
                           ) : (
                             <div className="pr-8">
-                              <div className="flex items-center mb-1"><span className="font-bold text-[#00cfff] mr-2">{comment.username}</span><VerifiedBadge user={comment} /></div>
+                              <div className="flex items-center mb-1"><span className="font-bold text-engine-neon mr-2">{comment.username}</span><VerifiedBadge user={comment} /></div>
                               <p className="text-gray-300 leading-relaxed">
                                 {(comment.content || "").split(/(@\w+)/g).map((part, i) =>
-                                  part.startsWith("@") ? (<strong key={i} className="text-[#00cfff] font-bold drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">{part}</strong>) : (part)
+                                  part.startsWith("@") ? (<strong key={i} className="text-engine-neon font-bold drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">{part}</strong>) : (part)
                                 )}
                               </p>
                               {comment.is_edited && <span className="ml-2 text-[10px] text-gray-500 italic opacity-70">(edited)</span>}
@@ -282,13 +282,13 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                           )}
                           <div className="flex items-center gap-5 mt-3 text-[11px] text-gray-500">
                             <span>{(() => { try { return formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }); } catch (e) { return ""; } })()}</span>
-                            <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="hover:text-[#00cfff] font-bold transition-colors">Reply</button>
+                            <button onClick={() => { setReplyingTo({ commentId: comment.id, username: comment.username }); setReplyContent(""); }} className="hover:text-engine-neon font-bold transition-colors">Reply</button>
                             {(currentUser === comment.username || userData?.role === 'admin') && (
                               <div className="relative">
-                                <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-[#00cfff] transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
+                                <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-engine-neon transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
                                 {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                  <div ref={menuRef} className="absolute left-0 mt-2 w-28 border border-[#00cfff]/30 bg-[#030308]/95 backdrop-blur-md rounded-lg shadow-[0_0_15px_rgba(0,207,255,0.1)] z-20 overflow-hidden">
-                                  {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-4 py-2 text-xs text-[#00cfff] hover:bg-[#00cfff]/10 font-bold transition-colors">Edit</button>}
+                                  <div ref={menuRef} className="absolute left-0 mt-2 w-28 border border-engine-neon/30 bg-engine-bg/95 backdrop-blur-md rounded-lg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] z-20 overflow-hidden">
+                                  {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-4 py-2 text-xs text-engine-neon hover:bg-engine-button/10 font-bold transition-colors">Edit</button>}
                                   <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 font-bold transition-colors">Delete</button>
                                   </div>
                                 )}
@@ -298,13 +298,13 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                         </div>
                         {replyingTo?.commentId === comment.id && (
                           <form onSubmit={(e) => { e.preventDefault(); submitComment(comment.post_id, replyContent, comment.id); }} className="mt-3 ml-10 flex gap-3 relative z-10">
-                            <MentionInput name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-[#030308] border border-[#00cfff]/30 rounded-lg px-4 py-2 text-white text-xs focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none transition-all" autoFocus rows={1} />
-                            <button type="submit" className="text-xs bg-[#00cfff] text-[#030308] px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] font-bold transition-all tracking-wide">Reply</button>
-                            <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] px-3 border border-transparent hover:border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-lg transition-colors font-bold">Cancel</button>
+                            <MentionInput name="replyInput" value={replyContent} onChange={(e) => setReplyContent(e.target.value)} placeholder={`Replying to ${comment.username}...`} className="flex-1 bg-engine-bg border border-engine-neon/30 rounded-lg px-4 py-2 text-white text-xs focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all" autoFocus rows={1} />
+                            <button type="submit" className="text-xs bg-engine-button text-engine-bg px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.6)] font-bold transition-all tracking-wide">Reply</button>
+                            <button type="button" onClick={() => { setReplyingTo(null); setReplyContent(""); }} className="text-xs text-engine-neon/70 hover:text-engine-neon px-3 border border-transparent hover:border-engine-neon/20 hover:bg-engine-button/10 rounded-lg transition-colors font-bold">Cancel</button>
                           </form>
                         )}
                         {hasReplies && !isRepliesExpanded && (
-                          <button onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))} className="text-[11px] text-[#00cfff]/70 hover:text-[#00cfff] font-bold mt-3 flex items-center gap-2 ml-4 transition-colors"><span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}</button>
+                          <button onClick={() => setExpandedReplies(prev => ({...prev, [comment.id]: true}))} className="text-[11px] text-engine-neon/70 hover:text-engine-neon font-bold mt-3 flex items-center gap-2 ml-4 transition-colors"><span className="transform rotate-90">↳</span> View {comment.children.length} {comment.children.length === 1 ? 'reply' : 'replies'}</button>
                         )}
                         {hasReplies && isRepliesExpanded && <div className="mt-4">{comment.children.map(renderComment)}</div>}
                       </div>
@@ -313,26 +313,26 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                   return (
                     <>
                       {visibleComments.length > 0 ? visibleComments.map(renderComment) : <p className="text-xs text-gray-500 italic px-2">No comments yet.</p>}
-                      {commentTree.length > visibleLimit && <button onClick={() => setVisibleLimit(prev => prev + 10)} className="text-xs text-[#00cfff]/70 hover:text-[#00cfff] font-bold mt-5 w-full text-left pl-2 transition-colors">View more comments ({commentTree.length - visibleLimit})</button>}
+                      {commentTree.length > visibleLimit && <button onClick={() => setVisibleLimit(prev => prev + 10)} className="text-xs text-engine-neon/70 hover:text-engine-neon font-bold mt-5 w-full text-left pl-2 transition-colors">View more comments ({commentTree.length - visibleLimit})</button>}
                     </>
                   )
                 })()}
                 <div className="flex gap-3 mt-5 relative z-10">
-                <MentionInput placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-[#030308]/80 border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none transition-all" onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(post.id, commentText); } }} rows={1} />
-                <button onClick={() => submitComment(post.id, commentText)} className="bg-[#00cfff] hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,207,255,0.6)] text-[#030308] px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide">Send</button>
+                <MentionInput placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-engine-bg/80 border border-engine-neon/30 rounded-xl px-4 py-3 text-sm text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.15)] outline-none transition-all" onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(post.id, commentText); } }} rows={1} />
+                <button onClick={() => submitComment(post.id, commentText)} className="bg-engine-button hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.6)] text-engine-bg px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide">Send</button>
                 </div>
               </div>
             )}
             {/* Report Modal */}
             {showReportModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowReportModal(false)}>
-                <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-xl font-extrabold text-[#00cfff] mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowReportModal(false)}>
+                <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-extrabold text-engine-neon mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
                   <div className="space-y-4 mb-6">
                     {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
                       <label key={reason} className="flex items-center gap-3 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${reportReason === reason ? 'border-[#00cfff] bg-[#00cfff]/20' : 'border-gray-600 group-hover:border-[#00cfff]/50'}`}>
-                          {reportReason === reason && <div className="w-2.5 h-2.5 rounded-full bg-[#00cfff] shadow-[0_0_5px_#00cfff]"></div>}
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${reportReason === reason ? 'border-engine-neon bg-engine-button/20' : 'border-gray-600 group-hover:border-engine-neon/50'}`}>
+                          {reportReason === reason && <div className="w-2.5 h-2.5 rounded-full bg-engine-button shadow-[0_0_5px_var(--engine-neon)]"></div>}
                         </div>
                         <input 
                           type="radio" 
@@ -352,12 +352,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                       value={customReason}
                       onChange={(e) => setCustomReason(e.target.value)}
                       placeholder="Please describe the issue..."
-                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-white text-sm focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] outline-none mb-6 h-24 resize-none transition-all"
+                      className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none mb-6 h-24 resize-none transition-all"
                     />
                   )}
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-[#00cfff]/10">
-                    <button onClick={() => setShowReportModal(false)} className="px-5 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-engine-neon/10">
+                    <button onClick={() => setShowReportModal(false)} className="px-5 py-2.5 rounded-xl border border-engine-neon/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
                     <button onClick={submitReport} className="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Report</button>
                   </div>
                 </div>
@@ -366,15 +366,15 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowDeleteModal(false)}>
-                <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowDeleteModal(false)}>
+                <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </div>
                   <h3 className="text-xl font-extrabold text-white mb-2">Delete Post?</h3>
                   <p className="text-gray-400 text-sm mb-8">This action cannot be undone. This will permanently delete your post and all associated comments.</p>
                   <div className="flex justify-center gap-4">
-                    <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                    <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl border border-engine-neon/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
                     <button onClick={confirmDelete} className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] text-sm font-bold transition-all">Delete</button>
                   </div>
                 </div>
@@ -383,12 +383,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
 
             {/* Share Modal */}
             {showShareModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4" onClick={() => setShowShareModal(false)}>
-                <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-xl font-extrabold text-[#00cfff] mb-8 text-center tracking-wider">Share Post</h3>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowShareModal(false)}>
+                <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <h3 className="text-xl font-extrabold text-engine-neon mb-8 text-center tracking-wider">Share Post</h3>
                   <div className="grid grid-cols-4 gap-4 mb-8">
                     <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-3 group">
-                      <div className="w-14 h-14 bg-[#030308] rounded-full flex items-center justify-center border border-gray-700 group-hover:border-white group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
+                      <div className="w-14 h-14 bg-engine-bg rounded-full flex items-center justify-center border border-engine-neon/30 group-hover:border-white group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
                         <span className="text-2xl text-white">𝕏</span>
                       </div>
                       <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">X</span>
@@ -410,13 +410,13 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                       <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">Instagram</span>
                     </button>
                     <button onClick={() => handleShareOption('copy')} className="flex flex-col items-center gap-3 group">
-                      <div className="w-14 h-14 bg-[#00cfff]/10 rounded-full flex items-center justify-center border border-[#00cfff]/30 group-hover:bg-[#00cfff] group-hover:shadow-[0_0_15px_rgba(0,207,255,0.4)] transition-all">
-                        <span className="text-2xl text-[#00cfff] group-hover:text-[#030308] transition-colors">🔗</span>
+                      <div className="w-14 h-14 bg-engine-button/10 rounded-full flex items-center justify-center border border-engine-neon/30 group-hover:bg-engine-button group-hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] transition-all">
+                        <span className="text-2xl text-engine-neon group-hover:text-engine-bg transition-colors">🔗</span>
                       </div>
-                      <span className="text-xs font-bold text-gray-500 group-hover:text-[#00cfff]">Copy Link</span>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-engine-neon">Copy Link</span>
                     </button>
                   </div>
-                  <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-transparent border border-[#00cfff]/20 hover:bg-[#00cfff]/10 rounded-xl text-sm font-bold text-[#00cfff] transition-all">Cancel</button>
+                  <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-transparent border border-engine-neon/20 hover:bg-engine-button/10 rounded-xl text-sm font-bold text-engine-neon transition-all">Cancel</button>
                 </div>
               </div>
             )}
@@ -874,10 +874,10 @@ const Community = ({
         {/* Header Feed */}
         <div
           style={getCardStyle(activeCommunity)}
-          className="p-8 rounded-2xl border border-[#00cfff]/20 flex items-center justify-between relative overflow-hidden transition-all shadow-[0_0_20px_rgba(0,207,255,0.1)] backdrop-blur-md"
+          className="p-8 rounded-2xl border border-engine-neon/20 flex items-center justify-between relative overflow-hidden transition-all shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md"
         >
           {/* Glass overlay for when backgrounds are bright */}
-          <div className="absolute inset-0 bg-[#030308]/40 backdrop-blur-sm z-0"></div>
+          <div className="absolute inset-0 bg-engine-bg/40 backdrop-blur-sm z-0"></div>
           
           <div className="relative z-10 flex items-center gap-6">
             {activeCommunity.avatar_url ? (
@@ -894,7 +894,7 @@ const Community = ({
             <div>
               <button
                 onClick={() => navigate("/community")}
-                className="opacity-100 hover:opacity-100 text-sm mb-2 flex items-center gap-2 font-bold text-white hover:text-[#00cfff] transition-colors drop-shadow-md"
+                className="opacity-100 hover:opacity-100 text-sm mb-2 flex items-center gap-2 font-bold text-white hover:text-engine-neon transition-colors drop-shadow-md"
               >
                 ← Back to Communities
               </button>
@@ -905,7 +905,7 @@ const Community = ({
             </div>
           </div>
           <div className="text-right flex flex-col items-end gap-3 relative z-10">
-            <button className="bg-[#030308]/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-md shadow-lg" onClick={fetchMembers}>
+            <button className="bg-engine-bg/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-md shadow-lg" onClick={fetchMembers}>
               👥 {activeCommunity.members_count} Members
             </button>
             {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
@@ -915,7 +915,7 @@ const Community = ({
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-6 relative focus-within:z-[60]">
+        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-6 relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
             <div className="flex gap-4 sm:gap-5">
               <div className="flex-1 min-w-0">
@@ -926,7 +926,7 @@ const Community = ({
                     name="mainPostContent"
                     onPaste={handlePaste}
                     placeholder={`What's on your mind? Share a strategy or crypto news...`}
-                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-4 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] min-h-[120px] transition-all resize-none"
+                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.15)] min-h-[120px] transition-all resize-none"
                   />
                 </div>
 
@@ -936,7 +936,7 @@ const Community = ({
                     <img
                       src={postImage.preview}
                       alt="Preview"
-                      className="max-h-48 rounded-xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]"
+                      className="max-h-48 rounded-xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
                     />
                     <button
                       type="button"
@@ -955,7 +955,7 @@ const Community = ({
                     placeholder="Paste a link URL..."
                     value={newPostLink}
                     onChange={(e) => setNewPostLink(e.target.value)}
-                    className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.15)] outline-none mt-4 transition-all"
+                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-3 text-sm text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.15)] outline-none mt-4 transition-all"
                   />
                 )}
 
@@ -965,7 +965,7 @@ const Community = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current.click()}
-                      className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
+                      className="text-gray-400 hover:text-engine-neon text-sm flex items-center gap-2 font-bold transition-colors"
                     >
                       <span className="text-lg">📷</span> Upload
                     </button>
@@ -985,7 +985,7 @@ const Community = ({
                     <button
                       type="button"
                       onClick={() => setShowLinkInput(!showLinkInput)}
-                      className="text-gray-400 hover:text-[#00cfff] text-sm flex items-center gap-2 font-bold transition-colors"
+                      className="text-gray-400 hover:text-engine-neon text-sm flex items-center gap-2 font-bold transition-colors"
                     >
                       <span className="text-lg">🔗</span> Add Link
                     </button>
@@ -994,7 +994,7 @@ const Community = ({
                   {/* Post Button */}
                   <button
                     type="submit"
-                    className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-8 py-2.5 rounded-xl font-extrabold transition-all tracking-wide hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] hover:-translate-y-0.5"
+                    className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-2.5 rounded-xl font-extrabold transition-all tracking-wide hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.5)] hover:-translate-y-0.5"
                   >
                     Post
                   </button>
@@ -1015,11 +1015,11 @@ const Community = ({
         {/* Image Preview Modal */}
         {previewImage && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/95 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/95 backdrop-blur-md p-4"
             onClick={() => setPreviewImage(null)}
           >
             <button
-              className="absolute top-6 right-6 text-[#00cfff]/70 hover:text-[#00cfff] hover:scale-110 transition-all bg-[#0a0f1c]/50 p-2 rounded-full border border-[#00cfff]/20"
+              className="absolute top-6 right-6 text-engine-neon/70 hover:text-engine-neon hover:scale-110 transition-all bg-engine-panel/50 p-2 rounded-full border border-engine-neon/20"
               onClick={() => setPreviewImage(null)}
             >
               <svg
@@ -1040,27 +1040,27 @@ const Community = ({
             <img
               src={previewImage}
               alt="Full Preview"
-              className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] border border-[#00cfff]/20"
+              className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] border border-engine-neon/20"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
         )}
         {/* Members Modal */}
         {showMembersModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
-              <div className="flex justify-between items-center mb-6 border-b border-[#00cfff]/10 pb-4">
-                <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><span className="text-[#00cfff]">👥</span> Community Members</h3>
-                <button onClick={() => setShowMembersModal(false)} className="text-[#00cfff]/50 hover:text-[#00cfff] transition-colors text-xl font-bold">✕</button>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-engine-panel/95 border border-engine-neon/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
+              <div className="flex justify-between items-center mb-6 border-b border-engine-neon/10 pb-4">
+                <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><span className="text-engine-neon">👥</span> Community Members</h3>
+                <button onClick={() => setShowMembersModal(false)} className="text-engine-neon/50 hover:text-engine-neon transition-colors text-xl font-bold">✕</button>
               </div>
               <div className="space-y-3">
                 {members.map(member => (
-                  <div key={member.user_id} className="flex items-center justify-between bg-[#030308]/60 p-4 rounded-xl border border-[#00cfff]/10 hover:border-[#00cfff]/30 transition-all group">
+                  <div key={member.user_id} className="flex items-center justify-between bg-engine-bg/60 p-4 rounded-xl border border-engine-neon/10 hover:border-engine-neon/30 transition-all group">
                     <div className="flex items-center gap-4">
                       {member.avatar_url ? (
-                        <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(0,207,255,0.1)]" />
+                        <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-10 h-10 rounded-full object-cover shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]" />
                       ) : (
-                        <div className="w-10 h-10 bg-[#00cfff]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#00cfff] border border-[#00cfff]/20">
+                        <div className="w-10 h-10 bg-engine-button/10 rounded-full flex items-center justify-center text-sm font-bold text-engine-neon border border-engine-neon/20">
                           {member.username.substring(0, 2).toUpperCase()}
                         </div>
                       )}
@@ -1075,7 +1075,7 @@ const Community = ({
                       </button>
                     )}
                     {member.username === activeCommunity.creator_username && (
-                      <span className="text-[10px] bg-[#00cfff]/10 text-[#00cfff] px-3 py-1.5 rounded-lg border border-[#00cfff]/20 font-bold tracking-wide">OWNER</span>
+                      <span className="text-[10px] bg-engine-button/10 text-engine-neon px-3 py-1.5 rounded-lg border border-engine-neon/20 font-bold tracking-wide">OWNER</span>
                     )}
                   </div>
                 ))}
@@ -1086,15 +1086,15 @@ const Community = ({
 
         {/* Generic Confirmation Modal */}
         {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] max-w-sm w-full text-center relative overflow-hidden">
-              <div className="w-16 h-16 bg-[#00cfff]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
-                <span className="text-3xl text-[#00cfff]">?</span>
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] max-w-sm w-full text-center relative overflow-hidden">
+              <div className="w-16 h-16 bg-engine-button/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]">
+                <span className="text-3xl text-engine-neon">?</span>
               </div>
               <h3 className="text-xl font-extrabold text-white mb-2">Are you sure?</h3>
               <p className="text-gray-400 text-sm mb-8 leading-relaxed">{confirmModal.message}</p>
               <div className="flex gap-4 justify-center">
-                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-engine-neon/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
                 <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Confirm</button>
               </div>
             </div>
@@ -1109,10 +1109,10 @@ const Community = ({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md">
         <div>
           <h2 className="text-3xl font-extrabold text-white flex items-center gap-3 drop-shadow-md">
-            <span className="text-[#00cfff] drop-shadow-[0_0_10px_rgba(0,207,255,0.5)]">👥</span> Trader Communities
+            <span className="text-engine-neon drop-shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.5)]">👥</span> Trader Communities
           </h2>
           <p className="text-gray-300 text-sm mt-2 font-medium opacity-90">
             Join discussions, share signals, and grow together in a cyberpunk ecosystem.
@@ -1125,13 +1125,13 @@ const Community = ({
               placeholder="Search community..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#030308] border border-[#00cfff]/30 text-white pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all"
+              className="w-full bg-engine-bg border border-engine-neon/30 text-white pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all"
             />
             <span className="absolute left-4 top-3.5 text-xl opacity-50 group-focus-within:opacity-100 transition-opacity">🔍</span>
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] px-6 py-3 rounded-xl font-extrabold transition-all whitespace-nowrap shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 tracking-wide"
+            className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-6 py-3 rounded-xl font-extrabold transition-all whitespace-nowrap shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 tracking-wide"
           >
             + Create
           </button>
@@ -1142,8 +1142,8 @@ const Community = ({
       {loading ? (
         <div className="flex justify-center items-center py-32">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-[#00cfff]/20 rounded-full"></div>
-              <div className="w-16 h-16 border-4 border-[#00cfff] border-t-transparent rounded-full animate-spin absolute top-0 left-0 shadow-[0_0_15px_rgba(0,207,255,0.5)]"></div>
+              <div className="w-16 h-16 border-4 border-engine-neon/20 rounded-full"></div>
+              <div className="w-16 h-16 border-4 border-engine-neon border-t-transparent rounded-full animate-spin absolute top-0 left-0 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.5)]"></div>
             </div>
         </div>
       ) : (
@@ -1160,18 +1160,18 @@ const Community = ({
                     navigate(`/community/${comm.id}`);
                   }
                 }}
-                className={`rounded-2xl border border-[#00cfff]/20 p-8 transition-all duration-300 group relative overflow-hidden cursor-pointer
+                className={`rounded-2xl border border-engine-neon/20 p-8 transition-all duration-300 group relative overflow-hidden cursor-pointer
                 ${comm.hover_animation === "scale" ? "hover:scale-[1.02]" : ""}
                 ${
                   comm.hover_animation === "glow"
-                    ? "hover:shadow-[0_0_30px_var(--glow-color)] hover:border-[#00cfff]/50"
-                    : "hover:shadow-[0_0_20px_rgba(0,207,255,0.15)] hover:border-[#00cfff]/40"
+                    ? "hover:shadow-[0_0_30px_var(--glow-color)] hover:border-engine-neon/50"
+                    : "hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.15)] hover:border-engine-neon/40"
                 }
-                ${comm.hover_animation === "none" ? "hover:-translate-y-1 hover:border-[#00cfff]/40" : ""}
+                ${comm.hover_animation === "none" ? "hover:-translate-y-1 hover:border-engine-neon/40" : ""}
               `}
               >
                 {/* Glass overlay */}
-                <div className="absolute inset-0 bg-[#030308]/60 group-hover:bg-[#030308]/40 backdrop-blur-sm transition-all duration-500 z-0"></div>
+                <div className="absolute inset-0 bg-engine-bg/60 group-hover:bg-engine-bg/40 backdrop-blur-sm transition-all duration-500 z-0"></div>
 
                 {comm.is_vip && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-extrabold px-3 py-1 rounded-bl-xl z-10 flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.5)] tracking-widest">
@@ -1198,7 +1198,7 @@ const Community = ({
                       {comm.name}
                     </h3>
                     <p className="text-sm opacity-80 font-medium">
-                      by <span className="text-[#00cfff]">{comm.creator_username}</span>
+                      by <span className="text-engine-neon">{comm.creator_username}</span>
                     </p>
                   </div>
                   <span className="bg-[#10B981]/20 text-[#10B981] text-xs px-3 py-1 rounded-full border border-[#10B981]/40 flex items-center gap-2 font-bold backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.2)]">
@@ -1283,12 +1283,12 @@ const Community = ({
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-[#030308]/90 backdrop-blur-md p-4 pt-20 overflow-y-auto custom-scrollbar">
-          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-engine-bg/90 backdrop-blur-md p-4 pt-20 overflow-y-auto custom-scrollbar">
+          <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
             
             <h3 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3">
-              <span className="text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]">✨</span> Create New Community
+              <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">✨</span> Create New Community
             </h3>
             
             <form onSubmit={handleCreate} className="space-y-8">
@@ -1296,11 +1296,11 @@ const Community = ({
                 {/* Left Column: Basic Info */}
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-engine-neon mb-2 uppercase tracking-wider">
                       Avatar <span className="text-gray-500 normal-case font-normal">(Optional)</span>
                     </label>
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-[#030308] overflow-hidden border-2 border-[#00cfff]/30 shadow-[0_0_10px_rgba(0,207,255,0.1)]">
+                      <div className="w-16 h-16 rounded-full bg-engine-bg overflow-hidden border-2 border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]">
                         {previewCommAvatar ? (
                           <img
                             src={previewCommAvatar}
@@ -1323,12 +1323,12 @@ const Community = ({
                             e.target.value = null; // reset to allow picking same file again
                           }
                         }}
-                        className="text-xs text-[#00cfff]/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
+                        className="text-xs text-engine-neon/70 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-engine-button/10 file:text-engine-neon hover:file:bg-engine-button/20 transition-all cursor-pointer"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-engine-neon mb-2 uppercase tracking-wider">
                       Name
                     </label>
                     <input
@@ -1338,12 +1338,12 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, name: e.target.value })
                       }
-                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all"
+                      className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
                       placeholder="e.g. Bitcoin Whales Indonesia"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-engine-neon mb-2 uppercase tracking-wider">
                       Description
                     </label>
                     <textarea
@@ -1352,15 +1352,15 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, description: e.target.value })
                       }
-                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none h-28 resize-none transition-all"
+                      className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none h-28 resize-none transition-all"
                       placeholder="Describe your community goal..."
                     />
                   </div>
                 </div>
 
                 {/* Right Column: Appearance */}
-                <div className="space-y-6 md:border-l md:border-[#00cfff]/10 md:pl-8">
-                  <h4 className="text-sm font-extrabold text-gray-300 uppercase tracking-widest border-b border-[#00cfff]/10 pb-2">
+                <div className="space-y-6 md:border-l md:border-engine-neon/10 md:pl-8">
+                  <h4 className="text-sm font-extrabold text-gray-300 uppercase tracking-widest border-b border-engine-neon/10 pb-2">
                     Appearance Config
                   </h4>
 
@@ -1374,7 +1374,7 @@ const Community = ({
                       onChange={(e) =>
                         setNewComm({ ...newComm, bgType: e.target.value })
                       }
-                      className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-3 text-sm focus:border-[#00cfff] outline-none transition-all"
+                      className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 text-sm focus:border-engine-neon outline-none transition-all"
                     >
                       <option value="color">Solid Color</option>
                       <option value="gradient">Gradient</option>
@@ -1399,7 +1399,7 @@ const Community = ({
                             e.target.value = null; // reset to allow picking same file again
                           }
                         }}
-                        className="text-xs text-[#00cfff]/70 w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-[#00cfff]/10 file:text-[#00cfff] hover:file:bg-[#00cfff]/20 transition-all cursor-pointer"
+                        className="text-xs text-engine-neon/70 w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-engine-button/10 file:text-engine-neon hover:file:bg-engine-button/20 transition-all cursor-pointer"
                       />
                     </div>
                   ) : (
@@ -1410,13 +1410,13 @@ const Community = ({
                           : "Gradient CSS"}
                       </label>
                       {newComm.bgType === "gradient" ? (
-                        <div className="space-y-3 p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/10">
+                        <div className="space-y-3 p-4 bg-engine-bg/50 rounded-xl border border-engine-neon/10">
                           <div className="flex gap-4">
                             <div className="flex-1">
                               <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">
                                 Start Color
                               </label>
-                              <div className="flex items-center gap-2 bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg p-1.5 focus-within:border-[#00cfff] transition-colors">
+                              <div className="flex items-center gap-2 bg-engine-panel border border-engine-neon/20 rounded-lg p-1.5 focus-within:border-engine-neon transition-colors">
                                 <input
                                   type="color"
                                   value={newComm.gradientStart}
@@ -1430,7 +1430,7 @@ const Community = ({
                                   }}
                                   className="h-6 w-6 bg-transparent border-0 cursor-pointer rounded"
                                 />
-                                <span className="text-xs text-[#00cfff] font-mono">
+                                <span className="text-xs text-engine-neon font-mono">
                                   {newComm.gradientStart}
                                 </span>
                               </div>
@@ -1439,7 +1439,7 @@ const Community = ({
                               <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">
                                 End Color
                               </label>
-                              <div className="flex items-center gap-2 bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg p-1.5 focus-within:border-[#00cfff] transition-colors">
+                              <div className="flex items-center gap-2 bg-engine-panel border border-engine-neon/20 rounded-lg p-1.5 focus-within:border-engine-neon transition-colors">
                                 <input
                                   type="color"
                                   value={newComm.gradientEnd}
@@ -1453,7 +1453,7 @@ const Community = ({
                                   }}
                                   className="h-6 w-6 bg-transparent border-0 cursor-pointer rounded"
                                 />
-                                <span className="text-xs text-[#00cfff] font-mono">
+                                <span className="text-xs text-engine-neon font-mono">
                                   {newComm.gradientEnd}
                                 </span>
                               </div>
@@ -1473,7 +1473,7 @@ const Community = ({
                                   bgValue: `linear-gradient(${newVal}, ${prev.gradientStart}, ${prev.gradientEnd})`,
                                 }));
                               }}
-                              className="w-full bg-[#0a0f1c] border border-[#00cfff]/20 rounded-lg text-white p-2 text-xs focus:border-[#00cfff] outline-none transition-colors"
+                              className="w-full bg-engine-panel border border-engine-neon/20 rounded-lg text-white p-2 text-xs focus:border-engine-neon outline-none transition-colors"
                             >
                               <option value="to right">To Right →</option>
                               <option value="to left">To Left ←</option>
@@ -1485,7 +1485,7 @@ const Community = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 w-fit">
+                        <div className="flex items-center gap-3 bg-engine-bg/50 border border-engine-neon/20 rounded-xl p-2 w-fit">
                           <input
                             type="color"
                             value={newComm.bgValue}
@@ -1497,7 +1497,7 @@ const Community = ({
                             }
                             className={`bg-transparent border-0 cursor-pointer rounded h-8 w-10`}
                           />
-                          <span className="text-xs font-mono text-[#00cfff] pr-2">{newComm.bgValue}</span>
+                          <span className="text-xs font-mono text-engine-neon pr-2">{newComm.bgValue}</span>
                         </div>
                       )}
                     </div>
@@ -1508,7 +1508,7 @@ const Community = ({
                       <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Text Color
                       </label>
-                      <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 focus-within:border-[#00cfff] transition-colors">
+                      <div className="flex items-center gap-3 bg-engine-bg/50 border border-engine-neon/20 rounded-xl p-2 focus-within:border-engine-neon transition-colors">
                         <input
                           type="color"
                           value={newComm.textColor}
@@ -1520,7 +1520,7 @@ const Community = ({
                           }
                           className="h-6 w-8 bg-transparent border-0 cursor-pointer rounded"
                         />
-                        <span className="text-xs text-[#00cfff] font-mono">
+                        <span className="text-xs text-engine-neon font-mono">
                           {newComm.textColor}
                         </span>
                       </div>
@@ -1534,7 +1534,7 @@ const Community = ({
                         onChange={(e) =>
                           setNewComm({ ...newComm, fontFamily: e.target.value })
                         }
-                        className="w-full bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl text-white p-2.5 text-sm focus:border-[#00cfff] outline-none transition-colors"
+                        className="w-full bg-engine-bg/50 border border-engine-neon/20 rounded-xl text-white p-2.5 text-sm focus:border-engine-neon outline-none transition-colors"
                       >
                         <option value="sans">Sans Serif</option>
                         <option value="serif">Serif</option>
@@ -1555,7 +1555,7 @@ const Community = ({
                           hoverAnimation: e.target.value,
                         })
                       }
-                      className="w-full bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl text-white p-3 text-sm focus:border-[#00cfff] outline-none transition-colors"
+                      className="w-full bg-engine-bg/50 border border-engine-neon/20 rounded-xl text-white p-3 text-sm focus:border-engine-neon outline-none transition-colors"
                     >
                       <option value="none">None (Lift)</option>
                       <option value="scale">Scale Up</option>
@@ -1567,7 +1567,7 @@ const Community = ({
                       <label className="block text-xs font-bold text-gray-400 mb-2 uppercase">
                         Glow Color
                       </label>
-                      <div className="flex items-center gap-3 bg-[#030308]/50 border border-[#00cfff]/20 rounded-xl p-2 w-fit focus-within:border-[#00cfff] transition-colors">
+                      <div className="flex items-center gap-3 bg-engine-bg/50 border border-engine-neon/20 rounded-xl p-2 w-fit focus-within:border-engine-neon transition-colors">
                         <input
                           type="color"
                           value={newComm.hoverColor}
@@ -1579,7 +1579,7 @@ const Community = ({
                           }
                           className="h-6 w-8 bg-transparent border-0 cursor-pointer rounded"
                         />
-                        <span className="text-xs text-[#00cfff] font-mono pr-2">
+                        <span className="text-xs text-engine-neon font-mono pr-2">
                           {newComm.hoverColor}
                         </span>
                       </div>
@@ -1587,9 +1587,9 @@ const Community = ({
                   )}
                   {/* VIP Style Toggle (Platinum Only) */}
                   {(getPlanLevel(userData?.plan) >= 3 || userData?.role === 'admin') && (
-                    <div className="pt-4 border-t border-[#00cfff]/10 mt-2">
+                    <div className="pt-4 border-t border-engine-neon/10 mt-2">
                       <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${isVip ? 'bg-yellow-500 border-yellow-500' : 'bg-[#030308] border-gray-600 group-hover:border-yellow-500/50'}`}>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${isVip ? 'bg-yellow-500 border-yellow-500' : 'bg-engine-bg border-gray-600 group-hover:border-yellow-500/50'}`}>
                           {isVip && <svg className="w-3 h-3 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                         </div>
                         <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="hidden" />
@@ -1603,8 +1603,8 @@ const Community = ({
               </div>
 
               {/* Live Preview */}
-              <div className="border-t border-[#00cfff]/20 pt-6">
-                <label className="block text-sm font-extrabold text-[#00cfff] mb-4 uppercase tracking-widest text-center">
+              <div className="border-t border-engine-neon/20 pt-6">
+                <label className="block text-sm font-extrabold text-engine-neon mb-4 uppercase tracking-widest text-center">
                   Live Preview
                 </label>
                 <div
@@ -1642,7 +1642,7 @@ const Community = ({
                   ${isVip ? "animate-pulse-slow shadow-[0_0_30px_rgba(251,191,36,0.2)]" : ""}
                 `}
                 >
-                  <div className="absolute inset-0 bg-[#030308]/30 backdrop-blur-[2px] group-hover:bg-transparent transition-all duration-500 z-0"></div>
+                  <div className="absolute inset-0 bg-engine-bg/30 backdrop-blur-[2px] group-hover:bg-transparent transition-all duration-500 z-0"></div>
 
                   <div className="flex items-center gap-4 mb-6 relative z-10">
                     {previewCommAvatar ? (
@@ -1661,7 +1661,7 @@ const Community = ({
                       <h3 className="text-2xl font-extrabold drop-shadow-md">
                         {newComm.name || "Community Name"}
                       </h3>
-                      <p className="text-sm opacity-80 font-medium">by <span className="text-[#00cfff]">You</span></p>
+                      <p className="text-sm opacity-80 font-medium">by <span className="text-engine-neon">You</span></p>
                     </div>
                   </div>
                   <p className="text-sm mb-8 opacity-90 leading-relaxed font-medium drop-shadow-sm relative z-10">
@@ -1678,13 +1678,13 @@ const Community = ({
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-transparent border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] py-3 rounded-xl font-bold transition-all"
+                  className="flex-1 bg-transparent border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon py-3 rounded-xl font-bold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] py-3 rounded-xl font-extrabold transition-all hover:shadow-[0_0_20px_rgba(0,207,255,0.5)] tracking-wide"
+                  className="flex-1 bg-engine-button hover:bg-[#00e5ff] text-engine-bg py-3 rounded-xl font-extrabold transition-all hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.5)] tracking-wide"
                 >
                   Create Community
                 </button>
@@ -1695,8 +1695,8 @@ const Community = ({
       )}
       {/* Exit Confirmation Modal */}
       {showExitModal && communityToExit && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4">
-          <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.1)] max-w-sm w-full animate-fade-in text-center relative overflow-hidden">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4">
+          <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-sm w-full animate-fade-in text-center relative overflow-hidden">
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
               <span className="text-3xl text-red-500">🚪</span>
             </div>
@@ -1705,7 +1705,7 @@ const Community = ({
             </h3>
             <p className="text-gray-400 text-sm mb-8 leading-relaxed">
               Are you sure you want to leave{" "}
-              <span className="text-[#00cfff] font-bold">
+              <span className="text-engine-neon font-bold">
                 {communityToExit.name}
               </span>
               ?
@@ -1713,7 +1713,7 @@ const Community = ({
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowExitModal(false)}
-                className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all"
+                className="px-6 py-2.5 rounded-xl border border-engine-neon/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all"
               >
                 No, Cancel
               </button>
@@ -1729,15 +1729,15 @@ const Community = ({
       )}
       {/* Generic Confirmation Modal for List View (Delete Community) */}
       {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] max-w-sm w-full text-center relative overflow-hidden">
-              <div className="w-16 h-16 bg-[#00cfff]/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]">
-                <span className="text-3xl text-[#00cfff]">?</span>
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] max-w-sm w-full text-center relative overflow-hidden">
+              <div className="w-16 h-16 bg-engine-button/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]">
+                <span className="text-3xl text-engine-neon">?</span>
               </div>
               <h3 className="text-xl font-extrabold text-white mb-2">Are you sure?</h3>
               <p className="text-gray-400 text-sm mb-8 leading-relaxed">{confirmModal.message}</p>
               <div className="flex gap-4 justify-center">
-                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-[#00cfff]/20 text-[#00cfff]/70 hover:text-[#00cfff] hover:bg-[#00cfff]/10 text-sm font-bold transition-all">Cancel</button>
+                <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-engine-neon/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
                 <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Confirm</button>
               </div>
             </div>

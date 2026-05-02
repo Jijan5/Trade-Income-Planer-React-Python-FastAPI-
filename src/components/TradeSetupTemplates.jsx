@@ -127,38 +127,38 @@ export const TradeSetupTemplates = ({
   const [expandedTemplate, setExpandedTemplate] = useState(null);
 
   return (
-    <div className="bg-[#0a0f1c]/60 p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md mb-4">
-      <div className="flex items-center gap-2 mb-3 border-b border-[#00cfff]/10 pb-3">
-        <ClipboardList className="w-5 h-5 text-[#00cfff] drop-shadow-[0_0_5px_#00cfff]" />
-        <h4 className="text-[10px] font-extrabold text-[#00cfff] uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">Trade Setup Templates</h4>
+    <div className="bg-engine-panel/60 p-5 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4">
+      <div className="flex items-center gap-2 mb-3 border-b border-engine-neon/10 pb-3">
+        <ClipboardList className="w-5 h-5 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" />
+        <h4 className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Trade Setup Templates</h4>
       </div>
-      <p className="text-[10px] text-[#00cfff]/50 mb-4 font-extrabold uppercase tracking-widest">Select a setup to automatically configure your trade parameters:</p>
+      <p className="text-[10px] text-engine-neon/50 mb-4 font-extrabold uppercase tracking-widest">Select a setup to automatically configure your trade parameters:</p>
       <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
         {Object.values(TRADE_SETUPS).map((template) => (
-          <div key={template.id} className={`border rounded-xl overflow-hidden transition-all duration-300 ${selectedTemplate === template.id ? `border-[#00cfff] bg-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.1)]` : "border-[#00cfff]/10 bg-[#030308]/60 hover:bg-[#00cfff]/5 hover:border-[#00cfff]/30"}`}>
+          <div key={template.id} className={`border rounded-xl overflow-hidden transition-all duration-300 ${selectedTemplate === template.id ? `border-engine-neon bg-engine-button/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]` : "border-engine-neon/10 bg-engine-bg/60 hover:bg-engine-button/5 hover:border-engine-neon/30"}`}>
             <button onClick={() => { if (expandedTemplate === template.id) { setExpandedTemplate(null); } else { setExpandedTemplate(template.id); onSelectTemplate(template.id); } }} className="w-full p-4 flex items-center gap-4 text-left">
-              <span className="text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">{template.icon}</span>
+              <span className="text-engine-neon drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">{template.icon}</span>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <span className={`text-sm font-extrabold uppercase tracking-widest ${selectedTemplate === template.id ? 'text-[#00cfff] drop-shadow-[0_0_3px_#00cfff]' : 'text-white'}`}>{template.name}</span>
+                  <span className={`text-sm font-extrabold uppercase tracking-widest ${selectedTemplate === template.id ? 'text-engine-neon drop-shadow-[0_0_3px_#00cfff]' : 'text-white'}`}>{template.name}</span>
                   <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border ${template.riskLevel === "High" || template.riskLevel === "Very High" ? "bg-red-900/30 text-red-400 border-red-500/50" : template.riskLevel === "Medium-High" ? "bg-orange-900/30 text-orange-400 border-orange-500/50" : "bg-green-900/30 text-green-400 border-green-500/50"}`}>{template.riskLevel} Risk</span>
                 </div>
                 <p className="text-[10px] font-bold text-gray-400">{template.description}</p>
               </div>
             </button>
             {expandedTemplate === template.id && (
-              <div className="px-4 pb-4 border-t border-[#00cfff]/10 pt-4 animate-fade-in">
-                <div className="mb-3 text-[10px] font-extrabold uppercase tracking-widest"><span className="text-[#00cfff]/50">Best For:</span> <span className="text-[#00cfff] ml-1 drop-shadow-[0_0_3px_#00cfff]">{template.bestFor}</span></div>
+              <div className="px-4 pb-4 border-t border-engine-neon/10 pt-4 animate-fade-in">
+                <div className="mb-3 text-[10px] font-extrabold uppercase tracking-widest"><span className="text-engine-neon/50">Best For:</span> <span className="text-engine-neon ml-1 drop-shadow-[0_0_3px_#00cfff]">{template.bestFor}</span></div>
                 <ol className="text-[11px] font-medium text-gray-300 space-y-2 mb-4">
-                  {template.steps.map((step, idx) => (<li key={idx} className="flex gap-2 items-start"><span className="text-[#00cfff] font-bold">{idx + 1}.</span><span>{step}</span></li>))}
+                  {template.steps.map((step, idx) => (<li key={idx} className="flex gap-2 items-start"><span className="text-engine-neon font-bold">{idx + 1}.</span><span>{step}</span></li>))}
                 </ol>
-                <div className="bg-[#030308]/80 p-3 rounded-xl mb-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest border border-[#00cfff]/20 flex items-start gap-2"><Lightbulb className="w-4 h-4 text-[#00cfff] shrink-0 mt-0.5" />{template.tip}</div>
+                <div className="bg-engine-bg/80 p-3 rounded-xl mb-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest border border-engine-neon/20 flex items-start gap-2"><Lightbulb className="w-4 h-4 text-engine-neon shrink-0 mt-0.5" />{template.tip}</div>
                 <div className="grid grid-cols-3 gap-3 text-[10px] font-extrabold uppercase tracking-widest mb-4">
                   <div className="bg-red-900/20 p-3 rounded-xl border border-red-500/30 text-center"><span className="text-red-400/50 block mb-1">SL</span><span className="text-red-400 font-mono text-sm">{template.slPct}%</span></div>
                   <div className="bg-green-900/20 p-3 rounded-xl border border-green-500/30 text-center"><span className="text-green-400/50 block mb-1">TP</span><span className="text-green-400 font-mono text-sm">{template.tpPct}%</span></div>
-                  <div className="bg-[#00cfff]/10 p-3 rounded-xl border border-[#00cfff]/30 text-center"><span className="text-[#00cfff]/50 block mb-1">R/R</span><span className="text-[#00cfff] font-mono text-sm">1:{(template.tpPct / template.slPct).toFixed(1)}</span></div>
+                  <div className="bg-engine-button/10 p-3 rounded-xl border border-engine-neon/30 text-center"><span className="text-engine-neon/50 block mb-1">R/R</span><span className="text-engine-neon font-mono text-sm">1:{(template.tpPct / template.slPct).toFixed(1)}</span></div>
                 </div>
-                <button onClick={() => onApplyTemplate(template)} className="w-full bg-[#00cfff] text-[#030308] hover:bg-[#00e5ff] font-extrabold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5">APPLY THIS SETUP</button>
+                <button onClick={() => onApplyTemplate(template)} className="w-full bg-engine-button text-engine-bg hover:bg-[#00e5ff] font-extrabold text-[11px] uppercase tracking-widest py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5">APPLY THIS SETUP</button>
               </div>
             )}
           </div>
@@ -171,16 +171,16 @@ export const TradeSetupTemplates = ({
 export const QuickTemplateSelector = ({ selectedTemplate, onSelectTemplate, onApplyTemplate }) => {
   return (
     <div className="mb-5">
-      <label className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-2 flex items-center gap-1">
+      <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2 flex items-center gap-1">
         <ClipboardList className="w-4 h-4" /> Trade Setup Template
       </label>
       <select 
         value={selectedTemplate || ""} 
         onChange={(e) => { const template = Object.values(TRADE_SETUPS).find((t) => t.id === e.target.value); if (template) { onSelectTemplate(template.id); onApplyTemplate(template); } }} 
-        className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl p-3 text-[#00cfff] font-extrabold uppercase tracking-widest text-[11px] focus:border-[#00cfff] outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(0,207,255,0.1)] cursor-pointer"
+        className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-engine-neon font-extrabold uppercase tracking-widest text-[11px] focus:border-engine-neon outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] cursor-pointer"
       >
-        <option value="" className="bg-[#030308] text-gray-500">SELECT A SETUP TEMPLATE...</option>
-        {Object.values(TRADE_SETUPS).map((template) => (<option key={template.id} value={template.id} className="bg-[#030308] text-white"> {template.name} (1:{(template.tpPct / template.slPct).toFixed(1)})</option>))}
+        <option value="" className="bg-engine-bg text-gray-500">SELECT A SETUP TEMPLATE...</option>
+        {Object.values(TRADE_SETUPS).map((template) => (<option key={template.id} value={template.id} className="bg-engine-bg text-white"> {template.name} (1:{(template.tpPct / template.slPct).toFixed(1)})</option>))}
       </select>
     </div>
   );

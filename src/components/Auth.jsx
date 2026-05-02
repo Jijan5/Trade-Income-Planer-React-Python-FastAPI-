@@ -158,16 +158,155 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
   return (
     <>
+      {/* Global Styles + Animated Background */}
       <style>{`
         body { display: block !important; margin: 0; }
         #root { max-width: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+
+        /* ── Wrapper ── */
+        .auth-bg-container {
+          position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        /* ── Horizontal streaks ── */
+        .auth-neon-line {
+          position: absolute;
+          background: linear-gradient(90deg, transparent, rgba(0,207,255,0.7), transparent);
+          height: 1px; width: 300px; opacity: 0;
+          animation: authMoveLine linear infinite;
+        }
+        .auth-neon-line:nth-child(1)  { top:  8%; animation-duration: 18s; animation-delay:  0s; }
+        .auth-neon-line:nth-child(2)  { top: 22%; animation-duration: 24s; animation-delay:  3s; animation-direction: reverse; }
+        .auth-neon-line:nth-child(3)  { top: 40%; animation-duration: 20s; animation-delay:  6s; }
+        .auth-neon-line:nth-child(4)  { top: 58%; animation-duration: 27s; animation-delay:  1s; animation-direction: reverse; }
+        .auth-neon-line:nth-child(5)  { top: 72%; animation-duration: 22s; animation-delay:  9s; }
+        .auth-neon-line:nth-child(6)  { top: 88%; animation-duration: 30s; animation-delay:  4s; animation-direction: reverse; }
+        @keyframes authMoveLine {
+          0%   { transform: translateX(-320px); opacity: 0; }
+          8%   { opacity: 0.5; }
+          92%  { opacity: 0.5; }
+          100% { transform: translateX(110vw);  opacity: 0; }
+        }
+
+        /* ── Vertical streaks ── */
+        .auth-neon-line-v {
+          position: absolute;
+          background: linear-gradient(180deg, transparent, rgba(0,207,255,0.5), transparent);
+          width: 1px; height: 400px; opacity: 0;
+          animation: authMoveLineV linear infinite;
+        }
+        .auth-neon-line-v:nth-child(7)  { left: 12%; animation-duration: 22s; animation-delay:  0s; }
+        .auth-neon-line-v:nth-child(8)  { left: 35%; animation-duration: 28s; animation-delay:  5s; animation-direction: reverse; }
+        .auth-neon-line-v:nth-child(9)  { left: 55%; animation-duration: 19s; animation-delay:  2s; }
+        .auth-neon-line-v:nth-child(10) { left: 78%; animation-duration: 25s; animation-delay:  8s; animation-direction: reverse; }
+        .auth-neon-line-v:nth-child(11) { left: 93%; animation-duration: 32s; animation-delay: 11s; }
+        @keyframes authMoveLineV {
+          0%   { transform: translateY(-420px); opacity: 0; }
+          8%   { opacity: 0.3; }
+          92%  { opacity: 0.3; }
+          100% { transform: translateY(110vh);  opacity: 0; }
+        }
+
+        /* ── Full-screen scan line ── */
+        .auth-scan-line {
+          position: absolute; left: 0; width: 100%; height: 2px;
+          background: linear-gradient(90deg, transparent 0%, rgba(0,207,255,0.15) 30%, rgba(0,207,255,0.4) 50%, rgba(0,207,255,0.15) 70%, transparent 100%);
+          animation: authScanDown 10s ease-in-out infinite;
+          opacity: 0;
+        }
+        @keyframes authScanDown {
+          0%   { top: -2px;   opacity: 0; }
+          5%   { opacity: 1; }
+          95%  { opacity: 0.6; }
+          100% { top: 100vh;  opacity: 0; }
+        }
+
+        /* ── Floating glowing orbs ── */
+        .auth-orb {
+          position: absolute; border-radius: 50%;
+          filter: blur(80px); animation: authFloatOrb ease-in-out infinite alternate;
+        }
+        .auth-orb-1 { width: 600px; height: 600px; top: -10%; left: -12%;
+                 background: rgba(0,207,255,0.09); animation-duration: 14s; }
+        .auth-orb-2 { width: 500px; height: 500px; bottom: -8%; right: -10%;
+                 background: rgba(120,40,200,0.07); animation-duration: 18s; animation-delay: 3s; }
+        .auth-orb-3 { width: 350px; height: 350px; top: 35%; left: 40%;
+                 background: rgba(0,207,255,0.05); animation-duration: 22s; animation-delay: 6s; }
+        @keyframes authFloatOrb {
+          0%   { transform: translate(0px,  0px)  scale(1);   }
+          33%  { transform: translate(30px,-40px) scale(1.05); }
+          66%  { transform: translate(-20px,20px) scale(0.97); }
+          100% { transform: translate(10px,-20px) scale(1.03); }
+        }
+
+        /* ── Perspective grid floor ── */
+        .auth-grid-floor {
+          position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
+          background-image:
+            linear-gradient(rgba(0,207,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,207,255,0.06) 1px, transparent 1px);
+          background-size: 60px 60px;
+          transform: perspective(700px) rotateX(55deg);
+          transform-origin: bottom center;
+          mask-image: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 70%);
+          -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 70%);
+          animation: authGridPulse 6s ease-in-out infinite alternate;
+        }
+        @keyframes authGridPulse { 0% { opacity: 0.6; } 100% { opacity: 1.0; } }
+
+        /* ── Dot particle field ── */
+        .auth-dot-field {
+          position: absolute; inset: 0;
+          background-image: radial-gradient(circle, rgba(0,207,255,0.18) 1px, transparent 1px);
+          background-size: 48px 48px;
+          animation: authDriftField 40s linear infinite;
+          opacity: 0.3;
+        }
+        @keyframes authDriftField {
+          0%   { background-position: 0 0; }
+          100% { background-position: 48px 48px; }
+        }
+
+        /* ── Corner bracket accents ── */
+        .auth-corner { position: absolute; width: 50px; height: 50px; opacity: 0.2; }
+        .auth-corner-tl { top: 14px; left: 14px; border-top: 1.5px solid #00cfff; border-left: 1.5px solid #00cfff; }
+        .auth-corner-tr { top: 14px; right: 14px; border-top: 1.5px solid #00cfff; border-right: 1.5px solid #00cfff; }
+        .auth-corner-bl { bottom: 14px; left: 14px; border-bottom: 1.5px solid #00cfff; border-left: 1.5px solid #00cfff; }
+        .auth-corner-br { bottom: 14px; right: 14px; border-bottom: 1.5px solid #00cfff; border-right: 1.5px solid #00cfff; }
       `}</style>
+
       <div className="min-h-screen flex items-center justify-center bg-[#030308] px-4 relative overflow-hidden font-sans">
-        
-        {/* Neon Background Effects matching LandingPage */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40rem] h-[40rem] bg-[#00cfff]/5 rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-purple-600/5 rounded-full blur-[120px]"></div>
+
+        {/* ── Rich Animated Background ── */}
+        <div className="auth-bg-container">
+          {/* Horizontal streaks */}
+          <div className="auth-neon-line"></div>
+          <div className="auth-neon-line"></div>
+          <div className="auth-neon-line"></div>
+          <div className="auth-neon-line"></div>
+          <div className="auth-neon-line"></div>
+          <div className="auth-neon-line"></div>
+          {/* Vertical streaks */}
+          <div className="auth-neon-line-v"></div>
+          <div className="auth-neon-line-v"></div>
+          <div className="auth-neon-line-v"></div>
+          <div className="auth-neon-line-v"></div>
+          <div className="auth-neon-line-v"></div>
+          {/* Scan line sweep */}
+          <div className="auth-scan-line"></div>
+          {/* Floating ambient orbs */}
+          <div className="auth-orb auth-orb-1"></div>
+          <div className="auth-orb auth-orb-2"></div>
+          <div className="auth-orb auth-orb-3"></div>
+          {/* Perspective grid floor */}
+          <div className="auth-grid-floor"></div>
+          {/* Drifting dot particle field */}
+          <div className="auth-dot-field"></div>
+          {/* Corner bracket accents */}
+          <div className="auth-corner auth-corner-tl"></div>
+          <div className="auth-corner auth-corner-tr"></div>
+          <div className="auth-corner auth-corner-bl"></div>
+          <div className="auth-corner auth-corner-br"></div>
         </div>
 
         <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-xl rounded-2xl border border-[#00cfff]/20 p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all">

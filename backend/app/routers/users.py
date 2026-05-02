@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from sqlmodel import Session, select
 from ..database import get_session
-from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead
+from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate
 from ..dependencies import get_current_user, get_current_active_user
 from ..auth import get_password_hash
 
@@ -61,6 +61,37 @@ async def update_user_profile(
     session.commit()
     session.refresh(user)
     return user
+
+@router.get("/api/users/me/theme", response_model=UserTheme)
+async def get_user_theme(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    theme = session.exec(select(UserTheme).where(UserTheme.user_id == user.id)).first()
+    if not theme:
+        # Create default theme if not exists
+        theme = UserTheme(user_id=user.id)
+        session.add(theme)
+        session.commit()
+        session.refresh(theme)
+    return theme
+
+@router.put("/api/users/me/theme", response_model=UserTheme)
+async def update_user_theme(
+    theme_update: UserThemeCreateUpdate,
+    user: User = Depends(get_current_active_user),
+    session: Session = Depends(get_session)
+):
+    theme = session.exec(select(UserTheme).where(UserTheme.user_id == user.id)).first()
+    if not theme:
+        theme = UserTheme(user_id=user.id)
+    
+    update_data = theme_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(theme, key, value)
+        
+    session.add(theme)
+    session.commit()
+    session.refresh(theme)
+    return theme
+
 
 @router.get("/api/users/search")
 async def search_users(q: str = "", session: Session = Depends(get_session), user: User = Depends(get_current_user)):

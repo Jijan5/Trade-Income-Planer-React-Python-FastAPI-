@@ -302,14 +302,14 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
             
             {/* Context-Level Delete Comment Modal */}
             {confirmModal.isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setConfirmModal({ isOpen: false, commentId: null, postId: null })}>
-                    <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setConfirmModal({ isOpen: false, commentId: null, postId: null })}>
+                    <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
                         <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] flex flex-col items-center gap-3">
                             <TriangleAlert className="w-10 h-10" /> DELETE COMMENT?
                         </h3>
                         <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS COMMENT? THIS ACTION CANNOT BE UNDONE.</p>
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => setConfirmModal({ isOpen: false, commentId: null, postId: null })} className="px-6 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
+                            <button onClick={() => setConfirmModal({ isOpen: false, commentId: null, postId: null })} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
                             <button onClick={confirmDeleteComment} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">DELETE</button>
                         </div>
                     </div>
@@ -318,9 +318,9 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
 
             {/* Context-Level Report Post Modal */}
             {reportModal.isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setReportModal({ isOpen: false, postId: null, reason: "" })}>
-                    <div className="bg-[#0a0f1c]/95 border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setReportModal({ isOpen: false, postId: null, reason: "" })}>
+                    <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-engine-neon drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">
                             <Flag className="w-10 h-10" /> REPORT POST
                         </h3>
                         <p className="text-gray-400 text-sm mb-4 font-medium">Please let us know why you are reporting this post:</p>
@@ -328,14 +328,14 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
                             type="text" 
                             value={reportModal.reason} 
                             onChange={(e) => setReportModal({...reportModal, reason: e.target.value})} 
-                            className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-3 text-white text-xs font-mono focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] outline-none transition-all mb-8 placeholder:text-[#00cfff]/30"
+                            className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-3 text-white text-xs font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all mb-8 placeholder:text-engine-neon/30"
                             placeholder="Reason for reporting..."
                             autoFocus
                             onKeyDown={(e) => { if (e.key === 'Enter') confirmReportPost(); if (e.key === 'Escape') setReportModal({...reportModal, isOpen: false}); }}
                         />
                         <div className="flex justify-center gap-4">
-                            <button onClick={() => setReportModal({ isOpen: false, postId: null, reason: "" })} className="flex-1 py-2.5 rounded-xl bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
-                            <button onClick={confirmReportPost} className="flex-1 py-2.5 rounded-xl bg-[#00cfff] hover:bg-[#00e5ff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)] hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] text-[11px] font-extrabold uppercase tracking-widest transition-all">REPORT</button>
+                            <button onClick={() => setReportModal({ isOpen: false, postId: null, reason: "" })} className="flex-1 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
+                            <button onClick={confirmReportPost} className="flex-1 py-2.5 rounded-xl bg-engine-button hover:bg-[#00e5ff] text-engine-bg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] text-[11px] font-extrabold uppercase tracking-widest transition-all">REPORT</button>
                         </div>
                     </div>
                 </div>

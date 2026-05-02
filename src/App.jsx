@@ -29,6 +29,8 @@ import TradeHistory from "./components/TradeHistory";
 import SuspendedPage from "./components/SuspendedPage";
 import ForgotPassword from "./components/ForgotPassword";
 import ContactUs from "./components/ContactUs";
+import CustomizePlatform from "./components/CustomizePlatform";
+import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
 import { PostInteractionProvider } from "./contexts/PostInteractionContext";
@@ -46,7 +48,7 @@ const AdminRoute = ({ children }) => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#030308] flex flex-col items-center justify-center text-[#00cfff]">
+      <div className="min-h-screen bg-engine-bg flex flex-col items-center justify-center text-engine-neon">
         Loading Security Check...
       </div>
     );
@@ -64,7 +66,7 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#030308] flex flex-col items-center justify-center text-[#00cfff]">
+      <div className="min-h-screen bg-engine-bg flex flex-col items-center justify-center text-engine-neon">
         Loading...
       </div>
     );
@@ -81,6 +83,35 @@ const ProtectedRoute = ({ children }) => {
     if (!suspendedUntil || suspendedUntil > new Date()) {
       return <Navigate to="/suspended" replace />;
     }
+  }
+  return children;
+};
+
+// 💎 PREMIUM GATE: Requires Premium plan or higher, or Admin role
+const PremiumRoute = ({ children }) => {
+  const { userData } = useAuth();
+  const isAdmin = userData?.role === 'admin';
+  const planLevel = userData?.plan === 'Platinum' ? 3 : userData?.plan === 'Premium' ? 2 : userData?.plan === 'Basic' ? 1 : 0;
+  if (!isAdmin && planLevel < 2) {
+    return (
+      <div className="min-h-screen bg-engine-bg flex flex-col items-center justify-center text-center p-8">
+        <div className="bg-engine-panel/80 border border-engine-neon/20 rounded-2xl p-10 max-w-md w-full backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+          <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-extrabold text-white uppercase tracking-widest mb-3">Premium Feature</h2>
+          <p className="text-sm text-gray-400 mb-2 leading-relaxed">
+            The <span className="text-engine-neon font-bold">Platform Customizer</span> is available exclusively for <span className="text-yellow-400 font-bold">Premium</span> and <span className="text-purple-400 font-bold">Platinum</span> plan subscribers.
+          </p>
+          <p className="text-xs text-gray-500 mb-8">Upgrade your plan to unlock full UI customization, themes, and fonts.</p>
+          <a href="/subscriptions" className="inline-block w-full py-3 rounded-xl font-extrabold uppercase tracking-widest text-sm text-engine-bg bg-engine-button hover:bg-[#00e5ff] transition-all shadow-[0_0_20px_rgba(0,207,255,0.3)] hover:shadow-[0_0_30px_rgba(0,207,255,0.5)]">
+            View Plans & Upgrade
+          </a>
+        </div>
+      </div>
+    );
   }
   return children;
 };
@@ -149,9 +180,9 @@ const SimulationLayout = ({
         {/* SECTION 1: MARKET OVERVIEW (CHART & ASSETS) */}
         <div className="space-y-6 mb-8">
           {/* Asset Selection Dropdowns */}
-          <div className="flex flex-col sm:flex-row gap-6 bg-[#0a0f1c]/60 backdrop-blur-md p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)]">
+          <div className="flex flex-col sm:flex-row gap-6 bg-engine-panel/60 backdrop-blur-md p-5 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)]">
             <div className="w-full sm:w-1/4">
-              <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-engine-neon mb-2 uppercase tracking-wider">
                 Market Category
               </label>
               <select
@@ -161,7 +192,7 @@ const SimulationLayout = ({
                   setActiveCategory(newCategory);
                   setActiveSymbol(assetCategories[newCategory][0].symbol);
                 }}
-                className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all cursor-pointer"
+                className="w-full bg-engine-bg text-white border border-engine-neon/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all cursor-pointer"
               >
                 {Object.keys(assetCategories).map((category) => (
                   <option key={category} value={category}>
@@ -172,13 +203,13 @@ const SimulationLayout = ({
             </div>
 
             <div className="w-full sm:w-1/4">
-              <label className="block text-xs font-bold text-[#00cfff] mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-engine-neon mb-2 uppercase tracking-wider">
                 Select Asset
               </label>
               <select
                 value={activeSymbol}
                 onChange={(e) => setActiveSymbol(e.target.value)}
-                className="w-full bg-[#030308] text-white border border-[#00cfff]/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all cursor-pointer"
+                className="w-full bg-engine-bg text-white border border-engine-neon/30 rounded-xl px-4 py-2.5 focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all cursor-pointer"
               >
                 {assetCategories[activeCategory].map((asset) => (
                   <option key={asset.symbol} value={asset.symbol}>
@@ -190,7 +221,7 @@ const SimulationLayout = ({
           </div>
 
           {/* Chart Container */}
-          <div className="h-[600px] bg-[#0a0f1c]/80 backdrop-blur-xl rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)] overflow-hidden">
+          <div className="h-[600px] bg-engine-panel/80 backdrop-blur-xl rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)] overflow-hidden">
             <TradingViewChartWidget symbol={activeSymbol} />
           </div>
         </div>
@@ -198,13 +229,13 @@ const SimulationLayout = ({
         {/* SECTION 2: SIMULATION TOOLS */}
         <div className="space-y-8">
           {/* View Switcher */}
-          <div className="flex justify-center border-b border-[#00cfff]/20">
+          <div className="flex justify-center border-b border-engine-neon/20">
             <Link
               to="/simulation/strategy"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/strategy")
-                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
-                  : "text-gray-500 hover:text-[#00cfff]/80"
+                  ? "text-engine-neon border-b-2 border-engine-neon drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.5)]"
+                  : "text-gray-500 hover:text-engine-neon/80"
               }`}
             >
               Strategy Simulator {planLevel < 2 && !isAdmin && "🔒"}
@@ -213,8 +244,8 @@ const SimulationLayout = ({
               to="/simulation/planner"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/planner")
-                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
-                  : "text-gray-500 hover:text-[#00cfff]/80"
+                  ? "text-engine-neon border-b-2 border-engine-neon drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.5)]"
+                  : "text-gray-500 hover:text-engine-neon/80"
               }`}
             >
               Goal Planner {planLevel < 2 && !isAdmin && "🔒"}
@@ -223,8 +254,8 @@ const SimulationLayout = ({
               to="/simulation/manual"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/manual")
-                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
-                  : "text-gray-500 hover:text-[#00cfff]/80"
+                  ? "text-engine-neon border-b-2 border-engine-neon drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.5)]"
+                  : "text-gray-500 hover:text-engine-neon/80"
               }`}
             >
               Manual Trade
@@ -233,8 +264,8 @@ const SimulationLayout = ({
               to="/simulation/history"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
                 location.pathname.includes("/simulation/history")
-                  ? "text-[#00cfff] border-b-2 border-[#00cfff] drop-shadow-[0_0_8px_rgba(0,207,255,0.5)]"
-                  : "text-gray-500 hover:text-[#00cfff]/80"
+                  ? "text-engine-neon border-b-2 border-engine-neon drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.5)]"
+                  : "text-gray-500 hover:text-engine-neon/80"
               }`}
             >
               History
@@ -268,7 +299,7 @@ const StrategyView = ({
         <div className="flex justify-end">
           <button
             onClick={() => onExport(simulationData)}
-            className="bg-transparent hover:bg-[#00cfff]/10 border border-[#00cfff]/50 hover:border-[#00cfff] text-[#00cfff] px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(0,207,255,0.1)]"
+            className="bg-transparent hover:bg-engine-button/10 border border-engine-neon/50 hover:border-engine-neon text-engine-neon px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -289,7 +320,7 @@ const StrategyView = ({
         </div>
       </>
     ) : (
-      <div className="bg-[#0a0f1c]/60 backdrop-blur-md p-10 rounded-2xl border border-[#00cfff]/20 text-center h-[300px] flex flex-col justify-center items-center text-gray-500 shadow-[0_0_20px_rgba(0,207,255,0.05)]">
+      <div className="bg-engine-panel/60 backdrop-blur-md p-10 rounded-2xl border border-engine-neon/20 text-center h-[300px] flex flex-col justify-center items-center text-gray-500 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)]">
         <svg
           className="w-16 h-16 mb-4"
           fill="none"
@@ -678,10 +709,11 @@ function App() {
   }
 
   return (
-    <NotificationProvider>
-      <PostInteractionProvider showFlash={showFlash}>
-        {/* Override default Vite styles that constrain width */}
-        <div className="min-h-screen bg-[#030308] text-gray-100 font-sans w-full flex flex-col">
+    <ThemeEngineProvider>
+      <NotificationProvider>
+        <PostInteractionProvider showFlash={showFlash}>
+          {/* Override default Vite styles that constrain width */}
+          <div className="min-h-screen bg-engine-bg text-engine-text font-engine w-full flex flex-col">
 
           {/* Flash Message Notification */}
           {flashMessage && (
@@ -761,7 +793,8 @@ function App() {
             </div>
           )}
           {/* Navbar */}
-          <nav className={`bg-[#0a0f1c]/80 backdrop-blur-md border-b px-6 py-4 fixed top-0 left-0 right-0 z-50 ${location.pathname === "/suspended" ? "border-red-500/50 shadow-[0_4px_30px_rgba(239,68,68,0.15)]" : "border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,207,255,0.05)]"}`}>
+          {location.pathname !== "/customize-platform" && (
+            <nav className={`bg-engine-panel/80 backdrop-blur-md border-b px-6 py-4 fixed top-0 left-0 right-0 z-50 ${location.pathname === "/suspended" ? "border-red-500/50 shadow-[0_4px_30px_rgba(239,68,68,0.15)]" : "border-engine-neon/20 shadow-[0_4px_30px_rgba(var(--engine-neon-rgb),0.05)]"}`}>
             <div className="flex items-center justify-between w-full">
               <div
                 className="flex items-center cursor-pointer"
@@ -775,7 +808,7 @@ function App() {
               </div>
 
               {/* Main Navigation (Center) */}
-              <div className="hidden md:flex items-center space-x-1 bg-[#030308]/60 p-1.5 rounded-full border border-[#00cfff]/20 shadow-[inset_0_0_10px_rgba(0,207,255,0.05)]">
+              <div className="hidden md:flex items-center space-x-1 bg-engine-bg/60 p-1.5 rounded-full border border-engine-neon/20 shadow-[inset_0_0_10px_rgba(var(--engine-neon-rgb),0.05)]">
                 {token &&
                   navItems.map((item) => (
                     <button
@@ -784,8 +817,8 @@ function App() {
                       title={item.title}
                       className={`p-3 rounded-full transition-all duration-300 ${
                         location.pathname.startsWith(item.path)
-                          ? "text-[#00cfff] bg-[#00cfff]/10 shadow-[0_0_20px_rgba(0,207,255,0.25)] drop-shadow-[0_0_8px_rgba(0,207,255,0.8)] scale-110"
-                          : "text-gray-500 hover:text-[#00cfff]/80 hover:bg-[#00cfff]/5 hover:scale-105"
+                          ? "text-engine-neon bg-engine-button/10 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.25)] drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.8)] scale-110"
+                          : "text-gray-500 hover:text-engine-neon/80 hover:bg-engine-button/5 hover:scale-105"
                       }`}
                     >
                       {item.icon}
@@ -807,7 +840,7 @@ function App() {
                 {token && (
                   <button
                     onClick={() => navigate("/subscription")}
-                    className="hidden md:block text-xs gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-[#030308] px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
+                    className="hidden md:block text-xs gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
                   >
                     👑 Upgrade Pro
                   </button>
@@ -842,17 +875,17 @@ function App() {
 
                     {/* Desktop Profile & Logout */}
                     <div
-                      className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-[#00cfff]/10 p-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-[#00cfff]/30 hover:shadow-[0_0_10px_rgba(0,207,255,0.1)]"
+                      className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-engine-button/10 p-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-engine-neon/30 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]"
                       onClick={() => navigate("/profile")}
                     >
                       {avatarUrl ? (
                         <img
                           src={avatarUrl}
                           alt="Avatar"
-                          className="w-8 h-8 rounded-full object-cover border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.3)]"
+                          className="w-8 h-8 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]"
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-[#030308] rounded-full flex items-center justify-center text-[#00cfff] font-bold text-xs border border-[#00cfff]/50 shadow-[0_0_5px_rgba(0,207,255,0.3)]">
+                        <div className="w-8 h-8 bg-engine-bg rounded-full flex items-center justify-center text-engine-neon font-bold text-xs border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]">
                           {userData?.username?.substring(0, 2).toUpperCase() ||
                             "U"}
                         </div>
@@ -897,7 +930,7 @@ function App() {
                         setAuthInitialLogin(true);
                         setShowAuth(true);
                       }}
-                      className="text-xs bg-transparent text-white border border-white/10 hover:border-[#00cfff]/50 px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] hover:bg-[#00cfff]/10"
+                      className="text-xs bg-transparent text-white border border-white/10 hover:border-engine-neon/50 px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:bg-engine-button/10"
                     >
                       Login
                     </button>
@@ -906,7 +939,7 @@ function App() {
                         setAuthInitialLogin(false);
                         setShowAuth(true);
                       }}
-                      className="text-xs bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-5 py-2.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(0,207,255,0.2)] hover:shadow-[0_0_20px_rgba(0,207,255,0.4)]"
+                      className="text-xs bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-5 py-2.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.4)]"
                     >
                       Sign Up
                     </button>
@@ -915,6 +948,7 @@ function App() {
               </div>
             </div>
           </nav>
+          )}
 
           {/* Mobile Menu Modal */}
           {isMobileMenuOpen && token && (
@@ -923,14 +957,14 @@ function App() {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <div
-                className="absolute right-0 top-0 h-full w-72 bg-[#0a0f1c]/95 border-l border-[#00cfff]/20 p-6 shadow-[-10px_0_30px_rgba(0,207,255,0.05)] flex flex-col"
+                className="absolute right-0 top-0 h-full w-72 bg-engine-panel/95 border-l border-engine-neon/20 p-6 shadow-[-10px_0_30px_rgba(var(--engine-neon-rgb),0.05)] flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex justify-between items-center mb-8">
                   <h3 className="text-xl font-extrabold text-white">Menu</h3>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-gray-400 hover:text-[#00cfff] transition-colors"
+                    className="text-gray-400 hover:text-engine-neon transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -951,7 +985,7 @@ function App() {
 
                 {/* Profile Summary */}
                 <div
-                  className="flex items-center gap-4 mb-8 p-4 bg-[#030308] border border-[#00cfff]/20 rounded-2xl cursor-pointer hover:bg-[#00cfff]/5 transition-all shadow-[0_0_15px_rgba(0,207,255,0.05)]"
+                  className="flex items-center gap-4 mb-8 p-4 bg-engine-bg border border-engine-neon/20 rounded-2xl cursor-pointer hover:bg-engine-button/5 transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]"
                   onClick={() => {
                     navigate("/profile");
                     setIsMobileMenuOpen(false);
@@ -961,10 +995,10 @@ function App() {
                     <img
                       src={avatarUrl}
                       alt="Avatar"
-                      className="w-12 h-12 rounded-full object-cover border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)]"
+                      className="w-12 h-12 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-[#0a0f1c] rounded-full flex items-center justify-center text-[#00cfff] font-bold text-lg border border-[#00cfff]/50 shadow-[0_0_10px_rgba(0,207,255,0.2)]">
+                    <div className="w-12 h-12 bg-engine-panel rounded-full flex items-center justify-center text-engine-neon font-bold text-lg border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">
                       {userData?.username?.substring(0, 2).toUpperCase() || "U"}
                     </div>
                   )}
@@ -996,7 +1030,7 @@ function App() {
                         navigate("/subscription");
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-[#030308] py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
                     >
                       👑 Upgrade Pro
                     </button>
@@ -1125,7 +1159,7 @@ function App() {
                         onExport={handleExportSimulationCSV}
                       />
                     ) : (
-                      <div className="text-center py-24 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)]">
+                      <div className="text-center py-24 bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)]">
                         <h3 className="text-3xl font-extrabold text-white mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                           Feature Locked 🔒
                         </h3>
@@ -1134,7 +1168,7 @@ function App() {
                         </p>
                         <button
                           onClick={() => navigate("/subscription")}
-                          className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_25px_rgba(0,207,255,0.4)]"
+                          className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.4)]"
                         >
                           Upgrade Now
                         </button>
@@ -1148,7 +1182,7 @@ function App() {
                     planLevel >= 2 || userData?.role === "admin" ? (
                       <GoalPlanner />
                     ) : (
-                      <div className="text-center py-24 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 shadow-[0_0_30px_rgba(0,207,255,0.05)]">
+                      <div className="text-center py-24 bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)]">
                         <h3 className="text-3xl font-extrabold text-white mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                           Feature Locked 🔒
                         </h3>
@@ -1157,7 +1191,7 @@ function App() {
                         </p>
                         <button
                           onClick={() => navigate("/subscription")}
-                          className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(0,207,255,0.2)] transition-all hover:shadow-[0_0_25px_rgba(0,207,255,0.4)]"
+                          className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-8 py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.4)]"
                         >
                           Upgrade Now
                         </button>
@@ -1205,11 +1239,21 @@ function App() {
                 path="/contact-us"
                 element={<ContactUs showFlash={showFlash} />}
               />
+              <Route
+                path="/customize-platform"
+                element={
+                  <ProtectedRoute>
+                    <PremiumRoute>
+                      <CustomizePlatform />
+                    </PremiumRoute>
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </div>
           {/* 📱 MOBILE BOTTOM NAVIGATION */}
           {token && (
-            <div className={`fixed bottom-0 left-0 right-0 bg-[#0a0f1c]/90 backdrop-blur-md border-t md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.5)] ${location.pathname === "/suspended" ? "border-red-500/50" : "border-[#00cfff]/20"}`}>
+            <div className={`fixed bottom-0 left-0 right-0 bg-engine-panel/90 backdrop-blur-md border-t md:hidden z-50 px-2 py-2 flex justify-around items-center safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.5)] ${location.pathname === "/suspended" ? "border-red-500/50" : "border-engine-neon/20"}`}>
               {token &&
                 navItems.map((item) => (
                   <button
@@ -1217,8 +1261,8 @@ function App() {
                     onClick={() => navigate(item.path)}
                     className={`p-2 rounded-xl flex flex-col items-center gap-1 transition-all w-full ${
                       location.pathname.startsWith(item.path)
-                        ? "text-[#00cfff] bg-[#00cfff]/10 drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]"
-                        : "text-gray-500 hover:text-[#00cfff]/80"
+                        ? "text-engine-neon bg-engine-button/10 drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]"
+                        : "text-gray-500 hover:text-engine-neon/80"
                     }`}
                   >
                     {item.icon}
@@ -1228,7 +1272,8 @@ function App() {
             </div>
           )}
           {/* Footer */}
-          <footer className={`bg-[#030308] border-t mt-auto py-12 z-10 relative hidden md:block overflow-hidden ${location.pathname === "/suspended" ? "border-red-500/50" : "border-[#00cfff]/20"}`}>
+          {location.pathname !== "/customize-platform" && (
+          <footer className={`bg-engine-bg border-t mt-auto py-12 z-10 relative hidden md:block overflow-hidden ${location.pathname === "/suspended" ? "border-red-500/50" : "border-engine-neon/20"}`}>
             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent to-transparent ${location.pathname === "/suspended" ? "via-red-500/30" : "via-[#00cfff]/30"}`}></div>
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
               <div className="text-center md:text-left">
@@ -1236,7 +1281,7 @@ function App() {
                   <img
                     src="/tip-brand.png"
                     alt="Trade Income Planner"
-                    className="h-12 drop-shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+                    className="h-12 drop-shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
                   />
                 </div>
                 <p className="text-gray-400 text-sm mb-4 leading-relaxed font-light">
@@ -1246,7 +1291,7 @@ function App() {
               </div>
 
               {/* Feedback Form */}
-              <div className="md:col-span-2 bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md">
+              <div className="md:col-span-2 bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-md">
                 <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase">
                   Send Feedback
                 </h3>
@@ -1256,7 +1301,7 @@ function App() {
                       type="text"
                       value={userData?.username || "Guest"}
                       disabled
-                      className="sm:col-span-1 bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
+                      className="sm:col-span-1 bg-engine-bg border border-engine-neon/20 rounded-xl px-4 py-2.5 text-sm text-gray-500 font-bold cursor-not-allowed focus:outline-none"
                     />
                     <input
                       type="email"
@@ -1264,8 +1309,8 @@ function App() {
                       value={feedbackEmail}
                       onChange={(e) => setFeedbackEmail(e.target.value)}
                       disabled={!!userData}
-                      className={`sm:col-span-1 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all outline-none ${
-                        userData ? "text-gray-500 cursor-not-allowed border-[#00cfff]/10" : ""
+                      className={`sm:col-span-1 bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all outline-none ${
+                        userData ? "text-gray-500 cursor-not-allowed border-engine-neon/10" : ""
                       }`}
                       required
                     />
@@ -1274,14 +1319,14 @@ function App() {
                       placeholder="Your Feedback / Suggestion..."
                       value={feedbackMessage}
                       onChange={(e) => setFeedbackMessage(e.target.value)}
-                      className="sm:col-span-2 bg-[#030308] border border-[#00cfff]/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all outline-none"
+                      className="sm:col-span-2 bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all outline-none"
                       required
                     />
                   </div>
                   <div className="text-right mt-2">
                     <button
                       type="submit"
-                      className="bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-[0_0_10px_rgba(0,207,255,0.2)] hover:shadow-[0_0_15px_rgba(0,207,255,0.4)]"
+                      className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
                     >
                       Send Feedback
                     </button>
@@ -1380,13 +1425,14 @@ function App() {
                 </div>
               </div>
             </div>
-            <div className="border-t border-gray-800 pt-8 text-center">
+            <div className="border-t border-engine-neon/20 pt-8 text-center">
               <p className="text-gray-500 text-sm">
                 &copy; {new Date().getFullYear()} Trade Income Planner. All
                 rights reserved.
               </p>
             </div>
           </footer>
+          )}
           {/* AI Chat Assistant Widget (hidden on landing page) */}
           {location.pathname !== "/" && <ChatAssistant />}
 
@@ -1400,6 +1446,7 @@ function App() {
         </div>
       </PostInteractionProvider>
     </NotificationProvider>
+    </ThemeEngineProvider>
   );
 }
 

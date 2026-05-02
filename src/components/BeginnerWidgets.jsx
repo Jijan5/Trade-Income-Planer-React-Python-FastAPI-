@@ -29,16 +29,16 @@ export const PositionSizeCalculator = ({
   if (!currentPrice || currentPrice <= 0) return null;
 
   return (
-    <div className="bg-[#0a0f1c]/80 p-5 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-4">
-      <div className="flex items-center gap-2 mb-4 border-b border-[#00cfff]/10 pb-3">
+    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4">
+      <div className="flex items-center gap-2 mb-4 border-b border-engine-neon/10 pb-3">
         <span className="text-xl">📊</span>
-        <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">Position Size Calculator</h4>
+        <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Position Size Calculator</h4>
       </div>
       
       <div className="space-y-4">
         <div>
-          <label className="block text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-2">
-            Risk per Trade: <span className="text-[#00cfff] font-extrabold drop-shadow-[0_0_3px_rgba(0,207,255,0.5)]">{riskPercent}%</span>
+          <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">
+            Risk per Trade: <span className="text-engine-neon font-extrabold drop-shadow-[0_0_3px_rgba(var(--engine-neon-rgb),0.5)]">{riskPercent}%</span>
           </label>
           <input
             type="range"
@@ -47,21 +47,21 @@ export const PositionSizeCalculator = ({
             step="0.5"
             value={riskPercent}
             onChange={(e) => setRiskPercent(parseFloat(e.target.value))}
-            className="w-full h-2 bg-[#030308] border border-[#00cfff]/30 rounded-lg appearance-none cursor-pointer accent-[#00cfff]"
+            className="w-full h-2 bg-engine-bg border border-engine-neon/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
           />
-          <div className="flex justify-between text-[9px] font-bold text-[#00cfff]/50 mt-2 uppercase tracking-widest">
+          <div className="flex justify-between text-[9px] font-bold text-engine-neon/50 mt-2 uppercase tracking-widest">
             <span>0.5% (SAFE)</span>
             <span>5% (AGGRESSIVE)</span>
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-[#030308]/80 p-3 rounded-xl border border-[#00cfff]/10">
-            <p className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest mb-1">Risk Amount</p>
+          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+            <p className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Risk Amount</p>
             <p className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">${riskAmount.toFixed(2)}</p>
           </div>
-          <div className="bg-[#030308]/80 p-3 rounded-xl border border-[#00cfff]/10">
-            <p className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest mb-1">Position Size</p>
+          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+            <p className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Position Size</p>
             <p className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">${positionSize.toFixed(2)}</p>
           </div>
         </div>
@@ -69,12 +69,12 @@ export const PositionSizeCalculator = ({
         <button
           onClick={() => onApplyPositionSize(positionSize)}
           disabled={positionSize <= 0}
-          className="w-full bg-[#00cfff] hover:bg-[#00e5ff] disabled:bg-[#030308] disabled:border disabled:border-[#00cfff]/30 disabled:text-gray-500 text-[#030308] text-xs font-extrabold uppercase tracking-widest py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(0,207,255,0.4)] disabled:shadow-none hover:shadow-[0_0_25px_rgba(0,207,255,0.6)] hover:-translate-y-0.5 mt-2"
+          className="w-full bg-engine-button hover:bg-[#00e5ff] disabled:bg-engine-bg disabled:border disabled:border-engine-neon/30 disabled:text-gray-500 text-engine-bg text-xs font-extrabold uppercase tracking-widest py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] disabled:shadow-none hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 mt-2"
         >
           APPLY POSITION SIZE
         </button>
         
-        <p className="text-[10px] font-bold text-gray-500 italic border-t border-[#00cfff]/10 pt-3 mt-3">
+        <p className="text-[10px] font-bold text-gray-500 italic border-t border-engine-neon/10 pt-3 mt-3">
           💡 Novice tip: Risk only 1-2% of your account per trade to survive losing streaks!
         </p>
       </div>
@@ -126,13 +126,13 @@ export const RiskRewardDisplay = ({
   };
 
   return (
-    <div className="bg-[#0a0f1c]/80 p-5 rounded-2xl border border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-4">
-      <div className="flex items-center gap-2 mb-4 border-b border-[#00cfff]/10 pb-3">
+    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4">
+      <div className="flex items-center gap-2 mb-4 border-b border-engine-neon/10 pb-3">
         <span className="text-xl">⚖️</span>
-        <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">Risk / Reward Ratio</h4>
+        <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Risk / Reward Ratio</h4>
       </div>
       
-      <div className="flex items-center justify-center mb-4 bg-[#030308]/50 py-4 rounded-xl border border-[#00cfff]/10">
+      <div className="flex items-center justify-center mb-4 bg-engine-bg/50 py-4 rounded-xl border border-engine-neon/10">
         <div className={`text-4xl font-mono font-extrabold ${getRatingColor()} drop-shadow-[0_0_8px_currentColor]`}>
           1:{rMultiple.toFixed(1)}
         </div>
@@ -143,17 +143,17 @@ export const RiskRewardDisplay = ({
       </div>
       
       <div className="space-y-3 text-xs">
-        <div className="flex justify-between items-center bg-[#030308]/80 p-3 rounded-xl border border-[#00cfff]/10">
-          <span className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest">Stop Loss</span>
+        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+          <span className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest">Stop Loss</span>
           <span className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">${slPrice.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between items-center bg-[#030308]/80 p-3 rounded-xl border border-[#00cfff]/10">
-          <span className="text-[10px] font-extrabold text-[#00cfff]/50 uppercase tracking-widest">Take Profit</span>
+        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+          <span className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest">Take Profit</span>
           <span className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">${tpPrice.toFixed(2)}</span>
         </div>
       </div>
       
-      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-[#00cfff]/10 pt-3">
+      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-engine-neon/10 pt-3">
         💡 Novice tip: Always aim for at least 2:1 risk/reward to stay profitable!
       </p>
     </div>
@@ -239,22 +239,22 @@ export const BeginnerTipsWidget = ({ recentPnL, totalTrades, accountBalance, ini
   };
   
   return (
-    <div className="bg-[#00cfff]/5 p-5 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_15px_rgba(0,207,255,0.05)] backdrop-blur-md mb-4 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[#00cfff]/5 rounded-full blur-2xl"></div>
-      <div className="flex items-center justify-between mb-4 relative z-10 border-b border-[#00cfff]/10 pb-3">
+    <div className="bg-engine-button/5 p-5 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-engine-button/5 rounded-full blur-2xl"></div>
+      <div className="flex items-center justify-between mb-4 relative z-10 border-b border-engine-neon/10 pb-3">
         <div className="flex items-center gap-2">
           <span className="text-xl">💡</span>
-          <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_#00cfff]">Trading Tip</h4>
+          <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Trading Tip</h4>
         </div>
         <button 
           onClick={nextTip}
-          className="text-[10px] font-extrabold uppercase tracking-widest text-[#00cfff] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 px-2 py-1 rounded transition-all shadow-[0_0_5px_rgba(0,207,255,0.1)] hover:shadow-[0_0_10px_rgba(0,207,255,0.2)]"
+          className="text-[10px] font-extrabold uppercase tracking-widest text-engine-neon border border-engine-neon/30 hover:bg-engine-button/10 px-2 py-1 rounded transition-all shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
         >
           Next Tip
         </button>
       </div>
       
-      <p className="text-sm text-gray-200 italic leading-relaxed font-medium relative z-10 bg-[#030308]/30 p-4 rounded-xl border border-[#00cfff]/10">
+      <p className="text-sm text-gray-200 italic leading-relaxed font-medium relative z-10 bg-engine-bg/30 p-4 rounded-xl border border-engine-neon/10">
         "{tips[currentTip]}"
       </p>
       
@@ -262,7 +262,7 @@ export const BeginnerTipsWidget = ({ recentPnL, totalTrades, accountBalance, ini
         {tips.map((_, idx) => (
           <div 
             key={idx} 
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentTip ? 'bg-[#00cfff] shadow-[0_0_5px_#00cfff] scale-125' : 'bg-[#00cfff]/30'}`}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentTip ? 'bg-engine-button shadow-[0_0_5px_var(--engine-neon)] scale-125' : 'bg-engine-button/30'}`}
           />
         ))}
       </div>
@@ -295,8 +295,8 @@ export const BeginnerWidgetsPanel = ({
           onClick={() => setShowCalculator(!showCalculator)}
           className={`flex-1 py-3 px-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${
             showCalculator 
-              ? 'bg-[#00cfff]/20 text-[#00cfff] border border-[#00cfff] shadow-[0_0_15px_rgba(0,207,255,0.2)]' 
-              : 'bg-[#030308]/50 text-[#00cfff]/50 hover:bg-[#00cfff]/10 hover:text-[#00cfff] border border-[#00cfff]/20'
+              ? 'bg-engine-button/20 text-engine-neon border border-engine-neon shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)]' 
+              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-neon/20'
           }`}
         >
           <span className="text-sm mr-1">📊</span> Calculator
@@ -305,8 +305,8 @@ export const BeginnerWidgetsPanel = ({
           onClick={() => setShowRR(!showRR)}
           className={`flex-1 py-3 px-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${
             showRR 
-              ? 'bg-[#00cfff]/20 text-[#00cfff] border border-[#00cfff] shadow-[0_0_15px_rgba(0,207,255,0.2)]' 
-              : 'bg-[#030308]/50 text-[#00cfff]/50 hover:bg-[#00cfff]/10 hover:text-[#00cfff] border border-[#00cfff]/20'
+              ? 'bg-engine-button/20 text-engine-neon border border-engine-neon shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)]' 
+              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-neon/20'
           }`}
         >
           <span className="text-sm mr-1">⚖️</span> R/R Ratio

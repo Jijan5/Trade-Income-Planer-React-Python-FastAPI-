@@ -82,6 +82,34 @@ class ChatEnhancedResponse(BaseModel):
 
 # db models (auth)
 
+class UserTheme(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", unique=True, index=True)
+    bg_color: str = SQLField(default="#030308")
+    panel_color: str = SQLField(default="#0a0f1c")
+    neon_color: str = SQLField(default="#00cfff")
+    button_color: str = SQLField(default="#00cfff")
+    glass_opacity: float = SQLField(default=0.6)
+    glass_blur: str = SQLField(default="12px")
+    font_family: str = SQLField(default="Inter")
+    text_color: str = SQLField(default="#ffffff")
+    neon_radius: str = SQLField(default="20px")
+    neon_font_style: str = SQLField(default="none")
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+class UserThemeCreateUpdate(BaseModel):
+    bg_color: Optional[str] = None
+    panel_color: Optional[str] = None
+    neon_color: Optional[str] = None
+    button_color: Optional[str] = None
+    glass_opacity: Optional[float] = None
+    glass_blur: Optional[str] = None
+    font_family: Optional[str] = None
+    text_color: Optional[str] = None
+    neon_radius: Optional[str] = None
+    neon_font_style: Optional[str] = None
+
+
 class User(SQLModel, table=True):
   id: Optional[int] = SQLField(default=None, primary_key=True)
   tenant_id: int = SQLField(foreign_key="tenant.id", index=True)

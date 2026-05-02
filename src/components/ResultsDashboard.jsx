@@ -130,7 +130,7 @@ const ResultsDashboard = ({ data }) => {
     if (!monte_carlo) return [];
     return [
       { name: 'Worst Case', value: parseFloat(monte_carlo.worst_case), fill: '#f87171', shadow: 'rgba(248,113,113,0.5)' },
-      { name: 'Median', value: parseFloat(monte_carlo.median), fill: '#00cfff', shadow: 'rgba(0,207,255,0.5)' },
+      { name: 'Median', value: parseFloat(monte_carlo.median), fill: '#00cfff', shadow: 'rgba(var(--engine-neon-rgb),0.5)' },
       { name: 'Best Case', value: parseFloat(monte_carlo.best_case), fill: '#4ade80', shadow: 'rgba(74,222,128,0.5)' }
     ];
   }, [monte_carlo]);
@@ -139,13 +139,13 @@ const ResultsDashboard = ({ data }) => {
     <div className="space-y-6">
       {/* What-If Simulator (Brutally Honest Projection) */}
       {monte_carlo && (
-        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md relative overflow-hidden">
+        <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md relative overflow-hidden">
           <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-green-500 shadow-[0_0_10px_#22c55e]'}`}></div>
           <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
             <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" /> What-If Future Projection
           </h3>
           
-          <div className={`p-6 rounded-xl border ${ruinProb > 20 ? 'bg-red-900/10 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-[#00cfff]/5 border-[#00cfff]/30 shadow-[0_0_15px_rgba(0,207,255,0.1)]'}`}>
+          <div className={`p-6 rounded-xl border ${ruinProb > 20 ? 'bg-red-900/10 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-engine-button/5 border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]'}`}>
             <p className="text-xl font-medium text-gray-200 leading-relaxed">
               "With your current strategy, there is a <span className={`font-mono font-bold text-2xl ${ruinProb > 0 ? 'text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]' : 'text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]'}`}>{ruinProb}% probability</span> will depleted."
               {ruinProb > 0 && (
@@ -174,7 +174,7 @@ const ResultsDashboard = ({ data }) => {
         </div>
       )}
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-[#0a0f1c]/60 p-4 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-engine-panel/60 p-4 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md">
         {[
           {
             label: "Initial Capital",
@@ -195,8 +195,8 @@ const ResultsDashboard = ({ data }) => {
           {
             label: "Net Profit",
             value: `${parseFloat(summary.total_profit) >= 0 ? '+' : '-'}$${Math.abs(parseFloat(summary.total_profit)).toFixed(2)}`,
-            color: parseFloat(summary.total_profit) >= 0 ? "text-[#00cfff]" : "text-red-400",
-            shadow: parseFloat(summary.total_profit) >= 0 ? "drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            color: parseFloat(summary.total_profit) >= 0 ? "text-engine-neon" : "text-red-400",
+            shadow: parseFloat(summary.total_profit) >= 0 ? "drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
             tooltip: "Total profit or loss over the simulation period.",
             border: true
           },
@@ -227,8 +227,8 @@ const ResultsDashboard = ({ data }) => {
           {
             label: "Expectancy",
             value: `${parseFloat(summary.expectancy) >= 0 ? '' : '-'}$${Math.abs(parseFloat(summary.expectancy)).toFixed(2)}`,
-            color: parseFloat(summary.expectancy) >= 0 ? "text-[#00cfff]" : "text-red-400",
-            shadow: parseFloat(summary.expectancy) >= 0 ? "drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
+            color: parseFloat(summary.expectancy) >= 0 ? "text-engine-neon" : "text-red-400",
+            shadow: parseFloat(summary.expectancy) >= 0 ? "drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]" : "drop-shadow-[0_0_5px_rgba(248,113,113,0.5)]",
             tooltip: "Average amount won or lost per trade.",
             border: true
           },
@@ -241,15 +241,15 @@ const ResultsDashboard = ({ data }) => {
             border: true
           }
         ].map((card, idx) => (
-          <div key={idx} className={`relative p-3 rounded-xl transition-all duration-300 hover:bg-[#00cfff]/10 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(0,207,255,0.15)] cursor-help group flex flex-col justify-center ${card.border ? 'md:border-l border-[#00cfff]/10' : ''}`}>
-            <p className="text-[9px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest mb-1 group-hover:text-[#00cfff] transition-colors">
+          <div key={idx} className={`relative p-3 rounded-xl transition-all duration-300 hover:bg-engine-button/10 hover:-translate-y-1 hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.15)] cursor-help group flex flex-col justify-center ${card.border ? 'md:border-l border-engine-neon/10' : ''}`}>
+            <p className="text-[9px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-1 group-hover:text-engine-neon transition-colors">
               {card.label}
             </p>
             <p className={`text-xl font-mono font-bold ${card.color} ${card.shadow} transition-all duration-300 group-hover:scale-105 origin-left`}>
               {card.value}
             </p>
             {/* Tooltip */}
-            <div className="absolute top-[110%] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 w-max max-w-[200px] bg-[#030308] border border-[#00cfff]/30 text-white text-[10px] p-2 rounded-lg shadow-[0_0_15px_rgba(0,207,255,0.3)] text-center font-medium">
+            <div className="absolute top-[110%] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 w-max max-w-[200px] bg-engine-bg border border-engine-neon/30 text-white text-[10px] p-2 rounded-lg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.3)] text-center font-medium">
               {card.tooltip}
             </div>
           </div>
@@ -260,8 +260,8 @@ const ResultsDashboard = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monte Carlo Simulation */}
         {monte_carlo && (
-          <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md flex flex-col">
-            <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
+          <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md flex flex-col">
+            <h3 className="text-sm font-extrabold mb-5 text-engine-neon uppercase tracking-widest flex items-center gap-2">
               Monte Carlo Simulation{" "}
               <span className="text-[10px] text-gray-500 normal-case font-mono">
                 (500 Iterations)
@@ -269,7 +269,7 @@ const ResultsDashboard = ({ data }) => {
             </h3>
             <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-6">
               <div className="space-y-4 flex flex-col justify-center">
-                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-red-500/20 hover:border-red-500/50 hover:bg-red-900/10 transition-all cursor-default">
+                <div className="flex justify-between items-center p-4 bg-engine-bg/50 rounded-xl border border-red-500/20 hover:border-red-500/50 hover:bg-red-900/10 transition-all cursor-default">
                   <span className="text-[11px] font-extrabold uppercase tracking-widest text-red-400/70">
                     Worst Case <span className="text-[9px] lowercase opacity-70">(bottom 5%)</span>
                   </span>
@@ -277,15 +277,15 @@ const ResultsDashboard = ({ data }) => {
                     ${monte_carlo.worst_case}
                   </span>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-[#00cfff]/20 hover:border-[#00cfff]/50 hover:bg-[#00cfff]/10 transition-all cursor-default">
-                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#00cfff]/70">
+                <div className="flex justify-between items-center p-4 bg-engine-bg/50 rounded-xl border border-engine-neon/20 hover:border-engine-neon/50 hover:bg-engine-button/10 transition-all cursor-default">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-engine-neon/70">
                     Median <span className="text-[9px] lowercase opacity-70">(most likely)</span>
                   </span>
-                  <span className="font-mono font-bold text-[#00cfff] drop-shadow-[0_0_5px_rgba(0,207,255,0.5)]">
+                  <span className="font-mono font-bold text-engine-neon drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">
                     ${monte_carlo.median}
                   </span>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-[#030308]/50 rounded-xl border border-green-500/20 hover:border-green-500/50 hover:bg-green-900/10 transition-all cursor-default">
+                <div className="flex justify-between items-center p-4 bg-engine-bg/50 rounded-xl border border-green-500/20 hover:border-green-500/50 hover:bg-green-900/10 transition-all cursor-default">
                   <span className="text-[11px] font-extrabold uppercase tracking-widest text-green-400/70">
                     Best Case <span className="text-[9px] lowercase opacity-70">(top 5%)</span>
                   </span>
@@ -294,12 +294,12 @@ const ResultsDashboard = ({ data }) => {
                   </span>
                 </div>
               </div>
-              <div className="h-full min-h-[200px] flex items-center bg-[#030308]/50 p-4 rounded-xl border border-[#00cfff]/10">
+              <div className="h-full min-h-[200px] flex items-center bg-engine-bg/50 p-4 rounded-xl border border-engine-neon/10">
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={mcChartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#9ca3af", fontSize: 10, fontFamily: "monospace", fontWeight: "bold" }} />
                     <YAxis tickFormatter={(val) => `$${val >= 1000 ? (val/1000).toFixed(1)+'k' : val}`} axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 10, fontFamily: "monospace" }} />
-                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ backgroundColor: "#0a0f1c", borderColor: "#00cfff", color: "#fff", borderRadius: "12px", fontFamily: "monospace", boxShadow: "0 0 20px rgba(0,207,255,0.2)" }} formatter={(val) => [`$${val}`, 'Value']} />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.05)" }} contentStyle={{ backgroundColor: "#0a0f1c", borderColor: "#00cfff", color: "#fff", borderRadius: "12px", fontFamily: "monospace", boxShadow: "0 0 20px rgba(var(--engine-neon-rgb),0.2)" }} formatter={(val) => [`$${val}`, 'Value']} />
                     <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={35}>
                       {mcChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} style={{ filter: `drop-shadow(0 0 8px ${entry.shadow})` }} />
@@ -309,15 +309,15 @@ const ResultsDashboard = ({ data }) => {
                 </ResponsiveContainer>
               </div>
             </div>
-            <p className="text-[10px] text-[#00cfff]/50 mt-5 font-mono italic text-center border-t border-[#00cfff]/10 pt-4">
+            <p className="text-[10px] text-engine-neon/50 mt-5 font-mono italic text-center border-t border-engine-neon/10 pt-4">
               *This simulation randomizes the win/loss sequence to visualize the probability distribution of potential outcomes.
             </p>
           </div>
         )}
 
         {/* Risk Analysis / Warnings */}
-        <div className="bg-[#0a0f1c]/60 p-8 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md flex flex-col">
-          <h3 className="text-sm font-extrabold mb-5 text-[#00cfff] uppercase tracking-widest flex items-center gap-2">
+        <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md flex flex-col">
+          <h3 className="text-sm font-extrabold mb-5 text-engine-neon uppercase tracking-widest flex items-center gap-2">
             Risk Analysis
             <span className="relative flex h-2 w-2 ml-2">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${warnings.length > 0 ? 'bg-red-400' : 'bg-green-400'}`}></span>
@@ -329,7 +329,7 @@ const ResultsDashboard = ({ data }) => {
               warnings.map((w, idx) => (
                 <div
                   key={idx}
-                  className={`relative p-5 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-[#030308]/80 ${
+                  className={`relative p-5 rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-engine-bg/80 ${
                     w.type === "danger"
                       ? "border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.15)] group"
                       : "border border-yellow-500/50 shadow-[0_0_20px_rgba(250,204,21,0.15)] group"
@@ -352,7 +352,7 @@ const ResultsDashboard = ({ data }) => {
                 </div>
               ))
             ) : (
-              <div className="relative p-6 rounded-xl overflow-hidden bg-[#030308]/80 border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.1)] hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-300">
+              <div className="relative p-6 rounded-xl overflow-hidden bg-engine-bg/80 border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.1)] hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-300">
                 <div className="absolute inset-0 bg-green-500/5 backdrop-blur-sm"></div>
                 <div className="absolute top-0 left-0 w-1 h-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
                 <div className="relative flex items-center gap-5">
@@ -373,7 +373,7 @@ const ResultsDashboard = ({ data }) => {
       </div>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap justify-between items-center bg-[#0a0f1c]/60 p-3 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md">
+      <div className="flex flex-wrap justify-between items-center bg-engine-panel/60 p-3 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md">
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
@@ -381,8 +381,8 @@ const ResultsDashboard = ({ data }) => {
               onClick={() => setFilter(f.id)}
               className={`px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all ${
                 filter === f.id
-                  ? "bg-[#00cfff] text-[#030308] shadow-[0_0_15px_rgba(0,207,255,0.4)]"
-                  : "bg-[#030308] border border-[#00cfff]/20 text-[#00cfff]/50 hover:bg-[#00cfff]/10 hover:text-[#00cfff] hover:border-[#00cfff]/50"
+                  ? "bg-engine-button text-engine-bg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                  : "bg-engine-bg border border-engine-neon/20 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon hover:border-engine-neon/50"
               }`}
             >
               {f.label}
@@ -391,7 +391,7 @@ const ResultsDashboard = ({ data }) => {
         </div>
         <button
           onClick={downloadCSV}
-          className="px-5 py-2 mt-2 sm:mt-0 bg-[#030308] border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff] hover:shadow-[0_0_15px_rgba(0,207,255,0.2)] text-[#00cfff] text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
+          className="px-5 py-2 mt-2 sm:mt-0 bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] text-engine-neon text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
         >
           <svg
             className="w-4 h-4"
@@ -414,21 +414,21 @@ const ResultsDashboard = ({ data }) => {
       <SimulationChart key={runKey} data={aggregatedData} />
 
       {/* PnL Chart */}
-      <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[400px]">
-        <h3 className="text-sm font-extrabold mb-4 text-[#00cfff] uppercase tracking-widest">
+      <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md h-[400px]">
+        <h3 className="text-sm font-extrabold mb-4 text-engine-neon uppercase tracking-widest">
           Daily Profit / Loss
         </h3>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={aggregatedData}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="#00cfff"
+              stroke="var(--engine-neon)"
               strokeOpacity={0.1}
               vertical={false}
             />
             <XAxis
               dataKey="day"
-              stroke="#00cfff"
+              stroke="var(--engine-neon)"
               strokeOpacity={0.5}
               tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
@@ -436,7 +436,7 @@ const ResultsDashboard = ({ data }) => {
             />
             <YAxis
               tickFormatter={(value) => `$${value}`}
-              stroke="#00cfff"
+              stroke="var(--engine-neon)"
               strokeOpacity={0.5}
               tick={{ fill: "rgba(0, 207, 255, 0.5)", fontSize: 12, fontFamily: 'monospace' }}
               tickLine={false}
@@ -479,7 +479,7 @@ const ResultsDashboard = ({ data }) => {
           return { day: d.day, drawdown: parseFloat(dd.toFixed(2)) };
         });
         return (
-          <div className="bg-[#0a0f1c]/60 p-6 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md h-[300px]">
+          <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md h-[300px]">
             <h3 className="text-sm font-extrabold mb-4 text-red-400 uppercase tracking-widest drop-shadow-[0_0_3px_rgba(248,113,113,0.4)]">
               Drawdown %
             </h3>
@@ -507,15 +507,15 @@ const ResultsDashboard = ({ data }) => {
       })()}
 
       {/* Table Section */}
-      <div className="bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md overflow-hidden">
+      <div className="bg-engine-panel/60 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md overflow-hidden">
         {/* Table Tabs */}
-        <div className="flex border-b border-[#00cfff]/20">
+        <div className="flex border-b border-engine-neon/20">
           <button
             onClick={() => setViewMode("daily")}
             className={`flex-1 sm:flex-none px-6 py-4 text-xs font-extrabold uppercase tracking-widest transition-all ${
               viewMode === "daily"
-                ? "bg-[#00cfff]/10 text-[#00cfff] border-b-2 border-[#00cfff]"
-                : "text-[#00cfff]/50 hover:bg-[#00cfff]/5 hover:text-[#00cfff]"
+                ? "bg-engine-button/10 text-engine-neon border-b-2 border-engine-neon"
+                : "text-engine-neon/50 hover:bg-engine-button/5 hover:text-engine-neon"
             }`}
           >
             Daily Breakdown
@@ -524,8 +524,8 @@ const ResultsDashboard = ({ data }) => {
             onClick={() => setViewMode("journal")}
             className={`flex-1 sm:flex-none px-6 py-4 text-xs font-extrabold uppercase tracking-widest transition-all ${
               viewMode === "journal"
-                ? "bg-[#00cfff]/10 text-[#00cfff] border-b-2 border-[#00cfff]"
-                : "text-[#00cfff]/50 hover:bg-[#00cfff]/5 hover:text-[#00cfff]"
+                ? "bg-engine-button/10 text-engine-neon border-b-2 border-engine-neon"
+                : "text-engine-neon/50 hover:bg-engine-button/5 hover:text-engine-neon"
             }`}
           >
             Trade Journal (Log)
@@ -534,28 +534,28 @@ const ResultsDashboard = ({ data }) => {
         <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
           {viewMode === "daily" ? (
             <table className="min-w-full divide-y divide-[#00cfff]/10">
-              <thead className="bg-[#030308]/80 backdrop-blur-md sticky top-0 z-10 border-b border-[#00cfff]/20">
+              <thead className="bg-engine-bg/80 backdrop-blur-md sticky top-0 z-10 border-b border-engine-neon/20">
                 <tr>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Day
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Start Balance
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     P/L
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     End Balance
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     ROI
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-transparent divide-y divide-[#00cfff]/5">
                 {aggregatedData.map((row) => (
-                  <tr key={row.day} className="hover:bg-[#00cfff]/5 transition-colors">
+                  <tr key={row.day} className="hover:bg-engine-button/5 transition-colors">
                     <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-300 font-mono">
                       {row.day}
                     </td>
@@ -575,7 +575,7 @@ const ResultsDashboard = ({ data }) => {
                     <td className="px-6 py-3 whitespace-nowrap text-sm font-bold text-white font-mono">
                       ${row.end_balance}
                     </td>
-                    <td className="px-6 py-3 whitespace-nowrap text-sm text-[#00cfff] font-mono">
+                    <td className="px-6 py-3 whitespace-nowrap text-sm text-engine-neon font-mono">
                       {row.roi}
                     </td>
                   </tr>
@@ -584,21 +584,21 @@ const ResultsDashboard = ({ data }) => {
             </table>
           ) : (
             <table className="min-w-full divide-y divide-[#00cfff]/10">
-              <thead className="bg-[#030308]/80 backdrop-blur-md sticky top-0 z-10 border-b border-[#00cfff]/20">
+              <thead className="bg-engine-bg/80 backdrop-blur-md sticky top-0 z-10 border-b border-engine-neon/20">
                 <tr>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     #
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Day
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Result
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     P/L ($)
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Balance
                   </th>
                 </tr>
@@ -606,8 +606,8 @@ const ResultsDashboard = ({ data }) => {
               <tbody className="bg-transparent divide-y divide-[#00cfff]/5">
                 {trade_log &&
                   trade_log.map((trade) => (
-                    <tr key={trade.trade_no} className="hover:bg-[#00cfff]/5 transition-colors">
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-[#00cfff]/50 font-mono">
+                    <tr key={trade.trade_no} className="hover:bg-engine-button/5 transition-colors">
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-engine-neon/50 font-mono">
                         #{trade.trade_no}
                       </td>
                       <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-400 font-mono">

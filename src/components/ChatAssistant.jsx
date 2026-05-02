@@ -201,12 +201,12 @@ const ChatAssistant = () => {
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       {/* Market Data Panel */}
       {isOpen && showMarketPanel && (
-        <div className="bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
+        <div className="bg-engine-panel/95 backdrop-blur-md border border-engine-neon/30 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
           {/* Header */}
-          <div className="bg-[#030308] p-4 border-b border-[#00cfff]/20 flex justify-between items-center relative overflow-hidden">
+          <div className="bg-engine-bg p-4 border-b border-engine-neon/20 flex justify-between items-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-3 relative z-10">
-              <div className="w-8 h-8 bg-[#030308] border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
+              <div className="w-8 h-8 bg-engine-bg border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
                 📈
               </div>
               <div>
@@ -237,7 +237,7 @@ const ChatAssistant = () => {
               </button>
               <button
                 onClick={() => setShowMarketPanel(false)}
-                className="text-[#00cfff]/50 hover:text-[#00cfff] hover:drop-shadow-[0_0_5px_#00cfff] transition-all"
+                className="text-engine-neon/50 hover:text-engine-neon hover:drop-shadow-[0_0_5px_var(--engine-neon)] transition-all"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -256,20 +256,20 @@ const ChatAssistant = () => {
           </div>
 
           {/* Market Data */}
-          <div className="flex-1 overflow-y-auto p-4 bg-[#0a0f1c]/50 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 bg-engine-panel/50 custom-scrollbar">
             {loadingMarket ? (
               <div className="flex flex-col items-center justify-center h-full gap-3">
-                 <div className="w-6 h-6 border-2 border-[#00cfff]/30 border-t-[#00cfff] rounded-full animate-spin"></div>
-                 <div className="text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest">Loading market data...</div>
+                 <div className="w-6 h-6 border-2 border-engine-neon/30 border-t-[#00cfff] rounded-full animate-spin"></div>
+                 <div className="text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">Loading market data...</div>
               </div>
             ) : marketData.length > 0 ? (
               <div className="space-y-3">
                 {marketData.map((coin, idx) => (
                   <div
                     key={idx}
-                    className="bg-[#030308]/80 p-4 rounded-xl border border-[#00cfff]/10 hover:border-[#00cfff]/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+                    className="bg-engine-bg/80 p-4 rounded-xl border border-engine-neon/10 hover:border-engine-neon/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                   >
-                    <div className="flex justify-between items-center mb-3 border-b border-[#00cfff]/10 pb-2">
+                    <div className="flex justify-between items-center mb-3 border-b border-engine-neon/10 pb-2">
                       <span className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
                         {coin.symbol}
                       </span>
@@ -286,7 +286,7 @@ const ChatAssistant = () => {
                       </span>
                     </div>
                     <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
-                      <span className="text-[#00cfff]/50">Price:</span>
+                      <span className="text-engine-neon/50">Price:</span>
                       <span className="text-white font-mono text-xs drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]">
                         $
                         {coin.price.toLocaleString(undefined, {
@@ -296,7 +296,7 @@ const ChatAssistant = () => {
                       </span>
                     </div>
                     <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
-                      <span className="text-[#00cfff]/50">24h High:</span>
+                      <span className="text-engine-neon/50">24h High:</span>
                       <span className="text-green-400 font-mono text-xs">
                         $
                         {coin.high_24h.toLocaleString(undefined, {
@@ -306,7 +306,7 @@ const ChatAssistant = () => {
                       </span>
                     </div>
                     <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest">
-                      <span className="text-[#00cfff]/50">24h Low:</span>
+                      <span className="text-engine-neon/50">24h Low:</span>
                       <span className="text-red-400 font-mono text-xs">
                         $
                         {coin.low_24h.toLocaleString(undefined, {
@@ -315,14 +315,14 @@ const ChatAssistant = () => {
                         })}
                       </span>
                     </div>
-                    <div className="mt-3 pt-3 border-t border-[#00cfff]/10">
+                    <div className="mt-3 pt-3 border-t border-engine-neon/10">
                       <span
                         className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md border ${
                           coin.trend.includes("Bullish")
                             ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]"
                             : coin.trend.includes("Bearish")
                             ? "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(239,68,68,0.2)]"
-                            : "bg-[#030308] text-[#00cfff]/70 border-[#00cfff]/20"
+                            : "bg-engine-bg text-engine-neon/70 border-engine-neon/20"
                         }`}
                       >
                         {coin.trend.toUpperCase()}
@@ -332,21 +332,21 @@ const ChatAssistant = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-[#00cfff]/50 text-[10px] font-extrabold uppercase tracking-widest">
+              <div className="flex items-center justify-center h-full text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">
                 No market data available
               </div>
             )}
           </div>
 
           {/* Quick Questions */}
-          <div className="p-4 bg-[#030308] border-t border-[#00cfff]/20">
-            <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#00cfff]/50 mb-3">QUICK QUESTIONS:</p>
+          <div className="p-4 bg-engine-bg border-t border-engine-neon/20">
+            <p className="text-[9px] font-extrabold uppercase tracking-widest text-engine-neon/50 mb-3">QUICK QUESTIONS:</p>
             <div className="flex flex-wrap gap-2">
               {quickQuestions.map((q, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleQuickQuestion(q)}
-                  className="text-[9px] font-extrabold uppercase tracking-wider bg-[#00cfff]/10 hover:bg-[#00cfff]/20 border border-[#00cfff]/30 hover:border-[#00cfff]/50 text-[#00cfff] hover:text-[#00e5ff] px-3 py-1.5 rounded-lg transition-all shadow-[0_0_5px_rgba(0,207,255,0.1)] hover:shadow-[0_0_10px_rgba(0,207,255,0.3)]"
+                  className="text-[9px] font-extrabold uppercase tracking-wider bg-engine-button/10 hover:bg-engine-button/20 border border-engine-neon/30 hover:border-engine-neon/50 text-engine-neon hover:text-[#00e5ff] px-3 py-1.5 rounded-lg transition-all shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
                 >
                   {q}
                 </button>
@@ -358,14 +358,14 @@ const ChatAssistant = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.15)] w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
+        <div className="bg-engine-panel/95 backdrop-blur-md border border-engine-neon/30 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
           {/* Header */}
-          <div className="bg-[#030308] p-4 border-b border-[#00cfff]/20 flex justify-between items-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#00cfff]/10 to-transparent pointer-events-none"></div>
+          <div className="bg-engine-bg p-4 border-b border-engine-neon/20 flex justify-between items-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-engine-neon/10 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-3 relative z-10">
               <div className="relative">
                 <div className="w-2.5 h-2.5 bg-green-400 rounded-full absolute bottom-0 right-0 border border-[#030308] shadow-[0_0_5px_rgba(74,222,128,0.5)]"></div>
-                <div className="w-8 h-8 bg-[#00cfff]/20 border border-[#00cfff]/50 rounded-full flex items-center justify-center text-[#00cfff] font-extrabold text-[10px] shadow-[0_0_10px_rgba(0,207,255,0.3)]">
+                <div className="w-8 h-8 bg-engine-button/20 border border-engine-neon/50 rounded-full flex items-center justify-center text-engine-neon font-extrabold text-[10px] shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]">
                   TIP
                 </div>
               </div>
@@ -385,7 +385,7 @@ const ChatAssistant = () => {
                 className={`p-2 rounded-lg transition-all border ${
                   showMarketPanel
                     ? "bg-green-900/40 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)]"
-                    : "bg-[#030308] border-[#00cfff]/30 text-[#00cfff]/70 hover:bg-[#00cfff]/10 hover:text-[#00cfff] hover:border-[#00cfff]/50"
+                    : "bg-engine-bg border-engine-neon/30 text-engine-neon/70 hover:bg-engine-button/10 hover:text-engine-neon hover:border-engine-neon/50"
                 }`}
                 title="View Market Trends"
               >
@@ -406,7 +406,7 @@ const ChatAssistant = () => {
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-[#00cfff]/50 hover:text-[#00cfff] hover:drop-shadow-[0_0_5px_#00cfff] transition-all p-2"
+                className="text-engine-neon/50 hover:text-engine-neon hover:drop-shadow-[0_0_5px_var(--engine-neon)] transition-all p-2"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -425,7 +425,7 @@ const ChatAssistant = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0a0f1c]/50 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-engine-panel/50 custom-scrollbar">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -436,15 +436,15 @@ const ChatAssistant = () => {
                 <div
                   className={`max-w-[85%] rounded-2xl text-[11px] leading-relaxed shadow-sm font-medium overflow-hidden ${
                     msg.role === "user"
-                      ? "bg-[#00cfff]/10 border border-[#00cfff]/30 text-white rounded-br-none shadow-[0_0_10px_rgba(0,207,255,0.1)]"
-                      : "bg-[#030308]/80 text-gray-200 rounded-bl-none border border-[#00cfff]/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+                      ? "bg-engine-button/10 border border-engine-neon/30 text-white rounded-br-none shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]"
+                      : "bg-engine-bg/80 text-gray-200 rounded-bl-none border border-engine-neon/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                   }`}
                 >
                   {msg.image && (
                     <img
                       src={msg.image}
                       alt="Chart"
-                      className="w-full max-h-48 object-cover border-b border-[#00cfff]/20"
+                      className="w-full max-h-48 object-cover border-b border-engine-neon/20"
                     />
                   )}
                   <div className="p-4" style={{ whiteSpace: "pre-wrap" }}>
@@ -455,10 +455,10 @@ const ChatAssistant = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-[#030308]/80 border border-[#00cfff]/20 p-4 rounded-2xl rounded-bl-none flex gap-2 items-center h-10 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse shadow-[0_0_5px_#00cfff]"></div>
-                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse delay-75 shadow-[0_0_5px_#00cfff]"></div>
-                  <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full animate-pulse delay-150 shadow-[0_0_5px_#00cfff]"></div>
+                <div className="bg-engine-bg/80 border border-engine-neon/20 p-4 rounded-2xl rounded-bl-none flex gap-2 items-center h-10 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                  <div className="w-1.5 h-1.5 bg-engine-button rounded-full animate-pulse shadow-[0_0_5px_var(--engine-neon)]"></div>
+                  <div className="w-1.5 h-1.5 bg-engine-button rounded-full animate-pulse delay-75 shadow-[0_0_5px_var(--engine-neon)]"></div>
+                  <div className="w-1.5 h-1.5 bg-engine-button rounded-full animate-pulse delay-150 shadow-[0_0_5px_var(--engine-neon)]"></div>
                 </div>
               </div>
             )}
@@ -468,7 +468,7 @@ const ChatAssistant = () => {
           {/* Input Area */}
           <form
             onSubmit={handleSubmit}
-            className="p-4 bg-[#030308] border-t border-[#00cfff]/20 flex flex-col gap-3"
+            className="p-4 bg-engine-bg border-t border-engine-neon/20 flex flex-col gap-3"
           >
             {/* Chart Image Preview */}
             {chartImage && (
@@ -476,7 +476,7 @@ const ChatAssistant = () => {
                 <img
                   src={chartImage.preview}
                   alt="Chart Preview"
-                  className="max-h-28 rounded-xl border border-[#00cfff]/40 shadow-[0_0_10px_rgba(0,207,255,0.2)] object-cover"
+                  className="max-h-28 rounded-xl border border-engine-neon/40 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] object-cover"
                 />
                 <button
                   type="button"
@@ -485,7 +485,7 @@ const ChatAssistant = () => {
                 >
                   ✕
                 </button>
-                <div className="absolute bottom-2 left-2 bg-[#030308]/80 backdrop-blur-sm text-[#00cfff] text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-[#00cfff]/30">
+                <div className="absolute bottom-2 left-2 bg-engine-bg/80 backdrop-blur-sm text-engine-neon text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-engine-neon/30">
                   📊 Chart Ready
                 </div>
               </div>
@@ -499,8 +499,8 @@ const ChatAssistant = () => {
                 title="Upload chart image"
                 className={`p-3 rounded-xl border transition-all flex items-center justify-center flex-shrink-0 ${
                   chartImage
-                    ? "bg-[#00cfff]/20 border-[#00cfff]/60 text-[#00cfff] shadow-[0_0_10px_rgba(0,207,255,0.3)]"
-                    : "bg-[#0a0f1c] border-[#00cfff]/20 text-[#00cfff]/40 hover:text-[#00cfff] hover:border-[#00cfff]/50 hover:bg-[#00cfff]/10"
+                    ? "bg-engine-button/20 border-engine-neon/60 text-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
+                    : "bg-engine-panel border-engine-neon/20 text-engine-neon/40 hover:text-engine-neon hover:border-engine-neon/50 hover:bg-engine-button/10"
                 }`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -521,12 +521,12 @@ const ChatAssistant = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onPaste={handlePaste}
                 placeholder={chartImage ? "Ask anything about this chart..." : "Ask about market trends..."}
-                className="flex-1 bg-[#0a0f1c] text-white text-[11px] font-mono rounded-xl px-4 py-3 focus:outline-none border border-[#00cfff]/30 focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] placeholder-[#00cfff]/30 tracking-wider transition-all"
+                className="flex-1 bg-engine-panel text-white text-[11px] font-mono rounded-xl px-4 py-3 focus:outline-none border border-engine-neon/30 focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] placeholder-[#00cfff]/30 tracking-wider transition-all"
               />
               <button
                 type="submit"
                 disabled={isLoading || (!input.trim() && !chartImage)}
-                className="bg-[#00cfff] hover:bg-[#00e5ff] disabled:bg-[#030308] disabled:border disabled:border-[#00cfff]/30 disabled:text-[#00cfff]/30 disabled:shadow-none text-[#030308] p-3 rounded-xl transition-all flex items-center justify-center w-12 shadow-[0_0_10px_rgba(0,207,255,0.4)]"
+                className="bg-engine-button hover:bg-[#00e5ff] disabled:bg-engine-bg disabled:border disabled:border-engine-neon/30 disabled:text-engine-neon/30 disabled:shadow-none text-engine-bg p-3 rounded-xl transition-all flex items-center justify-center w-12 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.4)]"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -547,14 +547,14 @@ const ChatAssistant = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={`${
           isOpen 
-            ? "bg-[#030308] border border-[#00cfff]/50 text-[#00cfff] rotate-90 hover:bg-[#00cfff]/10" 
-            : "bg-[#00cfff] text-[#030308] hover:bg-[#00e5ff] shadow-[0_0_20px_rgba(0,207,255,0.5)]"
+            ? "bg-engine-bg border border-engine-neon/50 text-engine-neon rotate-90 hover:bg-engine-button/10" 
+            : "bg-engine-button text-engine-bg hover:bg-[#00e5ff] shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.5)]"
         } p-4 rounded-full transition-all duration-300 flex items-center justify-center group hover:scale-105 z-50`}
       >
         {isOpen ? (
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 drop-shadow-[0_0_5px_#00cfff]"
+            className="h-6 w-6 drop-shadow-[0_0_5px_var(--engine-neon)]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -584,7 +584,7 @@ const ChatAssistant = () => {
             </svg>
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#030308] border border-red-500 shadow-[0_0_5px_rgba(239,68,68,1)]"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-engine-bg border border-red-500 shadow-[0_0_5px_rgba(239,68,68,1)]"></span>
             </span>
           </div>
         )}

@@ -57,17 +57,17 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
 
   return (
     <div 
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#030308]/95 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-md p-4"
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
-      <div className="bg-[#0a0f1c] border border-[#00cfff]/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(0,207,255,0.2)] max-w-3xl w-full">
+      <div className="bg-engine-panel border border-engine-neon/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.2)] max-w-3xl w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <span className="text-[#00cfff]">🎯</span> Set Focus Point
+            <span className="text-engine-neon">🎯</span> Set Focus Point
           </h3>
-          <span className="text-xs font-mono text-[#00cfff] bg-[#00cfff]/10 px-2 py-1 rounded">
+          <span className="text-xs font-mono text-engine-neon bg-engine-button/10 px-2 py-1 rounded">
             {Math.round(focalPoint.x)}% {Math.round(focalPoint.y)}%
           </span>
         </div>
@@ -105,11 +105,11 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
               backgroundColor: 'rgba(0, 207, 255, 0.4)'
             }}
           >
-            <div className="w-1.5 h-1.5 bg-[#00cfff] rounded-full shadow-[0_0_5px_#00cfff]" />
+            <div className="w-1.5 h-1.5 bg-engine-button rounded-full shadow-[0_0_5px_var(--engine-neon)]" />
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-[#00cfff]/10">
+        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-engine-neon/10">
           <button
             onClick={onCancel}
             className="px-5 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all"
@@ -118,7 +118,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
           </button>
           <button
             onClick={handleApply}
-            className="bg-[#00cfff] text-[#030308] px-6 py-2 rounded-xl text-sm font-extrabold hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(0,207,255,0.4)] transition-all"
+            className="bg-engine-button text-engine-bg px-6 py-2 rounded-xl text-sm font-extrabold hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] transition-all"
           >
             Apply Focus Point
           </button>
