@@ -22,6 +22,14 @@ const TEMPLATES = [
       panel_color: "#071326",
       neon_color: "#00e5ff",
       button_color: "#00a3cc",
+      panel_border_color: "#00e5ff",
+      button_border_color: "#00e5ff",
+      panel_neon_enabled: true,
+      button_neon_enabled: true,
+      panel_neon_radius: "20px",
+      button_neon_radius: "20px",
+      panel_neon_opacity: 0.2,
+      button_neon_opacity: 0.4,
       glass_opacity: 0.7,
       glass_blur: "16px",
       font_family: "Inter",
@@ -37,6 +45,14 @@ const TEMPLATES = [
       panel_color: "#05170a",
       neon_color: "#00ff66",
       button_color: "#00cc52",
+      panel_border_color: "#00ff66",
+      button_border_color: "#00ff66",
+      panel_neon_enabled: false,
+      button_neon_enabled: false,
+      panel_neon_radius: "15px",
+      button_neon_radius: "15px",
+      panel_neon_opacity: 0.2,
+      button_neon_opacity: 0.4,
       glass_opacity: 0.65,
       glass_blur: "12px",
       font_family: "'JetBrains Mono'",
@@ -52,6 +68,14 @@ const TEMPLATES = [
       panel_color: "#1f0505",
       neon_color: "#ff3333",
       button_color: "#cc0000",
+      panel_border_color: "#ff3333",
+      button_border_color: "#ff3333",
+      panel_neon_enabled: true,
+      button_neon_enabled: true,
+      panel_neon_radius: "25px",
+      button_neon_radius: "25px",
+      panel_neon_opacity: 0.3,
+      button_neon_opacity: 0.5,
       glass_opacity: 0.8,
       glass_blur: "8px",
       font_family: "'Orbitron'",
@@ -67,6 +91,14 @@ const TEMPLATES = [
       panel_color: "#172418",
       neon_color: "#88cc00",
       button_color: "#669900",
+      panel_border_color: "#88cc00",
+      button_border_color: "#88cc00",
+      panel_neon_enabled: false,
+      button_neon_enabled: false,
+      panel_neon_radius: "10px",
+      button_neon_radius: "10px",
+      panel_neon_opacity: 0.15,
+      button_neon_opacity: 0.3,
       glass_opacity: 0.5,
       glass_blur: "20px",
       font_family: "'Plus Jakarta Sans'",
@@ -82,11 +114,42 @@ const TEMPLATES = [
       panel_color: "#130526",
       neon_color: "#b026ff",
       button_color: "#8c1aff",
+      panel_border_color: "#b026ff",
+      button_border_color: "#b026ff",
+      panel_neon_enabled: true,
+      button_neon_enabled: true,
+      panel_neon_radius: "22px",
+      button_neon_radius: "22px",
+      panel_neon_opacity: 0.25,
+      button_neon_opacity: 0.45,
       glass_opacity: 0.75,
       glass_blur: "14px",
       font_family: "'Space Mono'",
       text_color: "#f2e6ff",
       neon_radius: "22px",
+      neon_font_style: "glow",
+    }
+  },
+  {
+    name: "Milky Way",
+    theme: {
+      bg_color: "#050514",
+      panel_color: "#0d0a26",
+      neon_color: "#e066ff",
+      button_color: "#8a2be2",
+      panel_border_color: "#e066ff",
+      button_border_color: "#e066ff",
+      panel_neon_enabled: true,
+      button_neon_enabled: true,
+      panel_neon_radius: "24px",
+      button_neon_radius: "24px",
+      panel_neon_opacity: 0.2,
+      button_neon_opacity: 0.4,
+      glass_opacity: 0.65,
+      glass_blur: "18px",
+      font_family: "'Rajdhani'",
+      text_color: "#e6e6fa",
+      neon_radius: "24px",
       neon_font_style: "glow",
     }
   }
@@ -191,6 +254,20 @@ export default function CustomizePlatform() {
                   <input type="color" value={localTheme.button_color} onChange={(e) => handleChange("button_color", e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
                 </div>
               </div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Panel Border Color</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-mono">{localTheme.panel_border_color}</span>
+                  <input type="color" value={localTheme.panel_border_color} onChange={(e) => handleChange("panel_border_color", e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium">Button Border Color</label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 font-mono">{localTheme.button_border_color}</span>
+                  <input type="color" value={localTheme.button_border_color} onChange={(e) => handleChange("button_border_color", e.target.value)} className="w-8 h-8 rounded cursor-pointer bg-transparent border-0" />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -256,13 +333,89 @@ export default function CustomizePlatform() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Neon Radius (px)</label>
+                <label className="text-sm font-medium">Global Neon Radius (px)</label>
                 <input 
                   type="text" 
                   value={localTheme.neon_radius.replace('px','')} 
                   onChange={(e) => handleChange("neon_radius", `${e.target.value}px`)}
                   className="w-full bg-engine-bg border border-engine-neon/30 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-engine-neon"
                 />
+              </div>
+
+              {/* Panel Neon Settings */}
+              <div className="pt-4 border-t border-gray-800">
+                <div className="flex justify-between items-center mb-4">
+                  <label className="text-sm font-bold text-engine-neon">Panel Neon Glow</label>
+                  <button 
+                    onClick={() => handleChange("panel_neon_enabled", !localTheme.panel_neon_enabled)}
+                    className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors ${localTheme.panel_neon_enabled ? 'bg-engine-neon' : 'bg-gray-600'}`}
+                  >
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${localTheme.panel_neon_enabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  </button>
+                </div>
+                {localTheme.panel_neon_enabled && (
+                  <div className="space-y-4 pl-2 border-l-2 border-engine-neon/30">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-medium text-gray-400">Opacity</label>
+                        <span className="text-xs font-mono">{localTheme.panel_neon_opacity}</span>
+                      </div>
+                      <input 
+                        type="range" min="0" max="1" step="0.05" 
+                        value={localTheme.panel_neon_opacity} 
+                        onChange={(e) => handleChange("panel_neon_opacity", parseFloat(e.target.value))}
+                        className="w-full accent-engine-neon" 
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-medium text-gray-400">Radius (px)</label>
+                      <input 
+                        type="text" 
+                        value={localTheme.panel_neon_radius.replace('px','')} 
+                        onChange={(e) => handleChange("panel_neon_radius", `${e.target.value}px`)}
+                        className="w-full bg-engine-bg/50 border border-engine-neon/20 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-engine-neon"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Button Neon Settings */}
+              <div className="pt-4 border-t border-gray-800">
+                <div className="flex justify-between items-center mb-4">
+                  <label className="text-sm font-bold text-engine-button">Button Neon Glow</label>
+                  <button 
+                    onClick={() => handleChange("button_neon_enabled", !localTheme.button_neon_enabled)}
+                    className={`w-10 h-6 rounded-full flex items-center px-1 transition-colors ${localTheme.button_neon_enabled ? 'bg-engine-button' : 'bg-gray-600'}`}
+                  >
+                    <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${localTheme.button_neon_enabled ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                  </button>
+                </div>
+                {localTheme.button_neon_enabled && (
+                  <div className="space-y-4 pl-2 border-l-2 border-engine-button/30">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-medium text-gray-400">Opacity</label>
+                        <span className="text-xs font-mono">{localTheme.button_neon_opacity}</span>
+                      </div>
+                      <input 
+                        type="range" min="0" max="1" step="0.05" 
+                        value={localTheme.button_neon_opacity} 
+                        onChange={(e) => handleChange("button_neon_opacity", parseFloat(e.target.value))}
+                        className="w-full accent-engine-button" 
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-medium text-gray-400">Radius (px)</label>
+                      <input 
+                        type="text" 
+                        value={localTheme.button_neon_radius.replace('px','')} 
+                        onChange={(e) => handleChange("button_neon_radius", `${e.target.value}px`)}
+                        className="w-full bg-engine-bg/50 border border-engine-neon/20 text-white rounded-lg px-3 py-1.5 text-xs outline-none focus:border-engine-neon"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -122,15 +122,15 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-neon/30 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
-        <div className="p-4 sm:p-5 border-b border-engine-neon/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" /> Trading Glossary
           </h2>
           <button
             onClick={onClose}
-            className="text-engine-neon/50 hover:text-engine-neon font-bold p-1.5 transition-colors drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0)] hover:drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]"
+            className="text-engine-neon/50 hover:text-engine-neon font-bold p-1.5 transition-colors drop-shadow-panel-neon hover:drop-shadow-panel-neon"
           >
             <X className="w-5 h-5" />
           </button>
@@ -142,7 +142,7 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
             placeholder="SEARCH TERMS..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 sm:p-4 mb-4 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none text-sm font-mono uppercase tracking-widest transition-all placeholder-[#00cfff]/30"
+            className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 sm:p-4 mb-4 focus:border-engine-panel-border focus:shadow-panel-neon outline-none text-sm font-mono uppercase tracking-widest transition-all placeholder-[#00cfff]/30"
           />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto flex-1 min-h-0 pr-2 custom-scrollbar">
@@ -150,9 +150,9 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
               <button
                 key={key}
                 onClick={() => setSelectedTerm(value)}
-                className="text-left p-3 bg-engine-bg/60 hover:bg-engine-button/10 rounded-xl border border-engine-neon/20 hover:border-engine-neon/50 transition-all hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] hover:-translate-y-0.5"
+                className="text-left p-3 bg-engine-bg/60 hover:bg-engine-button/10 rounded-xl border border-engine-button-border/20 hover:border-engine-button-border/50 transition-all hover:shadow-button-neon hover:-translate-y-0.5"
               >
-                <span className="text-xs sm:text-sm font-extrabold text-engine-neon uppercase tracking-wider drop-shadow-[0_0_3px_rgba(var(--engine-neon-rgb),0.3)]">
+                <span className="text-xs sm:text-sm font-extrabold text-engine-neon uppercase tracking-wider drop-shadow-panel-neon">
                   {value.term}
                 </span>
               </button>
@@ -161,15 +161,15 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
         </div>
 
         {selectedTerm && (
-          <div className="p-4 sm:p-5 border-t border-engine-neon/20 bg-engine-bg/90 shrink-0 animate-fade-in relative">
-            <h3 className="text-lg sm:text-xl font-extrabold text-engine-neon mb-3 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">
+          <div className="p-4 sm:p-5 border-t border-engine-panel-border/20 bg-engine-bg/90 shrink-0 animate-fade-in relative">
+            <h3 className="text-lg sm:text-xl font-extrabold text-engine-neon mb-3 uppercase tracking-widest drop-shadow-panel-neon">
               {selectedTerm.term}
             </h3>
             <p className="text-gray-300 text-sm mb-4 leading-relaxed font-medium">
               {selectedTerm.definition}
             </p>
-            <div className="bg-engine-button/5 p-4 rounded-xl border border-engine-neon/20 shadow-[inset_0_0_10px_rgba(var(--engine-neon-rgb),0.05)]">
-              <span className="text-[10px] text-engine-neon uppercase font-extrabold tracking-widest block mb-2 border-b border-engine-neon/20 pb-1">
+            <div className="bg-engine-button/5 p-4 rounded-xl border border-engine-button-border/20 shadow-[inset_0_0_10px_rgba(var(--engine-neon-rgb),0.05)]">
+              <span className="text-[10px] text-engine-neon uppercase font-extrabold tracking-widest block mb-2 border-b border-engine-panel-border/20 pb-1">
                 Example
               </span>
               <p className="text-gray-300 text-sm italic leading-relaxed">
@@ -253,9 +253,9 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-neon/30 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
-        <div className="p-4 sm:p-5 border-b border-engine-neon/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
+        <div className="p-4 sm:p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
             <CheckSquare className="w-5 h-5 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" /> Pre-Trade Checklist
           </h2>
@@ -268,7 +268,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
         </div>
 
         <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1 custom-scrollbar bg-engine-panel/40">
-          <p className="text-xs font-bold text-engine-neon/70 uppercase tracking-widest mb-3 border-b border-engine-neon/10 pb-2">
+          <p className="text-xs font-bold text-engine-neon/70 uppercase tracking-widest mb-3 border-b border-engine-panel-border/10 pb-2">
             Complete required items before trading:
           </p>
 
@@ -278,7 +278,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
               className={`flex items-start gap-3 p-3 sm:p-4 rounded-xl border cursor-pointer transition-all ${
                 checkedItems[item.id]
                   ? "bg-green-900/20 border-green-500/50 shadow-[0_0_10px_rgba(74,222,128,0.1)]"
-                  : "bg-engine-bg/50 border-engine-neon/20 hover:border-engine-neon/40"
+                  : "bg-engine-bg/50 border-engine-panel-border/20 hover:border-engine-panel-border/40"
               }`}
             >
               <div className="relative flex items-start">
@@ -286,7 +286,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
                   type="checkbox"
                   checked={checkedItems[item.id] || false}
                   onChange={() => toggleItem(item.id)}
-                  className="mt-0.5 sm:mt-1 w-5 h-5 rounded border-engine-neon/50 bg-engine-bg accent-green-500 focus:ring-green-500 focus:ring-offset-0 cursor-pointer appearance-none checked:bg-green-500 checked:border-green-500 transition-colors"
+                  className="mt-0.5 sm:mt-1 w-5 h-5 rounded border-engine-panel-border/50 bg-engine-bg accent-green-500 focus:ring-green-500 focus:ring-offset-0 cursor-pointer appearance-none checked:bg-green-500 checked:border-green-500 transition-colors"
                 />
                 {checkedItems[item.id] && (
                   <svg className="absolute top-[3px] left-[3px] w-3.5 h-3.5 sm:top-[5px] sm:left-[3px] text-engine-bg pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -306,7 +306,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
           ))}
         </div>
 
-        <div className="p-4 sm:p-5 border-t border-engine-neon/20 bg-engine-bg/90 shrink-0">
+        <div className="p-4 sm:p-5 border-t border-engine-panel-border/20 bg-engine-bg/90 shrink-0">
           {showConfirmed ? (
             <div className="text-center py-3 animate-fade-in">
               <Rocket className="w-10 h-10 mx-auto mb-2 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
@@ -319,7 +319,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
               className={`w-full py-3 sm:py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all text-sm sm:text-base ${
                 allRequiredChecked
                   ? "bg-green-500 hover:bg-green-400 text-engine-bg shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] hover:-translate-y-0.5"
-                  : "bg-gray-800 text-gray-500 border border-engine-neon/30 cursor-not-allowed"
+                  : "bg-gray-800 text-gray-500 border border-engine-panel-border/30 cursor-not-allowed"
               }`}
             >
               {allRequiredChecked
@@ -410,7 +410,7 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-neon/40 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-[0_0_40px_rgba(var(--engine-neon-rgb),0.2)] overflow-hidden relative">
+      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/40 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-panel-neon overflow-hidden relative">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="bg-engine-bg h-1.5 sm:h-2">
           <div
@@ -422,7 +422,7 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
         </div>
 
         <div className="p-6 sm:p-10 text-center relative z-10">
-          <div className="text-5xl sm:text-7xl mb-6 sm:mb-8 drop-shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.5)] animate-fade-in" key={currentStep}>
+          <div className="text-5xl sm:text-7xl mb-6 sm:mb-8 drop-shadow-panel-neon animate-fade-in" key={currentStep}>
             {step.icon}
           </div>
           <h2 className="text-xl sm:text-3xl font-extrabold text-white mb-4 sm:mb-5 uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)] animate-fade-in" key={`h-${currentStep}`}>
@@ -452,7 +452,7 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
             </button>
             <button
               onClick={handleNext}
-              className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-6 sm:px-8 py-3 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 text-sm sm:text-base"
+              className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-6 sm:px-8 py-3 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 text-sm sm:text-base"
             >
               {currentStep < TUTORIAL_STEPS.length - 1
                 ? "NEXT STEP"
@@ -466,7 +466,7 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
                 type="checkbox"
                 checked={dontShowAgain}
                 onChange={(e) => setDontShowAgain(e.target.checked)}
-                className="w-4 h-4 rounded border-engine-neon/50 bg-engine-bg appearance-none cursor-pointer checked:bg-engine-button checked:border-engine-neon transition-colors"
+                className="w-4 h-4 rounded border-engine-button-border/50 bg-engine-bg appearance-none cursor-pointer checked:bg-engine-button checked:border-engine-button-border transition-colors"
               />
               {dontShowAgain && (
                 <svg className="absolute w-3 h-3 text-engine-bg pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -493,19 +493,19 @@ export const BeginnerHelpButtons = ({
     <div className="flex flex-wrap gap-2 sm:gap-3 mb-5">
       <button
         onClick={onOpenTutorial}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.05)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <GraduationCap className="w-4 h-4" /> Tutorial
       </button>
       <button
         onClick={onOpenChecklist}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.05)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <CheckSquare className="w-4 h-4" /> Checklist
       </button>
       <button
         onClick={onOpenGlossary}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.05)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <BookOpen className="w-4 h-4" /> Glossary
       </button>

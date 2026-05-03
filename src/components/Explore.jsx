@@ -84,7 +84,7 @@ const Explore = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header / Ticker Tape */}
-      <div className="rounded-2xl overflow-hidden border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] bg-engine-panel/60 backdrop-blur-md">
+      <div className="rounded-2xl overflow-hidden border border-engine-panel-border/20 shadow-panel-neon bg-engine-panel/60 backdrop-blur-md">
         <div className="tradingview-widget-container" ref={tickerContainer}>
           <div className="tradingview-widget-container__widget"></div>
         </div>
@@ -93,7 +93,7 @@ const Explore = () => {
       {/* News Section */}
       <div>
         <h2 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3 tracking-wider">
-          <span className="text-engine-neon drop-shadow-[0_0_8px_rgba(var(--engine-neon-rgb),0.6)]">📰</span> 
+          <span className="text-engine-neon drop-shadow-panel-neon">📰</span> 
           Market Insights & News
         </h2>
 
@@ -102,7 +102,7 @@ const Explore = () => {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="bg-engine-panel/60 rounded-2xl h-[350px] animate-pulse border border-engine-neon/10"
+                className="bg-engine-panel/60 rounded-2xl h-[350px] animate-pulse border border-engine-panel-border/10"
               ></div>
             ))}
           </div>
@@ -119,7 +119,7 @@ const Explore = () => {
             {news.map((item) => (
               <div
                 key={item.id}
-                className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 overflow-hidden hover:border-engine-neon/60 transition-all duration-300 hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.15)] hover:-translate-y-1 flex flex-col group"
+                className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 overflow-hidden hover:border-engine-panel-border/60 transition-all duration-300 hover:shadow-panel-neon hover:-translate-y-1 flex flex-col group"
               >
                 {/* Image */}
                 <div className="h-48 overflow-hidden relative">
@@ -129,13 +129,13 @@ const Explore = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0f1c] to-transparent opacity-60"></div>
-                  <div className="absolute top-3 right-3 bg-engine-bg/80 text-engine-neon text-xs px-3 py-1 rounded-full border border-engine-neon/30 backdrop-blur-md shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] font-bold">
+                  <div className="absolute top-3 right-3 bg-engine-bg/80 text-engine-neon text-xs px-3 py-1 rounded-full border border-engine-panel-border/30 backdrop-blur-md shadow-panel-neon font-bold">
                     {item.source_info?.name || "News"}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 flex-1 flex flex-col relative z-10 -mt-6 bg-engine-panel/80 backdrop-blur-xl rounded-t-2xl border-t border-engine-neon/10">
+                <div className="p-6 flex-1 flex flex-col relative z-10 -mt-6 bg-engine-panel/80 backdrop-blur-xl rounded-t-2xl border-t border-engine-panel-border/10">
                   <h3 className="text-lg font-extrabold text-white mb-3 line-clamp-2 leading-tight group-hover:text-engine-neon transition-colors">
                     {item.title}
                   </h3>
@@ -143,7 +143,7 @@ const Explore = () => {
                     {item.body}
                   </p>
 
-                  <div className="flex justify-between items-center mt-auto pt-4 border-t border-engine-neon/10">
+                  <div className="flex justify-between items-center mt-auto pt-4 border-t border-engine-panel-border/10">
                     <span className="text-xs font-medium text-gray-500">
                       {new Date(item.published_on * 1000).toLocaleDateString(
                         "id-ID",

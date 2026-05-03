@@ -131,7 +131,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
           onClick={() => setActiveTooltip(null)}
         >
           <div
-            className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] max-w-sm w-full relative animate-fade-in"
+            className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -141,7 +141,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-engine-button/10 flex items-center justify-center border border-engine-neon/20 text-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"><Info className="w-5 h-5" /></div>
+              <div className="w-8 h-8 rounded-full bg-engine-button/10 flex items-center justify-center border border-engine-button-border/20 text-engine-neon shadow-button-neon"><Info className="w-5 h-5" /></div>
               {activeTooltip.title}
             </h3>
             <p className="text-gray-300 text-sm leading-relaxed">
@@ -153,9 +153,9 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md"
+        className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md"
       >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-engine-neon/10 pb-6 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-engine-panel-border/10 pb-6 gap-6">
           <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">
             <Settings className="w-6 h-6 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" /> Configuration
           </h2>
@@ -167,7 +167,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
                 key={preset.name}
                 type="button"
                 onClick={() => loadPreset(preset.data)}
-                className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-engine-bg/50 hover:bg-engine-button/10 text-engine-neon/70 hover:text-engine-neon rounded-lg border border-engine-neon/20 hover:border-engine-neon/50 transition-all hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
+                className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-engine-bg/50 hover:bg-engine-button/10 text-engine-neon/70 hover:text-engine-neon rounded-lg border border-engine-button-border/20 hover:border-engine-button-border/50 transition-all hover:shadow-button-neon"
               >
                 {preset.name}
               </button>
@@ -186,7 +186,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
                 "Dynamic: Adjusts size based on current balance (Harder to blow up). Fixed: Constant size based on initial capital (Higher risk of ruin)."
               )}
             </div>
-            <div className="flex bg-engine-bg p-1.5 rounded-xl border border-engine-neon/30 w-fit">
+            <div className="flex bg-engine-bg p-1.5 rounded-xl border border-engine-panel-border/30 w-fit">
               {["dynamic", "fixed"].map((type) => (
                 <button
                   key={type}
@@ -194,7 +194,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
                   onClick={() => setFormData({ ...formData, risk_type: type })}
                   className={`px-8 py-2.5 text-xs font-extrabold uppercase tracking-widest rounded-lg transition-all ${
                     formData.risk_type === type
-                      ? "bg-engine-button text-engine-bg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                      ? "bg-engine-button text-engine-bg shadow-button-neon"
                       : "text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/10"
                   }`}
                 >
@@ -219,7 +219,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="initial_balance"
               value={formData.initial_balance}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -240,7 +240,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="capital_utilization"
               value={formData.capital_utilization}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -262,7 +262,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               value={formData.risk_per_trade}
               onChange={handleChange}
               step="0.1"
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
             {formData.risk_per_trade > 2 && (
@@ -290,7 +290,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               value={formData.risk_reward_ratio}
               onChange={handleChange}
               step="0.1"
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -311,11 +311,11 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="win_rate"
               value={formData.win_rate}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
             {/* Break Even Indicator */}
-            <div className="mt-2 text-[10px] font-bold uppercase tracking-wider flex justify-between bg-engine-bg/50 p-1.5 rounded border border-engine-neon/10">
+            <div className="mt-2 text-[10px] font-bold uppercase tracking-wider flex justify-between bg-engine-bg/50 p-1.5 rounded border border-engine-panel-border/10">
               <span className="text-gray-500">Min to not lose:</span>
               <span
                 className={`font-mono ${
@@ -345,7 +345,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="trades_per_day"
               value={formData.trades_per_day}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -366,7 +366,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="fees_per_trade"
               value={formData.fees_per_trade}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -387,7 +387,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               name="simulation_days"
               value={formData.simulation_days}
               onChange={handleChange}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -397,8 +397,8 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
               disabled={isLoading}
               className={`w-full bg-engine-button text-engine-bg py-3.5 px-6 rounded-xl font-extrabold uppercase tracking-widest transition-all duration-300 h-[52px] ${
                 isLoading 
-                  ? "opacity-50 cursor-not-allowed border border-engine-neon/30 bg-transparent text-engine-neon" 
-                  : "hover:bg-[#00e5ff] shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5"
+                  ? "opacity-50 cursor-not-allowed border border-engine-panel-border/30 bg-transparent text-engine-neon" 
+                  : "hover:bg-[#00e5ff] shadow-panel-neon hover:shadow-panel-neon hover:-translate-y-0.5"
               }`}
             >
               {isLoading ? "CALCULATING..." : "RUN SIMULATION"}

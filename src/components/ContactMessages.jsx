@@ -83,14 +83,14 @@ const ContactMessages = ({ showFlash }) => {
       <h2 className="text-2xl font-extrabold mb-8 uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">CONTACT US MESSAGES</h2>
       <div className="space-y-6 max-w-5xl mx-auto">
         {messages.length === 0 && (
-          <p className="text-engine-neon/50 text-center py-10 text-[11px] font-extrabold uppercase tracking-widest bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-neon/20">NO NEW MESSAGES.</p>
+          <p className="text-engine-neon/50 text-center py-10 text-[11px] font-extrabold uppercase tracking-widest bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-panel-border/20">NO NEW MESSAGES.</p>
         )}
         {messages.map((message) => (
           <div
             key={message.id}
-            className="bg-engine-panel/80 backdrop-blur-md p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] hover:border-engine-neon/40 transition-all group"
+            className="bg-engine-panel/80 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon hover:border-engine-panel-border/40 transition-all group"
           >
-            <div className="flex justify-between items-start mb-4 border-b border-engine-neon/10 pb-4">
+            <div className="flex justify-between items-start mb-4 border-b border-engine-panel-border/10 pb-4">
               <div>
                 <p className="font-extrabold text-engine-neon uppercase tracking-widest drop-shadow-[0_0_2px_#00cfff]">{message.name}</p>
                 <p className="text-[10px] text-engine-neon/50 font-mono mt-1">{message.email}</p>
@@ -106,7 +106,7 @@ const ContactMessages = ({ showFlash }) => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => handleReplyClick(message)}
-                className="bg-engine-button/10 text-engine-neon border border-engine-neon/30 hover:bg-engine-button hover:text-engine-bg px-6 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:-translate-y-0.5"
+                className="bg-engine-button/10 text-engine-neon border border-engine-button-border/30 hover:bg-engine-button hover:text-engine-bg px-6 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
               >
                 REPLY
               </button>
@@ -117,7 +117,7 @@ const ContactMessages = ({ showFlash }) => {
 
       {showModal && selectedMessage && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-lg w-full text-left relative overflow-hidden">
+          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-lg w-full text-left relative overflow-hidden">
              {/* Glow */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-engine-button/10 rounded-full blur-[50px] pointer-events-none"></div>
 
@@ -126,7 +126,7 @@ const ContactMessages = ({ showFlash }) => {
             </h3>
 
             {/* Original Message Preview */}
-            <div className="mb-6 bg-engine-bg/60 p-4 rounded-xl border border-engine-neon/20">
+            <div className="mb-6 bg-engine-bg/60 p-4 rounded-xl border border-engine-panel-border/20">
               <p className="text-[10px] text-engine-neon/50 font-mono">
                 <strong className="text-engine-neon/80 uppercase tracking-widest">ORIGINAL SUBJECT:</strong> {selectedMessage.subject}
               </p>
@@ -149,7 +149,7 @@ const ContactMessages = ({ showFlash }) => {
                   type="text"
                   value={replySubject}
                   onChange={(e) => setReplySubject(e.target.value)}
-                  className="w-full bg-engine-bg text-white border border-engine-neon/30 rounded-xl px-4 py-3 focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] font-mono text-sm placeholder:text-engine-neon/20 transition-all"
+                  className="w-full bg-engine-bg text-white border border-engine-panel-border/30 rounded-xl px-4 py-3 focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon font-mono text-sm placeholder:text-engine-neon/20 transition-all"
                   placeholder="REPLY SUBJECT..."
                 />
               </div>
@@ -164,7 +164,7 @@ const ContactMessages = ({ showFlash }) => {
                   id="reply-body"
                   value={replyBody}
                   onChange={(e) => setReplyBody(e.target.value)}
-                  className="w-full bg-engine-bg text-white border border-engine-neon/30 rounded-xl px-4 py-3 focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] font-mono text-sm placeholder:text-engine-neon/20 transition-all custom-scrollbar resize-none"
+                  className="w-full bg-engine-bg text-white border border-engine-panel-border/30 rounded-xl px-4 py-3 focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon font-mono text-sm placeholder:text-engine-neon/20 transition-all custom-scrollbar resize-none"
                   rows="5"
                   placeholder="YOUR REPLY..."
                 ></textarea>
@@ -175,13 +175,13 @@ const ContactMessages = ({ showFlash }) => {
             <div className="flex gap-4 justify-end mt-8 relative z-10">
               <button
                 onClick={closeModal}
-                className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all"
+                className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all"
               >
                 CANCEL
               </button>
               <button
                 onClick={handleReplySubmit}
-                className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg text-[11px] font-extrabold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5"
+                className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg text-[11px] font-extrabold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
               >
                 SEND REPLY
               </button>

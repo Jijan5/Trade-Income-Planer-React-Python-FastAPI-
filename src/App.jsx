@@ -87,23 +87,23 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// 💎 PREMIUM GATE: Requires Premium plan or higher, or Admin role
-const PremiumRoute = ({ children }) => {
+// 💎 PLATINUM GATE: Requires Platinum plan or Admin role
+const PlatinumRoute = ({ children }) => {
   const { userData } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const planLevel = userData?.plan === 'Platinum' ? 3 : userData?.plan === 'Premium' ? 2 : userData?.plan === 'Basic' ? 1 : 0;
-  if (!isAdmin && planLevel < 2) {
+  if (!isAdmin && planLevel < 3) {
     return (
       <div className="min-h-screen bg-engine-bg flex flex-col items-center justify-center text-center p-8">
         <div className="bg-engine-panel/80 border border-engine-neon/20 rounded-2xl p-10 max-w-md w-full backdrop-blur-md shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-          <div className="w-16 h-16 rounded-full bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/30 flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
-          <h2 className="text-xl font-extrabold text-white uppercase tracking-widest mb-3">Premium Feature</h2>
+          <h2 className="text-xl font-extrabold text-white uppercase tracking-widest mb-3">Platinum Feature</h2>
           <p className="text-sm text-gray-400 mb-2 leading-relaxed">
-            The <span className="text-engine-neon font-bold">Platform Customizer</span> is available exclusively for <span className="text-yellow-400 font-bold">Premium</span> and <span className="text-purple-400 font-bold">Platinum</span> plan subscribers.
+            The <span className="text-engine-neon font-bold">Platform Customizer</span> is available exclusively for <span className="text-purple-400 font-bold">Platinum</span> plan subscribers.
           </p>
           <p className="text-xs text-gray-500 mb-8">Upgrade your plan to unlock full UI customization, themes, and fonts.</p>
           <a href="/subscriptions" className="inline-block w-full py-3 rounded-xl font-extrabold uppercase tracking-widest text-sm text-engine-bg bg-engine-button hover:bg-[#00e5ff] transition-all shadow-[0_0_20px_rgba(0,207,255,0.3)] hover:shadow-[0_0_30px_rgba(0,207,255,0.5)]">
@@ -417,34 +417,7 @@ function App() {
   const [highlightedPost, setHighlightedPost] = useState(null);
   const planLevel = getPlanLevel(userData?.plan);
 
-  // 🛡️ SECURITY: Midtrans Integration - Use environment variables
-  // In production, set VITE_MIDTRANS_URL and VITE_MIDTRANS_CLIENT_KEY in .env
-  useEffect(() => {
-    // Get configuration from environment variables
-    const midtransUrl =
-      import.meta.env.VITE_MIDTRANS_URL ||
-      "https://app.sandbox.midtrans.com/snap/snap.js";
-    const midtransClientKey = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "";
-
-    // Only load if client key is configured
-    if (!midtransClientKey) {
-      console.warn(
-        "Midtrans client key not configured. Payment feature disabled."
-      );
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = midtransUrl;
-    script.setAttribute("data-client-key", midtransClientKey);
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
+  // Midtrans logic removed for LemonSqueezy migration
 
   const fetchCommunities = useCallback(async () => {
     // Only fetch if there's a token
@@ -583,55 +556,28 @@ function App() {
       }
 
       try {
-        // Request Snap Token from Backend
+        showFlash("Generating secure checkout link...", "info");
+        // Request LemonSqueezy Checkout URL from Backend
         const response = await api.post("/payment/create_transaction", {
           plan_id: plan.id,
           amount: plan.finalPrice,
           billing_cycle: plan.billingCycle,
         });
 
-        if (window.snap && response.data.token) {
-          window.snap.pay(response.data.token, {
-            onSuccess: async (result) => {
-              try {
-                // call endpoint verification to backend
-                const orderId = result.order_id || response.data.order_id;
-                await api.post("/payment/verify", { order_id: orderId });
-
-                // Create persistent notification
-                await api.post("/notifications/self", {
-                  message: `Payment successful! Your plan has been upgraded to ${plan.name}.`,
-                  type: "system_broadcast",
-                });
-
-                if (fetchUserProfile) await fetchUserProfile();
-                showFlash(
-                  `Payment success! Your plan has been upgraded to ${plan.name}.`,
-                  "success"
-                );
-              } catch (error) {
-                console.error("Verification failed", error);
-                showFlash(
-                  "Payment successful but verification failed. Please contact support.",
-                  "error"
-                );
-              }
-            },
-            onPending: (result) => showFlash("Waiting for payment...", "info"),
-            onError: (result) => showFlash("Payment failed!", "error"),
-            onClose: () =>
-              console.log(
-                "Customer closed the popup without finishing the payment"
-              ),
-          });
+        if (response.data.checkout_url) {
+          // Redirect the user directly to the LemonSqueezy hosted checkout
+          window.location.href = response.data.checkout_url;
+        } else {
+          throw new Error("No checkout URL returned from server");
         }
       } catch (error) {
         console.error("Payment Error:", error);
-        showFlash("Failed to initiate payment. Please try again.", "error");
+        showFlash("Failed to initiate secure checkout. Please try again.", "error");
       }
     },
     [token, fetchUserProfile, showFlash]
   );
+
 
   const handleExportSimulationCSV = (data) => {
     if (!data || !data.daily_breakdown) return;
@@ -1243,9 +1189,9 @@ function App() {
                 path="/customize-platform"
                 element={
                   <ProtectedRoute>
-                    <PremiumRoute>
+                    <PlatinumRoute>
                       <CustomizePlatform />
-                    </PremiumRoute>
+                    </PlatinumRoute>
                   </ProtectedRoute>
                 }
               />

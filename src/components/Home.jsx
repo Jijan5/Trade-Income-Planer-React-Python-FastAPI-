@@ -279,7 +279,7 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
+        className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
       >
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
@@ -287,10 +287,10 @@ const PostItem = React.memo(
               <img
                 src={`${API_BASE_URL}${post.avatar_url}`}
                 alt={post.username}
-                className="w-10 h-10 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.2)]"
+                className="w-10 h-10 rounded-full object-cover border border-engine-panel-border/50 shadow-panel-neon"
               />
             ) : (
-              <div className="w-10 h-10 bg-engine-bg border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.2)] rounded-full flex items-center justify-center text-engine-neon font-bold text-sm">
+              <div className="w-10 h-10 bg-engine-bg border border-engine-panel-border/50 shadow-panel-neon rounded-full flex items-center justify-center text-engine-neon font-bold text-sm">
                 {post.username.substring(0, 2).toUpperCase()}
               </div>
             )}
@@ -349,7 +349,7 @@ const PostItem = React.memo(
             {activeMenu?.type === "post" && activeMenu?.id === post.id && (
               <div
                 ref={menuRef}
-                className="absolute right-0 mt-1 w-32 bg-engine-panel/95 backdrop-blur-md border border-engine-neon/20 rounded-xl shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.15)] z-20 overflow-hidden"
+                className="absolute right-0 mt-1 w-32 bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/20 rounded-xl shadow-panel-neon z-20 overflow-hidden"
               >
                 {currentUser === post.username || userData?.role === "admin" ? (
                   <>
@@ -387,7 +387,7 @@ const PostItem = React.memo(
               onChange={(e) =>
                 setEditingItem({ ...editingItem, content: e.target.value })
               }
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none"
               rows={3}
             />
             <div className="flex justify-end gap-2">
@@ -399,7 +399,7 @@ const PostItem = React.memo(
               </button>
               <button
                 onClick={handleLocalUpdatePost}
-                className="text-xs bg-engine-button text-engine-bg font-bold px-4 py-2 rounded-lg shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:bg-[#00b3e6] transition-colors"
+                className="text-xs bg-engine-button text-engine-bg font-bold px-4 py-2 rounded-lg shadow-button-neon hover:bg-[#00b3e6] transition-colors"
               >
                 Save
               </button>
@@ -419,7 +419,7 @@ const PostItem = React.memo(
           </p>
         )}
         {post.image_url && (
-          <div className="mt-4 rounded-xl overflow-hidden border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]">
+          <div className="mt-4 rounded-xl overflow-hidden border border-engine-panel-border/20 shadow-panel-neon">
             <AuthenticatedImage
               src={post.image_url}
               alt="Post attachment"
@@ -430,7 +430,7 @@ const PostItem = React.memo(
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-6 mt-5 pt-4 border-t border-engine-neon/10">
+        <div className="flex items-center gap-6 mt-5 pt-4 border-t border-engine-panel-border/10">
           <div className="relative group">
             <button
               onMouseDown={() => handlePressStart(post.id)} // This just opens the modal
@@ -444,7 +444,7 @@ const PostItem = React.memo(
               }`}
             >
               {post.user_reaction ? (
-                <span className="text-xl drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">
+                <span className="text-xl drop-shadow-panel-neon">
                   {getReactionEmoji(post.user_reaction)}
                 </span>
               ) : (
@@ -468,7 +468,7 @@ const PostItem = React.memo(
               </span>
             </button>
             {reactionModalPostId === post.id && (
-              <div className="absolute bottom-full left-0 mb-2 flex border border-engine-neon/30 bg-engine-panel/95 backdrop-blur-md rounded-full p-1 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.2)] gap-1 z-10 animate-fade-in w-max reaction-modal">
+              <div className="absolute bottom-full left-0 mb-2 flex border border-engine-panel-border/30 bg-engine-panel/95 backdrop-blur-md rounded-full p-1 shadow-panel-neon gap-1 z-10 animate-fade-in w-max reaction-modal">
                 {reactions.map((r) => (
                   <button
                     key={r.type}
@@ -529,7 +529,7 @@ const PostItem = React.memo(
         </div>
         {/* Comments Section */}
         {isExpanded && (
-          <div className="mt-4 pt-4 border-t border-engine-neon/30/50 animate-fade-in">
+          <div className="mt-4 pt-4 border-t border-engine-panel-border/30 animate-fade-in">
             {(() => {
               const buildCommentTree = (comments) => {
                 const commentMap = {};
@@ -563,7 +563,7 @@ const PostItem = React.memo(
                       paddingLeft: comment.parent_id ? "1rem" : "0",
                     }}
                   >
-                    <div className="bg-engine-bg/60 p-4 rounded-xl text-sm group relative border border-engine-neon/10">
+                    <div className="bg-engine-bg/60 p-4 rounded-xl text-sm group relative border border-engine-panel-border/10">
                       {editingItem?.type === "comment" &&
                       editingItem?.id === comment.id ? (
                         <div className="space-y-2">
@@ -575,7 +575,7 @@ const PostItem = React.memo(
                                 content: e.target.value,
                               })
                             }
-                            className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg px-3 py-2 text-white text-sm focus:border-engine-neon outline-none"
+                            className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg px-3 py-2 text-white text-sm focus:border-engine-panel-border outline-none"
                             rows={1}
                           />
                           <div className="flex justify-end gap-2">
@@ -673,7 +673,7 @@ const PostItem = React.memo(
                               activeMenu?.id === comment.id && (
                                 <div
                                   ref={menuRef}
-                                  className="absolute left-0 mt-1 w-24 border bg-engine-panel/95 backdrop-blur-md border-engine-neon/20 rounded-lg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] z-20 overflow-hidden"
+                                  className="absolute left-0 mt-1 w-24 border bg-engine-panel/95 backdrop-blur-md border-engine-panel-border/20 rounded-lg shadow-panel-neon z-20 overflow-hidden"
                                 >
                                   <button
                                     onClick={() => startEditComment(comment)}
@@ -712,13 +712,13 @@ const PostItem = React.memo(
                           value={replyContent}
                           onChange={(e) => setReplyContent(e.target.value)}
                           placeholder={`Replying to ${comment.username}...`}
-                          className="flex-1 bg-engine-bg border border-engine-neon/30 rounded-lg px-3 py-1.5 text-white text-xs focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+                          className="flex-1 bg-engine-bg border border-engine-panel-border/30 rounded-lg px-3 py-1.5 text-white text-xs focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
                           autoFocus
                           rows={1}
                         />
                         <button
                           type="submit"
-                          className="text-xs bg-engine-button text-engine-bg px-4 font-bold rounded-lg hover:bg-[#00b3e6] shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-colors"
+                          className="text-xs bg-engine-button text-engine-bg px-4 font-bold rounded-lg hover:bg-[#00b3e6] shadow-button-neon transition-colors"
                         >
                           Reply
                         </button>
@@ -791,7 +791,7 @@ const PostItem = React.memo(
                     [post.id]: e.target.value,
                   }))
                 }
-                className="flex-1 bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+                className="flex-1 bg-engine-bg border border-engine-panel-border/30 rounded-xl px-4 py-2.5 text-sm text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
                 onKeyPress={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -802,7 +802,7 @@ const PostItem = React.memo(
               />
               <button
                 onClick={() => submitComment(post.id, commentText)}
-                className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-5 py-2.5 rounded-xl text-sm font-bold shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-5 py-2.5 rounded-xl text-sm font-bold shadow-button-neon transition-all hover:shadow-button-neon"
               >
                 Send
               </button>
@@ -816,7 +816,7 @@ const PostItem = React.memo(
             onClick={() => setShowReportModal(false)}
           >
             <div
-              className="bg-engine-panel/95 border border-engine-neon/20 p-6 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-sm w-full"
+              className="bg-engine-panel/95 border border-engine-panel-border/20 p-6 rounded-2xl shadow-panel-neon max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-extrabold text-engine-neon mb-4">Report Post</h3>
@@ -839,7 +839,7 @@ const PostItem = React.memo(
                       value={reason}
                       checked={reportReason === reason}
                       onChange={(e) => setReportReason(e.target.value)}
-                      className="w-4 h-4 text-engine-neon bg-engine-bg border-engine-neon/30 focus:ring-[#00cfff]"
+                      className="w-4 h-4 text-engine-neon bg-engine-bg border-engine-panel-border/30 focus:ring-[#00cfff]"
                     />
                     <span className="text-gray-300 text-sm group-hover:text-white">
                       {reason}
@@ -853,14 +853,14 @@ const PostItem = React.memo(
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                   placeholder="Please describe the issue..."
-                  className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none mb-4 h-24 resize-none transition-all"
+                  className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none mb-4 h-24 resize-none transition-all"
                 />
               )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="px-5 py-2.5 rounded-xl bg-transparent border border-engine-neon/30 text-engine-neon hover:bg-engine-button/10 transition-colors text-sm font-bold"
+                  className="px-5 py-2.5 rounded-xl bg-transparent border border-engine-button-border/30 text-engine-neon hover:bg-engine-button/10 transition-colors text-sm font-bold"
                 >
                   Cancel
                 </button>
@@ -881,7 +881,7 @@ const PostItem = React.memo(
             onClick={() => setShowDeleteModal(false)}
           >
             <div
-              className="bg-engine-panel/95 border border-engine-neon/20 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.1)] max-w-sm w-full text-center"
+              className="bg-engine-panel/95 border border-engine-panel-border/20 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-2xl font-extrabold text-white mb-2">
@@ -894,7 +894,7 @@ const PostItem = React.memo(
               <div className="flex justify-center gap-4">
                 <button
                   onClick={() => setShowDeleteModal(false)}
-                  className="px-6 py-2.5 rounded-xl bg-transparent border border-engine-neon/30 text-engine-neon hover:bg-engine-button/10 transition-colors text-sm font-bold w-full"
+                  className="px-6 py-2.5 rounded-xl bg-transparent border border-engine-button-border/30 text-engine-neon hover:bg-engine-button/10 transition-colors text-sm font-bold w-full"
                 >
                   Cancel
                 </button>
@@ -926,7 +926,7 @@ const PostItem = React.memo(
                   onClick={() => handleShareOption("x")}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center border border-engine-neon/30 group-hover:border-white transition-colors">
+                  <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center border border-engine-panel-border/30 group-hover:border-white transition-colors">
                     <span className="text-xl text-white">𝕏</span>
                   </div>
                   <span className="text-xs text-gray-400">X</span>
@@ -1252,12 +1252,12 @@ const Home = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
       {/* 📱 Mobile View Switcher */}
-      <div className="lg:hidden col-span-1 flex bg-engine-panel/80 backdrop-blur-md p-1.5 rounded-xl border border-engine-neon/20 sticky top-24 z-30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]">
+      <div className="lg:hidden col-span-1 flex bg-engine-panel/80 backdrop-blur-md p-1.5 rounded-xl border border-engine-panel-border/20 sticky top-24 z-30 shadow-panel-neon">
         <button
           onClick={() => setMobileView("feed")}
           className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
             mobileView === "feed"
-              ? "bg-engine-button text-engine-bg shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
+              ? "bg-engine-button text-engine-bg shadow-button-neon"
               : "text-gray-400 hover:text-engine-neon/80"
           }`}
         >
@@ -1267,7 +1267,7 @@ const Home = ({
           onClick={() => setMobileView("widgets")}
           className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
             mobileView === "widgets"
-              ? "bg-engine-button text-engine-bg shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
+              ? "bg-engine-button text-engine-bg shadow-button-neon"
               : "text-gray-400 hover:text-engine-neon/80"
           }`}
         >
@@ -1282,7 +1282,7 @@ const Home = ({
       >
         <div className="space-y-6 sticky top-24">
           {/* Market Price Widget */}
-          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 p-5 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] overflow-hidden relative h-32">
+          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon overflow-hidden relative h-32">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase mb-2 tracking-wider">
               Market Watch
             </h3>
@@ -1293,7 +1293,7 @@ const Home = ({
           </div>
 
           {/* News Widget */}
-          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 p-5 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] h-64 relative overflow-hidden">
+          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon h-64 relative overflow-hidden">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase mb-2 tracking-wider">
               Crypto News
             </h3>
@@ -1309,7 +1309,7 @@ const Home = ({
         } lg:block lg:col-span-2 space-y-6`}
       >
         {/* Create Post Box */}
-        <div className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] relative focus-within:z-[60]">
+        <div className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
             <MentionInput
               value={newPostContent}
@@ -1317,14 +1317,14 @@ const Home = ({
               onChange={(e) => setNewPostContent(e.target.value)}
               onPaste={handlePaste}
               placeholder={`What's happening, ${currentUser || "Guest"}?`}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] transition-all min-h-[100px] resize-none"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-4 text-white focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon transition-all min-h-[100px] resize-none"
             />
             {postImage.preview && (
               <div className="mt-4 relative w-fit">
                 <img
                   src={postImage.preview}
                   alt="Preview"
-                  className="max-h-40 rounded-xl border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]"
+                  className="max-h-40 rounded-xl border border-engine-panel-border/30 shadow-panel-neon"
                 />
                 <button
                   type="button"
@@ -1361,7 +1361,7 @@ const Home = ({
               />
               <button
                 type="submit"
-                className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-8 py-2.5 rounded-xl font-extrabold text-sm shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.4)]"
+                className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-8 py-2.5 rounded-xl font-extrabold text-sm shadow-button-neon transition-all hover:shadow-button-neon"
               >
                 Post
               </button>
@@ -1382,7 +1382,7 @@ const Home = ({
             <button
               onClick={() => fetchGlobalPosts(postsPage)}
               disabled={loadingPosts}
-              className="bg-transparent border border-engine-neon/30 text-engine-neon hover:bg-engine-button/10 hover:border-engine-neon px-8 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.05)]"
+              className="bg-transparent border border-engine-button-border/30 text-engine-neon hover:bg-engine-button/10 hover:border-engine-button-border px-8 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition-all shadow-button-neon"
             >
               {loadingPosts ? "Loading..." : "Load More"}
             </button>
@@ -1400,7 +1400,7 @@ const Home = ({
           <div className="sticky top-24 space-y-6">
             {/* Created Communities */}
             {createdCommunities.length > 0 && (
-              <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 p-5 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]">
+              <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
                 <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
                   <span className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">👑</span> Created
                   Communities
@@ -1410,7 +1410,7 @@ const Home = ({
                     <div
                       key={comm.id}
                       onClick={() => navigate(`/community/${comm.id}`)}
-                      className="flex items-center justify-between p-3 border border-transparent hover:border-engine-neon/20 hover:bg-engine-button/5 rounded-xl cursor-pointer group transition-all"
+                      className="flex items-center justify-between p-3 border border-transparent hover:border-engine-button-border/20 hover:bg-engine-button/5 rounded-xl cursor-pointer group transition-all"
                     >
                       <div>
                         <p className="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">
@@ -1430,9 +1430,9 @@ const Home = ({
             )}
 
             {/* Joined Communities */}
-            <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-neon/20 p-5 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]">
+            <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
               <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
-                <span className="text-engine-neon drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">👥</span> Your Communities
+                <span className="text-engine-neon drop-shadow-panel-neon">👥</span> Your Communities
               </h3>
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                 {myCommunities.length === 0 ? (
@@ -1444,7 +1444,7 @@ const Home = ({
                     <div
                       key={comm.id}
                       onClick={() => navigate(`/community/${comm.id}`)}
-                      className="flex items-center justify-between p-3 border border-transparent hover:border-engine-neon/20 hover:bg-engine-button/5 rounded-xl cursor-pointer group transition-all"
+                      className="flex items-center justify-between p-3 border border-transparent hover:border-engine-button-border/20 hover:bg-engine-button/5 rounded-xl cursor-pointer group transition-all"
                     >
                       <div>
                         <p className="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">

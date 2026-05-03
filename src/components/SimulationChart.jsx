@@ -334,22 +334,22 @@ export default function SimulationChart({ data }) {
   };
 
   return (
-    <div className="bg-engine-panel/60 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md overflow-hidden relative"
+    <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden relative"
       style={{ animation: 'chartFadeIn 0.5s ease-out forwards' }}>
       <style>{`@keyframes chartFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
       
       {/* Prompt Modal for Text Tool */}
       {promptModal.isOpen && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-engine-bg/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-engine-panel/95 border border-engine-neon/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.2)] max-w-xs w-full text-center">
-            <h3 className="text-sm font-extrabold mb-4 uppercase tracking-widest text-engine-neon drop-shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.5)]">
+          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-xs w-full text-center">
+            <h3 className="text-sm font-extrabold mb-4 uppercase tracking-widest text-engine-neon drop-shadow-panel-neon">
               ADD TEXT LABEL
             </h3>
             <input 
               type="text" 
               value={promptModal.text} 
               onChange={(e) => setPromptModal({...promptModal, text: e.target.value})} 
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-2 text-white text-xs font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all mb-6 text-center placeholder:text-engine-neon/30"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl px-4 py-2 text-white text-xs font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all mb-6 text-center placeholder:text-engine-neon/30"
               placeholder="Enter label..."
               autoFocus
               onKeyDown={(e) => {
@@ -360,13 +360,13 @@ export default function SimulationChart({ data }) {
             <div className="flex gap-3 justify-center">
               <button
                 onClick={() => setPromptModal({ ...promptModal, isOpen: false })}
-                className="flex-1 py-2 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[10px] font-extrabold uppercase tracking-widest transition-all"
+                className="flex-1 py-2 rounded-xl bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 text-engine-neon text-[10px] font-extrabold uppercase tracking-widest transition-all"
               >
                 CANCEL
               </button>
               <button
                 onClick={handleAddText}
-                className="flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all bg-engine-button hover:bg-[#00e5ff] text-engine-bg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                className="flex-1 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all bg-engine-button hover:bg-[#00e5ff] text-engine-bg shadow-button-neon"
               >
                 ADD
               </button>
@@ -375,12 +375,12 @@ export default function SimulationChart({ data }) {
         </div>
       )}
       {/* Header */}
-      <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-engine-neon/20 bg-engine-bg/40">
+      <div className="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-engine-panel-border/20 bg-engine-bg/40">
         <span className="text-[11px] font-extrabold text-engine-neon uppercase tracking-widest">Equity Curve</span>
         <div className="flex gap-1 ml-auto">
           {['candle','line'].map(t => (
             <button key={t} onClick={() => setChartType(t)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all ${chartType === t ? 'bg-engine-button text-engine-bg' : 'bg-engine-bg border border-engine-neon/20 text-engine-neon/60 hover:text-engine-neon'}`}>
+              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all ${chartType === t ? 'bg-engine-button text-engine-bg' : 'bg-engine-bg border border-engine-button-border/20 text-engine-neon/60 hover:text-engine-neon'}`}>
               {t === 'candle' ? '🕯 Candle' : '📈 Line'}
             </button>
           ))}
@@ -388,7 +388,7 @@ export default function SimulationChart({ data }) {
         <div className="flex gap-1">
           {[['sma10','SMA10',C.sma10],['sma20','SMA20',C.sma20],['bb','BB',C.bb]].map(([k,label,col]) => (
             <button key={k} onClick={() => toggleInd(k)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all border ${ind[k] ? 'bg-engine-bg border-engine-neon/50 text-engine-neon' : 'bg-engine-bg border-engine-neon/15 text-engine-neon/40 hover:text-engine-neon'}`}
+              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all border ${ind[k] ? 'bg-engine-bg border-engine-panel-border/50 text-engine-neon' : 'bg-engine-bg border-engine-panel-border/15 text-engine-neon/40 hover:text-engine-neon'}`}
               style={ind[k] ? { borderColor: col, color: col } : {}}>
               {label}
             </button>
@@ -398,16 +398,16 @@ export default function SimulationChart({ data }) {
 
       <div className="flex" style={{ height: 420 }}>
         {/* Left toolbar */}
-        <div className="flex flex-col gap-1 p-2 border-r border-engine-neon/10 bg-engine-bg/30">
+        <div className="flex flex-col gap-1 p-2 border-r border-engine-panel-border/10 bg-engine-bg/30">
           {TOOLS.map(t => (
             <button key={t.id} title={t.tip} onClick={() => setTool(t.id)}
-              className={`w-9 h-9 rounded-lg text-sm font-bold transition-all flex items-center justify-center ${tool === t.id ? 'bg-engine-button text-engine-bg shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.4)]' : 'bg-engine-bg border border-engine-neon/15 text-engine-neon/60 hover:border-engine-neon/40 hover:text-engine-neon'}`}>
+              className={`w-9 h-9 rounded-lg text-sm font-bold transition-all flex items-center justify-center ${tool === t.id ? 'bg-engine-button text-engine-bg shadow-button-neon' : 'bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon'}`}>
               {t.label}
             </button>
           ))}
           <div className="mt-auto flex flex-col gap-1">
-            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-neon/15 text-engine-neon/60 hover:border-engine-neon/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">↩</button>
-            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-neon/15 text-engine-neon/60 hover:border-engine-neon/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">⟳</button>
+            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">↩</button>
+            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">⟳</button>
           </div>
         </div>
 
@@ -420,7 +420,7 @@ export default function SimulationChart({ data }) {
         </div>
       </div>
 
-      <div className="px-5 py-2 border-t border-engine-neon/10 flex gap-4 text-[9px] font-mono text-engine-neon/40">
+      <div className="px-5 py-2 border-t border-engine-panel-border/10 flex gap-4 text-[9px] font-mono text-engine-neon/40">
         <span>Scroll to zoom</span><span>Drag to pan</span><span>{drawingsRef.current.length} drawings</span>
         {ind.sma10 && <span style={{color: C.sma10}}>● SMA10</span>}
         {ind.sma20 && <span style={{color: C.sma20}}>● SMA20</span>}

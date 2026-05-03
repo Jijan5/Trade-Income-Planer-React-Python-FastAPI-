@@ -57,7 +57,7 @@ const ContactUs = ({ showFlash }) => {
           message or reach out via the contact information provided.
         </p>
 
-        <div className="bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)] p-10">
+        <div className="bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 shadow-panel-neon p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -71,7 +71,7 @@ const ContactUs = ({ showFlash }) => {
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-4 text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
                 placeholder="YOUR NAME"
               />
             </div>
@@ -87,7 +87,7 @@ const ContactUs = ({ showFlash }) => {
                 id="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-4 text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
                 placeholder="YOUR EMAIL"
               />
             </div>
@@ -103,7 +103,7 @@ const ContactUs = ({ showFlash }) => {
                 id="subject"
                 value={formData.subject}
                 onChange={handleChange}
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-4 text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20"
                 placeholder="SUBJECT"
               />
             </div>
@@ -119,13 +119,13 @@ const ContactUs = ({ showFlash }) => {
                 rows="5"
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-4 text-white focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20 resize-none custom-scrollbar"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-4 text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono text-sm transition-all placeholder:text-engine-neon/20 resize-none custom-scrollbar"
                 placeholder="YOUR MESSAGE..."
               ></textarea>
             </div>
             <div className="pt-4">
               <button
-                className="w-full bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
                 disabled={loading}
               >
@@ -134,7 +134,7 @@ const ContactUs = ({ showFlash }) => {
             </div>
           </form>
 
-          <div className="mt-12 border-t border-engine-neon/20 pt-8 text-center">
+          <div className="mt-12 border-t border-engine-panel-border/20 pt-8 text-center">
             <h2 className="text-[11px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-4">CONTACT INFORMATION</h2>
             <p className="text-engine-neon font-mono font-bold drop-shadow-[0_0_3px_#00cfff]">
               support@tradeincomeplanner.com

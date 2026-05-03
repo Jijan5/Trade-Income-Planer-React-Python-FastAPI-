@@ -27,6 +27,14 @@
   --engine-neon-rgb: 0 207 255;
   --engine-button: #00cfff;
   --engine-button-rgb: 0 207 255;
+  --engine-panel-border: #00cfff;
+  --engine-panel-border-rgb: 0 207 255;
+  --engine-button-border: #00cfff;
+  --engine-button-border-rgb: 0 207 255;
+  --engine-panel-neon-radius: 20px;
+  --engine-button-neon-radius: 20px;
+  --engine-panel-neon-opacity: 0.2;
+  --engine-button-neon-opacity: 0.4;
   --engine-glass-opacity: 0.6;
   --engine-glass-blur: 12px;
   --engine-font: 'Inter', system-ui, sans-serif;
@@ -40,6 +48,16 @@
   background: linear-gradient(135deg, #0f0f23 0%, #1a0d2e 50%, #0f0f23 100%);
   position: relative;
   overflow: hidden;
+}
+
+/* Dynamic Neon Shadows */
+@layer utilities {
+  .shadow-panel-neon {
+    box-shadow: 0 0 var(--engine-panel-neon-radius) rgb(var(--engine-neon-rgb) / var(--engine-panel-neon-opacity));
+  }
+  .shadow-button-neon {
+    box-shadow: 0 0 var(--engine-button-neon-radius) rgb(var(--engine-neon-rgb) / var(--engine-button-neon-opacity));
+  }
 }
 
 .futuristic-bg::before {

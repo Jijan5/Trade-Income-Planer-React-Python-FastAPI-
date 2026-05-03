@@ -12,6 +12,14 @@ const DEFAULT_THEME = {
   panel_color: "#0a0f1c",
   neon_color: "#00cfff",
   button_color: "#00cfff",
+  panel_border_color: "#00cfff",
+  button_border_color: "#00cfff",
+  panel_neon_enabled: true,
+  button_neon_enabled: true,
+  panel_neon_radius: "20px",
+  button_neon_radius: "20px",
+  panel_neon_opacity: 0.2,
+  button_neon_opacity: 0.4,
   glass_opacity: 0.6,
   glass_blur: "12px",
   font_family: "Inter",
@@ -25,6 +33,7 @@ const EXCLUDED_PATHS = ["/", "/login", "/register", "/forgot-password", "/admin"
 
 // Helper for Tailwind opacity
 const hexToRgb = (hex) => {
+  if (!hex || typeof hex !== 'string') return "255 255 255"; // Fallback to white if invalid
   let h = hex.replace('#', '');
   if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
   const r = parseInt(h.substring(0, 2), 16);
@@ -54,6 +63,14 @@ export const ThemeEngineProvider = ({ children }) => {
           panel_color: res.data.panel_color || DEFAULT_THEME.panel_color,
           neon_color: res.data.neon_color || DEFAULT_THEME.neon_color,
           button_color: res.data.button_color || DEFAULT_THEME.button_color,
+          panel_border_color: res.data.panel_border_color || DEFAULT_THEME.panel_border_color,
+          button_border_color: res.data.button_border_color || DEFAULT_THEME.button_border_color,
+          panel_neon_enabled: res.data.panel_neon_enabled ?? DEFAULT_THEME.panel_neon_enabled,
+          button_neon_enabled: res.data.button_neon_enabled ?? DEFAULT_THEME.button_neon_enabled,
+          panel_neon_radius: res.data.panel_neon_radius || DEFAULT_THEME.panel_neon_radius,
+          button_neon_radius: res.data.button_neon_radius || DEFAULT_THEME.button_neon_radius,
+          panel_neon_opacity: res.data.panel_neon_opacity ?? DEFAULT_THEME.panel_neon_opacity,
+          button_neon_opacity: res.data.button_neon_opacity ?? DEFAULT_THEME.button_neon_opacity,
           glass_opacity: res.data.glass_opacity ?? DEFAULT_THEME.glass_opacity,
           glass_blur: res.data.glass_blur || DEFAULT_THEME.glass_blur,
           font_family: res.data.font_family || DEFAULT_THEME.font_family,
@@ -105,6 +122,19 @@ export const ThemeEngineProvider = ({ children }) => {
     
     root.style.setProperty("--engine-button", activeTheme.button_color);
     root.style.setProperty("--engine-button-rgb", hexToRgb(activeTheme.button_color));
+
+    root.style.setProperty("--engine-panel-border", activeTheme.panel_border_color);
+    root.style.setProperty("--engine-panel-border-rgb", hexToRgb(activeTheme.panel_border_color));
+    
+    root.style.setProperty("--engine-button-border", activeTheme.button_border_color);
+    root.style.setProperty("--engine-button-border-rgb", hexToRgb(activeTheme.button_border_color));
+
+    root.style.setProperty("--engine-panel-neon-radius", activeTheme.panel_neon_radius);
+    root.style.setProperty("--engine-button-neon-radius", activeTheme.button_neon_radius);
+    
+    root.style.setProperty("--engine-panel-neon-opacity", activeTheme.panel_neon_enabled ? activeTheme.panel_neon_opacity : 0);
+    root.style.setProperty("--engine-button-neon-opacity", activeTheme.button_neon_enabled ? activeTheme.button_neon_opacity : 0);
+
     root.style.setProperty("--engine-glass-opacity", activeTheme.glass_opacity);
     root.style.setProperty("--engine-glass-blur", activeTheme.glass_blur);
     root.style.setProperty("--engine-font", activeTheme.font_family);

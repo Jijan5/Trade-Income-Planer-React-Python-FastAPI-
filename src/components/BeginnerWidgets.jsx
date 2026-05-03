@@ -29,8 +29,8 @@ export const PositionSizeCalculator = ({
   if (!currentPrice || currentPrice <= 0) return null;
 
   return (
-    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4">
-      <div className="flex items-center gap-2 mb-4 border-b border-engine-neon/10 pb-3">
+    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md mb-4">
+      <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
         <span className="text-xl">📊</span>
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Position Size Calculator</h4>
       </div>
@@ -38,7 +38,7 @@ export const PositionSizeCalculator = ({
       <div className="space-y-4">
         <div>
           <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">
-            Risk per Trade: <span className="text-engine-neon font-extrabold drop-shadow-[0_0_3px_rgba(var(--engine-neon-rgb),0.5)]">{riskPercent}%</span>
+            Risk per Trade: <span className="text-engine-neon font-extrabold drop-shadow-panel-neon">{riskPercent}%</span>
           </label>
           <input
             type="range"
@@ -47,7 +47,7 @@ export const PositionSizeCalculator = ({
             step="0.5"
             value={riskPercent}
             onChange={(e) => setRiskPercent(parseFloat(e.target.value))}
-            className="w-full h-2 bg-engine-bg border border-engine-neon/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
+            className="w-full h-2 bg-engine-bg border border-engine-panel-border/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
           />
           <div className="flex justify-between text-[9px] font-bold text-engine-neon/50 mt-2 uppercase tracking-widest">
             <span>0.5% (SAFE)</span>
@@ -56,11 +56,11 @@ export const PositionSizeCalculator = ({
         </div>
         
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-panel-border/10">
             <p className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Risk Amount</p>
             <p className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">${riskAmount.toFixed(2)}</p>
           </div>
-          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+          <div className="bg-engine-bg/80 p-3 rounded-xl border border-engine-panel-border/10">
             <p className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Position Size</p>
             <p className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">${positionSize.toFixed(2)}</p>
           </div>
@@ -69,12 +69,12 @@ export const PositionSizeCalculator = ({
         <button
           onClick={() => onApplyPositionSize(positionSize)}
           disabled={positionSize <= 0}
-          className="w-full bg-engine-button hover:bg-[#00e5ff] disabled:bg-engine-bg disabled:border disabled:border-engine-neon/30 disabled:text-gray-500 text-engine-bg text-xs font-extrabold uppercase tracking-widest py-3 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] disabled:shadow-none hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 mt-2"
+          className="w-full bg-engine-button hover:bg-[#00e5ff] disabled:bg-engine-bg disabled:border disabled:border-engine-button-border/30 disabled:text-gray-500 text-engine-bg text-xs font-extrabold uppercase tracking-widest py-3 rounded-xl transition-all shadow-button-neon disabled:shadow-none hover:shadow-button-neon hover:-translate-y-0.5 mt-2"
         >
           APPLY POSITION SIZE
         </button>
         
-        <p className="text-[10px] font-bold text-gray-500 italic border-t border-engine-neon/10 pt-3 mt-3">
+        <p className="text-[10px] font-bold text-gray-500 italic border-t border-engine-panel-border/10 pt-3 mt-3">
           💡 Novice tip: Risk only 1-2% of your account per trade to survive losing streaks!
         </p>
       </div>
@@ -126,13 +126,13 @@ export const RiskRewardDisplay = ({
   };
 
   return (
-    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4">
-      <div className="flex items-center gap-2 mb-4 border-b border-engine-neon/10 pb-3">
+    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md mb-4">
+      <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
         <span className="text-xl">⚖️</span>
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Risk / Reward Ratio</h4>
       </div>
       
-      <div className="flex items-center justify-center mb-4 bg-engine-bg/50 py-4 rounded-xl border border-engine-neon/10">
+      <div className="flex items-center justify-center mb-4 bg-engine-bg/50 py-4 rounded-xl border border-engine-panel-border/10">
         <div className={`text-4xl font-mono font-extrabold ${getRatingColor()} drop-shadow-[0_0_8px_currentColor]`}>
           1:{rMultiple.toFixed(1)}
         </div>
@@ -143,17 +143,17 @@ export const RiskRewardDisplay = ({
       </div>
       
       <div className="space-y-3 text-xs">
-        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-panel-border/10">
           <span className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest">Stop Loss</span>
           <span className="text-red-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">${slPrice.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-neon/10">
+        <div className="flex justify-between items-center bg-engine-bg/80 p-3 rounded-xl border border-engine-panel-border/10">
           <span className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest">Take Profit</span>
           <span className="text-green-400 font-mono font-bold drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]">${tpPrice.toFixed(2)}</span>
         </div>
       </div>
       
-      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-engine-neon/10 pt-3">
+      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-engine-panel-border/10 pt-3">
         💡 Novice tip: Always aim for at least 2:1 risk/reward to stay profitable!
       </p>
     </div>
@@ -239,22 +239,22 @@ export const BeginnerTipsWidget = ({ recentPnL, totalTrades, accountBalance, ini
   };
   
   return (
-    <div className="bg-engine-button/5 p-5 rounded-2xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md mb-4 relative overflow-hidden">
+    <div className="bg-engine-button/5 p-5 rounded-2xl border border-engine-button-border/20 shadow-button-neon backdrop-blur-md mb-4 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-24 h-24 bg-engine-button/5 rounded-full blur-2xl"></div>
-      <div className="flex items-center justify-between mb-4 relative z-10 border-b border-engine-neon/10 pb-3">
+      <div className="flex items-center justify-between mb-4 relative z-10 border-b border-engine-panel-border/10 pb-3">
         <div className="flex items-center gap-2">
           <span className="text-xl">💡</span>
           <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Trading Tip</h4>
         </div>
         <button 
           onClick={nextTip}
-          className="text-[10px] font-extrabold uppercase tracking-widest text-engine-neon border border-engine-neon/30 hover:bg-engine-button/10 px-2 py-1 rounded transition-all shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
+          className="text-[10px] font-extrabold uppercase tracking-widest text-engine-neon border border-engine-button-border/30 hover:bg-engine-button/10 px-2 py-1 rounded transition-all shadow-button-neon hover:shadow-button-neon"
         >
           Next Tip
         </button>
       </div>
       
-      <p className="text-sm text-gray-200 italic leading-relaxed font-medium relative z-10 bg-engine-bg/30 p-4 rounded-xl border border-engine-neon/10">
+      <p className="text-sm text-gray-200 italic leading-relaxed font-medium relative z-10 bg-engine-bg/30 p-4 rounded-xl border border-engine-panel-border/10">
         "{tips[currentTip]}"
       </p>
       
@@ -295,8 +295,8 @@ export const BeginnerWidgetsPanel = ({
           onClick={() => setShowCalculator(!showCalculator)}
           className={`flex-1 py-3 px-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${
             showCalculator 
-              ? 'bg-engine-button/20 text-engine-neon border border-engine-neon shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)]' 
-              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-neon/20'
+              ? 'bg-engine-button/20 text-engine-neon border border-engine-button-border shadow-button-neon' 
+              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-button-border/20'
           }`}
         >
           <span className="text-sm mr-1">📊</span> Calculator
@@ -305,8 +305,8 @@ export const BeginnerWidgetsPanel = ({
           onClick={() => setShowRR(!showRR)}
           className={`flex-1 py-3 px-3 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${
             showRR 
-              ? 'bg-engine-button/20 text-engine-neon border border-engine-neon shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)]' 
-              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-neon/20'
+              ? 'bg-engine-button/20 text-engine-neon border border-engine-button-border shadow-button-neon' 
+              : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-button-border/20'
           }`}
         >
           <span className="text-sm mr-1">⚖️</span> R/R Ratio

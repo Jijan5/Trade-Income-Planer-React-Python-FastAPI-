@@ -16,15 +16,15 @@ import RiskManagementCalculator from "./RiskManagementCalculator";
 
 // Memoized History Table to prevent re-renders on price ticks
 const TradeHistoryTable = React.memo(({ history }) => (
-  <div className="bg-engine-panel/60 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md overflow-hidden">
-    <div className="p-4 border-b border-engine-neon/10 bg-engine-bg/80">
+  <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden">
+    <div className="p-4 border-b border-engine-panel-border/10 bg-engine-bg/80">
       <h3 className="text-xs font-extrabold text-engine-neon uppercase tracking-widest flex items-center gap-2">
         <span className="text-lg">📜</span> Trade History
       </h3>
     </div>
     <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
       <table className="min-w-full divide-y divide-[#00cfff]/10">
-        <thead className="bg-engine-bg sticky top-0 z-10 border-b border-engine-neon/10">
+        <thead className="bg-engine-bg sticky top-0 z-10 border-b border-engine-panel-border/10">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-bold text-engine-neon/70 uppercase tracking-wider">
               Type
@@ -71,7 +71,7 @@ const TradeHistoryTable = React.memo(({ history }) => (
                       ? "bg-green-900/30 text-green-400 border-green-500/30"
                       : trade.reason === "SL"
                       ? "bg-red-900/30 text-red-400 border-red-500/30"
-                      : "bg-engine-button/10 text-engine-neon border-engine-neon/30"
+                      : "bg-engine-button/10 text-engine-neon border-engine-button-border/30"
                   }`}
                 >
                   {trade.reason}
@@ -298,7 +298,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     }
 
     return (
-      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md max-w-md mx-auto mt-10 text-center">
+      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md max-w-md mx-auto mt-10 text-center">
         <h2 className="text-2xl font-extrabold text-white mb-2 uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">
           Live Market Simulator
         </h2>
@@ -320,13 +320,13 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   initialCapital: parseFloat(e.target.value),
                 })
               }
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none text-lg font-mono transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 focus:border-engine-panel-border focus:shadow-panel-neon outline-none text-lg font-mono transition-all"
               required
             />
           </div>
 
           {/* Challenge Mode Toggle */}
-          <div className="bg-engine-bg/50 p-5 rounded-xl border border-engine-neon/20 transition-all hover:border-engine-neon/40">
+          <div className="bg-engine-bg/50 p-5 rounded-xl border border-engine-panel-border/20 transition-all hover:border-engine-panel-border/40">
             <div className="flex items-center justify-between mb-4">
               <label className="text-xs font-extrabold text-gray-300 uppercase tracking-widest">
                 Enable Prop Firm Challenge
@@ -341,14 +341,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   className="w-5 h-5 accent-engine-neon rounded cursor-pointer"
                 />
               ) : (
-                <span className="text-xs text-engine-neon/50 flex items-center gap-1 border border-engine-neon/20 px-2 py-1 rounded">
+                <span className="text-xs text-engine-neon/50 flex items-center gap-1 border border-engine-panel-border/20 px-2 py-1 rounded">
                   Basic+
                 </span>
               )}
             </div>
 
             {config.isChallengeMode && (
-              <div className="grid grid-cols-2 gap-4 animate-fade-in mt-4 pt-4 border-t border-engine-neon/10">
+              <div className="grid grid-cols-2 gap-4 animate-fade-in mt-4 pt-4 border-t border-engine-panel-border/10">
                 <div>
                   <label className="block text-[10px] font-extrabold text-engine-neon/70 mb-2 uppercase tracking-widest">
                     Profit Target (%)
@@ -362,7 +362,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         challengeTargetPct: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2 text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all font-mono"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
@@ -378,7 +378,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         challengeMaxDrawdownPct: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2 text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all font-mono"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
               </div>
@@ -386,7 +386,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           </div>
 
           {/* Trading Rules Toggle */}
-          <div className="bg-engine-bg/50 p-5 rounded-xl border border-engine-neon/20 transition-all hover:border-engine-neon/40">
+          <div className="bg-engine-bg/50 p-5 rounded-xl border border-engine-panel-border/20 transition-all hover:border-engine-panel-border/40">
             <div className="flex items-center justify-between mb-4">
               <label className="text-xs font-extrabold text-gray-300 uppercase tracking-widest flex items-center gap-2">
                 Enable Discipline Rules
@@ -401,14 +401,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   className="w-5 h-5 accent-engine-neon rounded cursor-pointer"
                 />
               ) : (
-                <span className="text-xs text-engine-neon/50 flex items-center gap-1 border border-engine-neon/20 px-2 py-1 rounded">
+                <span className="text-xs text-engine-neon/50 flex items-center gap-1 border border-engine-panel-border/20 px-2 py-1 rounded">
                   Premium
                 </span>
               )}
             </div>
 
             {config.enableRules && (
-              <div className="space-y-4 animate-fade-in mt-4 pt-4 border-t border-engine-neon/10">
+              <div className="space-y-4 animate-fade-in mt-4 pt-4 border-t border-engine-panel-border/10">
                 <div>
                   <label className="block text-[10px] font-extrabold text-engine-neon/70 mb-2 uppercase tracking-widest">
                     Max Trades / Session
@@ -422,7 +422,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxTradesPerDay: parseInt(e.target.value),
                       })
                     }
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2 text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all font-mono"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
@@ -438,7 +438,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxDailyLoss: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2 text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all font-mono"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
                 <div>
@@ -454,7 +454,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         maxConsecutiveLosses: parseInt(e.target.value),
                       })
                     }
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2 text-sm focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all font-mono"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
                 <p className="text-[10px] text-yellow-400 font-bold tracking-wider mt-2 border border-yellow-500/30 bg-yellow-900/20 p-2 rounded">
@@ -466,7 +466,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
           <button
             type="submit"
-            className="w-full bg-engine-button hover:bg-[#00e5ff] text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all duration-300 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5"
+            className="w-full bg-engine-button hover:bg-[#00e5ff] text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest transition-all duration-300 shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
           >
             START TRADING
           </button>
@@ -487,7 +487,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 ? "bg-red-900/10 border-red-500/40"
                 : challengeState.status === "PASSED"
                 ? "bg-green-900/10 border-green-500/40"
-                : "bg-engine-button/5 border-engine-neon/30"
+                : "bg-engine-button/5 border-engine-button-border/30"
             }`}
           >
             <div className="flex justify-between items-center mb-4">
@@ -500,7 +500,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     ? "bg-red-500/20 text-red-400 border-red-500/50"
                     : challengeState.status === "PASSED"
                     ? "bg-green-500/20 text-green-400 border-green-500/50"
-                    : "bg-engine-button/20 text-engine-neon border-engine-neon/50"
+                    : "bg-engine-button/20 text-engine-neon border-engine-button-border/50"
                 }`}
               >
                 {challengeState.status}
@@ -509,7 +509,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
             {challengeState.status === "ACTIVE" && (
               <div className="space-y-4">
-                <div className="bg-engine-bg/50 p-3 rounded-xl border border-engine-neon/10">
+                <div className="bg-engine-bg/50 p-3 rounded-xl border border-engine-panel-border/10">
                   <div className="flex justify-between text-xs mb-2">
                     <span className="text-engine-neon/70 font-bold uppercase tracking-wider">
                       Target: $
@@ -528,7 +528,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       %
                     </span>
                   </div>
-                  <div className="w-full bg-engine-bg rounded-full h-1.5 border border-engine-neon/20 overflow-hidden">
+                  <div className="w-full bg-engine-bg rounded-full h-1.5 border border-engine-panel-border/20 overflow-hidden">
                     <div
                       className="bg-green-500 h-full rounded-full transition-all duration-500 relative"
                       style={{
@@ -550,7 +550,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   </div>
                 </div>
 
-                <div className="bg-engine-bg/50 p-3 rounded-xl border border-engine-neon/10">
+                <div className="bg-engine-bg/50 p-3 rounded-xl border border-engine-panel-border/10">
                   <div className="flex justify-between text-xs mb-2">
                     <span className="text-engine-neon/70 font-bold uppercase tracking-wider">
                       Max Loss Limit: $
@@ -568,7 +568,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                       ).toLocaleString()}
                     </span>
                   </div>
-                  <div className="w-full bg-engine-bg rounded-full h-1.5 border border-engine-neon/20 overflow-hidden">
+                  <div className="w-full bg-engine-bg rounded-full h-1.5 border border-engine-panel-border/20 overflow-hidden">
                     <div
                       className="bg-red-500 h-full rounded-full transition-all duration-500"
                       style={{
@@ -590,7 +590,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               </div>
             )}
             {challengeState.reason && (
-              <p className="mt-4 p-2 bg-engine-bg/50 rounded-lg text-xs text-center font-bold text-engine-neon uppercase tracking-widest border border-engine-neon/20">
+              <p className="mt-4 p-2 bg-engine-bg/50 rounded-lg text-xs text-center font-bold text-engine-neon uppercase tracking-widest border border-engine-panel-border/20">
                 {challengeState.reason}
               </p>
             )}
@@ -598,7 +598,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         )}
 
         {/* AI Trading Coach Widget */}
-        <div className="col-span-1 bg-engine-panel/60 p-5 rounded-2xl border border-engine-neon/30 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md relative overflow-hidden">
+        <div className="col-span-1 bg-engine-panel/60 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-engine-neon/5 to-transparent pointer-events-none"></div>
           <div className="flex justify-between items-center mb-5 relative z-10">
             <h3 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
@@ -610,14 +610,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 disabled={isAnalyzing || account.history.length < 2}
                 className={`text-[10px] font-extrabold px-3 py-1.5 rounded uppercase tracking-wider transition-all ${
                   isAnalyzing || account.history.length < 2
-                    ? "bg-transparent border border-engine-neon/30 text-engine-neon/50 cursor-not-allowed"
-                    : "bg-engine-button/20 text-engine-neon border border-engine-neon/50 hover:bg-engine-button/30 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)]"
+                    ? "bg-transparent border border-engine-panel-border/30 text-engine-neon/50 cursor-not-allowed"
+                    : "bg-engine-button/20 text-engine-neon border border-engine-button-border/50 hover:bg-engine-button/30 hover:shadow-button-neon"
                 }`}
               >
                 {isAnalyzing ? "ANALYZING..." : "ANALYZE"}
               </button>
             ) : (
-              <span className="text-[10px] bg-gray-800 border border-engine-neon/30 text-gray-400 px-2 py-1 rounded font-bold uppercase">
+              <span className="text-[10px] bg-gray-800 border border-engine-panel-border/30 text-gray-400 px-2 py-1 rounded font-bold uppercase">
                 Premium
               </span>
             )}
@@ -625,10 +625,10 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
 
           {healthData ? (
             <div className="space-y-4 animate-fade-in relative z-10">
-              <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-neon/20">
+              <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-panel-border/20">
                 <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg font-extrabold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">{healthData.trading_identity}</span>
-                  <p className="text-[9px] text-engine-neon uppercase font-extrabold tracking-widest border border-engine-neon/30 px-2 py-0.5 rounded-full">
+                  <p className="text-[9px] text-engine-neon uppercase font-extrabold tracking-widest border border-engine-panel-border/30 px-2 py-0.5 rounded-full">
                     Persona
                   </p>
                 </div>
@@ -636,14 +636,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   "{healthData.identity_insight}"
                 </p>
                 {healthData.ai_insight && (
-                  <div className="p-3 bg-engine-button/10 rounded-lg border border-engine-neon/30">
+                  <div className="p-3 bg-engine-button/10 rounded-lg border border-engine-button-border/30">
                     <p className="text-[11px] text-engine-neon font-medium leading-relaxed">
                       <span className="font-bold mr-1">🎯 AI Advice:</span> {healthData.ai_insight}
                     </p>
                   </div>
                 )}
               </div>
-              <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-neon/20">
+              <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-panel-border/20">
                 <p className="text-[10px] text-engine-neon uppercase mb-3 font-extrabold tracking-widest">
                   Recommended Risk & Action
                 </p>
@@ -665,21 +665,21 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
               </div>
 
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-neon/10">
+                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-panel-border/10">
                   <div className="text-lg font-mono font-bold text-engine-neon">{healthData.risk_score}</div>
                   <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">Risk</div>
                 </div>
 
-                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-neon/10">
+                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-panel-border/10">
                   <div className="text-lg font-mono font-bold text-engine-neon">{healthData.emotional_score}</div>
                   <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">Emotion</div>
                 </div>
-                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-neon/10">
+                <div className="bg-engine-bg/60 p-3 rounded-xl border border-engine-panel-border/10">
                   <div className="text-lg font-mono font-bold text-green-400">{healthData.system_score}</div>
                   <div className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mt-1">System</div>
                 </div>
               </div>
-              <div className="text-[11px] text-gray-400 p-3 bg-engine-bg/80 rounded-xl border border-engine-neon/10 leading-relaxed">
+              <div className="text-[11px] text-gray-400 p-3 bg-engine-bg/80 rounded-xl border border-engine-panel-border/10 leading-relaxed">
                 {healthData.summary}
               </div>
               {healthData.warnings.length > 0 && (
@@ -694,7 +694,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 )}
             </div>
           ) : (
-            <div className="text-center py-6 text-engine-neon/40 text-xs font-bold uppercase tracking-widest border border-dashed border-engine-neon/20 rounded-xl bg-engine-bg/30">
+            <div className="text-center py-6 text-engine-neon/40 text-xs font-bold uppercase tracking-widest border border-dashed border-engine-panel-border/20 rounded-xl bg-engine-bg/30">
               <span className="text-2xl block mb-2 opacity-50">🤖</span>
               <p>Complete 2 trades for AI analysis.</p>
             </div>
@@ -702,7 +702,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         </div>
 
         {/* Account Stats */}
-        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md relative overflow-hidden">
+        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-engine-button/5 rounded-full blur-3xl"></div>
           <div className="flex justify-between items-end mb-2 relative z-10">
             <p className="text-xs font-extrabold text-engine-neon/70 uppercase tracking-widest">Equity</p>
@@ -724,7 +724,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             ${account.equity.toFixed(2)}
           </p>
 
-          <div className="grid grid-cols-2 gap-4 border-t border-engine-neon/10 pt-5 relative z-10">
+          <div className="grid grid-cols-2 gap-4 border-t border-engine-panel-border/10 pt-5 relative z-10">
             <div>
               <p className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Balance</p>
               <p className="text-sm font-mono text-gray-300">
@@ -747,9 +747,9 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         </div>
 
         {/* Trading Controls */}
-        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md relative">
+        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md relative">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm font-extrabold text-engine-neon uppercase tracking-widest bg-engine-button/10 px-3 py-1.5 rounded-lg border border-engine-neon/30">
+            <h3 className="text-sm font-extrabold text-engine-neon uppercase tracking-widest bg-engine-button/10 px-3 py-1.5 rounded-lg border border-engine-button-border/30">
               {activeSymbol}
             </h3>
             <div className="text-right">
@@ -779,14 +779,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           {planLevel >= 2 || isAdmin ? (
             <button
               onClick={() => setShowRiskCalculator(true)}
-              className="w-full bg-engine-bg border border-engine-neon/50 hover:border-engine-neon text-engine-neon text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 mb-5 uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.3)]"
+              className="w-full bg-engine-bg border border-engine-panel-border/50 hover:border-engine-panel-border text-engine-neon text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 mb-5 uppercase tracking-widest shadow-panel-neon hover:shadow-panel-neon"
             >
               <span className="text-lg">⚖️</span> Risk Calculator
             </button>
           ) : (
             <button
               onClick={() => showFlash("Upgrade to Premium Plan to unlock Risk Calculator!", "error")}
-              className="w-full bg-engine-bg/50 border border-engine-neon/30 text-gray-500 text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all mb-5 uppercase tracking-widest cursor-not-allowed"
+              className="w-full bg-engine-bg/50 border border-engine-panel-border/30 text-gray-500 text-xs font-extrabold py-3 px-3 rounded-xl flex items-center justify-center gap-2 transition-all mb-5 uppercase tracking-widest cursor-not-allowed"
             >
               <span className="text-lg opacity-50">🔒</span> Risk Calculator
             </button>
@@ -827,7 +827,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                   tradeAmount: parseFloat(e.target.value),
                 })
               }
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono transition-all"
             />
           </div>
 
@@ -845,7 +845,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     stopLossPct: parseFloat(e.target.value),
                   })
                 }
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono transition-all"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono transition-all"
               />
             </div>
             <div>
@@ -861,7 +861,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     takeProfitPct: parseFloat(e.target.value),
                   })
                 }
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none font-mono transition-all"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 focus:border-engine-panel-border focus:shadow-panel-neon outline-none font-mono transition-all"
               />
             </div>
           </div>
@@ -877,7 +877,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 setConfig({ ...config, tradeNote: e.target.value })
               }
               placeholder="e.g. Breakout, RSI Divergence..."
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none text-sm transition-all placeholder-[#00cfff]/20"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 focus:border-engine-panel-border focus:shadow-panel-neon outline-none text-sm transition-all placeholder-[#00cfff]/20"
             />
           </div>
 
@@ -899,7 +899,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 challengeState.status === "FAILED" ||
                 challengeState.status === "PASSED"
               }
-              className="bg-green-500 hover:bg-green-400 disabled:bg-gray-800 disabled:border-engine-neon/30 disabled:text-gray-500 disabled:shadow-none border border-transparent text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
+              className="bg-green-500 hover:bg-green-400 disabled:bg-gray-800 disabled:border-engine-panel-border/30 disabled:text-gray-500 disabled:shadow-none border border-transparent text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
             >
               <span className="text-lg mb-1">📈</span>
               <span>BUY / LONG</span>
@@ -915,7 +915,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 challengeState.status === "FAILED" ||
                 challengeState.status === "PASSED"
               }
-              className="bg-red-500 hover:bg-red-400 disabled:bg-gray-800 disabled:border-engine-neon/30 disabled:text-gray-500 disabled:shadow-none border border-transparent text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
+              className="bg-red-500 hover:bg-red-400 disabled:bg-gray-800 disabled:border-engine-panel-border/30 disabled:text-gray-500 disabled:shadow-none border border-transparent text-engine-bg py-4 rounded-xl font-extrabold uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)] hover:-translate-y-0.5 active:transform active:scale-95 transition-all flex flex-col items-center"
             >
               <span className="text-lg mb-1">📉</span>
               <span>SELL / SHORT</span>
@@ -929,7 +929,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         <div className="flex gap-4">
           <button
             onClick={resetSession}
-            className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-500 hover:text-red-400 border border-engine-neon/30 hover:border-red-500/30 hover:bg-red-900/20 rounded-xl transition-all"
+            className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-500 hover:text-red-400 border border-engine-panel-border/30 hover:border-red-500/30 hover:bg-red-900/20 rounded-xl transition-all"
           >
             Reset Session
           </button>
@@ -937,14 +937,14 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
             <button
               onClick={downloadCSV}
               disabled={account.history.length === 0}
-              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-engine-neon border border-engine-neon/30 hover:bg-engine-button/10 hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-engine-neon border border-engine-button-border/30 hover:bg-engine-button/10 hover:shadow-button-neon rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Export CSV
             </button>
           ) : (
             <button
               disabled
-              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-600 border border-engine-neon/30 rounded-xl cursor-not-allowed"
+              className="flex-1 py-3 text-xs font-extrabold uppercase tracking-widest text-gray-600 border border-engine-panel-border/30 rounded-xl cursor-not-allowed"
             >
               Export CSV
             </button>
@@ -955,12 +955,12 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
       {/* RIGHT COLUMN: POSITIONS & HISTORY */}
       <div className="lg:col-span-2 space-y-6">
         {/* Open Positions */}
-        <div className="bg-engine-panel/60 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md overflow-hidden min-h-[200px]">
-          <div className="p-4 border-b border-engine-neon/10 bg-engine-bg/80 flex justify-between items-center">
+        <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden min-h-[200px]">
+          <div className="p-4 border-b border-engine-panel-border/10 bg-engine-bg/80 flex justify-between items-center">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase tracking-widest flex items-center gap-2">
               <span className="text-lg">🎯</span> Open Positions
             </h3>
-            <span className="text-xs font-bold bg-engine-button/20 text-engine-neon px-3 py-1 rounded-full border border-engine-neon/30">
+            <span className="text-xs font-bold bg-engine-button/20 text-engine-neon px-3 py-1 rounded-full border border-engine-button-border/30">
               {account.positions.length}
             </span>
           </div>
@@ -1059,7 +1059,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                         <td className="px-4 py-3 text-right">
                           <button
                             onClick={() => closePosition(pos.id)}
-                            className="bg-engine-bg border border-engine-neon/30 hover:bg-engine-button hover:border-engine-neon text-engine-neon hover:text-engine-bg font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                            className="bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button hover:border-engine-button-border text-engine-neon hover:text-engine-bg font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded transition-all shadow-button-neon hover:shadow-button-neon"
                           >
                             Close
                           </button>

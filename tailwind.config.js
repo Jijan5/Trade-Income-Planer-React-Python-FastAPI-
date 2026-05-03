@@ -12,6 +12,8 @@ export default {
           panel: 'rgb(var(--engine-panel-rgb) / <alpha-value>)',
           neon: 'rgb(var(--engine-neon-rgb) / <alpha-value>)',
           button: 'rgb(var(--engine-button-rgb) / <alpha-value>)',
+          'panel-border': 'rgb(var(--engine-panel-border-rgb) / <alpha-value>)',
+          'button-border': 'rgb(var(--engine-button-border-rgb) / <alpha-value>)',
           text: 'var(--engine-text)',
         }
       },

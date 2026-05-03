@@ -62,7 +62,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
     >
-      <div className="bg-engine-panel border border-engine-neon/30 p-6 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.2)] max-w-3xl w-full">
+      <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-3xl w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <span className="text-engine-neon">🎯</span> Set Focus Point
@@ -109,7 +109,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-engine-neon/10">
+        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-engine-panel-border/10">
           <button
             onClick={onCancel}
             className="px-5 py-2 rounded-xl text-sm font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-all"
@@ -118,7 +118,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
           </button>
           <button
             onClick={handleApply}
-            className="bg-engine-button text-engine-bg px-6 py-2 rounded-xl text-sm font-extrabold hover:bg-[#00e5ff] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] transition-all"
+            className="bg-engine-button text-engine-bg px-6 py-2 rounded-xl text-sm font-extrabold hover:bg-[#00e5ff] hover:shadow-button-neon transition-all"
           >
             Apply Focus Point
           </button>

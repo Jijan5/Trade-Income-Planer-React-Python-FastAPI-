@@ -1,10 +1,11 @@
-import midtransclient
-import time
+import os
+import hmac
+import hashlib
+import json
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request, Header
 import httpx
 from pydantic import BaseModel
-import os
 from dotenv import load_dotenv
 from sqlmodel import Session, select
 from ..database import get_session
@@ -15,128 +16,162 @@ load_dotenv()
 
 router = APIRouter()
 
-# --- config Midtrans payment gateway SandBox ---
-snap = midtransclient.Snap(
-    is_production=False,
-    server_key=os.getenv("MIDTRANS_SERVER_KEY"),
-    client_key=os.getenv("MIDTRANS_CLIENT_KEY")
-)
+LEMONSQUEEZY_API_KEY = os.getenv("LEMONSQUEEZY_API_KEY")
+LEMONSQUEEZY_STORE_ID = os.getenv("LEMONSQUEEZY_STORE_ID")
+LEMONSQUEEZY_WEBHOOK_SECRET = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET")
 
-core = midtransclient.CoreApi(
-    is_production=False,
-    server_key=os.getenv("MIDTRANS_SERVER_KEY"),
-    client_key=os.getenv("MIDTRANS_CLIENT_KEY")
-)
+# LemonSqueezy Variant IDs mapping based on user input
+VARIANT_IDS = {
+    "basic": {
+        "monthly": "1602482",
+        "yearly": "1602632"
+    },
+    "premium": {
+        "monthly": "1602546",
+        "yearly": "1602644"
+    },
+    "platinum": {
+        "monthly": "1602552",
+        "yearly": "1602641"
+    }
+}
 
-# model for data sent from frontend
 class PaymentRequest(BaseModel):
     plan_id: str
     amount: float
     billing_cycle: str
-    
-class VerifyPaymentRequest(BaseModel):
-    order_id: str
 
 @router.post("/api/payment/create_transaction")
 async def create_transaction(req: PaymentRequest, current_user=Depends(get_current_user)):
     try:
-        # 1. convert currency to IDR
-        # USD = IDR (auto updated)
-        # API currency converter with httpx, install httpx: pip install httpx
-        async with httpx.AsyncClient() as client:
-            exchange_rate_url = "https://api.exchangerate-api.com/v4/latest/USD"  # Free API
-            response = await client.get(exchange_rate_url)
-            data = response.json()
-            exchange_rate = data["rates"]["IDR"]
-            
-        amount_idr = int(req.amount * exchange_rate)
+        plan_key = req.plan_id.lower()
+        cycle_key = req.billing_cycle.lower()
 
-        if amount_idr < 10000:
-            amount_idr = 10000 
+        if plan_key not in VARIANT_IDS or cycle_key not in VARIANT_IDS[plan_key]:
+            raise HTTPException(status_code=400, detail="Invalid plan or billing cycle")
 
-        # 2. make Order ID Unique
-        # Format: TIP_{user_id}_{plan_id}_{billing_cycle}_{timestamp}
-        # Menggunakan underscore (_) sebagai pemisah agar mudah di-parse saat verifikasi
-        order_id = f"TIP_{current_user.id}_{req.plan_id}_{req.billing_cycle}_{int(time.time())}"
+        variant_id = VARIANT_IDS[plan_key][cycle_key]
 
-        # 3. ready for midtrans params
-        param = {
-            "transaction_details": {
-                "order_id": order_id,
-                "gross_amount": amount_idr
-            },
-            "credit_card": {
-                "secure": True
-            },
-            "customer_details": {
-                "first_name": current_user.username,
-                "email": current_user.email,
-            },
-            "item_details": [{
-                "id": req.plan_id,
-                "price": amount_idr,
-                "quantity": 1,
-                "name": f"{req.plan_id.capitalize()} Plan ({req.billing_cycle})"
-            }]
+        headers = {
+            "Accept": "application/vnd.api+json",
+            "Content-Type": "application/vnd.api+json",
+            "Authorization": f"Bearer {LEMONSQUEEZY_API_KEY}"
         }
 
-        # 4. Minta Snap Token ke Midtrans
-        transaction = snap.create_transaction(param)
-        
-        # 5. Kembalikan Token ke Frontend
-        return {"token": transaction['token'], "order_id": order_id}
+        payload = {
+            "data": {
+                "type": "checkouts",
+                "attributes": {
+                    "checkout_data": {
+                        "custom": {
+                            "user_id": str(current_user.id),
+                            "plan_id": plan_key,
+                            "billing_cycle": cycle_key
+                        }
+                    }
+                },
+                "relationships": {
+                    "store": {
+                        "data": {
+                            "type": "stores",
+                            "id": str(LEMONSQUEEZY_STORE_ID)
+                        }
+                    },
+                    "variant": {
+                        "data": {
+                            "type": "variants",
+                            "id": variant_id
+                        }
+                    }
+                }
+            }
+        }
 
-    except Exception as e:
-        print(f"Midtrans Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to processed payment")
-    
-@router.post("/api/payment/verify")
-async def verify_payment(req: VerifyPaymentRequest, current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    try:
-        # Cek status transaksi ke Midtrans Core API
-        transaction_status_response = core.transactions.status(req.order_id)
-        transaction_status = transaction_status_response['transaction_status']
-        fraud_status = transaction_status_response.get('fraud_status', '')
-        
-        is_paid = False
-        if transaction_status == 'capture':
-            if fraud_status == 'challenge':
-                pass
-            else:
-                is_paid = True
-        elif transaction_status == 'settlement':
-            is_paid = True
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "https://api.lemonsqueezy.com/v1/checkouts",
+                headers=headers,
+                json=payload
+            )
             
-        if is_paid:
-            # Parse order_id to get user_id and plan_id
-            # Format: TIP_{user_id}_{plan_id}_{billing_cycle}_{timestamp}
-            parts = req.order_id.split('_')
-            if len(parts) >= 5:
-                user_id = int(parts[1])
-                plan_id = parts[2]
+            if response.status_code not in [200, 201]:
+                print(f"LemonSqueezy Error: {response.text}")
+                raise HTTPException(status_code=500, detail="Failed to create checkout session")
                 
-                # Use current_user's tenant_id for verification
-                # Update User Plan in Database (only update the current user's own plan)
-                user = session.exec(select(User).where(User.id == current_user.id, User.tenant_id == current_user.tenant_id)).first()
-                if user:
-                    user.plan = plan_id.capitalize() # Basic, Premium, Platinum
-                    session.add(user)
-                    # Format: TIP_{user_id}_{plan_id}_{billing_cycle}_{timestamp}
-                    if len(parts) >= 4:
-                        billing_cycle = parts[3]
-                        user.plan_billing_cycle = billing_cycle.capitalize()
-                        user.plan_start_date = datetime.utcnow()
-                        
-                        if billing_cycle.lower() == "monthly":
-                            user.plan_expires_at = datetime.utcnow() + timedelta(days=30)
-                        elif billing_cycle.lower() == "yearly":
-                            user.plan_expires_at = datetime.utcnow() + timedelta(days=365)
-                    session.commit()
-                    session.refresh(user)
-                    return {"status": "success", "message": "Plan updated successfully", "plan": user.plan}
-        
-        return {"status": "pending", "message": "Payment not verified yet or failed"}
+            data = response.json()
+            checkout_url = data["data"]["attributes"]["url"]
+
+        return {"checkout_url": checkout_url}
 
     except Exception as e:
-        print(f"Verification Error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to verify payment")
+        print(f"Checkout Error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to process payment")
+
+
+@router.post("/api/payment/webhook")
+async def verify_payment(
+    request: Request, 
+    x_signature: str = Header(None), 
+    session: Session = Depends(get_session)
+):
+    """
+    Webhook endpoint to receive events from LemonSqueezy
+    """
+    if not x_signature:
+        print("Webhook Error: Missing X-Signature header")
+        raise HTTPException(status_code=400, detail="Missing signature header")
+
+    # Get raw body for HMAC verification
+    raw_body = await request.body()
+    
+    # Verify the signature
+    mac = hmac.new(
+        LEMONSQUEEZY_WEBHOOK_SECRET.encode('utf-8'),
+        raw_body,
+        hashlib.sha256
+    ).hexdigest()
+
+    print(f"--- WEBHOOK DEBUG ---")
+    print(f"Received X-Signature: {x_signature}")
+    print(f"Calculated MAC:       {mac}")
+    print(f"Using Secret:         {LEMONSQUEEZY_WEBHOOK_SECRET}")
+    print(f"---------------------")
+
+    if not hmac.compare_digest(mac, x_signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    try:
+        # Parse payload
+        payload = json.loads(raw_body)
+        event_name = payload.get("meta", {}).get("event_name")
+        custom_data = payload.get("meta", {}).get("custom_data", {})
+        
+        user_id_str = custom_data.get("user_id")
+        plan_id = custom_data.get("plan_id", "basic")
+        billing_cycle = custom_data.get("billing_cycle", "monthly")
+
+        # We only care about successful payments for subscriptions/orders
+        if event_name in ["subscription_created", "order_created"] and user_id_str:
+            user_id = int(user_id_str)
+            
+            # Find the user
+            user = session.exec(select(User).where(User.id == user_id)).first()
+            if user:
+                user.plan = plan_id.capitalize()
+                user.plan_billing_cycle = billing_cycle.capitalize()
+                user.plan_start_date = datetime.utcnow()
+                
+                if billing_cycle.lower() == "monthly":
+                    user.plan_expires_at = datetime.utcnow() + timedelta(days=30)
+                elif billing_cycle.lower() == "yearly":
+                    user.plan_expires_at = datetime.utcnow() + timedelta(days=365)
+                    
+                session.add(user)
+                session.commit()
+                print(f"Successfully updated user {user_id} to {user.plan} plan.")
+                
+        return {"status": "success"}
+
+    except Exception as e:
+        print(f"Webhook Processing Error: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")

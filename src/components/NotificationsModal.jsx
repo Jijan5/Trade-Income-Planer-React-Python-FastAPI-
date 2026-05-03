@@ -44,10 +44,10 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
   return (
     <div className="fixed inset-0 z-[60] flex justify-end bg-engine-bg/80 backdrop-blur-sm transition-all" onClick={onClose}>
       <div 
-        className="w-full max-w-sm h-full bg-engine-panel/95 border-l border-engine-neon/30 shadow-[-20px_0_50px_rgba(var(--engine-neon-rgb),0.1)] flex flex-col animate-slide-in-right backdrop-blur-xl"
+        className="w-full max-w-sm h-full bg-engine-panel/95 border-l border-engine-panel-border/30 shadow-[-20px_0_50px_rgba(var(--engine-neon-rgb),0.1)] flex flex-col animate-slide-in-right backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 border-b border-engine-neon/20 flex justify-between items-center bg-engine-bg/50">
+        <div className="p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/50">
           <h3 className="font-extrabold text-white flex items-center gap-3 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
             NOTIFICATIONS
             {unreadCount > 0 && <span className="bg-red-600/80 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.3)] text-white text-[9px] px-2 py-0.5 rounded-md">{unreadCount}</span>}
@@ -76,13 +76,13 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
                   >
                     <div className="relative mt-1">
                       {isBroadcast ? (
-                        <div className="w-10 h-10 bg-engine-bg rounded-xl flex items-center justify-center text-lg border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">
+                        <div className="w-10 h-10 bg-engine-bg rounded-xl flex items-center justify-center text-lg border border-engine-panel-border/50 shadow-panel-neon">
                           📢
                         </div>
                       ) : notif.actor_avatar_url ? (
-                        <img src={`${API_BASE_URL}${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-10 h-10 rounded-xl object-cover border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] group-hover:border-engine-neon/70 transition-all" />
+                        <img src={`${API_BASE_URL}${notif.actor_avatar_url}`} alt={notif.actor_username} className="w-10 h-10 rounded-xl object-cover border border-engine-panel-border/30 shadow-panel-neon group-hover:border-engine-panel-border/70 transition-all" />
                       ) : (
-                        <div className="w-10 h-10 bg-engine-bg border border-engine-neon/30 rounded-xl flex items-center justify-center text-[10px] font-extrabold uppercase tracking-widest text-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] group-hover:border-engine-neon/70 transition-all">
+                        <div className="w-10 h-10 bg-engine-bg border border-engine-panel-border/30 rounded-xl flex items-center justify-center text-[10px] font-extrabold uppercase tracking-widest text-engine-neon shadow-panel-neon group-hover:border-engine-panel-border/70 transition-all">
                           {notif.actor_username.substring(0, 2).toUpperCase()}
                         </div>
                       )}

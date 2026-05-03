@@ -29,7 +29,6 @@ const Subscription = ({ onSubscribe }) => {
         "AI Trading Coach Analysis",
         "Discipline Mode (Trading Rules)",
         "Risk Management Calculator",
-        "Unlock Custom Platform",
         "Strategy Simulator & Goal Planner",
         "Create up to 3 Communities"
       ],
@@ -45,6 +44,7 @@ const Subscription = ({ onSubscribe }) => {
       features: [
         "Everything in Premium",
         "Verified User Badge",
+        "Customize Platform",
         "Unlimited Community Creation",
         "Priority Support"
       ],
@@ -77,13 +77,13 @@ const Subscription = ({ onSubscribe }) => {
           <span className={`text-[11px] font-extrabold uppercase tracking-widest transition-colors ${billingCycle === 'monthly' ? 'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-gray-500'}`}>Monthly</span>
           <button 
             onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'yearly' : 'monthly')}
-            className="w-16 h-8 bg-engine-bg border border-engine-neon/30 rounded-full p-1 relative transition-colors duration-300 focus:outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
+            className="w-16 h-8 bg-engine-bg border border-engine-panel-border/30 rounded-full p-1 relative transition-colors duration-300 focus:outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]"
           >
             <div className={`w-6 h-6 bg-engine-button rounded-full shadow-[0_0_10px_#00cfff] transform transition-transform duration-300 ${billingCycle === 'yearly' ? 'translate-x-8' : ''}`}></div>
           </button>
           <span className={`text-[11px] font-extrabold uppercase tracking-widest transition-colors flex items-center ${billingCycle === 'yearly' ? 'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]' : 'text-gray-500'}`}>
             Yearly 
-            <span className="ml-3 px-2.5 py-1 rounded-md bg-engine-button/20 border border-engine-neon/50 text-engine-neon text-[9px] font-extrabold shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)] animate-heartbeat">
+            <span className="ml-3 px-2.5 py-1 rounded-md bg-engine-button/20 border border-engine-button-border/50 text-engine-neon text-[9px] font-extrabold shadow-button-neon animate-heartbeat">
               SAVE ~17%
             </span>
           </span>
@@ -100,12 +100,12 @@ const Subscription = ({ onSubscribe }) => {
             key={plan.id}
             className={`relative bg-engine-panel/60 backdrop-blur-md rounded-2xl transition-all duration-300 flex flex-col
               ${plan.recommended 
-                ? 'border border-engine-neon shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] md:-translate-y-4 md:scale-105 z-20' 
-                : 'border border-engine-neon/10 hover:border-engine-neon/30 hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] hover:-translate-y-2'}
+                ? 'border border-engine-panel-border shadow-panel-neon md:-translate-y-4 md:scale-105 z-20' 
+                : 'border border-engine-panel-border/10 hover:border-engine-panel-border/30 hover:shadow-panel-neon hover:-translate-y-2'}
             `}
           >
             {plan.recommended && (
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-engine-button text-engine-bg text-[9px] font-extrabold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.5)] uppercase tracking-widest">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-engine-button text-engine-bg text-[9px] font-extrabold px-4 py-1.5 rounded-full shadow-button-neon uppercase tracking-widest">
                 MOST POPULAR
               </div>
             )}
@@ -130,7 +130,7 @@ const Subscription = ({ onSubscribe }) => {
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-gray-400 mb-8 border-b border-engine-neon/10 pb-6 font-medium leading-relaxed">
+              <p className="text-[11px] text-gray-400 mb-8 border-b border-engine-panel-border/10 pb-6 font-medium leading-relaxed">
                 {plan.description}
               </p>
 
@@ -153,8 +153,8 @@ const Subscription = ({ onSubscribe }) => {
                 })}
                 className={`w-full py-3.5 rounded-xl font-extrabold text-[11px] uppercase tracking-widest transition-all duration-300
                   ${plan.recommended 
-                    ? 'bg-engine-button text-engine-bg shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 hover:bg-[#00e5ff]' 
-                    : 'bg-engine-bg border border-engine-neon/30 text-engine-neon hover:bg-engine-button/10 hover:border-engine-neon/50 hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)]'
+                    ? 'bg-engine-button text-engine-bg shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 hover:bg-[#00e5ff]' 
+                    : 'bg-engine-bg border border-engine-button-border/30 text-engine-neon hover:bg-engine-button/10 hover:border-engine-button-border/50 hover:shadow-button-neon'
                   }
                 `}
               >
@@ -165,7 +165,7 @@ const Subscription = ({ onSubscribe }) => {
         )})}
       </div>
       
-      <div className="mt-20 text-center border-t border-engine-neon/10 pt-8 relative z-10">
+      <div className="mt-20 text-center border-t border-engine-panel-border/10 pt-8 relative z-10">
         <p className="text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest leading-loose">
           CANCEL ANYTIME. SECURE PAYMENT VIA MIDTRANS.<br />
           NEED A CUSTOM PLAN FOR A LARGE TEAM? <a href="/contact-us" className="text-engine-neon hover:text-[#00e5ff] hover:drop-shadow-[0_0_5px_var(--engine-neon)] transition-colors ml-1">CONTACT US</a>.

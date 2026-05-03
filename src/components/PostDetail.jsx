@@ -146,7 +146,7 @@ const PostDetail = ({ showFlash }) => {
 
   const renderComment = (comment) => (
     <div key={comment.id} className="mt-4" style={{ paddingLeft: comment.parent_id ? "1.5rem" : "0", borderLeft: comment.parent_id ? "2px solid rgba(var(--engine-neon-rgb),0.2)" : "none" }}>
-      <div className="bg-engine-panel/60 p-4 rounded-xl border border-engine-neon/10 hover:border-engine-neon/30 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+      <div className="bg-engine-panel/60 p-4 rounded-xl border border-engine-panel-border/10 hover:border-engine-panel-border/30 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <span className="font-extrabold text-engine-neon text-xs uppercase tracking-widest drop-shadow-[0_0_2px_#00cfff]">{comment.username}</span>
@@ -178,11 +178,11 @@ const PostDetail = ({ showFlash }) => {
             value={replyContent} 
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder={`REPLY TO @${comment.username}...`}
-            className="flex-1 bg-engine-bg border border-engine-neon/30 rounded-xl px-4 py-2 text-[10px] text-white focus:outline-none focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] font-mono placeholder:text-engine-neon/30 transition-all"
+            className="flex-1 bg-engine-bg border border-engine-panel-border/30 rounded-xl px-4 py-2 text-[10px] text-white focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon font-mono placeholder:text-engine-neon/30 transition-all"
             autoFocus
             rows={1}
           />
-          <button onClick={() => submitComment(replyContent, comment.id)} className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.3)] transition-all">REPLY</button>
+          <button onClick={() => submitComment(replyContent, comment.id)} className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest shadow-button-neon transition-all">REPLY</button>
           <button onClick={() => setReplyingTo(null)} className="text-engine-neon/50 hover:text-engine-neon text-[10px] font-extrabold uppercase tracking-widest transition-colors">CANCEL</button>
         </div>
       )}
@@ -205,14 +205,14 @@ const PostDetail = ({ showFlash }) => {
         ← BACK
       </button>
 
-      <div className="bg-engine-panel/80 backdrop-blur-md p-8 rounded-2xl border border-engine-neon/30 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)]">
+      <div className="bg-engine-panel/80 backdrop-blur-md p-8 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon">
         {/* Post Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-4">
             {post.user_avatar_url ? (
-              <img src={`${API_BASE_URL}${post.user_avatar_url}`} alt={post.username} className="w-12 h-12 rounded-xl object-cover border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]" />
+              <img src={`${API_BASE_URL}${post.user_avatar_url}`} alt={post.username} className="w-12 h-12 rounded-xl object-cover border border-engine-panel-border/30 shadow-panel-neon" />
             ) : (
-              <div className="w-12 h-12 bg-engine-bg border border-engine-neon/30 rounded-xl flex items-center justify-center text-engine-neon font-extrabold uppercase tracking-widest shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">
+              <div className="w-12 h-12 bg-engine-bg border border-engine-panel-border/30 rounded-xl flex items-center justify-center text-engine-neon font-extrabold uppercase tracking-widest shadow-panel-neon">
                 {post.username.substring(0, 2).toUpperCase()}
               </div>
             )}
@@ -237,7 +237,7 @@ const PostDetail = ({ showFlash }) => {
                 •••
               </button>
               {activeMenu === 'post' && (
-                <div ref={menuRef} className="absolute right-0 mt-2 w-40 bg-engine-panel/95 backdrop-blur-md border border-engine-neon/30 rounded-xl shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.2)] z-10 overflow-hidden">
+                <div ref={menuRef} className="absolute right-0 mt-2 w-40 bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-xl shadow-panel-neon z-10 overflow-hidden">
                   <button onClick={handleDeleteClick} className="w-full text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest text-red-400 hover:bg-red-900/20 transition-colors">DELETE</button>
                   </div>
               )}
@@ -249,17 +249,17 @@ const PostDetail = ({ showFlash }) => {
         <p className="text-white text-base whitespace-pre-wrap leading-relaxed mb-6">{post.content}</p>
         
         {post.image_url && (
-          <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full rounded-xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] mb-6" />
+          <img src={`${API_BASE_URL}${post.image_url}`} alt="Post attachment" className="w-full rounded-xl border border-engine-panel-border/20 shadow-panel-neon mb-6" />
         )}
         
         {post.link_url && (
-          <a href={post.link_url} target="_blank" rel="noreferrer" className="block p-4 bg-engine-bg/60 border border-engine-neon/20 rounded-xl text-engine-neon text-xs font-mono hover:bg-engine-button/10 transition-colors mb-6 break-all">
+          <a href={post.link_url} target="_blank" rel="noreferrer" className="block p-4 bg-engine-bg/60 border border-engine-button-border/20 rounded-xl text-engine-neon text-xs font-mono hover:bg-engine-button/10 transition-colors mb-6 break-all">
             🔗 {post.link_url}
           </a>
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-8 border-t border-engine-neon/20 pt-6">
+        <div className="flex items-center gap-8 border-t border-engine-panel-border/20 pt-6">
           <button 
             onClick={() => handleReaction(post.user_reaction ? post.user_reaction : 'like')}
             className={`flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest transition-all ${post.user_reaction ? 'text-engine-neon drop-shadow-[0_0_3px_#00cfff]' : 'text-engine-neon/50 hover:text-engine-neon'}`}
@@ -285,7 +285,7 @@ const PostDetail = ({ showFlash }) => {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="WRITE A COMMENT..."
-            className="flex-1 bg-engine-panel/80 backdrop-blur-md border border-engine-neon/30 rounded-xl px-5 py-4 text-white text-xs font-mono placeholder:text-engine-neon/30 focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+            className="flex-1 bg-engine-panel/80 backdrop-blur-md border border-engine-panel-border/30 rounded-xl px-5 py-4 text-white text-xs font-mono placeholder:text-engine-neon/30 focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -296,7 +296,7 @@ const PostDetail = ({ showFlash }) => {
           />
           <button 
             onClick={() => submitComment(newComment)}
-            className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-4 rounded-xl text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 transition-all whitespace-nowrap"
+            className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-4 rounded-xl text-[11px] font-extrabold uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 transition-all whitespace-nowrap"
           >
             SEND
           </button>
@@ -305,7 +305,7 @@ const PostDetail = ({ showFlash }) => {
         {/* Comment List */}
         <div className="space-y-4">
           {buildCommentTree(comments).map(renderComment)}
-          {comments.length === 0 && <p className="text-engine-neon/50 text-center py-8 text-[10px] font-extrabold uppercase tracking-widest bg-engine-panel/60 border border-engine-neon/10 rounded-2xl">NO COMMENTS YET.</p>}
+          {comments.length === 0 && <p className="text-engine-neon/50 text-center py-8 text-[10px] font-extrabold uppercase tracking-widest bg-engine-panel/60 border border-engine-panel-border/10 rounded-2xl">NO COMMENTS YET.</p>}
         </div>
       </div>
 
@@ -316,7 +316,7 @@ const PostDetail = ({ showFlash }) => {
             <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">DELETE POST?</h3>
             <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS POST? THIS ACTION CANNOT BE UNDONE.</p>
             <div className="flex justify-center gap-4">
-              <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
+              <button onClick={() => setShowDeleteModal(false)} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
               <button onClick={confirmDeletePost} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">DELETE</button>
             </div>
           </div>
@@ -332,7 +332,7 @@ const PostDetail = ({ showFlash }) => {
             </h3>
             <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS COMMENT? THIS ACTION CANNOT BE UNDONE.</p>
             <div className="flex justify-center gap-4">
-              <button onClick={() => setCommentToDelete(null)} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
+              <button onClick={() => setCommentToDelete(null)} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">CANCEL</button>
               <button onClick={confirmDeleteComment} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">DELETE</button>
             </div>
           </div>

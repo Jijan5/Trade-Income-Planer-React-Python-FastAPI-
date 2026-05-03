@@ -117,7 +117,7 @@ def startup_event():
     create_db_and_tables()
 
 # SocketIO for real-time notifications
-sio = SocketManager(app=app, cors_allowed_origins=["http://localhost:5173", "http://127.0.0.1:5173"])
+sio = SocketManager(app=app, cors_allowed_origins="*")
 # Include Routers
 app.include_router(general.router)
 app.include_router(auth.router)

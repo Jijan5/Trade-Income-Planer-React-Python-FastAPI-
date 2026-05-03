@@ -89,6 +89,14 @@ class UserTheme(SQLModel, table=True):
     panel_color: str = SQLField(default="#0a0f1c")
     neon_color: str = SQLField(default="#00cfff")
     button_color: str = SQLField(default="#00cfff")
+    panel_border_color: str = SQLField(default="#00cfff")
+    button_border_color: str = SQLField(default="#00cfff")
+    panel_neon_enabled: bool = SQLField(default=True)
+    button_neon_enabled: bool = SQLField(default=True)
+    panel_neon_radius: str = SQLField(default="20px")
+    button_neon_radius: str = SQLField(default="20px")
+    panel_neon_opacity: float = SQLField(default=0.2)
+    button_neon_opacity: float = SQLField(default=0.4)
     glass_opacity: float = SQLField(default=0.6)
     glass_blur: str = SQLField(default="12px")
     font_family: str = SQLField(default="Inter")
@@ -102,6 +110,14 @@ class UserThemeCreateUpdate(BaseModel):
     panel_color: Optional[str] = None
     neon_color: Optional[str] = None
     button_color: Optional[str] = None
+    panel_border_color: Optional[str] = None
+    button_border_color: Optional[str] = None
+    panel_neon_enabled: Optional[bool] = None
+    button_neon_enabled: Optional[bool] = None
+    panel_neon_radius: Optional[str] = None
+    button_neon_radius: Optional[str] = None
+    panel_neon_opacity: Optional[float] = None
+    button_neon_opacity: Optional[float] = None
     glass_opacity: Optional[float] = None
     glass_blur: Optional[str] = None
     font_family: Optional[str] = None

@@ -18,14 +18,14 @@ const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {myCommunities.map(comm => (
-        <div key={comm.id} className="bg-engine-bg/60 border border-engine-neon/10 p-5 rounded-xl flex justify-between items-center hover:bg-engine-button/5 hover:border-engine-neon/30 transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]">
+        <div key={comm.id} className="bg-engine-bg/60 border border-engine-button-border/10 p-5 rounded-xl flex justify-between items-center hover:bg-engine-button/5 hover:border-engine-button-border/30 transition-all duration-300 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:shadow-button-neon">
           <div className="flex items-center gap-4">
-          {comm.avatar_url ? <img src={`${API_BASE_URL}${comm.avatar_url}`} className="w-12 h-12 rounded-full object-cover border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]" /> : <div className="w-12 h-12 rounded-full bg-engine-button/10 border border-engine-neon/30 flex items-center justify-center font-extrabold text-engine-neon text-sm shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]">{comm.name.substring(0,2).toUpperCase()}</div>}          <div>
+          {comm.avatar_url ? <img src={`${API_BASE_URL}${comm.avatar_url}`} className="w-12 h-12 rounded-full object-cover border border-engine-button-border/30 shadow-button-neon" /> : <div className="w-12 h-12 rounded-full bg-engine-button/10 border border-engine-button-border/30 flex items-center justify-center font-extrabold text-engine-neon text-sm shadow-button-neon">{comm.name.substring(0,2).toUpperCase()}</div>}          <div>
               <h4 className="font-extrabold text-white text-sm uppercase tracking-wider">{comm.name}</h4>
               <p className="text-[10px] text-engine-neon/70 uppercase tracking-widest font-bold mt-1">{comm.members_count} Members</p>
             </div>
           </div>
-          <button onClick={() => openEditModal(comm)} className="text-[10px] bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon/50 text-engine-neon hover:text-[#00e5ff] hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] px-4 py-2 rounded-lg font-extrabold uppercase tracking-widest transition-all">EDIT</button>
+          <button onClick={() => openEditModal(comm)} className="text-[10px] bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border/50 text-engine-neon hover:text-[#00e5ff] hover:shadow-button-neon px-4 py-2 rounded-lg font-extrabold uppercase tracking-widest transition-all">EDIT</button>
         </div>
       ))}
     </div>
@@ -37,7 +37,7 @@ const Profile = ({ showFlash }) => {
   const { userData, avatarUrl, fetchUserProfile } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const planLevel = getPlanLevel(userData?.plan);
-  const canCustomize = isAdmin || planLevel >= 2; // Premium (2) or Platinum (3) or Admin
+  const canCustomize = isAdmin || planLevel >= 3; // Platinum (3) or Admin
   const [user, setUser] = useState({
     username: "",
     email: "",
@@ -258,8 +258,8 @@ const Profile = ({ showFlash }) => {
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
       
       {/* PROFILE EDIT SECTION */}
-      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md animate-fade-in">
-      <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-neon/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
+      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md animate-fade-in">
+      <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
         <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">⚙</span> Edit Profile
         <VerifiedBadge user={user} className="ml-2" />
       </h2>
@@ -274,7 +274,7 @@ const Profile = ({ showFlash }) => {
         {/* Avatar Section */}
         <div className="flex flex-col items-center gap-4 mb-10">
           <div className="relative group cursor-pointer" onClick={() => fileInputRef.current.click()}>
-            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-engine-neon/30 group-hover:border-engine-neon transition-all duration-300 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.1)] group-hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.4)]">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-engine-panel-border/30 group-hover:border-engine-panel-border transition-all duration-300 shadow-panel-neon group-hover:shadow-panel-neon">
               {previewAvatar ? (
                 <img src={previewAvatar} alt="Preview" className="w-full h-full object-cover" />
               ) : avatarUrl ? (
@@ -307,7 +307,7 @@ const Profile = ({ showFlash }) => {
               type="text"
               value={user.username}
               onChange={(e) => setUser({ ...user, username: e.target.value })}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -317,7 +317,7 @@ const Profile = ({ showFlash }) => {
               type="email"
               value={user.email}
               onChange={(e) => setUser({ ...user, email: e.target.value })}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
               required
             />
           </div>
@@ -329,7 +329,7 @@ const Profile = ({ showFlash }) => {
             type="text"
             value={user.full_name || ""}
             onChange={(e) => setUser({ ...user, full_name: e.target.value })}
-            className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+            className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
           />
         </div>
 
@@ -337,7 +337,7 @@ const Profile = ({ showFlash }) => {
           <div ref={countryDropdownRef} className="relative">
             <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">COUNTRY CODE</label>
             <div 
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 focus:outline-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] cursor-pointer flex justify-between items-center transition-all font-mono"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon cursor-pointer flex justify-between items-center transition-all font-mono"
               onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
             >
               <span>{user.country_code || "+1"}</span>
@@ -345,12 +345,12 @@ const Profile = ({ showFlash }) => {
             </div>
             
             {isCountryDropdownOpen && (
-              <div className="absolute top-full left-0 w-full bg-engine-panel/95 backdrop-blur-md border border-engine-neon/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.15)] custom-scrollbar">
-                <div className="p-3 sticky top-0 bg-engine-panel border-b border-engine-neon/20 z-10">
+              <div className="absolute top-full left-0 w-full bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-panel-neon custom-scrollbar">
+                <div className="p-3 sticky top-0 bg-engine-panel border-b border-engine-panel-border/20 z-10">
                   <input 
                     type="text" 
                     placeholder="SEARCH COUNTRY..." 
-                    className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg px-3 py-2 text-[10px] font-extrabold uppercase tracking-widest text-white focus:outline-none focus:border-engine-neon focus:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
+                    className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg px-3 py-2 text-[10px] font-extrabold uppercase tracking-widest text-white focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon"
                     value={countrySearch}
                     onChange={(e) => setCountrySearch(e.target.value)}
                     autoFocus
@@ -383,7 +383,7 @@ const Profile = ({ showFlash }) => {
               type="tel"
               value={user.phone_number || ""}
               onChange={(e) => setUser({ ...user, phone_number: e.target.value })}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
             />
           </div>
         </div>
@@ -395,7 +395,7 @@ const Profile = ({ showFlash }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="LEAVE BLANK TO KEEP CURRENT PASSWORD"
-            className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all placeholder:text-gray-600 placeholder:text-[10px] placeholder:font-extrabold placeholder:tracking-widest"
+            className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3.5 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all placeholder:text-gray-600 placeholder:text-[10px] placeholder:font-extrabold placeholder:tracking-widest"
           />
         </div>
 
@@ -404,7 +404,7 @@ const Profile = ({ showFlash }) => {
             <button
               type="button"
               onClick={() => navigate('/customize-platform')}
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all border border-engine-neon/40 text-engine-neon bg-engine-button/5 hover:bg-engine-button/15 hover:border-engine-neon hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.3)] hover:-translate-y-0.5 text-xs"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all border border-engine-button-border/40 text-engine-neon bg-engine-button/5 hover:bg-engine-button/15 hover:border-engine-button-border hover:shadow-button-neon hover:-translate-y-0.5 text-xs"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
@@ -426,12 +426,12 @@ const Profile = ({ showFlash }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
                 Customize Platform
-                <span className="text-[9px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.5 rounded-full font-extrabold ml-1">PREMIUM</span>
+                <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-1.5 py-0.5 rounded-full font-extrabold ml-1">PLATINUM</span>
               </button>
               <div className="absolute bottom-full left-0 mb-2 w-56 hidden group-hover:block z-50">
-                <div className="bg-engine-panel/95 border border-yellow-500/30 rounded-xl p-3 text-xs text-gray-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md">
-                  <p className="font-bold text-yellow-400 mb-1">⭐ Premium Feature</p>
-                  <p>Upgrade to <span className="text-yellow-400 font-bold">Premium</span> or <span className="text-purple-400 font-bold">Platinum</span> to unlock UI customization.</p>
+                <div className="bg-engine-panel/95 border border-purple-500/30 rounded-xl p-3 text-xs text-gray-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md">
+                  <p className="font-bold text-purple-400 mb-1">⭐ Platinum Feature</p>
+                  <p>Upgrade to <span className="text-purple-400 font-bold">Platinum</span> to unlock UI customization.</p>
                 </div>
               </div>
             </div>
@@ -439,7 +439,7 @@ const Profile = ({ showFlash }) => {
           <button
             type="submit"
             disabled={loading}
-            className="bg-engine-button text-engine-bg hover:bg-[#00e5ff] px-8 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className="bg-engine-button text-engine-bg hover:bg-[#00e5ff] px-8 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
             {loading ? "SAVING..." : "SAVE CHANGES"}
           </button>
@@ -448,8 +448,8 @@ const Profile = ({ showFlash }) => {
     </div>
 
     {/* YOUR COMMUNITIES SECTION */}
-    <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md animate-fade-in">
-        <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-neon/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
+    <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md animate-fade-in">
+        <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
           <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">👥</span> Your Communities
         </h2>
         <MyCommunitiesList myCommunities={myCommunities} openEditModal={openEditModal} />
@@ -465,7 +465,7 @@ const Profile = ({ showFlash }) => {
           </h3>
           <p className="text-gray-400 text-sm mb-8 font-medium">{confirmModal.message}</p>
           <div className="flex gap-4 justify-center">
-            <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 hover:border-engine-neon/50 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">Cancel</button>
+            <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border/50 text-engine-neon text-[11px] font-extrabold uppercase tracking-widest transition-all">Cancel</button>
             <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-600/20 border border-red-500/50 hover:bg-red-600 hover:border-red-500 text-red-400 hover:text-white text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:shadow-[0_0_25px_rgba(239,68,68,0.5)] transition-all">
               Confirm
             </button>
@@ -477,13 +477,13 @@ const Profile = ({ showFlash }) => {
     {/* EDIT COMMUNITY MODAL */}
     {editingComm && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setEditingComm(null)}>
-        <div className="bg-engine-panel/95 border border-engine-neon/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.15)] max-w-2xl w-full animate-fade-in my-8 overflow-y-auto max-h-[90vh] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-xl font-extrabold text-white mb-6 uppercase tracking-widest flex items-center gap-3 border-b border-engine-neon/10 pb-4">
+        <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-2xl w-full animate-fade-in my-8 overflow-y-auto max-h-[90vh] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-xl font-extrabold text-white mb-6 uppercase tracking-widest flex items-center gap-3 border-b border-engine-panel-border/10 pb-4">
             <span className="text-engine-neon">⚙</span> Edit: {editingComm.name}
           </h3>
-          <div className="flex border-b border-engine-neon/20 mb-8">
-            <button onClick={() => setActiveEditTab('appearance')} className={`px-6 py-3 text-[11px] font-extrabold uppercase tracking-widest transition-all ${activeEditTab === 'appearance' ? 'text-engine-neon border-b-2 border-engine-neon bg-engine-button/5' : 'text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/5'}`}>Appearance</button>
-            <button onClick={() => setActiveEditTab('members')} className={`px-6 py-3 text-[11px] font-extrabold uppercase tracking-widest transition-all ${activeEditTab === 'members' ? 'text-engine-neon border-b-2 border-engine-neon bg-engine-button/5' : 'text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/5'}`}>Members <span className="ml-1 px-1.5 py-0.5 bg-engine-button/20 text-engine-neon rounded-md font-mono">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 0}</span></button>
+          <div className="flex border-b border-engine-panel-border/20 mb-8">
+            <button onClick={() => setActiveEditTab('appearance')} className={`px-6 py-3 text-[11px] font-extrabold uppercase tracking-widest transition-all ${activeEditTab === 'appearance' ? 'text-engine-neon border-b-2 border-engine-button-border bg-engine-button/5' : 'text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/5'}`}>Appearance</button>
+            <button onClick={() => setActiveEditTab('members')} className={`px-6 py-3 text-[11px] font-extrabold uppercase tracking-widest transition-all ${activeEditTab === 'members' ? 'text-engine-neon border-b-2 border-engine-button-border bg-engine-button/5' : 'text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/5'}`}>Members <span className="ml-1 px-1.5 py-0.5 bg-engine-button/20 text-engine-neon rounded-md font-mono">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 0}</span></button>
           </div>
 
           {activeEditTab === 'appearance' ? (
@@ -494,7 +494,7 @@ const Profile = ({ showFlash }) => {
                   <div>
                     <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">AVATAR <span className="lowercase text-gray-500 font-normal ml-1">(optional)</span></label>
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-engine-bg overflow-hidden border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]">
+                      <div className="w-14 h-14 rounded-full bg-engine-bg overflow-hidden border border-engine-panel-border/30 shadow-panel-neon">
                       {previewEditCommAvatar ? <img src={previewEditCommAvatar} className="w-full h-full object-cover" alt="Preview" /> : <div className="w-full h-full flex items-center justify-center text-engine-neon/50 text-[10px] font-extrabold">NO IMG</div>}
                       </div>
                       <input type="file" accept="image/gif,image/png,image/jpeg,image/webp,image/*" onChange={(e) => {
@@ -509,22 +509,22 @@ const Profile = ({ showFlash }) => {
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">NAME</label>
-                    <input type="text" value={editingComm.name} onChange={(e) => setEditingComm({...editingComm, name: e.target.value})} className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-mono focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all" />
+                    <input type="text" value={editingComm.name} onChange={(e) => setEditingComm({...editingComm, name: e.target.value})} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-mono focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all" />
                   </div>
                   <div>
                     <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">DESCRIPTION</label>
-                    <textarea value={editingComm.description} onChange={(e) => setEditingComm({...editingComm, description: e.target.value})} className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 font-sans h-28 resize-none focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none transition-all custom-scrollbar" />
+                    <textarea value={editingComm.description} onChange={(e) => setEditingComm({...editingComm, description: e.target.value})} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 font-sans h-28 resize-none focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all custom-scrollbar" />
                   </div>
                 </div>
 
                 {/* Right Column: Appearance */}
-                <div className="space-y-5 md:border-l border-engine-neon/10 md:pl-8">
+                <div className="space-y-5 md:border-l border-engine-panel-border/10 md:pl-8">
                   <h4 className="text-sm font-extrabold text-engine-neon uppercase tracking-widest mb-4">Aesthetics</h4>
                   
                   {/* Background Type */}
                   <div>
                     <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">BACKGROUND TYPE</label>
-                    <select value={editingComm.bg_type} onChange={(e) => setEditingComm({...editingComm, bg_type: e.target.value})} className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest focus:border-engine-neon focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] outline-none appearance-none cursor-pointer">
+                    <select value={editingComm.bg_type} onChange={(e) => setEditingComm({...editingComm, bg_type: e.target.value})} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest focus:border-engine-panel-border focus:shadow-panel-neon outline-none appearance-none cursor-pointer">
                       <option value="color">Solid Color</option>
                       <option value="gradient">Gradient</option>
                       <option value="image">Upload Image</option>
@@ -546,11 +546,11 @@ const Profile = ({ showFlash }) => {
                         {editingComm.bg_type === 'color' ? 'COLOR HEX' : 'GRADIENT BUILDER'}
                       </label>
                       {editingComm.bg_type === 'gradient' ? (
-                          <div className="space-y-4 p-4 bg-engine-bg/50 border border-engine-neon/20 rounded-xl">
+                          <div className="space-y-4 p-4 bg-engine-bg/50 border border-engine-panel-border/20 rounded-xl">
                           <div className="flex gap-4">
                             <div className="flex-1">
                               <label className="text-[9px] text-engine-neon/50 font-extrabold uppercase tracking-widest block mb-1">START COLOR</label>
-                              <div className="flex items-center gap-2 bg-engine-bg border border-engine-neon/30 rounded-lg p-1.5 focus-within:border-engine-neon focus-within:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all">
+                              <div className="flex items-center gap-2 bg-engine-bg border border-engine-panel-border/30 rounded-lg p-1.5 focus-within:border-engine-panel-border focus-within:shadow-panel-neon transition-all">
                                 <input type="color" value={editingComm.gradientStart || "#4facfe"} onChange={(e) => {
                                   const newVal = e.target.value;
                                   setEditingComm(prev => ({ ...prev, gradientStart: newVal, bg_value: `linear-gradient(${prev.gradientDir || "to right"}, ${newVal}, ${prev.gradientEnd || "#00f2fe"})` }));
@@ -560,7 +560,7 @@ const Profile = ({ showFlash }) => {
                             </div>
                             <div className="flex-1">
                               <label className="text-[9px] text-engine-neon/50 font-extrabold uppercase tracking-widest block mb-1">END COLOR</label>
-                              <div className="flex items-center gap-2 bg-engine-bg border border-engine-neon/30 rounded-lg p-1.5 focus-within:border-engine-neon focus-within:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all">
+                              <div className="flex items-center gap-2 bg-engine-bg border border-engine-panel-border/30 rounded-lg p-1.5 focus-within:border-engine-panel-border focus-within:shadow-panel-neon transition-all">
                                 <input type="color" value={editingComm.gradientEnd || "#00f2fe"} onChange={(e) => {
                                   const newVal = e.target.value;
                                   setEditingComm(prev => ({ ...prev, gradientEnd: newVal, bg_value: `linear-gradient(${prev.gradientDir || "to right"}, ${prev.gradientStart || "#4facfe"}, ${newVal})` }));
@@ -574,7 +574,7 @@ const Profile = ({ showFlash }) => {
                             <select value={editingComm.gradientDir || "to right"} onChange={(e) => {
                                 const newVal = e.target.value;
                                 setEditingComm(prev => ({ ...prev, gradientDir: newVal, bg_value: `linear-gradient(${newVal}, ${prev.gradientStart || "#4facfe"}, ${prev.gradientEnd || "#00f2fe"})` }));
-                            }} className="w-full bg-engine-bg border border-engine-neon/30 rounded-lg text-white p-2.5 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-neon">
+                            }} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2.5 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-panel-border">
                               <option value="to right">To Right →</option>
                               <option value="to left">To Left ←</option>
                               <option value="to bottom">To Bottom ↓</option>
@@ -586,7 +586,7 @@ const Profile = ({ showFlash }) => {
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2 bg-engine-bg border border-engine-neon/30 rounded-xl p-2 w-full max-w-[120px] focus-within:border-engine-neon focus-within:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all">
+                          <div className="flex items-center gap-2 bg-engine-bg border border-engine-panel-border/30 rounded-xl p-2 w-full max-w-[120px] focus-within:border-engine-panel-border focus-within:shadow-panel-neon transition-all">
                             <input type="color" value={editingComm.bg_value} onChange={(e) => setEditingComm({...editingComm, bg_value: e.target.value})} className="h-8 w-8 bg-transparent border-0 cursor-pointer rounded overflow-hidden" />
                             <span className="text-xs font-mono text-gray-300">{editingComm.bg_value}</span>
                           </div>
@@ -597,14 +597,14 @@ const Profile = ({ showFlash }) => {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">TEXT COLOR</label>
-                      <div className="flex items-center gap-2 bg-engine-bg border border-engine-neon/30 rounded-xl p-2 focus-within:border-engine-neon focus-within:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all">
+                      <div className="flex items-center gap-2 bg-engine-bg border border-engine-panel-border/30 rounded-xl p-2 focus-within:border-engine-panel-border focus-within:shadow-panel-neon transition-all">
                         <input type="color" value={editingComm.text_color} onChange={(e) => setEditingComm({...editingComm, text_color: e.target.value})} className="h-8 w-8 bg-transparent border-0 cursor-pointer rounded overflow-hidden" />
                         <span className="text-xs font-mono text-gray-300">{editingComm.text_color}</span>
                       </div>
                     </div>
                     <div>
                       <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">TYPOGRAPHY</label>
-                      <select value={editingComm.font_family} onChange={(e) => setEditingComm({...editingComm, font_family: e.target.value})} className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-neon">
+                      <select value={editingComm.font_family} onChange={(e) => setEditingComm({...editingComm, font_family: e.target.value})} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-panel-border">
                         <option value="sans">Sans Serif</option>
                         <option value="serif">Serif</option>
                         <option value="mono">Monospace</option>
@@ -614,7 +614,7 @@ const Profile = ({ showFlash }) => {
 
                   <div>
                     <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">HOVER EFFECT</label>
-                    <select value={editingComm.hover_animation} onChange={(e) => setEditingComm({...editingComm, hover_animation: e.target.value})} className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-neon">
+                    <select value={editingComm.hover_animation} onChange={(e) => setEditingComm({...editingComm, hover_animation: e.target.value})} className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl text-white p-3 text-xs font-extrabold uppercase tracking-widest appearance-none outline-none focus:border-engine-panel-border">
                       <option value="none">Lift & Shadow</option>
                       <option value="scale">Scale Up</option>
                       <option value="glow">Neon Glow</option>
@@ -623,7 +623,7 @@ const Profile = ({ showFlash }) => {
                   {editingComm.hover_animation === "glow" && (
                     <div className="animate-fade-in">
                       <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-2">GLOW COLOR</label>
-                      <div className="flex items-center gap-2 bg-engine-bg border border-engine-neon/30 rounded-xl p-2 w-full max-w-[120px] focus-within:border-engine-neon focus-within:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] transition-all">
+                      <div className="flex items-center gap-2 bg-engine-bg border border-engine-panel-border/30 rounded-xl p-2 w-full max-w-[120px] focus-within:border-engine-panel-border focus-within:shadow-panel-neon transition-all">
                         <input type="color" value={editingComm.hover_color} onChange={(e) => setEditingComm({...editingComm, hover_color: e.target.value})} className="h-8 w-8 bg-transparent border-0 cursor-pointer rounded overflow-hidden" />
                         <span className="text-xs font-mono text-gray-300">{editingComm.hover_color}</span>
                       </div>
@@ -633,7 +633,7 @@ const Profile = ({ showFlash }) => {
               </div>
 
               {/* Live Preview */}
-              <div className="border-t border-engine-neon/10 pt-8 mt-4">
+              <div className="border-t border-engine-panel-border/10 pt-8 mt-4">
                 <label className="block text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-4 flex items-center justify-center gap-2"><span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> LIVE PREVIEW</label>
                 <div 
                   style={{
@@ -671,24 +671,24 @@ const Profile = ({ showFlash }) => {
               </div>
 
               <div className="flex gap-4 pt-8">
-                <button type="button" onClick={() => setEditingComm(null)} className="flex-1 bg-engine-bg border border-engine-neon/30 hover:bg-engine-button/10 text-engine-neon hover:text-[#00e5ff] py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all text-xs">CANCEL</button>
-                <button type="submit" className="flex-1 bg-engine-button text-engine-bg hover:bg-[#00e5ff] shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all text-xs">SAVE CHANGES</button>
+                <button type="button" onClick={() => setEditingComm(null)} className="flex-1 bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 text-engine-neon hover:text-[#00e5ff] py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all text-xs">CANCEL</button>
+                <button type="submit" className="flex-1 bg-engine-button text-engine-bg hover:bg-[#00e5ff] shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 py-3.5 rounded-xl font-extrabold uppercase tracking-widest transition-all text-xs">SAVE CHANGES</button>
               </div>
             </form>
           ) : (
             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar animate-fade-in">
               {membersLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                   <div className="w-8 h-8 border-4 border-engine-neon/20 border-t-[#00cfff] rounded-full animate-spin mb-4"></div>
+                   <div className="w-8 h-8 border-4 border-engine-panel-border/20 border-t-[#00cfff] rounded-full animate-spin mb-4"></div>
                    <p className="text-engine-neon text-xs font-extrabold uppercase tracking-widest">Loading members...</p>
                 </div>
               ) : commMembers.length > 0 ? commMembers.map(member => (
-                <div key={member.user_id} className="flex items-center justify-between bg-engine-bg/60 p-4 rounded-xl border border-engine-neon/10 hover:border-engine-neon/30 hover:bg-engine-button/5 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                <div key={member.user_id} className="flex items-center justify-between bg-engine-bg/60 p-4 rounded-xl border border-engine-button-border/10 hover:border-engine-button-border/30 hover:bg-engine-button/5 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
                   <div className="flex items-center gap-4">
                     {member.avatar_url ? (
-                      <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-10 h-10 rounded-full object-cover border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]" />
+                      <img src={`${API_BASE_URL}${member.avatar_url}`} alt={member.username} className="w-10 h-10 rounded-full object-cover border border-engine-panel-border/30 shadow-panel-neon" />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-engine-button/10 border border-engine-neon/30 flex items-center justify-center text-sm font-extrabold text-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]">{member.username.substring(0,2).toUpperCase()}</div>
+                      <div className="w-10 h-10 rounded-full bg-engine-button/10 border border-engine-button-border/30 flex items-center justify-center text-sm font-extrabold text-engine-neon shadow-button-neon">{member.username.substring(0,2).toUpperCase()}</div>
                     )}
                     <div>
                       <p className="text-sm font-extrabold text-white tracking-wide">{member.username}</p>
@@ -696,7 +696,7 @@ const Profile = ({ showFlash }) => {
                     </div>
                   </div>
                   {editingComm.creator_username === member.username ? (
-                    <span className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest bg-engine-button/10 px-3 py-1 rounded-md border border-engine-neon/30 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">CREATOR</span>
+                    <span className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest bg-engine-button/10 px-3 py-1 rounded-md border border-engine-button-border/30 shadow-button-neon">CREATOR</span>
                   ) : (
                     <button onClick={() => handleKickMember(member.username)} className="text-[10px] font-extrabold uppercase tracking-widest bg-red-900/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 hover:border-red-500 hover:text-red-300 px-4 py-2 rounded-lg transition-all shadow-[0_0_10px_rgba(239,68,68,0.1)]">KICK</button>
                   )}

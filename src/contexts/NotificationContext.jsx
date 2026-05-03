@@ -29,7 +29,9 @@ export const NotificationProvider = ({ children }) => {
         auth: { token },
         transports: ["websocket", "polling"],
         forceNew: true,
-        reconnection: false,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 2000,
         timeout: 20000,
       }
     );

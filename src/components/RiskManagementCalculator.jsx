@@ -114,7 +114,7 @@ const RiskManagementCalculator = ({
   // If compact mode, show simplified version
   if (compact) {
     return (
-      <div className="bg-engine-panel/60 p-5 rounded-2xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] backdrop-blur-md">
+      <div className="bg-engine-panel/60 p-5 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md">
         <h3 className="text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-4 flex items-center gap-2">
           <Zap className="w-4 h-4" /> Risk Calculator
         </h3>
@@ -126,7 +126,7 @@ const RiskManagementCalculator = ({
               type="number"
               value={accountBalance}
               onChange={(e) => setAccountBalance(parseFloat(e.target.value) || 0)}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white font-mono text-sm focus:border-engine-neon shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] outline-none"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white font-mono text-sm focus:border-engine-panel-border shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-panel-neon outline-none"
             />
           </div>
           
@@ -139,13 +139,13 @@ const RiskManagementCalculator = ({
               step="0.5"
               value={riskPercent}
               onChange={(e) => setRiskPercent(parseFloat(e.target.value))}
-              className="w-full h-2 bg-engine-bg border border-engine-neon/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
+              className="w-full h-2 bg-engine-bg border border-engine-panel-border/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
             />
             <div className="text-center text-sm font-mono font-bold text-engine-neon mt-2 drop-shadow-[0_0_3px_#00cfff]">{riskPercent}%</div>
           </div>
           
           {calculations && (
-            <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-neon/10">
+            <div className="bg-engine-bg/80 p-4 rounded-xl border border-engine-panel-border/10">
               <div className="text-[10px] font-extrabold text-engine-neon/50 uppercase tracking-widest mb-1">Max Risk Amount</div>
               <div className="text-xl font-mono font-bold text-red-400 drop-shadow-[0_0_3px_rgba(248,113,113,0.5)]">${calculations.riskAmount.toFixed(2)}</div>
             </div>
@@ -158,13 +158,13 @@ const RiskManagementCalculator = ({
   // Full mode
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-engine-bg/90 backdrop-blur-md">
-      <div className="bg-engine-panel/90 rounded-2xl border border-engine-neon/30 w-full max-w-lg max-h-[90vh] overflow-hidden shadow-[0_0_50px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-xl flex flex-col">
+      <div className="bg-engine-panel/90 rounded-2xl border border-engine-panel-border/30 w-full max-w-lg max-h-[90vh] overflow-hidden shadow-panel-neon backdrop-blur-xl flex flex-col">
         {/* Header with Back Button */}
-        <div className="bg-engine-bg/50 p-5 border-b border-engine-neon/20 flex items-center justify-between shrink-0">
+        <div className="bg-engine-bg/50 p-5 border-b border-engine-panel-border/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="text-engine-neon/70 hover:text-engine-neon transition-all flex items-center gap-1 bg-engine-button/5 px-3 py-1.5 rounded-xl border border-engine-neon/20 hover:bg-engine-button/10 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
+              className="text-engine-neon/70 hover:text-engine-neon transition-all flex items-center gap-1 bg-engine-button/5 px-3 py-1.5 rounded-xl border border-engine-button-border/20 hover:bg-engine-button/10 hover:shadow-button-neon"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010l6-6-1.414a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
@@ -179,7 +179,7 @@ const RiskManagementCalculator = ({
 
         <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
           {/* Account Balance */}
-          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-neon/10 relative group">
+          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-panel-border/10 relative group">
             <div className="absolute inset-0 bg-engine-button/0 group-hover:bg-engine-button/[0.02] transition-all rounded-xl pointer-events-none"></div>
             <div className="flex items-center mb-3">
               <label className="text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">Account Balance</label>
@@ -193,17 +193,17 @@ const RiskManagementCalculator = ({
               </button>
             </div>
             {showInfo === 'accountBalance' && (
-              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-neon/50 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md">
+              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
                 <h4 className="font-extrabold text-engine-neon text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.accountBalance.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.accountBalance.content}</p>
-                <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-neon/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.accountBalance.tip}</p>
+                <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.accountBalance.tip}</p>
               </div>
             )}
             <input
               type="number"
               value={accountBalance}
               onChange={(e) => setAccountBalance(parseFloat(e.target.value) || 0)}
-              className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white font-mono focus:border-engine-neon outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
+              className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white font-mono focus:border-engine-panel-border outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-panel-neon"
               placeholder="Enter your account balance"
             />
             <p className="text-[10px] font-bold text-engine-neon/40 mt-2 uppercase tracking-widest">
@@ -212,7 +212,7 @@ const RiskManagementCalculator = ({
           </div>
 
           {/* Risk Per Trade */}
-          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-neon/10 relative group">
+          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-panel-border/10 relative group">
             <div className="absolute inset-0 bg-engine-button/0 group-hover:bg-engine-button/[0.02] transition-all rounded-xl pointer-events-none"></div>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
@@ -231,10 +231,10 @@ const RiskManagementCalculator = ({
               </span>
             </div>
             {showInfo === 'riskPercent' && (
-              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-neon/50 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md">
+              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
                 <h4 className="font-extrabold text-engine-neon text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.riskPercent.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.riskPercent.content}</p>
-                <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-neon/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.riskPercent.tip}</p>
+                <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.riskPercent.tip}</p>
               </div>
             )}
             <input
@@ -244,11 +244,11 @@ const RiskManagementCalculator = ({
               step="0.5"
               value={riskPercent}
               onChange={(e) => setRiskPercent(parseFloat(e.target.value))}
-              className="w-full h-2 bg-engine-bg border border-engine-neon/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
+              className="w-full h-2 bg-engine-bg border border-engine-panel-border/30 rounded-lg appearance-none cursor-pointer accent-engine-neon"
             />
             <div className="flex justify-between text-[9px] font-bold text-engine-neon/50 mt-3 uppercase tracking-widest">
               <span>0.5% (SAFE)</span>
-              <span className={`px-2 py-1 rounded-md border bg-opacity-20 ${riskLevel.color === 'green' ? 'bg-green-900 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : riskLevel.color === 'blue' ? 'bg-engine-button/20 border-engine-neon/50 text-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]' : riskLevel.color === 'yellow' ? 'bg-yellow-900 border-yellow-500/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.1)]' : 'bg-red-900 border-red-500/50 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.1)]'}`}>
+              <span className={`px-2 py-1 rounded-md border bg-opacity-20 ${riskLevel.color === 'green' ? 'bg-green-900 border-green-500/50 text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : riskLevel.color === 'blue' ? 'bg-engine-button/20 border-engine-button-border/50 text-engine-neon shadow-button-neon' : riskLevel.color === 'yellow' ? 'bg-yellow-900 border-yellow-500/50 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.1)]' : 'bg-red-900 border-red-500/50 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.1)]'}`}>
                 {riskLevel.level}
               </span>
               <span>10% (DANGER)</span>
@@ -262,8 +262,8 @@ const RiskManagementCalculator = ({
                   onClick={() => setRiskPercent(pct)}
                   className={`flex-1 py-2 px-2 rounded-xl text-[10px] font-extrabold tracking-widest transition-all ${
                     riskPercent === pct 
-                      ? 'bg-engine-button/20 text-engine-neon border border-engine-neon shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]' 
-                      : 'bg-engine-bg text-engine-neon/50 border border-engine-neon/20 hover:bg-engine-button/10 hover:text-engine-neon'
+                      ? 'bg-engine-button/20 text-engine-neon border border-engine-button-border shadow-button-neon' 
+                      : 'bg-engine-bg text-engine-neon/50 border border-engine-button-border/20 hover:bg-engine-button/10 hover:text-engine-neon'
                   }`}
                 >
                   {pct}%
@@ -273,7 +273,7 @@ const RiskManagementCalculator = ({
           </div>
 
           {/* Trade Details */}
-          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-neon/10 relative group">
+          <div className="bg-engine-bg/60 p-5 rounded-xl border border-engine-panel-border/10 relative group">
             <div className="absolute inset-0 bg-engine-button/0 group-hover:bg-engine-button/[0.02] transition-all rounded-xl pointer-events-none"></div>
             <h4 className="text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-4">Trade Details</h4>
             
@@ -284,7 +284,7 @@ const RiskManagementCalculator = ({
                 className={`flex-1 flex justify-center items-center gap-2 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
                   tradeType === 'BUY' 
                     ? 'bg-green-500/20 text-green-400 border border-green-500 shadow-[0_0_15px_rgba(74,222,128,0.2)]' 
-                    : 'bg-engine-bg text-engine-neon/50 border border-engine-neon/20 hover:bg-engine-button/10 hover:text-engine-neon'
+                    : 'bg-engine-bg text-engine-neon/50 border border-engine-button-border/20 hover:bg-engine-button/10 hover:text-engine-neon'
                 }`}
               >
                 <TrendingUp className="w-4 h-4" /> BUY (LONG)
@@ -294,7 +294,7 @@ const RiskManagementCalculator = ({
                 className={`flex-1 flex justify-center items-center gap-2 py-3 rounded-xl font-extrabold text-[10px] uppercase tracking-widest transition-all ${
                   tradeType === 'SELL' 
                     ? 'bg-red-500/20 text-red-400 border border-red-500 shadow-[0_0_15px_rgba(248,113,113,0.2)]' 
-                    : 'bg-engine-bg text-engine-neon/50 border border-engine-neon/20 hover:bg-engine-button/10 hover:text-engine-neon'
+                    : 'bg-engine-bg text-engine-neon/50 border border-engine-button-border/20 hover:bg-engine-button/10 hover:text-engine-neon'
                 }`}
               >
                 <TrendingDown className="w-4 h-4" /> SELL (SHORT)
@@ -310,7 +310,7 @@ const RiskManagementCalculator = ({
                 type="number"
                 value={entryPrice}
                 onChange={(e) => setEntryPrice(e.target.value)}
-                className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white font-mono focus:border-engine-neon outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
+                className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white font-mono focus:border-engine-panel-border outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-panel-neon"
                 placeholder="e.g. 50000"
               />
             </div>
@@ -330,9 +330,9 @@ const RiskManagementCalculator = ({
                   </button>
                 </div>
                 {showInfo === 'stopLoss' && (
-                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-neon/50 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md">
+                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.stopLoss.content}</p>
-                    <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-neon/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.stopLoss.tip}</p>
+                    <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.stopLoss.tip}</p>
                   </div>
                 )}
                 <input
@@ -340,7 +340,7 @@ const RiskManagementCalculator = ({
                   step="0.1"
                   value={stopLossPercent}
                   onChange={(e) => setStopLossPercent(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white font-mono focus:border-engine-neon outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
+                  className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white font-mono focus:border-engine-panel-border outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-panel-neon"
                 />
               </div>
               <div>
@@ -356,9 +356,9 @@ const RiskManagementCalculator = ({
                   </button>
                 </div>
                 {showInfo === 'takeProfit' && (
-                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-neon/50 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md">
+                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.takeProfit.content}</p>
-                    <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-neon/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.takeProfit.tip}</p>
+                    <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.takeProfit.tip}</p>
                   </div>
                 )}
                 <input
@@ -366,7 +366,7 @@ const RiskManagementCalculator = ({
                   step="0.1"
                   value={takeProfitPercent}
                   onChange={(e) => setTakeProfitPercent(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-engine-bg border border-engine-neon/30 rounded-xl p-3 text-white font-mono focus:border-engine-neon outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)]"
+                  className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-xl p-3 text-white font-mono focus:border-engine-panel-border outline-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)] focus:shadow-panel-neon"
                 />
               </div>
             </div>
@@ -374,7 +374,7 @@ const RiskManagementCalculator = ({
 
           {/* Results */}
           {calculations && (
-            <div className="bg-engine-button/5 p-5 rounded-xl border border-engine-neon/20 shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.05)] relative overflow-hidden">
+            <div className="bg-engine-button/5 p-5 rounded-xl border border-engine-button-border/20 shadow-button-neon relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-engine-button/5 rounded-full blur-3xl pointer-events-none"></div>
               <h4 className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest mb-4 flex items-center gap-2 drop-shadow-[0_0_5px_var(--engine-neon)]">
                 <BarChart className="w-5 h-5" /> Your Trading Plan
@@ -406,9 +406,9 @@ const RiskManagementCalculator = ({
                     </button>
                   </div>
                   {showInfo === 'positionSize' && (
-                    <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-neon/50 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.1)] backdrop-blur-md">
+                    <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
                       <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.positionSize.content}</p>
-                      <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-neon/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.positionSize.tip}</p>
+                      <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.positionSize.tip}</p>
                     </div>
                   )}
                   <div className="text-2xl font-mono font-extrabold text-green-400 drop-shadow-[0_0_5px_rgba(74,222,128,0.5)]">
@@ -447,7 +447,7 @@ const RiskManagementCalculator = ({
               )}
 
               {/* Risk/Reward Ratio */}
-              <div className="mt-4 p-5 rounded-xl bg-engine-bg/60 border border-engine-neon/10">
+              <div className="mt-4 p-5 rounded-xl bg-engine-bg/60 border border-engine-panel-border/10">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">Risk/Reward Ratio</span>
                   <span className={`text-xl font-mono font-extrabold drop-shadow-[0_0_5px_currentColor] ${
@@ -461,7 +461,7 @@ const RiskManagementCalculator = ({
                   </span>
                 </div>
                 <div className="mt-3">
-                  <div className="h-2.5 bg-engine-bg rounded-full overflow-hidden flex border border-engine-neon/20">
+                  <div className="h-2.5 bg-engine-bg rounded-full overflow-hidden flex border border-engine-panel-border/20">
                     <div 
                       className="bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.8)]" 
                       style={{ width: `${Math.min(100 / (1 + calculations.riskRewardRatio), 100)}%` }}
@@ -501,14 +501,14 @@ const RiskManagementCalculator = ({
                 stopLossPct: stopLossPercent,
                 takeProfitPct: takeProfitPercent
               })}
-              className="w-full bg-engine-button text-engine-bg hover:bg-[#00e5ff] font-extrabold text-[11px] uppercase tracking-widest py-4 rounded-xl transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] hover:shadow-[0_0_25px_rgba(var(--engine-neon-rgb),0.6)] hover:-translate-y-0.5 mt-2"
+              className="w-full bg-engine-button text-engine-bg hover:bg-[#00e5ff] font-extrabold text-[11px] uppercase tracking-widest py-4 rounded-xl transition-all shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 mt-2"
             >
               APPLY SETTINGS TO TRADE
             </button>
           )}
 
           {/* Beginner Tips */}
-          <div className="bg-engine-button/5 p-5 rounded-xl border border-engine-neon/20 shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)] mt-4">
+          <div className="bg-engine-button/5 p-5 rounded-xl border border-engine-button-border/20 shadow-button-neon mt-4">
             <h4 className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest mb-3 flex items-center gap-2 drop-shadow-[0_0_5px_var(--engine-neon)]">
               <Lightbulb className="w-5 h-5" /> Beginner Tips
             </h4>
