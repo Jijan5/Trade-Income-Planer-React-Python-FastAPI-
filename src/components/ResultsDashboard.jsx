@@ -139,7 +139,7 @@ const ResultsDashboard = ({ data }) => {
     <div className="space-y-6">
       {/* What-If Simulator (Brutally Honest Projection) */}
       {monte_carlo && (
-        <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md relative overflow-hidden">
+        <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine relative overflow-hidden">
           <div className={`absolute top-0 left-0 w-1 h-full ${ruinProb > 20 ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-green-500 shadow-[0_0_10px_#22c55e]'}`}></div>
           <h3 className="text-xl font-extrabold text-white mb-4 flex items-center gap-3">
             <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" /> What-If Future Projection
@@ -174,7 +174,7 @@ const ResultsDashboard = ({ data }) => {
         </div>
       )}
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-engine-panel/60 p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 bg-engine-panel p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine">
         {[
           {
             label: "Initial Capital",
@@ -260,7 +260,7 @@ const ResultsDashboard = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monte Carlo Simulation */}
         {monte_carlo && (
-          <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md flex flex-col">
+          <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine flex flex-col">
             <h3 className="text-sm font-extrabold mb-5 text-engine-neon uppercase tracking-widest flex items-center gap-2">
               Monte Carlo Simulation{" "}
               <span className="text-[10px] text-gray-500 normal-case font-mono">
@@ -316,7 +316,7 @@ const ResultsDashboard = ({ data }) => {
         )}
 
         {/* Risk Analysis / Warnings */}
-        <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md flex flex-col">
+        <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine flex flex-col">
           <h3 className="text-sm font-extrabold mb-5 text-engine-neon uppercase tracking-widest flex items-center gap-2">
             Risk Analysis
             <span className="relative flex h-2 w-2 ml-2">
@@ -353,7 +353,7 @@ const ResultsDashboard = ({ data }) => {
               ))
             ) : (
               <div className="relative p-6 rounded-xl overflow-hidden bg-engine-bg/80 border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.1)] hover:shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all duration-300">
-                <div className="absolute inset-0 bg-green-500/5 backdrop-blur-sm"></div>
+                <div className="absolute inset-0 bg-green-500/5 backdrop-blur-engine"></div>
                 <div className="absolute top-0 left-0 w-1 h-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
                 <div className="relative flex items-center gap-5">
                   <div className="p-4 rounded-full bg-green-900/30 text-green-400 border border-green-500/30">
@@ -373,7 +373,7 @@ const ResultsDashboard = ({ data }) => {
       </div>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap justify-between items-center bg-engine-panel/60 p-3 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md">
+      <div className="flex flex-wrap justify-between items-center bg-engine-panel p-3 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine">
         <div className="flex flex-wrap gap-2">
           {filters.map((f) => (
             <button
@@ -414,7 +414,7 @@ const ResultsDashboard = ({ data }) => {
       <SimulationChart key={runKey} data={aggregatedData} />
 
       {/* PnL Chart */}
-      <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md h-[400px]">
+      <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine h-[400px]">
         <h3 className="text-sm font-extrabold mb-4 text-engine-neon uppercase tracking-widest">
           Daily Profit / Loss
         </h3>
@@ -479,7 +479,7 @@ const ResultsDashboard = ({ data }) => {
           return { day: d.day, drawdown: parseFloat(dd.toFixed(2)) };
         });
         return (
-          <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md h-[300px]">
+          <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine h-[300px]">
             <h3 className="text-sm font-extrabold mb-4 text-red-400 uppercase tracking-widest drop-shadow-[0_0_3px_rgba(248,113,113,0.4)]">
               Drawdown %
             </h3>
@@ -507,7 +507,7 @@ const ResultsDashboard = ({ data }) => {
       })()}
 
       {/* Table Section */}
-      <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden">
+      <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine overflow-hidden">
         {/* Table Tabs */}
         <div className="flex border-b border-engine-panel-border/20">
           <button
@@ -534,7 +534,7 @@ const ResultsDashboard = ({ data }) => {
         <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
           {viewMode === "daily" ? (
             <table className="min-w-full divide-y divide-[#00cfff]/10">
-              <thead className="bg-engine-bg/80 backdrop-blur-md sticky top-0 z-10 border-b border-engine-panel-border/20">
+              <thead className="bg-engine-bg/80 backdrop-blur-engine sticky top-0 z-10 border-b border-engine-panel-border/20">
                 <tr>
                   <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     Day
@@ -584,7 +584,7 @@ const ResultsDashboard = ({ data }) => {
             </table>
           ) : (
             <table className="min-w-full divide-y divide-[#00cfff]/10">
-              <thead className="bg-engine-bg/80 backdrop-blur-md sticky top-0 z-10 border-b border-engine-panel-border/20">
+              <thead className="bg-engine-bg/80 backdrop-blur-engine sticky top-0 z-10 border-b border-engine-panel-border/20">
                 <tr>
                   <th className="px-6 py-4 text-left text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest">
                     #

@@ -57,7 +57,7 @@ const ContactUs = ({ showFlash }) => {
           message or reach out via the contact information provided.
         </p>
 
-        <div className="bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 shadow-panel-neon p-10">
+        <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 shadow-panel-neon p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label

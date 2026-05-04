@@ -95,7 +95,7 @@ const ForgotPassword = ({ showFlash }) => {
       <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-[#00cfff]/5 rounded-full blur-[150px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="max-w-md w-full bg-[#0a0f1c]/90 backdrop-blur-xl p-10 rounded-3xl border border-[#00cfff]/30 shadow-[0_0_50px_rgba(0,207,255,0.1)] relative z-10">
+      <div className="max-w-md w-full bg-[#0a0f1c]/90 backdrop-blur-engine p-10 rounded-3xl border border-[#00cfff]/30 shadow-[0_0_50px_rgba(0,207,255,0.1)] relative z-10">
         <h2 className="text-2xl font-extrabold text-white mb-8 text-center uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
           {step === 1 && "FORGOT PASSWORD"}
           {step === 2 && "ENTER PIN"}

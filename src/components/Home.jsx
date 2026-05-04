@@ -279,7 +279,7 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
+        className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
       >
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
@@ -349,7 +349,7 @@ const PostItem = React.memo(
             {activeMenu?.type === "post" && activeMenu?.id === post.id && (
               <div
                 ref={menuRef}
-                className="absolute right-0 mt-1 w-32 bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/20 rounded-xl shadow-panel-neon z-20 overflow-hidden"
+                className="absolute right-0 mt-1 w-32 bg-engine-panel backdrop-blur-engine border border-engine-panel-border/20 rounded-xl shadow-panel-neon z-20 overflow-hidden"
               >
                 {currentUser === post.username || userData?.role === "admin" ? (
                   <>
@@ -468,7 +468,7 @@ const PostItem = React.memo(
               </span>
             </button>
             {reactionModalPostId === post.id && (
-              <div className="absolute bottom-full left-0 mb-2 flex border border-engine-panel-border/30 bg-engine-panel/95 backdrop-blur-md rounded-full p-1 shadow-panel-neon gap-1 z-10 animate-fade-in w-max reaction-modal">
+              <div className="absolute bottom-full left-0 mb-2 flex border border-engine-panel-border/30 bg-engine-panel backdrop-blur-engine rounded-full p-1 shadow-panel-neon gap-1 z-10 animate-fade-in w-max reaction-modal">
                 {reactions.map((r) => (
                   <button
                     key={r.type}
@@ -673,7 +673,7 @@ const PostItem = React.memo(
                               activeMenu?.id === comment.id && (
                                 <div
                                   ref={menuRef}
-                                  className="absolute left-0 mt-1 w-24 border bg-engine-panel/95 backdrop-blur-md border-engine-panel-border/20 rounded-lg shadow-panel-neon z-20 overflow-hidden"
+                                  className="absolute left-0 mt-1 w-24 border bg-engine-panel backdrop-blur-engine border-engine-panel-border/20 rounded-lg shadow-panel-neon z-20 overflow-hidden"
                                 >
                                   <button
                                     onClick={() => startEditComment(comment)}
@@ -812,11 +812,11 @@ const PostItem = React.memo(
         {/* Report Modal */}
         {showReportModal && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowReportModal(false)}
           >
             <div
-              className="bg-engine-panel/95 border border-engine-panel-border/20 p-6 rounded-2xl shadow-panel-neon max-w-sm w-full"
+              className="bg-engine-panel border border-engine-panel-border/20 p-6 rounded-2xl shadow-panel-neon max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-extrabold text-engine-neon mb-4">Report Post</h3>
@@ -877,11 +877,11 @@ const PostItem = React.memo(
         {/* Delete Confirmation Modal */}
         {showDeleteModal && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowDeleteModal(false)}
           >
             <div
-              className="bg-engine-panel/95 border border-engine-panel-border/20 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center"
+              className="bg-engine-panel border border-engine-panel-border/20 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-2xl font-extrabold text-white mb-2">
@@ -911,7 +911,7 @@ const PostItem = React.memo(
         {/* Share Modal */}
         {showShareModal && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowShareModal(false)}
           >
             <div
@@ -1252,7 +1252,7 @@ const Home = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
       {/* 📱 Mobile View Switcher */}
-      <div className="lg:hidden col-span-1 flex bg-engine-panel/80 backdrop-blur-md p-1.5 rounded-xl border border-engine-panel-border/20 sticky top-24 z-30 shadow-panel-neon">
+      <div className="lg:hidden col-span-1 flex bg-engine-panel backdrop-blur-engine p-1.5 rounded-xl border border-engine-panel-border/20 sticky top-24 z-30 shadow-panel-neon">
         <button
           onClick={() => setMobileView("feed")}
           className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
@@ -1282,7 +1282,7 @@ const Home = ({
       >
         <div className="space-y-6 sticky top-24">
           {/* Market Price Widget */}
-          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon overflow-hidden relative h-32">
+          <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon overflow-hidden relative h-32">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase mb-2 tracking-wider">
               Market Watch
             </h3>
@@ -1293,7 +1293,7 @@ const Home = ({
           </div>
 
           {/* News Widget */}
-          <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon h-64 relative overflow-hidden">
+          <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon h-64 relative overflow-hidden">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase mb-2 tracking-wider">
               Crypto News
             </h3>
@@ -1309,7 +1309,7 @@ const Home = ({
         } lg:block lg:col-span-2 space-y-6`}
       >
         {/* Create Post Box */}
-        <div className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative focus-within:z-[60]">
+        <div className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
             <MentionInput
               value={newPostContent}
@@ -1400,7 +1400,7 @@ const Home = ({
           <div className="sticky top-24 space-y-6">
             {/* Created Communities */}
             {createdCommunities.length > 0 && (
-              <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
+              <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
                 <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
                   <span className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">👑</span> Created
                   Communities
@@ -1430,7 +1430,7 @@ const Home = ({
             )}
 
             {/* Joined Communities */}
-            <div className="bg-engine-panel/60 backdrop-blur-md rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
+            <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
               <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
                 <span className="text-engine-neon drop-shadow-panel-neon">👥</span> Your Communities
               </h3>

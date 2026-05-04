@@ -57,7 +57,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
 
   return (
     <div 
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-md p-4"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-engine p-4"
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
@@ -98,7 +98,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
 
           {/* The Draggable Dot */}
           <div 
-            className="absolute w-8 h-8 -ml-4 -mt-4 border-2 border-white rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing flex items-center justify-center backdrop-blur-sm"
+            className="absolute w-8 h-8 -ml-4 -mt-4 border-2 border-white rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] cursor-grab active:cursor-grabbing flex items-center justify-center backdrop-blur-engine"
             style={{ 
               left: `${focalPoint.x}%`, 
               top: `${focalPoint.y}%`,

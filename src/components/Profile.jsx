@@ -258,7 +258,7 @@ const Profile = ({ showFlash }) => {
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
       
       {/* PROFILE EDIT SECTION */}
-      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md animate-fade-in">
+      <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine animate-fade-in">
       <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
         <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">⚙</span> Edit Profile
         <VerifiedBadge user={user} className="ml-2" />
@@ -285,7 +285,7 @@ const Profile = ({ showFlash }) => {
                 </div>
               )}
             </div>
-            <div className="absolute inset-0 bg-engine-bg/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+            <div className="absolute inset-0 bg-engine-bg/80 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-engine">
               <span className="text-engine-neon text-[10px] font-extrabold uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">CHANGE</span>
             </div>
           </div>
@@ -345,7 +345,7 @@ const Profile = ({ showFlash }) => {
             </div>
             
             {isCountryDropdownOpen && (
-              <div className="absolute top-full left-0 w-full bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-panel-neon custom-scrollbar">
+              <div className="absolute top-full left-0 w-full bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-panel-neon custom-scrollbar">
                 <div className="p-3 sticky top-0 bg-engine-panel border-b border-engine-panel-border/20 z-10">
                   <input 
                     type="text" 
@@ -429,7 +429,7 @@ const Profile = ({ showFlash }) => {
                 <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 px-1.5 py-0.5 rounded-full font-extrabold ml-1">PLATINUM</span>
               </button>
               <div className="absolute bottom-full left-0 mb-2 w-56 hidden group-hover:block z-50">
-                <div className="bg-engine-panel/95 border border-purple-500/30 rounded-xl p-3 text-xs text-gray-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md">
+                <div className="bg-engine-panel border border-purple-500/30 rounded-xl p-3 text-xs text-gray-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-engine">
                   <p className="font-bold text-purple-400 mb-1">⭐ Platinum Feature</p>
                   <p>Upgrade to <span className="text-purple-400 font-bold">Platinum</span> to unlock UI customization.</p>
                 </div>
@@ -448,7 +448,7 @@ const Profile = ({ showFlash }) => {
     </div>
 
     {/* YOUR COMMUNITIES SECTION */}
-    <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md animate-fade-in">
+    <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine animate-fade-in">
         <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
           <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">👥</span> Your Communities
         </h2>
@@ -457,8 +457,8 @@ const Profile = ({ showFlash }) => {
 
     {/* Confirmation Modal */}
     {confirmModal.isOpen && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-        <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+        <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
           <h3 className="text-xl font-extrabold text-white uppercase tracking-widest mb-3 flex flex-col items-center gap-3">
             <span className="text-4xl drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">⚠</span>
             Are you sure?
@@ -476,8 +476,8 @@ const Profile = ({ showFlash }) => {
 
     {/* EDIT COMMUNITY MODAL */}
     {editingComm && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setEditingComm(null)}>
-        <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-2xl w-full animate-fade-in my-8 overflow-y-auto max-h-[90vh] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setEditingComm(null)}>
+        <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-2xl w-full animate-fade-in my-8 overflow-y-auto max-h-[90vh] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
           <h3 className="text-xl font-extrabold text-white mb-6 uppercase tracking-widest flex items-center gap-3 border-b border-engine-panel-border/10 pb-4">
             <span className="text-engine-neon">⚙</span> Edit: {editingComm.name}
           </h3>
@@ -653,7 +653,7 @@ const Profile = ({ showFlash }) => {
                     {previewEditCommAvatar ? (
                       <img src={previewEditCommAvatar} className="w-14 h-14 rounded-full object-cover border-2 border-white/30 shadow-lg" alt="Preview" />
                     ) : (
-                      <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-xl font-extrabold border-2 border-white/30 shadow-lg backdrop-blur-sm">
+                      <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-xl font-extrabold border-2 border-white/30 shadow-lg backdrop-blur-engine">
                         {editingComm.name ? editingComm.name.substring(0, 2).toUpperCase() : "NA"}
                       </div>
                     )}
@@ -664,7 +664,7 @@ const Profile = ({ showFlash }) => {
                   </div>
                   <p className="text-sm mb-8 opacity-90 font-medium leading-relaxed">{editingComm.description || "Community description will appear here. Make it catchy!"}</p>
                   <div className="flex items-center justify-between border-t border-white/20 pt-5 opacity-90">
-                    <span className="text-xs font-bold font-mono bg-white/10 px-3 py-1 rounded-lg backdrop-blur-md">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 1} MBRS</span>
+                    <span className="text-xs font-bold font-mono bg-white/10 px-3 py-1 rounded-lg backdrop-blur-engine">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 1} MBRS</span>
                     <span className="text-xs font-extrabold uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">JOIN <span className="text-lg leading-none">→</span></span>
                   </div>
                 </div>

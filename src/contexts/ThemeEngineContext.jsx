@@ -24,7 +24,7 @@ const DEFAULT_THEME = {
   glass_blur: "12px",
   font_family: "Inter",
   text_color: "#ffffff",
-  neon_radius: "20px",
+  text_color: "#ffffff",
   neon_font_style: "none",
 };
 
@@ -75,7 +75,6 @@ export const ThemeEngineProvider = ({ children }) => {
           glass_blur: res.data.glass_blur || DEFAULT_THEME.glass_blur,
           font_family: res.data.font_family || DEFAULT_THEME.font_family,
           text_color: res.data.text_color || DEFAULT_THEME.text_color,
-          neon_radius: res.data.neon_radius || DEFAULT_THEME.neon_radius,
           neon_font_style: res.data.neon_font_style || DEFAULT_THEME.neon_font_style,
         });
       }
@@ -139,7 +138,6 @@ export const ThemeEngineProvider = ({ children }) => {
     root.style.setProperty("--engine-glass-blur", activeTheme.glass_blur);
     root.style.setProperty("--engine-font", activeTheme.font_family);
     root.style.setProperty("--engine-text", activeTheme.text_color);
-    root.style.setProperty("--engine-neon-radius", activeTheme.neon_radius);
     root.style.setProperty("--engine-neon-font-style", activeTheme.neon_font_style);
   }, [theme, isExcluded]);
 

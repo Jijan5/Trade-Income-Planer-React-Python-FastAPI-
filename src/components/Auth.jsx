@@ -309,7 +309,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
           <div className="auth-corner auth-corner-br"></div>
         </div>
 
-        <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-xl rounded-2xl border border-[#00cfff]/20 p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all">
+        <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-engine rounded-2xl border border-[#00cfff]/20 p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all">
           {onClose && (
             <button
               onClick={onClose}
@@ -421,7 +421,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   </div>
                   
                   {isCountryDropdownOpen && (
-                    <div className="absolute top-full left-0 w-full bg-[#0a0f1c]/95 backdrop-blur-md border border-[#00cfff]/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                    <div className="absolute top-full left-0 w-full bg-[#0a0f1c]/95 backdrop-blur-engine border border-[#00cfff]/30 rounded-xl mt-2 z-50 max-h-60 overflow-y-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
                       <div className="p-2 sticky top-0 bg-[#0a0f1c] border-b border-[#00cfff]/20 z-10">
                         <input 
                           type="text" 

@@ -277,7 +277,7 @@ const AdminDashboard = () => {
       {/* Custom Flash Notification */}
       {flash && (
         <div
-          className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border flex items-center gap-3 animate-fade-in backdrop-blur-md ${
+          className={`fixed top-24 right-6 z-50 px-6 py-4 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] border flex items-center gap-3 animate-fade-in backdrop-blur-engine ${
             flash.type === "success"
               ? "bg-[#030308]/90 border-green-500/50 text-green-400 shadow-[0_0_15px_rgba(74,222,128,0.2)]"
               : "bg-[#030308]/90 border-red-500/50 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
@@ -295,7 +295,7 @@ const AdminDashboard = () => {
 
       {/* Confirmation Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-engine p-4 animate-fade-in">
           <div className={`bg-[#0a0f1c]/95 border p-8 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] max-w-sm w-full text-center ${confirmModal.type === 'success' ? 'border-green-500/30' : 'border-red-500/30'}`}>
             <h3
               className={`text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 ${
@@ -339,7 +339,7 @@ const AdminDashboard = () => {
 
       {/* Reject Appeal Modal */}
       {rejectModal.isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-engine p-4 animate-fade-in">
           <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center">
             <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
               <span className="text-4xl">⚠</span>
@@ -386,7 +386,7 @@ const AdminDashboard = () => {
       )}
 
       {/* SIDEBAR - SCROLLABLE */}
-      <div className="w-full md:w-64 bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-md z-20 custom-scrollbar">
+      <div className="w-full md:w-64 bg-[#0a0f1c]/60 rounded-2xl border border-[#00cfff]/20 md:h-[calc(100vh-9rem)] overflow-y-auto sticky top-24 flex-shrink-0 shadow-[0_0_20px_rgba(0,207,255,0.05)] backdrop-blur-engine z-20 custom-scrollbar">
         <div className="p-6 border-b border-[#00cfff]/10 bg-[#030308]/60 sticky top-0 z-10 flex justify-between items-center">
           <div>
             <h2 className="text-lg font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">Admin Panel</h2>
@@ -427,7 +427,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 bg-[#0a0f1c]/60 backdrop-blur-md rounded-2xl border border-[#00cfff]/20 p-8 min-h-[500px] shadow-[0_0_20px_rgba(0,207,255,0.05)] overflow-hidden">
+      <div className="flex-1 bg-[#0a0f1c]/60 backdrop-blur-engine rounded-2xl border border-[#00cfff]/20 p-8 min-h-[500px] shadow-[0_0_20px_rgba(0,207,255,0.05)] overflow-hidden">
         {activeTab === "dashboard" && stats && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
             <div className="bg-[#030308]/60 p-6 rounded-2xl border border-[#00cfff]/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -815,7 +815,7 @@ const AdminDashboard = () => {
 
       {/* EDIT USER MODAL */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-md p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030308]/90 backdrop-blur-engine p-4 animate-fade-in">
           <div className="bg-[#0a0f1c]/95 p-8 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-[#00cfff]/30 shadow-[0_0_30px_rgba(0,207,255,0.15)] custom-scrollbar">
             <h3 className="text-xl font-extrabold text-white mb-8 border-b border-[#00cfff]/20 pb-4 uppercase tracking-widest flex items-center gap-3">
               <span className="text-[#00cfff]">⚙</span> EDIT USER:{" "}

@@ -29,7 +29,7 @@ export const PositionSizeCalculator = ({
   if (!currentPrice || currentPrice <= 0) return null;
 
   return (
-    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md mb-4">
+    <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-engine mb-4">
       <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
         <span className="text-xl">📊</span>
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Position Size Calculator</h4>
@@ -126,7 +126,7 @@ export const RiskRewardDisplay = ({
   };
 
   return (
-    <div className="bg-engine-panel/80 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md mb-4">
+    <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-engine mb-4">
       <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
         <span className="text-xl">⚖️</span>
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Risk / Reward Ratio</h4>
@@ -239,7 +239,7 @@ export const BeginnerTipsWidget = ({ recentPnL, totalTrades, accountBalance, ini
   };
   
   return (
-    <div className="bg-engine-button/5 p-5 rounded-2xl border border-engine-button-border/20 shadow-button-neon backdrop-blur-md mb-4 relative overflow-hidden">
+    <div className="bg-engine-button/5 p-5 rounded-2xl border border-engine-button-border/20 shadow-button-neon backdrop-blur-engine mb-4 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-24 h-24 bg-engine-button/5 rounded-full blur-2xl"></div>
       <div className="flex items-center justify-between mb-4 relative z-10 border-b border-engine-panel-border/10 pb-3">
         <div className="flex items-center gap-2">

@@ -183,8 +183,8 @@ export default function CustomizePlatform() {
   return (
     <div className="flex h-screen w-full bg-engine-bg text-engine-text font-engine overflow-hidden">
       {/* LEFT PANEL: CONFIGURATION */}
-      <div className="w-1/3 h-full border-r border-engine-neon/20 bg-engine-panel/80 backdrop-blur-md overflow-y-auto custom-scrollbar flex flex-col relative z-10">
-        <div className="p-6 border-b border-engine-neon/20 flex items-center justify-between sticky top-0 bg-engine-panel/95 backdrop-blur-md z-20">
+      <div className="w-1/3 h-full border-r border-engine-neon/20 bg-engine-panel backdrop-blur-engine overflow-y-auto custom-scrollbar flex flex-col relative z-10">
+        <div className="p-6 border-b border-engine-neon/20 flex items-center justify-between sticky top-0 bg-engine-panel backdrop-blur-engine z-20">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate(-1)} className="p-2 bg-engine-bg rounded-full text-gray-400 hover:text-engine-neon border border-engine-neon/20 transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -332,15 +332,6 @@ export default function CustomizePlatform() {
                   className="w-full bg-engine-bg border border-engine-neon/30 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-engine-neon"
                 />
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Global Neon Radius (px)</label>
-                <input 
-                  type="text" 
-                  value={localTheme.neon_radius.replace('px','')} 
-                  onChange={(e) => handleChange("neon_radius", `${e.target.value}px`)}
-                  className="w-full bg-engine-bg border border-engine-neon/30 text-white rounded-lg px-3 py-2 text-sm outline-none focus:border-engine-neon"
-                />
-              </div>
 
               {/* Panel Neon Settings */}
               <div className="pt-4 border-t border-gray-800">
@@ -430,11 +421,11 @@ export default function CustomizePlatform() {
         <div className="h-full overflow-y-auto p-10 relative z-10 custom-scrollbar space-y-10">
           
           {/* Mock Header */}
-          <div className="flex items-center justify-between border-b border-engine-neon/20 pb-4">
+          <div className="flex items-center justify-between border-b border-engine-panel-border/20 pb-4">
             <h2 className="text-2xl font-extrabold uppercase tracking-widest" style={{ textShadow: localTheme.neon_font_style === "none" ? "none" : `0 0 10px ${localTheme.neon_color}`}}>Live Preview</h2>
             <div className="flex gap-4">
-              <div className="px-4 py-2 bg-engine-panel/80 rounded-full border border-engine-neon/20 text-sm font-bold flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: localTheme.neon_color, boxShadow: `0 0 ${localTheme.neon_radius} ${localTheme.neon_color}` }}></span>
+              <div className="px-4 py-2 bg-engine-panel rounded-full border border-engine-panel-border/20 shadow-panel-neon text-sm font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: localTheme.neon_color, boxShadow: `0 0 ${localTheme.panel_neon_radius} ${localTheme.neon_color}` }}></span>
                 System Online
               </div>
             </div>
@@ -442,21 +433,21 @@ export default function CustomizePlatform() {
 
           {/* Mock Dashboard Widgets */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="col-span-2 bg-engine-panel border border-engine-neon/30 rounded-2xl p-6 shadow-lg" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})`, boxShadow: `0 0 ${localTheme.neon_radius} ${localTheme.neon_color}22`}}>
+            <div className="col-span-2 bg-engine-panel border border-engine-panel-border/30 rounded-2xl p-6 shadow-panel-neon" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})` }}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold">Portfolio Overview</h3>
                 <span className="text-engine-neon text-sm">+2.4%</span>
               </div>
-              <div className="h-40 flex items-end gap-2 pt-4 border-b border-engine-neon/20">
+              <div className="h-40 flex items-end gap-2 pt-4 border-b border-engine-panel-border/20">
                 {[40, 70, 45, 90, 60, 80, 50].map((h, i) => (
-                  <div key={i} className="flex-1 bg-gradient-to-t rounded-t-sm" style={{ height: `${h}%`, backgroundImage: `linear-gradient(to top, ${localTheme.neon_color}22, ${localTheme.neon_color})`, opacity: 0.8 }}></div>
+                  <div key={i} className="flex-1 bg-gradient-to-t rounded-t-sm border-t border-engine-panel-border/50" style={{ height: `${h}%`, backgroundImage: `linear-gradient(to top, ${localTheme.neon_color}22, ${localTheme.neon_color})`, opacity: 0.8 }}></div>
                 ))}
               </div>
             </div>
             
             <div className="col-span-1 space-y-6">
-              <div className="bg-engine-panel border border-engine-neon/30 rounded-2xl p-6 shadow-lg flex flex-col items-center justify-center h-full" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})` }}>
-                <div className="w-16 h-16 rounded-full border-2 mb-4 flex items-center justify-center text-2xl font-bold" style={{ borderColor: localTheme.neon_color, boxShadow: `0 0 ${localTheme.neon_radius} ${localTheme.neon_color}` }}>
+              <div className="bg-engine-panel border border-engine-panel-border/30 rounded-2xl p-6 shadow-panel-neon flex flex-col items-center justify-center h-full" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})` }}>
+                <div className="w-16 h-16 rounded-full border-2 mb-4 flex items-center justify-center text-2xl font-bold shadow-panel-neon" style={{ borderColor: localTheme.panel_border_color }}>
                   W
                 </div>
                 <h3 className="font-bold mb-1">Win Rate</h3>
@@ -469,16 +460,16 @@ export default function CustomizePlatform() {
           <div className="space-y-4">
             <h3 className="font-bold text-gray-400 mb-2">Recent Activity</h3>
             
-            <div className="bg-engine-panel border border-engine-neon/30 rounded-2xl p-6 shadow-lg" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})` }}>
+            <div className="bg-engine-panel border border-engine-panel-border/30 rounded-2xl p-6 shadow-panel-neon" style={{ backgroundColor: `${localTheme.panel_color}${Math.floor(localTheme.glass_opacity * 255).toString(16).padStart(2, '0')}`, backdropFilter: `blur(${localTheme.glass_blur})` }}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full border flex items-center justify-center font-bold" style={{ borderColor: localTheme.neon_color, backgroundColor: `${localTheme.bg_color}`}}>TR</div>
+                <div className="w-10 h-10 rounded-full border flex items-center justify-center font-bold" style={{ borderColor: localTheme.panel_border_color, backgroundColor: `${localTheme.bg_color}`}}>TR</div>
                 <div>
-                  <p className="font-bold text-sm flex items-center gap-1">TraderOne <span className="text-[10px] bg-engine-neon/20 text-engine-neon px-2 py-0.5 rounded-full border border-engine-neon/30">PRO</span></p>
+                  <p className="font-bold text-sm flex items-center gap-1">TraderOne <span className="text-[10px] bg-engine-button/20 text-engine-neon px-2 py-0.5 rounded-full border border-engine-button-border/30 shadow-button-neon">PRO</span></p>
                   <p className="text-[10px] text-gray-500">2 hours ago</p>
                 </div>
               </div>
               <p className="text-sm mb-4 leading-relaxed">Just hit my weekly target using the new momentum strategy! The key is waiting for the EMA crossover confirmation on the 15m chart. 🚀📉</p>
-              <div className="flex gap-4 border-t border-engine-neon/10 pt-3">
+              <div className="flex gap-4 border-t border-engine-panel-border/10 pt-3">
                 <button className="text-xs font-bold flex items-center gap-1 transition-colors hover:opacity-80" style={{ color: localTheme.neon_color }}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>
                   24 Likes
@@ -496,11 +487,11 @@ export default function CustomizePlatform() {
           <div className="space-y-4">
             <h3 className="font-bold text-gray-400 mb-2">UI Elements</h3>
             <div className="flex gap-4">
-              <button className="px-6 py-2.5 rounded-xl font-bold shadow-lg transition-transform hover:scale-105" style={{ backgroundColor: localTheme.button_color, color: localTheme.bg_color, boxShadow: `0 0 ${localTheme.neon_radius} ${localTheme.button_color}66`}}>
+              <button className="px-6 py-2.5 rounded-xl font-bold transition-transform hover:scale-105 shadow-button-neon border border-engine-button-border" style={{ backgroundColor: localTheme.button_color, color: localTheme.bg_color }}>
                 Primary Action
               </button>
-              <button className="px-6 py-2.5 rounded-xl font-bold border transition-all hover:bg-opacity-10" style={{ borderColor: localTheme.button_color, color: localTheme.button_color, backgroundColor: `${localTheme.button_color}11`}}>
-                Secondary Action
+              <button className="px-6 py-2.5 rounded-xl font-bold bg-transparent border border-engine-button-border/50 text-engine-neon hover:bg-engine-button/10 transition-colors shadow-button-neon">
+                Secondary
               </button>
             </div>
             <div>

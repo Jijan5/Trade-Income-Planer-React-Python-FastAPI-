@@ -5,7 +5,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const val = payload[0].value;
     return (
-      <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-4 rounded-xl shadow-panel-neon backdrop-blur-md">
+      <div className="bg-engine-panel border border-engine-panel-border/30 p-4 rounded-xl shadow-panel-neon backdrop-blur-engine">
         <p className="text-[10px] text-engine-neon font-extrabold uppercase tracking-widest mb-1">Target for {label}</p>
         <p className="text-white font-mono font-bold text-xl drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
           {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val)}
@@ -103,7 +103,7 @@ const GoalPlanner = () => {
     <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
       
       {/* Header */}
-      <div className="bg-engine-panel/80 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
+      <div className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
         <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">
           <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">🎯</span> Ultimate Goal Planner
         </h2>
@@ -267,17 +267,17 @@ const GoalPlanner = () => {
              </h3>
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  
-                 <div className="bg-engine-panel/80/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
+                 <div className="bg-engine-panel/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
                      <p className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mb-2">Month 1 Target</p>
                      <p className="text-xl font-bold font-mono text-white">+{formatCurrency(actionPlan.month1Profit)}</p>
                  </div>
 
-                 <div className="bg-engine-panel/80/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
+                 <div className="bg-engine-panel/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
                      <p className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mb-2">Weekly Quota</p>
                      <p className="text-xl font-bold font-mono text-green-400">+{formatCurrency(actionPlan.weeklyProfit)}</p>
                  </div>
 
-                 <div className="bg-engine-panel/80/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
+                 <div className="bg-engine-panel/40 border border-engine-panel-border/20 rounded-xl p-5 hover:border-engine-panel-border/30 transition-colors">
                      <p className="text-[9px] text-gray-500 font-extrabold uppercase tracking-widest mb-2">Daily Quota (5D)</p>
                      <p className="text-xl font-bold font-mono text-blue-400">+{formatCurrency(actionPlan.dailyProfit)}</p>
                  </div>

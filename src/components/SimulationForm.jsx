@@ -127,11 +127,11 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
       {/* Tooltip Modal */}
       {activeTooltip && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4"
           onClick={() => setActiveTooltip(null)}
         >
           <div
-            className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative animate-fade-in"
+            className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -153,7 +153,7 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md"
+        className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-engine-panel-border/10 pb-6 gap-6">
           <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">

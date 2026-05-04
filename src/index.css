@@ -58,6 +58,10 @@
   .shadow-button-neon {
     box-shadow: 0 0 var(--engine-button-neon-radius) rgb(var(--engine-neon-rgb) / var(--engine-button-neon-opacity));
   }
+  .backdrop-blur-engine {
+    backdrop-filter: blur(var(--engine-glass-blur));
+    -webkit-backdrop-filter: blur(var(--engine-glass-blur));
+  }
 }
 
 .futuristic-bg::before {

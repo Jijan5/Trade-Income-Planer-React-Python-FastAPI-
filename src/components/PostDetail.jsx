@@ -146,7 +146,7 @@ const PostDetail = ({ showFlash }) => {
 
   const renderComment = (comment) => (
     <div key={comment.id} className="mt-4" style={{ paddingLeft: comment.parent_id ? "1.5rem" : "0", borderLeft: comment.parent_id ? "2px solid rgba(var(--engine-neon-rgb),0.2)" : "none" }}>
-      <div className="bg-engine-panel/60 p-4 rounded-xl border border-engine-panel-border/10 hover:border-engine-panel-border/30 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+      <div className="bg-engine-panel p-4 rounded-xl border border-engine-panel-border/10 hover:border-engine-panel-border/30 transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
             <span className="font-extrabold text-engine-neon text-xs uppercase tracking-widest drop-shadow-[0_0_2px_#00cfff]">{comment.username}</span>
@@ -205,7 +205,7 @@ const PostDetail = ({ showFlash }) => {
         ← BACK
       </button>
 
-      <div className="bg-engine-panel/80 backdrop-blur-md p-8 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon">
+      <div className="bg-engine-panel backdrop-blur-engine p-8 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon">
         {/* Post Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center gap-4">
@@ -237,7 +237,7 @@ const PostDetail = ({ showFlash }) => {
                 •••
               </button>
               {activeMenu === 'post' && (
-                <div ref={menuRef} className="absolute right-0 mt-2 w-40 bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-xl shadow-panel-neon z-10 overflow-hidden">
+                <div ref={menuRef} className="absolute right-0 mt-2 w-40 bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-xl shadow-panel-neon z-10 overflow-hidden">
                   <button onClick={handleDeleteClick} className="w-full text-left px-5 py-3 text-[10px] font-extrabold uppercase tracking-widest text-red-400 hover:bg-red-900/20 transition-colors">DELETE</button>
                   </div>
               )}
@@ -285,7 +285,7 @@ const PostDetail = ({ showFlash }) => {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="WRITE A COMMENT..."
-            className="flex-1 bg-engine-panel/80 backdrop-blur-md border border-engine-panel-border/30 rounded-xl px-5 py-4 text-white text-xs font-mono placeholder:text-engine-neon/30 focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
+            className="flex-1 bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-xl px-5 py-4 text-white text-xs font-mono placeholder:text-engine-neon/30 focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all"
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -305,14 +305,14 @@ const PostDetail = ({ showFlash }) => {
         {/* Comment List */}
         <div className="space-y-4">
           {buildCommentTree(comments).map(renderComment)}
-          {comments.length === 0 && <p className="text-engine-neon/50 text-center py-8 text-[10px] font-extrabold uppercase tracking-widest bg-engine-panel/60 border border-engine-panel-border/10 rounded-2xl">NO COMMENTS YET.</p>}
+          {comments.length === 0 && <p className="text-engine-neon/50 text-center py-8 text-[10px] font-extrabold uppercase tracking-widest bg-engine-panel border border-engine-panel-border/10 rounded-2xl">NO COMMENTS YET.</p>}
         </div>
       </div>
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setShowDeleteModal(false)}>
-          <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">DELETE POST?</h3>
             <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS POST? THIS ACTION CANNOT BE UNDONE.</p>
             <div className="flex justify-center gap-4">
@@ -325,8 +325,8 @@ const PostDetail = ({ showFlash }) => {
 
       {/* Delete Comment Modal */}
       {commentToDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in" onClick={() => setCommentToDelete(null)}>
-          <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in" onClick={() => setCommentToDelete(null)}>
+          <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] flex flex-col items-center gap-3">
               <span className="text-4xl">⚠</span> DELETE COMMENT?
             </h3>

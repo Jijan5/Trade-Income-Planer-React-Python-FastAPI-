@@ -121,8 +121,8 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-engine flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="p-4 sm:p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
@@ -136,7 +136,7 @@ export const TradingGlossary = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="p-4 sm:p-5 flex-1 overflow-hidden flex flex-col min-h-0 bg-engine-panel/40">
+        <div className="p-4 sm:p-5 flex-1 overflow-hidden flex flex-col min-h-0 bg-engine-panel">
           <input
             type="text"
             placeholder="SEARCH TERMS..."
@@ -252,8 +252,8 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-engine flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/30 shadow-panel-neon w-full max-w-[95vw] sm:max-w-md my-4 max-h-[90vh] flex flex-col relative overflow-hidden">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="p-4 sm:p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/80 shrink-0">
           <h2 className="text-base sm:text-lg font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
@@ -267,7 +267,7 @@ export const PreTradeChecklist = ({ isOpen, onClose, onConfirm }) => {
           </button>
         </div>
 
-        <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1 custom-scrollbar bg-engine-panel/40">
+        <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1 custom-scrollbar bg-engine-panel">
           <p className="text-xs font-bold text-engine-neon/70 uppercase tracking-widest mb-3 border-b border-engine-panel-border/10 pb-2">
             Complete required items before trading:
           </p>
@@ -409,8 +409,8 @@ export const TutorialOverlay = ({ isOpen, onClose }) => {
   const progress = ((currentStep + 1) / TUTORIAL_STEPS.length) * 100;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
-      <div className="bg-engine-panel/95 rounded-2xl border border-engine-panel-border/40 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-panel-neon overflow-hidden relative">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-engine flex items-center justify-center z-50 p-4 sm:p-6 overflow-y-auto">
+      <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/40 w-full max-w-[95vw] sm:max-w-lg my-4 shadow-panel-neon overflow-hidden relative">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
         <div className="bg-engine-bg h-1.5 sm:h-2">
           <div
@@ -493,19 +493,19 @@ export const BeginnerHelpButtons = ({
     <div className="flex flex-wrap gap-2 sm:gap-3 mb-5">
       <button
         onClick={onOpenTutorial}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <GraduationCap className="w-4 h-4" /> Tutorial
       </button>
       <button
         onClick={onOpenChecklist}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <CheckSquare className="w-4 h-4" /> Checklist
       </button>
       <button
         onClick={onOpenGlossary}
-        className="flex-1 min-w-[100px] bg-engine-panel/80 border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
+        className="flex-1 min-w-[100px] bg-engine-panel border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border text-engine-neon text-[10px] font-extrabold py-3 px-2 sm:px-3 rounded-xl flex items-center justify-center gap-1 sm:gap-2 transition-all uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5"
       >
         <BookOpen className="w-4 h-4" /> Glossary
       </button>

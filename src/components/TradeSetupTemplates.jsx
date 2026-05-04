@@ -127,7 +127,7 @@ export const TradeSetupTemplates = ({
   const [expandedTemplate, setExpandedTemplate] = useState(null);
 
   return (
-    <div className="bg-engine-panel/60 p-5 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md mb-4">
+    <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine mb-4">
       <div className="flex items-center gap-2 mb-3 border-b border-engine-panel-border/10 pb-3">
         <ClipboardList className="w-5 h-5 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" />
         <h4 className="text-[10px] font-extrabold text-engine-neon uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Trade Setup Templates</h4>

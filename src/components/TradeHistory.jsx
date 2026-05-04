@@ -194,7 +194,7 @@ const TradeHistory = () => {
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center bg-engine-panel/80 backdrop-blur-md p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
+      <div className="flex justify-between items-center bg-engine-panel backdrop-blur-engine p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
         <h2 className="text-xl font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
           Overview & Performance
         </h2>
@@ -291,7 +291,7 @@ const TradeHistory = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               {/* Total Profit Card */}
-              <div className="bg-engine-panel/50 border border-green-500/30 rounded-xl p-5 relative overflow-hidden group">
+              <div className="bg-engine-panel border border-green-500/30 rounded-xl p-5 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-t from-green-500/10 to-transparent z-0"></div>
                 <div className="relative z-10">
                   <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Total Profit</p>
@@ -315,7 +315,7 @@ const TradeHistory = () => {
               </div>
               
               {/* Streak / Count Card */}
-              <div className="bg-engine-panel/50 border border-engine-panel-border/30 rounded-xl p-5 relative overflow-hidden">
+              <div className="bg-engine-panel border border-engine-panel-border/30 rounded-xl p-5 relative overflow-hidden">
                 <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Trade Consistency</p>
                 <div className="grid grid-cols-3 gap-2 mt-2">
                     <div>
@@ -335,22 +335,22 @@ const TradeHistory = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="bg-engine-panel/50 border border-engine-panel-border/20 rounded-xl p-4">
+              <div className="bg-engine-panel border border-engine-panel-border/20 rounded-xl p-4">
                 <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Avg Win</p>
                 <p className="text-lg font-bold font-mono text-white">${stats.avgWin.toFixed(2)}</p>
               </div>
-              <div className="bg-engine-panel/50 border border-engine-panel-border/20 rounded-xl p-4">
+              <div className="bg-engine-panel border border-engine-panel-border/20 rounded-xl p-4">
                 <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Avg Loss</p>
                 <p className="text-lg font-bold font-mono text-red-300">-${stats.avgLoss.toFixed(2)}</p>
               </div>
-              <div className="bg-engine-panel/50 border border-engine-panel-border/20 rounded-xl p-4">
+              <div className="bg-engine-panel border border-engine-panel-border/20 rounded-xl p-4">
                 <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Risk/Reward</p>
                 <p className="text-lg font-bold font-mono text-white">1:{stats.avgRR.toFixed(1)} <span className="text-[9px] text-gray-500 font-sans">Ratio</span></p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-engine-panel/50 border border-green-500/20 rounded-xl p-4 flex items-center justify-between">
+              <div className="bg-engine-panel border border-green-500/20 rounded-xl p-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Best Trade</p>
                   <p className="text-lg font-bold font-mono text-green-400">${parseFloat(stats.bestTrade?.pnl || 0).toFixed(2)}</p>
@@ -359,7 +359,7 @@ const TradeHistory = () => {
                   <span className="text-xs font-extrabold text-gray-300 border-l border-engine-panel-border/30 pl-3">{stats.bestTrade?.symbol || '-'}</span>
                 </div>
               </div>
-              <div className="bg-engine-panel/50 border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
+              <div className="bg-engine-panel border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Worst Trade</p>
                   <p className="text-lg font-bold font-mono text-red-400">-${Math.abs(parseFloat(stats.worstTrade?.pnl || 0)).toFixed(2)}</p>
@@ -387,7 +387,7 @@ const TradeHistory = () => {
             </div>
           ) : (
             <table className="min-w-full divide-y divide-engine-neon/10">
-              <thead className="bg-engine-panel/50">
+              <thead className="bg-engine-panel">
                 <tr>
                   <th className="px-6 py-4 text-left text-[10px] font-extrabold text-gray-500 uppercase tracking-widest">Date</th>
                   <th className="px-6 py-4 text-left text-[10px] font-extrabold text-gray-500 uppercase tracking-widest">Asset</th>

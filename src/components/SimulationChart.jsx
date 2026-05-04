@@ -334,14 +334,14 @@ export default function SimulationChart({ data }) {
   };
 
   return (
-    <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden relative"
+    <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine overflow-hidden relative"
       style={{ animation: 'chartFadeIn 0.5s ease-out forwards' }}>
       <style>{`@keyframes chartFadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
       
       {/* Prompt Modal for Text Tool */}
       {promptModal.isOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-engine-bg/80 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-xs w-full text-center">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-engine-bg/80 backdrop-blur-engine p-4 animate-fade-in">
+          <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-xs w-full text-center">
             <h3 className="text-sm font-extrabold mb-4 uppercase tracking-widest text-engine-neon drop-shadow-panel-neon">
               ADD TEXT LABEL
             </h3>

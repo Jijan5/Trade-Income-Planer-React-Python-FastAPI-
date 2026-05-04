@@ -87,7 +87,7 @@ const ImageCropModal = ({ file, onApply, onCancel }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-engine p-4">
       <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-lg w-full">
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <span className="text-engine-neon">✂️</span> Crop Avatar

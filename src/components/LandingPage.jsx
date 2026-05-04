@@ -282,7 +282,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
             animate="visible"
             className="max-w-5xl mx-auto space-y-10"
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center px-5 py-2.5 rounded-full bg-[#00cfff]/10 backdrop-blur-md shadow-[0_0_15px_rgba(0,207,255,0.1)] text-[#00cfff] text-sm font-semibold uppercase tracking-wider">
+            <motion.div variants={fadeUp} className="inline-flex items-center px-5 py-2.5 rounded-full bg-[#00cfff]/10 backdrop-blur-engine shadow-[0_0_15px_rgba(0,207,255,0.1)] text-[#00cfff] text-sm font-semibold uppercase tracking-wider">
               <span className="w-2 h-2 bg-[#00cfff] rounded-full mr-3 shadow-[0_0_8px_#00cfff] animate-pulse"></span>
               The #1 Platform for Training Crypto, Forex, and Commodities Traders
             </motion.div>
@@ -311,7 +311,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                 whileHover={{ scale: 1.03, backgroundColor: "rgba(255,255,255,0.05)" }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onLogin}
-                className="px-10 py-5 bg-transparent text-white rounded-2xl font-bold text-lg backdrop-blur-md shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(0,207,255,0.5)] transition-all"
+                className="px-10 py-5 bg-transparent text-white rounded-2xl font-bold text-lg backdrop-blur-engine shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)] hover:shadow-[inset_0_0_0_1px_rgba(0,207,255,0.5)] transition-all"
               >
                 Access Dashboard
               </motion.button>
@@ -347,7 +347,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                   key={idx}
                   variants={fadeUp}
                   whileHover={{ y: -8, boxShadow: "0 20px 40px -10px rgba(0, 207, 255, 0.15)" }}
-                  className="group relative bg-[#0a0f1c]/60 p-10 rounded-[2rem] backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300 overflow-hidden"
+                  className="group relative bg-[#0a0f1c]/60 p-10 rounded-[2rem] backdrop-blur-engine shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative z-10">
@@ -419,7 +419,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
 
                   {/* Image Side */}
                   <motion.div variants={fadeUp} className="flex-1 w-full">
-                    <div className="relative rounded-[2rem] overflow-hidden bg-[#0a0f1c]/40 backdrop-blur-lg shadow-[0_20px_50px_rgba(0,0,0,0.3)] group aspect-video">
+                    <div className="relative rounded-[2rem] overflow-hidden bg-[#0a0f1c]/40 backdrop-blur-engine shadow-[0_20px_50px_rgba(0,0,0,0.3)] group aspect-video">
                       <div className="absolute inset-0 bg-gradient-to-tr from-[#00cfff]/10 to-transparent opacity-50 z-10 pointer-events-none mix-blend-overlay"></div>
                       
                       <FeatureCarousel images={feature.images} />
@@ -475,7 +475,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                   key={idx}
                   variants={fadeUp}
                   whileHover={{ scale: 1.02, backgroundColor: "rgba(10, 15, 28, 0.8)", boxShadow: "0 10px 30px rgba(0, 207, 255, 0.08)" }}
-                  className="bg-[#0a0f1c]/50 p-8 rounded-3xl backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col h-full relative overflow-hidden group"
+                  className="bg-[#0a0f1c]/50 p-8 rounded-3xl backdrop-blur-engine shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col h-full relative overflow-hidden group"
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="w-14 h-14 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,207,255,0.05)] text-[#00cfff]">
@@ -494,7 +494,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
           <motion.div 
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
             variants={fadeUp}
-            className="max-w-5xl mx-auto text-center bg-[#0a0f1c]/80 backdrop-blur-xl p-16 md:p-24 rounded-[3rem] shadow-[0_0_50px_rgba(0,207,255,0.05)] relative overflow-hidden group"
+            className="max-w-5xl mx-auto text-center bg-[#0a0f1c]/80 backdrop-blur-engine p-16 md:p-24 rounded-[3rem] shadow-[0_0_50px_rgba(0,207,255,0.05)] relative overflow-hidden group"
           >
             {/* Animated glow background inside CTA */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#00cfff]/5 to-transparent opacity-50"></div>

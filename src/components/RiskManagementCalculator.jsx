@@ -114,7 +114,7 @@ const RiskManagementCalculator = ({
   // If compact mode, show simplified version
   if (compact) {
     return (
-      <div className="bg-engine-panel/60 p-5 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md">
+      <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine">
         <h3 className="text-[10px] font-extrabold text-engine-neon/70 uppercase tracking-widest mb-4 flex items-center gap-2">
           <Zap className="w-4 h-4" /> Risk Calculator
         </h3>
@@ -157,8 +157,8 @@ const RiskManagementCalculator = ({
 
   // Full mode
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-engine-bg/90 backdrop-blur-md">
-      <div className="bg-engine-panel/90 rounded-2xl border border-engine-panel-border/30 w-full max-w-lg max-h-[90vh] overflow-hidden shadow-panel-neon backdrop-blur-xl flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-engine-bg/90 backdrop-blur-engine">
+      <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/30 w-full max-w-lg max-h-[90vh] overflow-hidden shadow-panel-neon backdrop-blur-engine flex flex-col">
         {/* Header with Back Button */}
         <div className="bg-engine-bg/50 p-5 border-b border-engine-panel-border/20 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -193,7 +193,7 @@ const RiskManagementCalculator = ({
               </button>
             </div>
             {showInfo === 'accountBalance' && (
-              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
+              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-engine">
                 <h4 className="font-extrabold text-engine-neon text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.accountBalance.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.accountBalance.content}</p>
                 <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.accountBalance.tip}</p>
@@ -231,7 +231,7 @@ const RiskManagementCalculator = ({
               </span>
             </div>
             {showInfo === 'riskPercent' && (
-              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
+              <div className="mb-4 p-4 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-engine">
                 <h4 className="font-extrabold text-engine-neon text-xs mb-2 uppercase tracking-widest drop-shadow-[0_0_3px_#00cfff]">{educationalContent.riskPercent.title}</h4>
                 <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.riskPercent.content}</p>
                 <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold mt-1"><Lightbulb className="w-3 h-3" /> {educationalContent.riskPercent.tip}</p>
@@ -330,7 +330,7 @@ const RiskManagementCalculator = ({
                   </button>
                 </div>
                 {showInfo === 'stopLoss' && (
-                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
+                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-engine">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.stopLoss.content}</p>
                     <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.stopLoss.tip}</p>
                   </div>
@@ -356,7 +356,7 @@ const RiskManagementCalculator = ({
                   </button>
                 </div>
                 {showInfo === 'takeProfit' && (
-                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
+                  <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-engine">
                     <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.takeProfit.content}</p>
                     <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.takeProfit.tip}</p>
                   </div>
@@ -406,7 +406,7 @@ const RiskManagementCalculator = ({
                     </button>
                   </div>
                   {showInfo === 'positionSize' && (
-                    <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-md">
+                    <div className="mb-3 p-3 bg-engine-bg/90 rounded-xl border border-engine-panel-border/50 shadow-panel-neon backdrop-blur-engine">
                       <p className="text-gray-300 text-xs leading-relaxed font-medium mb-2">{educationalContent.positionSize.content}</p>
                       <p className="text-engine-neon text-[10px] uppercase tracking-widest bg-engine-button/10 p-2 rounded border border-engine-button-border/20 inline-flex items-center gap-1 font-bold"><Lightbulb className="w-3 h-3" /> {educationalContent.positionSize.tip}</p>
                     </div>

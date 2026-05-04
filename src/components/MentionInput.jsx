@@ -120,7 +120,7 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
             />
             
             {showSuggestions && (
-                <div className="absolute z-[100] mt-1 w-64 max-h-64 overflow-y-auto bg-engine-panel/95 backdrop-blur-xl border border-engine-panel-border/50 rounded-xl shadow-[0_10px_50px_rgba(var(--engine-neon-rgb),0.3)] custom-scrollbar">
+                <div className="absolute z-[100] mt-1 w-64 max-h-64 overflow-y-auto bg-engine-panel backdrop-blur-engine border border-engine-panel-border/50 rounded-xl shadow-[0_10px_50px_rgba(var(--engine-neon-rgb),0.3)] custom-scrollbar">
                     <div className="px-3 py-2 border-b border-engine-panel-border/20 text-[10px] text-engine-neon font-extrabold uppercase tracking-widest bg-engine-bg/50">
                         Select a User
                     </div>

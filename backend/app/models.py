@@ -101,7 +101,6 @@ class UserTheme(SQLModel, table=True):
     glass_blur: str = SQLField(default="12px")
     font_family: str = SQLField(default="Inter")
     text_color: str = SQLField(default="#ffffff")
-    neon_radius: str = SQLField(default="20px")
     neon_font_style: str = SQLField(default="none")
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
 
@@ -122,7 +121,6 @@ class UserThemeCreateUpdate(BaseModel):
     glass_blur: Optional[str] = None
     font_family: Optional[str] = None
     text_color: Optional[str] = None
-    neon_radius: Optional[str] = None
     neon_font_style: Optional[str] = None
 
 

@@ -16,7 +16,7 @@ import RiskManagementCalculator from "./RiskManagementCalculator";
 
 // Memoized History Table to prevent re-renders on price ticks
 const TradeHistoryTable = React.memo(({ history }) => (
-  <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden">
+  <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine overflow-hidden">
     <div className="p-4 border-b border-engine-panel-border/10 bg-engine-bg/80">
       <h3 className="text-xs font-extrabold text-engine-neon uppercase tracking-widest flex items-center gap-2">
         <span className="text-lg">📜</span> Trade History
@@ -275,7 +275,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
   if (!isSessionActive) {
     if (lockout) {
       return (
-        <div className="bg-engine-bg/95 border border-red-500/50 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.1)] backdrop-blur-md max-w-md mx-auto mt-10 text-center animate-fade-in">
+        <div className="bg-engine-bg/95 border border-red-500/50 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.1)] backdrop-blur-engine max-w-md mx-auto mt-10 text-center animate-fade-in">
           <div className="text-6xl mb-4 animate-bounce">⛔</div>
           <h2 className="text-2xl font-extrabold text-red-400 mb-2 uppercase tracking-widest drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
             Trading Disabled
@@ -298,7 +298,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
     }
 
     return (
-      <div className="bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md max-w-md mx-auto mt-10 text-center">
+      <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine max-w-md mx-auto mt-10 text-center">
         <h2 className="text-2xl font-extrabold text-white mb-2 uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">
           Live Market Simulator
         </h2>
@@ -482,7 +482,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         {/* Challenge Status Card */}
         {config.isChallengeMode && (
           <div
-            className={`p-5 rounded-2xl border backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.2)] ${
+            className={`p-5 rounded-2xl border backdrop-blur-engine shadow-[0_0_20px_rgba(0,0,0,0.2)] ${
               challengeState.status === "FAILED"
                 ? "bg-red-900/10 border-red-500/40"
                 : challengeState.status === "PASSED"
@@ -598,7 +598,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         )}
 
         {/* AI Trading Coach Widget */}
-        <div className="col-span-1 bg-engine-panel/60 p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-md relative overflow-hidden">
+        <div className="col-span-1 bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-engine relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-engine-neon/5 to-transparent pointer-events-none"></div>
           <div className="flex justify-between items-center mb-5 relative z-10">
             <h3 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
@@ -702,7 +702,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         </div>
 
         {/* Account Stats */}
-        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md relative overflow-hidden">
+        <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-engine-button/5 rounded-full blur-3xl"></div>
           <div className="flex justify-between items-end mb-2 relative z-10">
             <p className="text-xs font-extrabold text-engine-neon/70 uppercase tracking-widest">Equity</p>
@@ -747,7 +747,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
         </div>
 
         {/* Trading Controls */}
-        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md relative">
+        <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine relative">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-sm font-extrabold text-engine-neon uppercase tracking-widest bg-engine-button/10 px-3 py-1.5 rounded-lg border border-engine-button-border/30">
               {activeSymbol}
@@ -955,7 +955,7 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
       {/* RIGHT COLUMN: POSITIONS & HISTORY */}
       <div className="lg:col-span-2 space-y-6">
         {/* Open Positions */}
-        <div className="bg-engine-panel/60 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md overflow-hidden min-h-[200px]">
+        <div className="bg-engine-panel rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine overflow-hidden min-h-[200px]">
           <div className="p-4 border-b border-engine-panel-border/10 bg-engine-bg/80 flex justify-between items-center">
             <h3 className="text-xs font-extrabold text-engine-neon uppercase tracking-widest flex items-center gap-2">
               <span className="text-lg">🎯</span> Open Positions

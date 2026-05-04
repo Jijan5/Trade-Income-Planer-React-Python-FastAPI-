@@ -98,7 +98,7 @@ const Subscription = ({ onSubscribe }) => {
           return (
           <div 
             key={plan.id}
-            className={`relative bg-engine-panel/60 backdrop-blur-md rounded-2xl transition-all duration-300 flex flex-col
+            className={`relative bg-engine-panel backdrop-blur-engine rounded-2xl transition-all duration-300 flex flex-col
               ${plan.recommended 
                 ? 'border border-engine-panel-border shadow-panel-neon md:-translate-y-4 md:scale-105 z-20' 
                 : 'border border-engine-panel-border/10 hover:border-engine-panel-border/30 hover:shadow-panel-neon hover:-translate-y-2'}

@@ -201,7 +201,7 @@ const ChatAssistant = () => {
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       {/* Market Data Panel */}
       {isOpen && showMarketPanel && (
-        <div className="bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
+        <div className="bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
           {/* Header */}
           <div className="bg-engine-bg p-4 border-b border-engine-panel-border/20 flex justify-between items-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
@@ -256,7 +256,7 @@ const ChatAssistant = () => {
           </div>
 
           {/* Market Data */}
-          <div className="flex-1 overflow-y-auto p-4 bg-engine-panel/50 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 bg-engine-panel custom-scrollbar">
             {loadingMarket ? (
               <div className="flex flex-col items-center justify-center h-full gap-3">
                  <div className="w-6 h-6 border-2 border-engine-panel-border/30 border-t-[#00cfff] rounded-full animate-spin"></div>
@@ -358,7 +358,7 @@ const ChatAssistant = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-engine-panel/95 backdrop-blur-md border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
+        <div className="bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
           {/* Header */}
           <div className="bg-engine-bg p-4 border-b border-engine-panel-border/20 flex justify-between items-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-engine-neon/10 to-transparent pointer-events-none"></div>
@@ -425,7 +425,7 @@ const ChatAssistant = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-engine-panel/50 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-engine-panel custom-scrollbar">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
@@ -485,7 +485,7 @@ const ChatAssistant = () => {
                 >
                   ✕
                 </button>
-                <div className="absolute bottom-2 left-2 bg-engine-bg/80 backdrop-blur-sm text-engine-neon text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-engine-panel-border/30">
+                <div className="absolute bottom-2 left-2 bg-engine-bg/80 backdrop-blur-engine text-engine-neon text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-engine-panel-border/30">
                   📊 Chart Ready
                 </div>
               </div>

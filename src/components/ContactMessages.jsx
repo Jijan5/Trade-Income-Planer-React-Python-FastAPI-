@@ -83,12 +83,12 @@ const ContactMessages = ({ showFlash }) => {
       <h2 className="text-2xl font-extrabold mb-8 uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">CONTACT US MESSAGES</h2>
       <div className="space-y-6 max-w-5xl mx-auto">
         {messages.length === 0 && (
-          <p className="text-engine-neon/50 text-center py-10 text-[11px] font-extrabold uppercase tracking-widest bg-engine-panel/80 backdrop-blur-md rounded-2xl border border-engine-panel-border/20">NO NEW MESSAGES.</p>
+          <p className="text-engine-neon/50 text-center py-10 text-[11px] font-extrabold uppercase tracking-widest bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20">NO NEW MESSAGES.</p>
         )}
         {messages.map((message) => (
           <div
             key={message.id}
-            className="bg-engine-panel/80 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon hover:border-engine-panel-border/40 transition-all group"
+            className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon hover:border-engine-panel-border/40 transition-all group"
           >
             <div className="flex justify-between items-start mb-4 border-b border-engine-panel-border/10 pb-4">
               <div>
@@ -116,8 +116,8 @@ const ContactMessages = ({ showFlash }) => {
       </div>
 
       {showModal && selectedMessage && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-lg w-full text-left relative overflow-hidden">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+          <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-lg w-full text-left relative overflow-hidden">
              {/* Glow */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-engine-button/10 rounded-full blur-[50px] pointer-events-none"></div>
 

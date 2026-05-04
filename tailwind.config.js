@@ -9,7 +9,7 @@ export default {
       colors: {
         engine: {
           bg: 'rgb(var(--engine-bg-rgb) / <alpha-value>)',
-          panel: 'rgb(var(--engine-panel-rgb) / <alpha-value>)',
+          panel: 'rgb(var(--engine-panel-rgb) / var(--engine-glass-opacity))',
           neon: 'rgb(var(--engine-neon-rgb) / <alpha-value>)',
           button: 'rgb(var(--engine-button-rgb) / <alpha-value>)',
           'panel-border': 'rgb(var(--engine-panel-border-rgb) / <alpha-value>)',

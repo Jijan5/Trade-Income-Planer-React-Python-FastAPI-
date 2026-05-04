@@ -36,7 +36,7 @@ const SuspendedPage = () => {
             {/* Background Effects */}
             <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-red-900/10 rounded-full blur-[150px] pointer-events-none"></div>
             
-            <div className="max-w-2xl w-full bg-engine-panel/90 backdrop-blur-xl rounded-3xl border border-red-500/50 p-10 shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center relative z-10">
+            <div className="max-w-2xl w-full bg-engine-panel backdrop-blur-engine rounded-3xl border border-red-500/50 p-10 shadow-[0_0_50px_rgba(239,68,68,0.2)] text-center relative z-10">
                 <div className="w-24 h-24 mx-auto bg-red-900/20 rounded-full flex items-center justify-center border border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.3)] mb-8">
                     <Ban className="w-12 h-12 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]" strokeWidth={2.5} />
                 </div>

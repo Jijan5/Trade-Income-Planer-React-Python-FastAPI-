@@ -143,7 +143,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
   };
 
   return (
-    <div key={post.id} id={`post-${post.id}`} className="bg-engine-panel/60 backdrop-blur-md p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all">
+    <div key={post.id} id={`post-${post.id}`} className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all">
             {/* Ambient Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-engine-neon/5 via-transparent to-transparent opacity-0 group-hover/post:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 
@@ -178,7 +178,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     </svg>
                   </button>
                   {activeMenu?.type === "post" && activeMenu?.id === post.id && (
-                    <div ref={menuRef} className="absolute right-0 mt-2 w-36 border border-engine-panel-border/30 rounded-xl shadow-panel-neon z-20 overflow-hidden bg-engine-bg/95 backdrop-blur-md">
+                    <div ref={menuRef} className="absolute right-0 mt-2 w-36 border border-engine-panel-border/30 rounded-xl shadow-panel-neon z-20 overflow-hidden bg-engine-bg/95 backdrop-blur-engine">
                       {currentUser === post.username || userData?.role === 'admin' ? (
                         <>
                           {currentUser === post.username && (
@@ -215,7 +215,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               </div>
             )}
             {post.link_url && (
-              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-engine-panel/80 border border-engine-button-border/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-button-neon transition-all truncate relative z-10">🔗 {post.link_url}</a>
+              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-engine-panel border border-engine-button-border/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-button-neon transition-all truncate relative z-10">🔗 {post.link_url}</a>
             )}
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
@@ -287,7 +287,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                               <div className="relative">
                                 <button onClick={() => toggleMenu("comment", comment.id)} className="text-gray-500 hover:text-engine-neon transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg></button>
                                 {activeMenu?.type === "comment" && activeMenu?.id === comment.id && (
-                                  <div ref={menuRef} className="absolute left-0 mt-2 w-28 border border-engine-panel-border/30 bg-engine-bg/95 backdrop-blur-md rounded-lg shadow-panel-neon z-20 overflow-hidden">
+                                  <div ref={menuRef} className="absolute left-0 mt-2 w-28 border border-engine-panel-border/30 bg-engine-bg/95 backdrop-blur-engine rounded-lg shadow-panel-neon z-20 overflow-hidden">
                                   {currentUser === comment.username && <button onClick={() => startEditComment(comment)} className="w-full text-left px-4 py-2 text-xs text-engine-neon hover:bg-engine-button/10 font-bold transition-colors">Edit</button>}
                                   <button onClick={() => handleDeleteComment(comment.id, post.id)} className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 font-bold transition-colors">Delete</button>
                                   </div>
@@ -325,8 +325,8 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             )}
             {/* Report Modal */}
             {showReportModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowReportModal(false)}>
-                <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowReportModal(false)}>
+                <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <h3 className="text-xl font-extrabold text-engine-neon mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
                   <div className="space-y-4 mb-6">
                     {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
@@ -366,8 +366,8 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowDeleteModal(false)}>
-                <div className="bg-engine-panel/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowDeleteModal(false)}>
+                <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </div>
@@ -383,8 +383,8 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
 
             {/* Share Modal */}
             {showShareModal && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4" onClick={() => setShowShareModal(false)}>
-                <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowShareModal(false)}>
+                <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <h3 className="text-xl font-extrabold text-engine-neon mb-8 text-center tracking-wider">Share Post</h3>
                   <div className="grid grid-cols-4 gap-4 mb-8">
                     <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-3 group">
@@ -874,10 +874,10 @@ const Community = ({
         {/* Header Feed */}
         <div
           style={getCardStyle(activeCommunity)}
-          className="p-8 rounded-2xl border border-engine-panel-border/20 flex items-center justify-between relative overflow-hidden transition-all shadow-panel-neon backdrop-blur-md"
+          className="p-8 rounded-2xl border border-engine-panel-border/20 flex items-center justify-between relative overflow-hidden transition-all shadow-panel-neon backdrop-blur-engine"
         >
           {/* Glass overlay for when backgrounds are bright */}
-          <div className="absolute inset-0 bg-engine-bg/40 backdrop-blur-sm z-0"></div>
+          <div className="absolute inset-0 bg-engine-bg/40 backdrop-blur-engine z-0"></div>
           
           <div className="relative z-10 flex items-center gap-6">
             {activeCommunity.avatar_url ? (
@@ -887,7 +887,7 @@ const Community = ({
                 className="w-20 h-20 rounded-full object-cover border-2 border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl font-extrabold border-2 border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md">
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center text-3xl font-extrabold border-2 border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-engine">
                 {activeCommunity.name.substring(0, 2).toUpperCase()}
               </div>
             )}
@@ -905,17 +905,17 @@ const Community = ({
             </div>
           </div>
           <div className="text-right flex flex-col items-end gap-3 relative z-10">
-            <button className="bg-engine-bg/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-md shadow-lg" onClick={fetchMembers}>
+            <button className="bg-engine-bg/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-engine shadow-lg" onClick={fetchMembers}>
               👥 {activeCommunity.members_count} Members
             </button>
             {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
-               <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full uppercase font-bold tracking-wider backdrop-blur-md">Creator View</span>
+               <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full uppercase font-bold tracking-wider backdrop-blur-engine">Creator View</span>
             )}
           </div>
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-engine-panel/60 p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md mb-6 relative focus-within:z-[60]">
+        <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine mb-6 relative focus-within:z-[60]">
           <form onSubmit={handlePostSubmit}>
             <div className="flex gap-4 sm:gap-5">
               <div className="flex-1 min-w-0">
@@ -1015,11 +1015,11 @@ const Community = ({
         {/* Image Preview Modal */}
         {previewImage && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/95 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/95 backdrop-blur-engine p-4"
             onClick={() => setPreviewImage(null)}
           >
             <button
-              className="absolute top-6 right-6 text-engine-neon/70 hover:text-engine-neon hover:scale-110 transition-all bg-engine-panel/50 p-2 rounded-full border border-engine-panel-border/20"
+              className="absolute top-6 right-6 text-engine-neon/70 hover:text-engine-neon hover:scale-110 transition-all bg-engine-panel p-2 rounded-full border border-engine-panel-border/20"
               onClick={() => setPreviewImage(null)}
             >
               <svg
@@ -1047,8 +1047,8 @@ const Community = ({
         )}
         {/* Members Modal */}
         {showMembersModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+            <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-center mb-6 border-b border-engine-panel-border/10 pb-4">
                 <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><span className="text-engine-neon">👥</span> Community Members</h3>
                 <button onClick={() => setShowMembersModal(false)} className="text-engine-neon/50 hover:text-engine-neon transition-colors text-xl font-bold">✕</button>
@@ -1086,8 +1086,8 @@ const Community = ({
 
         {/* Generic Confirmation Modal */}
         {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center relative overflow-hidden">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+            <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center relative overflow-hidden">
               <div className="w-16 h-16 bg-engine-button/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-engine-button-border/20 shadow-button-neon">
                 <span className="text-3xl text-engine-neon">?</span>
               </div>
@@ -1109,7 +1109,7 @@ const Community = ({
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-engine-panel/60 p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-md">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine">
         <div>
           <h2 className="text-3xl font-extrabold text-white flex items-center gap-3 drop-shadow-md">
             <span className="text-engine-neon drop-shadow-panel-neon">👥</span> Trader Communities
@@ -1171,7 +1171,7 @@ const Community = ({
               `}
               >
                 {/* Glass overlay */}
-                <div className="absolute inset-0 bg-engine-bg/60 group-hover:bg-engine-bg/40 backdrop-blur-sm transition-all duration-500 z-0"></div>
+                <div className="absolute inset-0 bg-engine-bg/60 group-hover:bg-engine-bg/40 backdrop-blur-engine transition-all duration-500 z-0"></div>
 
                 {comm.is_vip && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-extrabold px-3 py-1 rounded-bl-xl z-10 flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.5)] tracking-widest">
@@ -1186,7 +1186,7 @@ const Community = ({
                       className="w-16 h-16 rounded-full object-cover border-2 border-white/20 group-hover:border-white/40 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 group-hover:border-white/40 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-md">
+                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 group-hover:border-white/40 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-engine">
                       {comm.name.substring(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -1201,7 +1201,7 @@ const Community = ({
                       by <span className="text-engine-neon">{comm.creator_username}</span>
                     </p>
                   </div>
-                  <span className="bg-[#10B981]/20 text-[#10B981] text-xs px-3 py-1 rounded-full border border-[#10B981]/40 flex items-center gap-2 font-bold backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                  <span className="bg-[#10B981]/20 text-[#10B981] text-xs px-3 py-1 rounded-full border border-[#10B981]/40 flex items-center gap-2 font-bold backdrop-blur-engine shadow-[0_0_10px_rgba(16,185,129,0.2)]">
                     <span className="w-2 h-2 bg-[#10B981] rounded-full animate-pulse shadow-[0_0_5px_#10B981]"></span>
                     {comm.active_count} Online
                   </span>
@@ -1228,7 +1228,7 @@ const Community = ({
                   {isAdmin ? (
                     <div className="flex items-center gap-3">
                     <span
-                      className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-md"
+                      className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-engine"
                     >
                       Admin View
                     </span>
@@ -1245,7 +1245,7 @@ const Community = ({
                   ) : isCreator ? (
                     <div className="flex items-center gap-3">
                       <span
-                        className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-md"
+                        className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full font-bold uppercase tracking-wider backdrop-blur-engine"
                       >
                         Creator
                       </span>
@@ -1283,8 +1283,8 @@ const Community = ({
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-engine-bg/90 backdrop-blur-md p-4 pt-20 overflow-y-auto custom-scrollbar">
-          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center bg-engine-bg/90 backdrop-blur-engine p-4 pt-20 overflow-y-auto custom-scrollbar">
+          <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-3xl w-full animate-fade-in my-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
             
             <h3 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3">
@@ -1642,7 +1642,7 @@ const Community = ({
                   ${isVip ? "animate-pulse-slow shadow-[0_0_30px_rgba(251,191,36,0.2)]" : ""}
                 `}
                 >
-                  <div className="absolute inset-0 bg-engine-bg/30 backdrop-blur-[2px] group-hover:bg-transparent transition-all duration-500 z-0"></div>
+                  <div className="absolute inset-0 bg-engine-bg/30 backdrop-blur-engine group-hover:bg-transparent transition-all duration-500 z-0"></div>
 
                   <div className="flex items-center gap-4 mb-6 relative z-10">
                     {previewCommAvatar ? (
@@ -1651,7 +1651,7 @@ const Community = ({
                         className="w-16 h-16 rounded-full object-cover border-2 border-white/20 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-md">
+                      <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center text-2xl font-extrabold border-2 border-white/20 shadow-[0_0_10px_rgba(0,0,0,0.5)] backdrop-blur-engine">
                         {newComm.name
                           ? newComm.name.substring(0, 2).toUpperCase()
                           : "NA"}
@@ -1695,8 +1695,8 @@ const Community = ({
       )}
       {/* Exit Confirmation Modal */}
       {showExitModal && communityToExit && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4">
-          <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full animate-fade-in text-center relative overflow-hidden">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4">
+          <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full animate-fade-in text-center relative overflow-hidden">
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
               <span className="text-3xl text-red-500">🚪</span>
             </div>
@@ -1729,8 +1729,8 @@ const Community = ({
       )}
       {/* Generic Confirmation Modal for List View (Delete Community) */}
       {confirmModal.isOpen && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-engine-panel/95 border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center relative overflow-hidden">
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+            <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full text-center relative overflow-hidden">
               <div className="w-16 h-16 bg-engine-button/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-engine-button-border/20 shadow-button-neon">
                 <span className="text-3xl text-engine-neon">?</span>
               </div>
