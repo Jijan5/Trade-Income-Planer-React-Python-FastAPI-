@@ -23,7 +23,9 @@ from backend.app.models import (
     FeedbackCreate,
     ManualTradeCreate,
     ReportCreate,
-    BroadcastRequest
+    BroadcastRequest,
+    UserTheme,
+    UserThemeCreateUpdate
 )
 
 
@@ -384,3 +386,41 @@ class TestBroadcastRequest:
         )
         
         assert broadcast.message == "Hello everyone!"
+
+
+class TestUserThemeModels:
+    """Test user theme models."""
+
+    def test_default_user_theme(self):
+        """Test creating a default UserTheme."""
+        theme = UserTheme(user_id=1)
+        
+        # Verify defaults
+        assert theme.user_id == 1
+        assert theme.bg_color == "#030308"
+        assert theme.panel_color == "#0a0f1c"
+        assert theme.panel_neon_enabled is True
+        assert theme.button_neon_enabled is True
+        assert theme.panel_neon_radius == "20px"
+        assert theme.glass_opacity == 0.6
+        assert theme.font_family == "Inter"
+        # Verify granular borders and opacity
+        assert theme.panel_border_color == "#00cfff"
+        assert theme.button_border_color == "#00cfff"
+        assert theme.panel_neon_opacity == 0.2
+        assert theme.button_neon_opacity == 0.4
+
+    def test_user_theme_create_update(self):
+        """Test UserThemeCreateUpdate model for partial updates."""
+        update = UserThemeCreateUpdate(
+            panel_neon_enabled=False,
+            button_border_color="#ff0000",
+            glass_opacity=0.1
+        )
+        
+        assert update.panel_neon_enabled is False
+        assert update.button_border_color == "#ff0000"
+        assert update.glass_opacity == 0.1
+        assert update.panel_color is None
+        assert update.bg_color is None
+
