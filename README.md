@@ -34,6 +34,7 @@
 - **Risk Management Calculator (Basic/Advanced):** Calculate your risk of trade before open position BUY/SELL with basic or advanced risk management features.
 - **Glossary:** A comprehensive reference guide defining key trading terms, concepts, and metrics used throughout the platform (e.g., win rate, risk-reward ratio, drawdown, ROI).
 - **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
+- **Platform Appearance Engine (Premium):** A granular, real-time theme customization system. Premium users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
 
 ### Admin Features
 
@@ -50,9 +51,9 @@
 
 ### Integrations
 
-- **TradingView:** Real-time market data is fetched from Binance to provide accurate trading simulations.
-- **Midtrans:** Secure payment gateway integration for handling subscriptions and payments.
-- **Google Gemini:** AI-powered insights and analysis are provided through integration with Google Gemini.
+- **TradingView:** Real-time market data is fetched from TradingView to provide accurate trading simulations.
+- **LemonSqueezy:** Secure payment gateway integration for handling subscription billing and plan upgrades (webhook-verified).
+- **Google Gemini:** AI-powered insights and analysis are provided through integration with Google Gemini (also powers the Vision "Explain This Chart" feature in ChatBot).
 
 ## Tech Stack
 
@@ -294,26 +295,47 @@ docker-compose up --build
 
 ## 📋 Subscription Plans
 
-| Feature            | Free |  Basic  |  Premium  | Platinum |
-| ------------------ | ---- |  ------ |  -------  | -------- |
-| Manual Trade       | ✅   | ✅     | ✅      | ✅       |
-| Export CSV         | ❌   | ✅     | ✅      | ✅       |
-| Strategy Simulator | ❌   | ❌     | ✅      | ✅       |
-| Goal Planner       | ❌   | ❌     | ✅      | ✅       |
-| Create Community   | ❌   | ❌     | ✅      | ✅       |
-| Risk Calculator    | ❌   | ❌     | ✅      | ✅       |
-| Verified Badge     | ❌   | ❌     | ❌      | ✅       |
-| Price              |  $0  |  $12/mo |  $19/mo  | $28/mo   |
-| Price              |  $0  | $119/yr | $189/yr  | $279/yr  |
+Payment is processed securely via **LemonSqueezy**. All plan upgrades are handled through webhook-verified transactions.
+
+| Feature                      | Free |  Basic  |  Premium  | Platinum |
+| ---------------------------- | ---- |  ------ |  -------  | -------- |
+| Manual Trade                 | ✅   | ✅     | ✅      | ✅       |
+| Export CSV                   | ❌   | ✅     | ✅      | ✅       |
+| Strategy Simulator           | ❌   | ❌     | ✅      | ✅       |
+| Goal Planner                 | ❌   | ❌     | ✅      | ✅       |
+| Create Community             | ❌   | ❌     | ✅      | ✅       |
+| Risk Calculator              | ❌   | ❌     | ✅      | ✅       |
+| Platform Appearance Engine   | ❌   | ❌     | ❌      | ✅       |
+| Verified Badge               | ❌   | ❌     | ❌      | ✅       |
+| Price                        |  $0  |  $12/mo |  $19/mo  | $28/mo   |
+| Price                        |  $0  | $119/yr | $189/yr  | $279/yr  |
 
 ---
 
 ## 🧪 Testing
 
-```
-bash
+```bash
 python -m pytest tests/
 ```
+
+### Test Coverage — **91.81%** ✅
+
+The project enforces a minimum coverage threshold of **90%**. Current results (78 tests, all passing):
+
+```
+Name                          Stmts   Miss  Cover
+-----------------------------------------------------------
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%
+backend\app\dependencies.py      40      2    95%
+backend\app\engine.py           198     46    77%
+backend\app\models.py           414      7    98%
+backend\app\utils.py             15      0   100%
+-----------------------------------------------------------
+TOTAL                           720     59    92%
+Required test coverage of 90% reached. Total coverage: 91.81%
+```
+
 ## Testing result
 <img width="749" height="604" alt="test coverage 1" src="https://github.com/user-attachments/assets/fe662232-9839-42fb-92bb-abbbcb2b3545" />
 <img width="751" height="604" alt="test coverage 2" src="https://github.com/user-attachments/assets/0b160aa1-e7a3-49b8-b244-bd5bd9332fd2" />

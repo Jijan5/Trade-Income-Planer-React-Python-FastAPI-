@@ -63,65 +63,24 @@ docker-compose --profile test up
 
 ## Test Coverage
 
-The project targets **67-80% code coverage**.
+The project enforces a minimum **90% code coverage** threshold, enforced via `pytest.ini` (`--cov-fail-under=90`).
 
-### Current Coverage
+#### Current Coverage — **91.81%** ✅
+
+78 tests pass, 0 failures. Results from the latest run:
 
 ```
 Name                          Stmts   Miss  Cover   Missing
------------------------------------------------------------------
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-36562-365
-backend\app\models.py           361      7    98%   155-161
-backend\app\utils.py             15     10    33%   15-28
------------------------------------------------------------------
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
-backend\app\models.py           361      7    98%   155-161
-backend\app\utils.py             15     10    33%   15-28
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
-backend\app\models.py           361      7    98%   155-161
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\auth.py              35      0   100%
-backend\app\auth.py              35      0   100%
-backend\app\database.py          18      4    78%   18, 23, 26-27
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
-backend\app\models.py           361      7    98%   155-161
-backend\app\dependencies.py      40      2    95%   16, 46
-backend\app\engine.py           229     23    90%   82, 95, 113, 140-141, 204-205, 213-215, 241-246, 266, 286, 308, 362-365
-backend\app\models.py           361      7    98%   155-161
-backend\app\utils.py             15     10    33%   15-28
 -----------------------------------------------------------
-TOTAL                           698     46    93%
-Required test coverage of 90% reached. Total coverage: 93.41%
+backend\app\auth.py              35      0   100%
+backend\app\database.py          18      4    78%   18, 31, 34-35
+backend\app\dependencies.py      40      2    95%   16, 46
+backend\app\engine.py           198     46    77%   85, 98, 116, 143-144, ...
+backend\app\models.py           414      7    98%   211-217
+backend\app\utils.py             15      0   100%
+-----------------------------------------------------------
+TOTAL                           720     59    92%
+Required test coverage of 90% reached. Total coverage: 91.81%
 ```
 
 ## Test Structure
@@ -130,11 +89,11 @@ Required test coverage of 90% reached. Total coverage: 93.41%
 tests/
 ├── __init__.py
 ├── conftest.py           # Pytest fixtures
-├── test_auth.py          # Authentication tests
+├── test_auth.py          # Authentication tests (JWT, password hashing)
 ├── test_dependencies.py  # Dependency injection tests
-├── test_engine.py        # Trading engine tests
-├── test_models.py        # Data model tests
-└── test_utils.py         # Utility function tests
+├── test_engine.py        # Trading engine tests (simulation, goal planner, health)
+├── test_models.py        # Data model tests (incl. UserTheme & UserThemeCreateUpdate)
+└── test_utils.py         # Utility function tests (mentions, notifications)
 ```
 
 ## Writing Tests

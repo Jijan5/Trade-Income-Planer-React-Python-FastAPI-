@@ -122,8 +122,7 @@ Get user profile by ID.
 
 **Response:**
 
-```
-json
+```json
 {
   "id": 1,
   "username": "string",
@@ -131,6 +130,59 @@ json
   "avatar_url": "string"
 }
 ```
+
+### GET /api/users/me/theme
+
+Get the current user's saved theme configuration.
+
+**Headers:**
+
+- `Authorization: Bearer <token>`
+
+**Response:**
+
+```json
+{
+  "bg_color": "#030308",
+  "panel_color": "#0a0f1c",
+  "neon_color": "#00cfff",
+  "button_color": "#00cfff",
+  "panel_border_color": "#00cfff",
+  "button_border_color": "#00cfff",
+  "panel_neon_enabled": true,
+  "button_neon_enabled": true,
+  "panel_neon_radius": "20px",
+  "button_neon_radius": "20px",
+  "panel_neon_opacity": 0.2,
+  "button_neon_opacity": 0.4,
+  "glass_opacity": 0.6,
+  "glass_blur": "12px",
+  "font_family": "Inter",
+  "text_color": "#ffffff",
+  "neon_font_style": "none"
+}
+```
+
+### PUT /api/users/me/theme
+
+Update the current user's theme configuration. All fields are optional (partial update).
+
+**Headers:**
+
+- `Authorization: Bearer <token>`
+- Requires **Premium** or **Platinum** plan.
+
+**Request:**
+
+```json
+{
+  "panel_border_color": "#ff00ff",
+  "glass_opacity": 0.1,
+  "panel_neon_enabled": false
+}
+```
+
+**Response:** Returns the updated `UserTheme` object.
 
 ## Simulation
 
@@ -348,9 +400,11 @@ Delete a post.
 
 ## Payment
 
-### POST /api/payment/create_transaction
+All payments are processed via **LemonSqueezy**. Plan upgrades are applied automatically upon successful webhook verification from LemonSqueezy.
 
-Create a payment transaction.
+### POST /api/payment/lemonsqueezy/checkout
+
+Initiate a checkout session for a subscription plan.
 
 **Headers:**
 
@@ -358,46 +412,34 @@ Create a payment transaction.
 
 **Request:**
 
-```
-json
+```json
 {
-  "plan_id": "premium",
-  "amount": 29.99,
+  "plan": "Premium",
   "billing_cycle": "monthly"
 }
 ```
 
 **Response:**
 
-```
-json
+```json
 {
-  "token": "string",
-  "order_id": "string"
+  "checkout_url": "https://app.lemonsqueezy.com/checkout/..."
 }
 ```
 
-### POST /api/payment/verify
+### POST /api/payment/lemonsqueezy/webhook
 
-Verify payment status.
+Webhook endpoint called by LemonSqueezy after a successful payment. Verifies the `X-Signature` header against the configured `LEMONSQUEEZY_WEBHOOK_SECRET` and upgrades the user's plan automatically.
 
-**Request:**
+**Headers:**
 
-```
-json
-{
-  "order_id": "string"
-}
-```
+- `X-Signature: <hmac-sha256-signature>`
 
 **Response:**
 
-```
-json
+```json
 {
-  "status": "success",
-  "message": "Plan updated successfully",
-  "plan": "Premium"
+  "status": "ok"
 }
 ```
 
