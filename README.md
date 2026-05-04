@@ -34,7 +34,7 @@
 - **Risk Management Calculator (Basic/Advanced):** Calculate your risk of trade before open position BUY/SELL with basic or advanced risk management features.
 - **Glossary:** A comprehensive reference guide defining key trading terms, concepts, and metrics used throughout the platform (e.g., win rate, risk-reward ratio, drawdown, ROI).
 - **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
-- **Platform Appearance Engine (Premium):** A granular, real-time theme customization system. Premium users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
+- **Platform Appearance Engine (Platinum):** A granular, real-time theme customization system. Platinum users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
 
 ### Admin Features
 
