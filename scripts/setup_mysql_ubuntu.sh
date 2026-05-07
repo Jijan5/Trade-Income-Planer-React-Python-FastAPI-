@@ -13,7 +13,7 @@ set -e  # Exit immediately if any command fails
 # ─── CONFIGURATION ────────────────────────────────────────────────────────────
 # These values MUST match your .env file on the server
 DB_NAME="db-trade-planer"
-DB_USER="trade_user"
+DB_USER="root"
 DB_PASSWORD=""   # <-- CHANGE THIS
 MYSQL_ROOT_PASSWORD="Orangbandung123!"  # <-- CHANGE THIS
 # ──────────────────────────────────────────────────────────────────────────────
