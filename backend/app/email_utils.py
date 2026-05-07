@@ -8,7 +8,7 @@ import os
 # --- Email Configuration ---
 # Load environment variables
 SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = int(os.getenv("SMTP_PORT")) # Default to 587 if not set
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))  # Default to 587 if not set
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL")
@@ -91,13 +91,15 @@ def send_contact_reply_email(recipient_email: str, subject: str, message: str):
     msg['Subject'] = subject
 
     # Simple HTML body for better formatting
+    # Pre-compute replacement outside f-string (backslash not allowed in f-string on Python < 3.12)
+    message_html = message.replace('\n', '<br>')
     body = f"""
     <html>
         <body>
             <p>Hello,</p>
             <p>Thank you for contacting us. Here is a reply regarding your inquiry:</p>
             <div style="border-left: 2px solid #ccc; padding-left: 10px; margin-left: 5px;">
-                <p>{message.replace('\n', '<br>')}</p>
+                <p>{message_html}</p>
             </div>
             <p>Best regards,<br>The Support Team</p>
         </body>
