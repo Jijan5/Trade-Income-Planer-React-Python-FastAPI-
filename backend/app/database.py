@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Construct DATABASE_URL from individual MySQL environment variables
-mysql_user = os.getenv("MYSQL_USER")
-mysql_password = os.getenv("MYSQL_PASSWORD")
-mysql_server = os.getenv("MYSQL_SERVER")
-mysql_port = os.getenv("MYSQL_PORT")
-mysql_db = os.getenv("MYSQL_DB")
+mysql_user = os.getenv("MYSQL_USER", "root")
+mysql_password = os.getenv("MYSQL_PASSWORD", "")
+mysql_server = os.getenv("MYSQL_SERVER", "localhost")
+mysql_port = os.getenv("MYSQL_PORT", "3306")
+mysql_db = os.getenv("MYSQL_DB", "db-trade-planer")
 
 # Build the DATABASE_URL
 if mysql_password:
