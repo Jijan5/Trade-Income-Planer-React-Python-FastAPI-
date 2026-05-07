@@ -37,14 +37,9 @@ utils
 secure-smtplib
 gunicorn>=22.0.0
 cachetools
-concurrent.futures
-
-# Test dependencies
 pytest
 pytest-asyncio
 pytest-cov
-
-# Documentation
 mkdocs
 mkdocs-material
 mkdocstrings

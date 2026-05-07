@@ -235,7 +235,7 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
     access_token = create_access_token(
         data={"sub": existing.username, "role": existing.role, "tenant_id": existing.tenant_id}
     )
-    frontend_url = os.getenv("VITE_FRONTEND_URL", "http://localhost:5173")
+    frontend_url = os.getenv("VITE_FRONTEND_URL", "http://70.153.19.40:5173")
     return RedirectResponse(url=f"{frontend_url}/auth/callback/google?token={access_token}")
 
 # Keep facebook stub for potential future use

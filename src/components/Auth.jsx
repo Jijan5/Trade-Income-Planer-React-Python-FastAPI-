@@ -570,7 +570,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
               <div className="space-y-3">
                 <a
-                  href="http://localhost:8000/auth/google"
+                  href="http://70.153.19.40:8000/auth/google"
                   className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#030308] border border-[#00cfff]/20 rounded-xl hover:bg-[#00cfff]/5 hover:border-[#00cfff]/50 hover:shadow-[0_0_15px_rgba(0,207,255,0.1)] transition-all text-white text-sm font-bold"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
