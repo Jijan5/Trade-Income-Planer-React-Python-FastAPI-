@@ -15,7 +15,7 @@ router = APIRouter()
 async def read_user_profile(user: User = Depends(get_current_user)):
     user_data = user.dict()
     if user.avatar_url and not user.avatar_url.startswith('https'):
-        user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', 'http://127.0.0.1:8000')}{user.avatar_url}"
+        user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', 'http://70.153.19.40:8000')}{user.avatar_url}"
     return UserRead(**user_data)
 
 @router.put("/api/users/me", response_model=UserRead)
