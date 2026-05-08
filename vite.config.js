@@ -10,6 +10,13 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    host: true,
+    allowedHosts: [
+      "tradeplanner.my.id",
+      ".tradeplanner.my.id"
+    ]
+  },
   build: {
     sourcemap: false, // Security: Disable source maps in production to hide source code
   },
