@@ -12,6 +12,9 @@ export default defineConfig({
   ],
   server: {
     host: true,
+    watch: {
+      ignored: ['**/venv/**']
+    },
     allowedHosts: [
       "tradeplanner.my.id",
       ".tradeplanner.my.id"
