@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/axios";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const AuthenticatedImage = ({ src, alt, ...props }) => {
   const [imageSrc, setImageSrc] = useState(null);

@@ -1,8 +1,9 @@
 import flet as ft
 import requests
 import json
+import os
 
-BASE_URL = "http://70.153.19.40:8000"
+BASE_URL = os.getenv("API_BASE_URL", "")
 
 class FletApp:
     def __init__(self):

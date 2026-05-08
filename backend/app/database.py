@@ -7,7 +7,7 @@ load_dotenv()
 # Construct DATABASE_URL from individual MySQL environment variables
 mysql_user = os.getenv("MYSQL_USER", "root")
 mysql_password = os.getenv("MYSQL_PASSWORD", "Orangbandung123!")
-mysql_server = os.getenv("MYSQL_SERVER", "70.153.19.40")
+mysql_server = os.getenv("MYSQL_SERVER", "localhost")
 mysql_port = os.getenv("MYSQL_PORT", "3306")
 mysql_db = os.getenv("MYSQL_DB", "db-trade-planer")
 

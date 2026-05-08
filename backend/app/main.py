@@ -74,10 +74,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 # Setup CORS - More restrictive for production
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS", 
-    "http://70.153.19.40:3000,http://70.153.19.40:4000,http://70.153.19.40:5173,http://70.153.19.40:8000"
-).split(",")
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,

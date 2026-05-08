@@ -136,7 +136,7 @@ cat <<EOF
 ─────────────────────────────────────────────────────
 MYSQL_USER=${DB_USER}
 MYSQL_PASSWORD=${DB_PASSWORD}
-MYSQL_SERVER=70.153.19.40
+MYSQL_SERVER=$(hostname -I | awk '{print $1}')  # Auto-detect server IP, or set manually
 MYSQL_PORT=3306
 MYSQL_DB=${DB_NAME}
 ─────────────────────────────────────────────────────
@@ -168,7 +168,7 @@ echo "  ✅ MySQL setup complete!"
 echo ""
 echo "  Database : ${DB_NAME}"
 echo "  User     : ${DB_USER}"
-echo "  Host     : 70.153.19.40"
+echo "  Host     : ${MYSQL_SERVER}"
 echo "  Port     : 3306"
 echo ""
 echo "  Next steps:"

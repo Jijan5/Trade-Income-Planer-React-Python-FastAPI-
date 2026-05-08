@@ -16,7 +16,7 @@ import { usePostInteractions } from "../contexts/PostInteractionContext";
 
 // Base URL for resource statis (img/avatar)
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
+  import.meta.env.VITE_API_BASE_URL || "";
 
 // --- Sub-components to prevent Home re-renders ---
 const MarketWidget = React.memo(({ marketPrices, loadingPrices }) => {
