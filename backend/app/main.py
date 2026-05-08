@@ -113,6 +113,27 @@ else:
 @app.on_event("startup")
 def startup_event():
     create_db_and_tables()
+    seed_default_tenant()
+
+def seed_default_tenant():
+    """Ensure the 'default' tenant row exists — required for all user operations."""
+    from .database import engine
+    from .models import Tenant
+    from sqlmodel import Session, select
+
+    domain = os.getenv("FRONTEND_URL", os.getenv("API_BASE_URL", "localhost"))
+    # Strip protocol so it can be stored as a domain string
+    domain = domain.replace("http://", "").replace("https://", "").split(":")[0]
+
+    with Session(engine) as session:
+        existing = session.exec(select(Tenant).where(Tenant.name == "default")).first()
+        if not existing:
+            tenant = Tenant(name="default", domain=domain)
+            session.add(tenant)
+            session.commit()
+            print(f"[startup] Default tenant created (domain={domain})")
+        else:
+            print(f"[startup] Default tenant already exists (id={existing.id})")
 
 # SocketIO for real-time notifications
 sio = SocketManager(app=app, cors_allowed_origins="*")
