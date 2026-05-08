@@ -22,13 +22,14 @@ def send_contact_email(name: str, from_email: str, subject: str, message: str):
     """
     if IS_PRODUCTION and SENDGRID_API_KEY:
         # --- PRODUCTION EMAIL LOGIC (using SendGrid) ---
+        message_html = message.replace('\n', '<br>')
         html_content = f"""
         <h3>New Contact Form Submission</h3>
         <p><strong>Name:</strong> {name}</p>
         <p><strong>Email:</strong> {from_email}</p>
         <p><strong>Subject:</strong> {subject}</p>
         <p><strong>Message:</strong></p>
-        <p>{message.replace('\n', '<br>')}</p>
+        <p>{message_html}</p>
         """
         sg_message = Mail(
             from_email=SMTP_USER, # This should be a verified sender in SendGrid
