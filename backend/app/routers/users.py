@@ -3,9 +3,9 @@ import uuid
 import shutil
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from ..database import get_session
-from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate
+from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post
 from ..dependencies import get_current_user, get_current_active_user
 from ..auth import get_password_hash
 
@@ -113,40 +113,59 @@ async def get_joined_communities(user: User = Depends(get_current_user), session
 @router.get("/api/notifications", response_model=list[NotificationRead])
 async def get_notifications(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     notifications = session.exec(
-        select(Notification).where(Notification.user_id == user.id).order_by(Notification.created_at.desc()).limit(50)
+        select(Notification)
+        .where(Notification.user_id == user.id)
+        .order_by(Notification.created_at.desc())
+        .limit(50)
     ).all()
-    
+
+    if not notifications:
+        return []
+
+    # ── Batch fetch actors (1 query instead of N) ──────────────────────────
+    actor_usernames = list({n.actor_username for n in notifications})
+    actors_rows     = session.exec(select(User).where(User.username.in_(actor_usernames), User.tenant_id == user.tenant_id)).all()
+    actor_map       = {a.username: a for a in actors_rows}
+
+    # ── Batch fetch related posts and comments (2 queries instead of N) ───
+    post_ids    = list({n.post_id    for n in notifications if n.post_id    and not n.comment_id})
+    comment_ids = list({n.comment_id for n in notifications if n.comment_id})
+    post_map    = {p.id: p for p in (session.exec(select(Post).where(Post.id.in_(post_ids))).all()        if post_ids    else [])}
+    comment_map = {c.id: c for c in (session.exec(select(Comment).where(Comment.id.in_(comment_ids))).all() if comment_ids else [])}
+
     response_data = []
     for notif in notifications:
-        actor = session.exec(select(User).where(User.username == notif.actor_username, User.tenant_id == user.tenant_id)).first()
-        content_preview = ""
-        # ... (logic preview content just like before) ...
-        # Simplified for brevity, assume logic is imported or copied
-        from ..models import Comment, Post
-        if notif.type == "system_broadcast":
-            content_preview = notif.content if notif.content else "System Announcement"
-        elif notif.comment_id:
-            comment = session.get(Comment, notif.comment_id)
-            if comment: content_preview = comment.content[:75]
-        elif notif.post_id:
-            post = session.get(Post, notif.post_id)
-            if post: content_preview = post.content[:75]
+        actor = actor_map.get(notif.actor_username)
 
-        response_data.append(
-            NotificationRead(
-                id=notif.id, actor_username=notif.actor_username, actor_avatar_url=actor.avatar_url if actor else None,
-                actor_role=actor.role if actor else "user",
-                actor_plan=actor.plan if actor else "Free",
-                type=notif.type, content_preview=content_preview, post_id=notif.post_id,
-                community_id=notif.community_id, is_read=notif.is_read, created_at=notif.created_at
-            )
-        )
+        if notif.type == "system_broadcast":
+            content_preview = notif.content or "System Announcement"
+        elif notif.comment_id:
+            c = comment_map.get(notif.comment_id)
+            content_preview = c.content[:75] if c else ""
+        elif notif.post_id:
+            p = post_map.get(notif.post_id)
+            content_preview = p.content[:75] if p else ""
+        else:
+            content_preview = ""
+
+        response_data.append(NotificationRead(
+            id=notif.id, actor_username=notif.actor_username,
+            actor_avatar_url=actor.avatar_url if actor else None,
+            actor_role=actor.role if actor else "user",
+            actor_plan=actor.plan if actor else "Free",
+            type=notif.type, content_preview=content_preview,
+            post_id=notif.post_id, community_id=notif.community_id,
+            is_read=notif.is_read, created_at=notif.created_at,
+        ))
     return response_data
 
 @router.get("/api/notifications/unread_count", response_model=dict)
 async def get_unread_notification_count(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    results = session.exec(select(Notification).where(Notification.user_id == user.id, Notification.is_read == False)).all()
-    return {"count": len(results)}
+    # Use SQL COUNT — far cheaper than fetching all rows
+    count = session.exec(
+        select(func.count()).where(Notification.user_id == user.id, Notification.is_read == False)
+    ).one()
+    return {"count": count}
 
 @router.post("/api/notifications/mark_as_read")
 async def mark_notifications_as_read(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
