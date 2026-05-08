@@ -10,7 +10,7 @@ import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
 import MentionInput from "./MentionInput";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
 
 // Memoized Single Post Item for Community
 const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFlash }) => {

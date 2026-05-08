@@ -103,7 +103,7 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
 
     return (
         <div className="relative w-full">

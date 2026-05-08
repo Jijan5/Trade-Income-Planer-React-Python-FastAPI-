@@ -24,7 +24,7 @@ export const NotificationProvider = ({ children }) => {
     if (!token || !userId) return;
 
     const newSocket = io(
-      `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}`,
+      `${import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000"}`,
       {
         auth: { token },
         transports: ["websocket", "polling"],
@@ -66,7 +66,7 @@ export const NotificationProvider = ({ children }) => {
   const fetchNotifications = useCallback(async () => {
     if (!token) return;
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
       const headers = { Authorization: `Bearer ${token}` };
       
       const [notifsRes, unreadRes] = await Promise.all([
@@ -101,7 +101,7 @@ export const NotificationProvider = ({ children }) => {
   const markAllRead = useCallback(async () => {
     if (!token) return;
     try {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://70.153.19.40:8000";
       await fetch(`${baseUrl}/api/notifications/mark_as_read`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
