@@ -16,7 +16,8 @@ export default defineConfig({
       ignored: ['**/venv/**'],
     },
     allowedHosts: [
-      "all"
+      "tradeplanner.my.id",
+      ".tradeplanner.my.id"
     ]
   },
   build: {
