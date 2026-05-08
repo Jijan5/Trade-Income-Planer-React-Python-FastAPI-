@@ -336,12 +336,6 @@ TOTAL                           720     59    92%
 Required test coverage of 90% reached. Total coverage: 91.81%
 ```
 
-## Testing result
-<img width="749" height="604" alt="test coverage 1" src="https://github.com/user-attachments/assets/fe662232-9839-42fb-92bb-abbbcb2b3545" />
-<img width="751" height="604" alt="test coverage 2" src="https://github.com/user-attachments/assets/0b160aa1-e7a3-49b8-b244-bd5bd9332fd2" />
-<img width="883" height="550" alt="test coverage 3" src="https://github.com/user-attachments/assets/5f0a9c78-33f2-4cb8-aebe-ca6e9f9713bd" />
----
-
 ## 📄 License
 
 This project is for educational. See the repository for details.
