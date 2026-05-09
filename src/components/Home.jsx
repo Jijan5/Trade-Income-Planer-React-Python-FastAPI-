@@ -1313,7 +1313,7 @@ const Home = ({
         } lg:block lg:col-span-2 space-y-6`}
       >
         {/* Create Post Box */}
-        <div className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative focus-within:z-[60]">
+        <div className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative focus-within:z-[40]">
           <form onSubmit={handlePostSubmit}>
             <MentionInput
               value={newPostContent}
