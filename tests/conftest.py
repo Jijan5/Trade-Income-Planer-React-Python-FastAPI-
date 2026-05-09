@@ -11,11 +11,7 @@ if project_root not in sys.path:
 
 # Set test environment variables before importing modules
 os.environ["SECRET_KEY"] = "test-secret-key-for-testing"
-os.environ["MYSQL_USER"] = "test_user"
-os.environ["MYSQL_PASSWORD"] = "test_password"
-os.environ["MYSQL_SERVER"] = "localhost"
-os.environ["MYSQL_PORT"] = "3306"
-os.environ["MYSQL_DB"] = "test_db"
+os.environ["DATABASE_URL"] = "mysql+pymysql://test_user:test_password@localhost:3306/test_db"
 
 # Mock the database before importing app modules
 @pytest.fixture(scope="session", autouse=True)

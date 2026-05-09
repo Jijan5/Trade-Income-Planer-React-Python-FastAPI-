@@ -4,18 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Construct DATABASE_URL from individual MySQL environment variables
-mysql_user     = os.getenv("MYSQL_USER", "root")
-mysql_password = os.getenv("MYSQL_PASSWORD", "")
-mysql_server   = os.getenv("MYSQL_SERVER", "localhost")
-mysql_port     = os.getenv("MYSQL_PORT", "3306")
-mysql_db       = os.getenv("MYSQL_DB", "db-trade-planer")
-
-# Build the DATABASE_URL
-if mysql_password:
-    DATABASE_URL = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_server}:{mysql_port}/{mysql_db}"
-else:
-    DATABASE_URL = f"mysql+pymysql://{mysql_user}@{mysql_server}:{mysql_port}/{mysql_db}"
+# Construct DATABASE_URL from .env
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost:3306/db-trade-planer")
 
 # ── Connection pool tuned for high concurrency ─────────────────────────────
 # pool_size     : persistent connections always open
