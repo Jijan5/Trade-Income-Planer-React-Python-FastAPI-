@@ -13,6 +13,7 @@ import VerifiedBadge from "./VerifiedBadge";
 import AuthenticatedImage from "./AuthenticatedImage"; // Import the new component
 import MentionInput from "./MentionInput";
 import { usePostInteractions } from "../contexts/PostInteractionContext";
+import { createPortal } from "react-dom";
 
 // Base URL for resource statis (img/avatar)
 const API_BASE_URL =
@@ -810,7 +811,7 @@ const PostItem = React.memo(
           </div>
         )}
         {/* Report Modal */}
-        {showReportModal && (
+        {showReportModal && createPortal(
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowReportModal(false)}
@@ -872,10 +873,11 @@ const PostItem = React.memo(
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
         {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
+        {showDeleteModal && createPortal(
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowDeleteModal(false)}
@@ -906,10 +908,11 @@ const PostItem = React.memo(
                 </button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
         {/* Share Modal */}
-        {showShareModal && (
+        {showShareModal && createPortal(
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-engine p-4"
             onClick={() => setShowShareModal(false)}
@@ -988,7 +991,8 @@ const PostItem = React.memo(
                 Cancel
               </button>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     );

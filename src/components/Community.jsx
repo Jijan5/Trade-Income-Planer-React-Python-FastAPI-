@@ -9,6 +9,7 @@ import VerifiedBadge from "./VerifiedBadge";
 import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
 import MentionInput from "./MentionInput";
+import { createPortal } from "react-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -324,7 +325,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               </div>
             )}
             {/* Report Modal */}
-            {showReportModal && (
+            {showReportModal && createPortal(
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowReportModal(false)}>
                 <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <h3 className="text-xl font-extrabold text-engine-neon mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
@@ -361,11 +362,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     <button onClick={submitReport} className="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Report</button>
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
 
             {/* Delete Confirmation Modal */}
-            {showDeleteModal && (
+            {showDeleteModal && createPortal(
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowDeleteModal(false)}>
                 <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
@@ -378,11 +380,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                     <button onClick={confirmDelete} className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.4)] hover:shadow-[0_0_25px_rgba(239,68,68,0.6)] text-sm font-bold transition-all">Delete</button>
                   </div>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
 
             {/* Share Modal */}
-            {showShareModal && (
+            {showShareModal && createPortal(
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowShareModal(false)}>
                 <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <h3 className="text-xl font-extrabold text-engine-neon mb-8 text-center tracking-wider">Share Post</h3>
@@ -418,7 +421,8 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                   </div>
                   <button onClick={() => setShowShareModal(false)} className="w-full py-3 bg-transparent border border-engine-button-border/20 hover:bg-engine-button/10 rounded-xl text-sm font-bold text-engine-neon transition-all">Cancel</button>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         );
