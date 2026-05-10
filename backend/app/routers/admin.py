@@ -181,6 +181,10 @@ async def delete_user(user_id: int, user: User = Depends(get_current_admin_user)
     session.exec(text("DELETE FROM notification WHERE user_id = :uid"), params={"uid": user_id})
     # 3. delete manual trades (if any)
     session.exec(text("DELETE FROM manualtrade WHERE user_id = :uid"), params={"uid": user_id})
+    # 4. delete user themes
+    session.exec(text("DELETE FROM usertheme WHERE user_id = :uid"), params={"uid": user_id})
+    # 5. delete user trading preferences
+    session.exec(text("DELETE FROM usertradingpreferences WHERE user_id = :uid"), params={"uid": user_id})
 
     session.delete(db_user)
     session.commit()
