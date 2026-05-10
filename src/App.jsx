@@ -30,6 +30,7 @@ import SuspendedPage from "./components/SuspendedPage";
 import ForgotPassword from "./components/ForgotPassword";
 import ContactUs from "./components/ContactUs";
 import CustomizePlatform from "./components/CustomizePlatform";
+import GoogleCallback from "./components/GoogleCallback";
 import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -1022,6 +1023,10 @@ function App() {
               <Route
                 path="/forgot-password"
                 element={<ForgotPassword showFlash={showFlash} />}
+              />
+              <Route
+                path="/auth/callback/google"
+                element={<GoogleCallback />}
               />
               <Route
                 path="/home"
