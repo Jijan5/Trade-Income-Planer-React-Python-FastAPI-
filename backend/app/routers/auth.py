@@ -227,6 +227,8 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
             full_name=full_name,
             hashed_password="social_auth_google",
             provider="google",
+            country_code="+0",        # Google doesn't provide this — placeholder
+            phone_number="0000000000", # Google doesn't provide this — placeholder
         )
         session.add(existing)
         session.commit()
