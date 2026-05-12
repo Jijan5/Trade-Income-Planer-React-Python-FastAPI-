@@ -7,6 +7,7 @@ import { countryCodes } from "../utils/countryCodes";
 import AuthenticatedImage from "./AuthenticatedImage";
 import ImageCropModal from "./ImageCropModal";
 import { getPlanLevel } from "../utils/permissions";
+import { Settings, Star, Users, TriangleAlert } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -260,7 +261,7 @@ const Profile = ({ showFlash }) => {
       {/* PROFILE EDIT SECTION */}
       <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine animate-fade-in">
       <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
-        <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">⚙</span> Edit Profile
+        <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]"><Settings className="w-8 h-8" /></span> Edit Profile
         <VerifiedBadge user={user} className="ml-2" />
       </h2>
 
@@ -430,7 +431,7 @@ const Profile = ({ showFlash }) => {
               </button>
               <div className="absolute bottom-full left-0 mb-2 w-56 hidden group-hover:block z-50">
                 <div className="bg-engine-panel border border-purple-500/30 rounded-xl p-3 text-xs text-gray-300 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-engine">
-                  <p className="font-bold text-purple-400 mb-1">⭐ Platinum Feature</p>
+                  <p className="font-bold text-purple-400 mb-1 flex items-center gap-1"><Star className="w-4 h-4 fill-purple-400" /> Platinum Feature</p>
                   <p>Upgrade to <span className="text-purple-400 font-bold">Platinum</span> to unlock UI customization.</p>
                 </div>
               </div>
@@ -450,7 +451,7 @@ const Profile = ({ showFlash }) => {
     {/* YOUR COMMUNITIES SECTION */}
     <div className="bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine animate-fade-in">
         <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest mb-8 border-b border-engine-panel-border/10 pb-4 flex items-center gap-3 drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
-          <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">👥</span> Your Communities
+          <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]"><Users className="w-8 h-8 inline" /></span> Your Communities
         </h2>
         <MyCommunitiesList myCommunities={myCommunities} openEditModal={openEditModal} />
     </div>
@@ -460,7 +461,7 @@ const Profile = ({ showFlash }) => {
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
         <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.15)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
           <h3 className="text-xl font-extrabold text-white uppercase tracking-widest mb-3 flex flex-col items-center gap-3">
-            <span className="text-4xl drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">⚠</span>
+            <TriangleAlert className="w-12 h-12 text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
             Are you sure?
           </h3>
           <p className="text-gray-400 text-sm mb-8 font-medium">{confirmModal.message}</p>
@@ -479,7 +480,7 @@ const Profile = ({ showFlash }) => {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setEditingComm(null)}>
         <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-2xl w-full animate-fade-in my-8 overflow-y-auto max-h-[90vh] custom-scrollbar" onClick={(e) => e.stopPropagation()}>
           <h3 className="text-xl font-extrabold text-white mb-6 uppercase tracking-widest flex items-center gap-3 border-b border-engine-panel-border/10 pb-4">
-            <span className="text-engine-neon">⚙</span> Edit: {editingComm.name}
+            <Settings className="w-6 h-6 text-engine-neon" /> Edit: {editingComm.name}
           </h3>
           <div className="flex border-b border-engine-panel-border/20 mb-8">
             <button onClick={() => setActiveEditTab('appearance')} className={`px-6 py-3 text-[11px] font-extrabold uppercase tracking-widest transition-all ${activeEditTab === 'appearance' ? 'text-engine-neon border-b-2 border-engine-button-border bg-engine-button/5' : 'text-engine-neon/50 hover:text-engine-neon hover:bg-engine-button/5'}`}>Appearance</button>

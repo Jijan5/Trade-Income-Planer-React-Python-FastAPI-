@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import MentionInput from "./MentionInput";
+import { Link as LinkIcon, ThumbsUp, MessageSquare, TriangleAlert } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -253,8 +254,8 @@ const PostDetail = ({ showFlash }) => {
         )}
         
         {post.link_url && (
-          <a href={post.link_url} target="_blank" rel="noreferrer" className="block p-4 bg-engine-bg/60 border border-engine-button-border/20 rounded-xl text-engine-neon text-xs font-mono hover:bg-engine-button/10 transition-colors mb-6 break-all">
-            🔗 {post.link_url}
+          <a href={post.link_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-4 bg-engine-bg/60 border border-engine-button-border/20 rounded-xl text-engine-neon text-xs font-mono hover:bg-engine-button/10 transition-colors mb-6 break-all">
+            <LinkIcon className="w-4 h-4" /> {post.link_url}
           </a>
         )}
 
@@ -264,10 +265,10 @@ const PostDetail = ({ showFlash }) => {
             onClick={() => handleReaction(post.user_reaction ? post.user_reaction : 'like')}
             className={`flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest transition-all ${post.user_reaction ? 'text-engine-neon drop-shadow-[0_0_3px_#00cfff]' : 'text-engine-neon/50 hover:text-engine-neon'}`}
           >
-            <span className="text-lg">👍</span> {post.likes} LIKES
+            <ThumbsUp className="w-5 h-5" /> {post.likes} LIKES
           </button>
           <div className="flex items-center gap-2 text-engine-neon/50 text-[11px] font-extrabold uppercase tracking-widest">
-            <span className="text-lg">💬</span> {comments.length} COMMENTS
+            <MessageSquare className="w-5 h-5" /> {comments.length} COMMENTS
           </div>
         </div>
       </div>
@@ -328,7 +329,7 @@ const PostDetail = ({ showFlash }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in" onClick={() => setCommentToDelete(null)}>
           <div className="bg-engine-panel border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center" onClick={e => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold text-red-400 mb-4 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)] flex flex-col items-center gap-3">
-              <span className="text-4xl">⚠</span> DELETE COMMENT?
+              <TriangleAlert className="w-10 h-10" /> DELETE COMMENT?
             </h3>
             <p className="text-gray-400 text-sm mb-8 font-medium">ARE YOU SURE YOU WANT TO DELETE THIS COMMENT? THIS ACTION CANNOT BE UNDONE.</p>
             <div className="flex justify-center gap-4">

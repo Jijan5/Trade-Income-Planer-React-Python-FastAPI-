@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Target } from "lucide-react";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -105,7 +106,7 @@ const GoalPlanner = () => {
       {/* Header */}
       <div className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
         <h2 className="text-2xl font-extrabold text-white uppercase tracking-widest flex items-center gap-3">
-          <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">🎯</span> Ultimate Goal Planner
+          <Target className="w-8 h-8 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" /> Ultimate Goal Planner
         </h2>
         <p className="text-sm text-engine-neon/60 font-medium mt-2 max-w-2xl">
           Map out your exact path to profitability. Adjust the variables below to instantly see your required compounding curve and action plan.

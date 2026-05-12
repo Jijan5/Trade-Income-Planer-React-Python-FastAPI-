@@ -416,7 +416,7 @@ const RiskManagementCalculator = ({
                   </div>
                   <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">
                     {calculations.positionSize > accountBalance 
-                      ? '⚠️ Exceeds balance!' 
+                      ? <span className="flex items-center gap-1 text-red-400"><TriangleAlert className="w-3 h-3"/> Exceeds balance!</span> 
                       : `${((calculations.positionSize / accountBalance) * 100).toFixed(1)}% of balance`}
                   </div>
                 </div>

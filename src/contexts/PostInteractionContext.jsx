@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import api from '../lib/axios';
-import { TriangleAlert, Flag } from 'lucide-react';
+import { TriangleAlert, Flag, ThumbsUp, Heart, Zap, Rocket, TrendingUp, HandMetal } from 'lucide-react';
 import { useAuth } from './AuthContext';
 
 const PostInteractionContext = createContext();
@@ -34,15 +34,18 @@ export const PostInteractionProvider = ({ children, showFlash }) => {
     const [reportModal, setReportModal] = useState({ isOpen: false, postId: null, reason: "" });
 
     const reactions = [
-        { emoji: "👍", label: "Like", type: "like" },
-        { emoji: "❤️", label: "Love", type: "love" },
-        { emoji: "😮", label: "Shock", type: "shock" },
-        { emoji: "🚀", label: "Rocket", type: "rocket" },
-        { emoji: "📈", label: "Bullish", type: "chart_up" },
-        { emoji: "👏", label: "Clap", type: "clap" },
+        { emoji: <ThumbsUp className="w-5 h-5 text-engine-neon" />, label: "Like", type: "like" },
+        { emoji: <Heart className="w-5 h-5 text-red-500" />, label: "Love", type: "love" },
+        { emoji: <Zap className="w-5 h-5 text-yellow-400" />, label: "Shock", type: "shock" },
+        { emoji: <Rocket className="w-5 h-5 text-purple-400" />, label: "Rocket", type: "rocket" },
+        { emoji: <TrendingUp className="w-5 h-5 text-green-400" />, label: "Bullish", type: "chart_up" },
+        { emoji: <HandMetal className="w-5 h-5 text-blue-400" />, label: "Clap", type: "clap" },
     ];
 
-    const getReactionEmoji = (type) => reactions.find((r) => r.type === type)?.emoji || "👍";
+    const getReactionEmoji = (type) => {
+        const reaction = reactions.find((r) => r.type === type);
+        return reaction ? reaction.emoji : <ThumbsUp className="w-5 h-5 text-engine-neon" />;
+    };
 
     // Handle Click Outside to close Reaction Modal
     useEffect(() => {

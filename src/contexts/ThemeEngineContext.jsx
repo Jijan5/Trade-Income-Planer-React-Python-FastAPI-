@@ -24,7 +24,6 @@ const DEFAULT_THEME = {
   glass_blur: "12px",
   font_family: "Inter",
   text_color: "#ffffff",
-  text_color: "#ffffff",
   neon_font_style: "none",
 };
 

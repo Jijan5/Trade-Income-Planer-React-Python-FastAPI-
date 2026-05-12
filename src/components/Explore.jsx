@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import api from "../lib/axios";
+import { Newspaper } from "lucide-react";
 
 const Explore = () => {
   const [news, setNews] = useState([]);
@@ -93,7 +94,9 @@ const Explore = () => {
       {/* News Section */}
       <div>
         <h2 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3 tracking-wider">
-          <span className="text-engine-neon drop-shadow-panel-neon">📰</span> 
+          <span className="text-engine-neon drop-shadow-panel-neon">
+            <Newspaper className="w-6 h-6" />
+          </span> 
           Market Insights & News
         </h2>
 

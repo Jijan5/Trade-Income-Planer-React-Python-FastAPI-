@@ -10,6 +10,7 @@ import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
 import MentionInput from "./MentionInput";
 import { createPortal } from "react-dom";
+import { TriangleAlert, Users, Search, Sparkles, Link as LinkIcon, Flag } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -219,7 +220,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               </div>
             )}
             {post.link_url && (
-              <a href={post.link_url} target="_blank" rel="noreferrer" className="block mt-4 p-4 bg-engine-panel border border-engine-button-border/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-button-neon transition-all truncate relative z-10">🔗 {post.link_url}</a>
+              <a href={post.link_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-4 p-4 bg-engine-panel border border-engine-button-border/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-button-neon transition-all truncate relative z-10"><LinkIcon className="w-4 h-4" /> {post.link_url}</a>
             )}
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">
@@ -331,7 +332,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             {showReportModal && createPortal(
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowReportModal(false)}>
                 <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
-                  <h3 className="text-xl font-extrabold text-engine-neon mb-6 flex items-center gap-2"><span className="text-yellow-400">⚠️</span> Report Post</h3>
+                  <h3 className="text-xl font-extrabold text-engine-neon mb-6 flex items-center gap-2"><Flag className="w-6 h-6 text-yellow-400" /> Report Post</h3>
                   <div className="space-y-4 mb-6">
                     {["Inappropriate Content", "Spam", "Hate Speech", "Harassment", "False Information", "Other"].map((reason) => (
                       <label key={reason} className="flex items-center gap-3 cursor-pointer group">
@@ -1134,7 +1135,7 @@ const Community = ({
       <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-engine-panel p-8 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine">
         <div>
           <h2 className="text-3xl font-extrabold text-white flex items-center gap-3 drop-shadow-md">
-            <span className="text-engine-neon drop-shadow-panel-neon">👥</span> Trader Communities
+            <span className="text-engine-neon drop-shadow-panel-neon"><Users className="w-8 h-8 inline" /></span> Trader Communities
           </h2>
           <p className="text-gray-300 text-sm mt-2 font-medium opacity-90">
             Join discussions, share signals, and grow together in a cyberpunk ecosystem.
@@ -1149,7 +1150,7 @@ const Community = ({
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-engine-bg border border-engine-panel-border/30 text-white pl-12 pr-4 py-3 rounded-xl focus:outline-none focus:border-engine-panel-border focus:shadow-panel-neon transition-all"
             />
-            <span className="absolute left-4 top-3.5 text-xl opacity-50 group-focus-within:opacity-100 transition-opacity">🔍</span>
+            <span className="absolute left-4 top-3.5 text-gray-500 opacity-50 group-focus-within:opacity-100 transition-opacity"><Search className="w-5 h-5" /></span>
           </div>
           <button
             onClick={() => setShowModal(true)}
@@ -1197,7 +1198,7 @@ const Community = ({
 
                 {comm.is_vip && (
                   <div className="absolute top-0 right-0 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black text-[10px] font-extrabold px-3 py-1 rounded-bl-xl z-10 flex items-center gap-1 shadow-[0_0_10px_rgba(234,179,8,0.5)] tracking-widest">
-                    <span className="drop-shadow-sm">✨</span> VIP
+                    <Sparkles className="w-3 h-3 drop-shadow-sm" /> VIP
                   </div>
                 )}
                 <div className="flex items-center gap-4 mb-6 relative z-10">
@@ -1241,7 +1242,7 @@ const Community = ({
                     className="flex items-center gap-2 text-sm opacity-90 font-bold"
                     style={{ color: comm.text_color }}
                   >
-                    <span className="text-lg">👥</span>
+                    <Users className="w-5 h-5" />
                     <span className="font-mono text-base">
                       {comm.members_count.toLocaleString()}
                     </span>{" "}
@@ -1310,7 +1311,7 @@ const Community = ({
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff] to-transparent opacity-50"></div>
             
             <h3 className="text-2xl font-extrabold text-white mb-6 flex items-center gap-3">
-              <span className="text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]">✨</span> Create New Community
+              <Sparkles className="w-6 h-6 text-engine-neon drop-shadow-[0_0_5px_var(--engine-neon)]" /> Create New Community
             </h3>
             
             <form onSubmit={handleCreate} className="space-y-8">
