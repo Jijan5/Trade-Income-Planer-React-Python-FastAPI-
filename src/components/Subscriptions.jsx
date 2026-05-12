@@ -167,7 +167,7 @@ const Subscription = ({ onSubscribe }) => {
       
       <div className="mt-20 text-center border-t border-engine-panel-border/10 pt-8 relative z-10">
         <p className="text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest leading-loose">
-          CANCEL ANYTIME. SECURE PAYMENT VIA MIDTRANS.<br />
+          CANCEL ANYTIME. SECURE PAYMENT VIA LEMONSQUEEZY.<br />
           NEED A CUSTOM PLAN FOR A LARGE TEAM? <a href="/contact-us" className="text-engine-neon hover:text-[#00e5ff] hover:drop-shadow-[0_0_5px_var(--engine-neon)] transition-colors ml-1">CONTACT US</a>.
         </p>
       </div>

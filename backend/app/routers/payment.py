@@ -16,9 +16,10 @@ load_dotenv()
 
 router = APIRouter()
 
-LEMONSQUEEZY_API_KEY = os.getenv("LEMONSQUEEZY_API_KEY")
-LEMONSQUEEZY_STORE_ID = os.getenv("LEMONSQUEEZY_STORE_ID")
-LEMONSQUEEZY_WEBHOOK_SECRET = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET")
+# Strip surrounding quotes if accidentally included in .env values
+LEMONSQUEEZY_API_KEY = os.getenv("LEMONSQUEEZY_API_KEY", "").strip('"').strip("'")
+LEMONSQUEEZY_STORE_ID = os.getenv("LEMONSQUEEZY_STORE_ID", "").strip('"').strip("'")
+LEMONSQUEEZY_WEBHOOK_SECRET = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET", "").strip('"').strip("'")
 
 # LemonSqueezy Variant IDs mapping based on user input
 VARIANT_IDS = {
@@ -103,6 +104,8 @@ async def create_transaction(req: PaymentRequest, current_user=Depends(get_curre
 
         return {"checkout_url": checkout_url}
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Checkout Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process payment")
@@ -117,6 +120,10 @@ async def verify_payment(
     """
     Webhook endpoint to receive events from LemonSqueezy
     """
+    if not LEMONSQUEEZY_WEBHOOK_SECRET:
+        print("Webhook Error: LEMONSQUEEZY_WEBHOOK_SECRET is not configured")
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
     if not x_signature:
         print("Webhook Error: Missing X-Signature header")
         raise HTTPException(status_code=400, detail="Missing signature header")
@@ -124,20 +131,15 @@ async def verify_payment(
     # Get raw body for HMAC verification
     raw_body = await request.body()
     
-    # Verify the signature
+    # Verify the HMAC-SHA256 signature
     mac = hmac.new(
         LEMONSQUEEZY_WEBHOOK_SECRET.encode('utf-8'),
         raw_body,
         hashlib.sha256
     ).hexdigest()
 
-    print(f"--- WEBHOOK DEBUG ---")
-    print(f"Received X-Signature: {x_signature}")
-    print(f"Calculated MAC:       {mac}")
-    print(f"Using Secret:         {LEMONSQUEEZY_WEBHOOK_SECRET}")
-    print(f"---------------------")
-
     if not hmac.compare_digest(mac, x_signature):
+        print(f"Webhook signature mismatch. Got: {x_signature}, Expected: {mac}")
         raise HTTPException(status_code=401, detail="Invalid signature")
 
     try:
@@ -150,14 +152,20 @@ async def verify_payment(
         plan_id = custom_data.get("plan_id", "basic")
         billing_cycle = custom_data.get("billing_cycle", "monthly")
 
-        # We only care about successful payments for subscriptions/orders
-        if event_name in ["subscription_created", "order_created"] and user_id_str:
+        # We care about successful payments for subscriptions/orders
+        if event_name in ["subscription_created", "order_created", "subscription_payment_success"] and user_id_str:
             user_id = int(user_id_str)
             
             # Find the user
             user = session.exec(select(User).where(User.id == user_id)).first()
             if user:
-                user.plan = plan_id.capitalize()
+                plan_name = plan_id.capitalize()  # "basic" → "Basic"
+                # Ensure plan name matches expected values
+                if plan_name not in ["Basic", "Premium", "Platinum"]:
+                    print(f"Webhook Warning: Unknown plan '{plan_id}', defaulting to Basic")
+                    plan_name = "Basic"
+
+                user.plan = plan_name
                 user.plan_billing_cycle = billing_cycle.capitalize()
                 user.plan_start_date = datetime.utcnow()
                 
@@ -168,10 +176,27 @@ async def verify_payment(
                     
                 session.add(user)
                 session.commit()
-                print(f"Successfully updated user {user_id} to {user.plan} plan.")
+                print(f"✅ Webhook: Updated user {user_id} to {user.plan} ({billing_cycle}) plan.")
+            else:
+                print(f"⚠️ Webhook Warning: User {user_id} not found in database")
+
+        elif event_name in ["subscription_expired", "subscription_cancelled"]:
+            # Downgrade user to Free plan when subscription ends
+            if user_id_str:
+                user_id = int(user_id_str)
+                user = session.exec(select(User).where(User.id == user_id)).first()
+                if user:
+                    user.plan = "Free"
+                    user.plan_billing_cycle = None
+                    user.plan_expires_at = None
+                    session.add(user)
+                    session.commit()
+                    print(f"✅ Webhook: Downgraded user {user_id} to Free plan (subscription ended).")
                 
         return {"status": "success"}
 
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Webhook Processing Error: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
