@@ -9,7 +9,6 @@ from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from .database import create_db_and_tables
 from .routers import auth, users, posts, communities, simulation, admin, general, payment
-from fastapi_socketio import SocketManager
 
 load_dotenv()
 
@@ -33,44 +32,49 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 # Security: Rate Limiting Middleware
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Simple rate limiting middleware to prevent brute force attacks"""
-    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+    """Simple in-memory rate limiting middleware to prevent brute force attacks."""
+    def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests = {}
+        self.requests: dict = {}
+        self._last_cleanup = time.time()
     
     async def dispatch(self, request: Request, call_next):
-        # Skip rate limiting for health checks and docs
-        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] or request.url.path.startswith(('/socket.io/', '/auth', '/api')):
+        # Skip rate limiting for health checks, docs, static assets
+        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] \
+                or request.url.path.startswith(('/auth', '/api', '/static')):
             return await call_next(request)
-        
-        # Get client IP
+
         client_ip = request.client.host if request.client else "unknown"
-        
-        # Check rate limit
         current_time = time.time()
-        
+
+        # Periodic cleanup to prevent unbounded memory growth
+        if current_time - self._last_cleanup > 300:  # every 5 minutes
+            cutoff = current_time - self.window_seconds
+            self.requests = {
+                ip: times for ip, times in self.requests.items()
+                if any(t > cutoff for t in times)
+            }
+            self._last_cleanup = current_time
+
         if client_ip not in self.requests:
             self.requests[client_ip] = []
-        
-        # Remove old requests outside the window
+
+        # Remove requests outside the sliding window
         self.requests[client_ip] = [
-            req_time for req_time in self.requests[client_ip]
-            if current_time - req_time < self.window_seconds
+            t for t in self.requests[client_ip]
+            if current_time - t < self.window_seconds
         ]
-        
-        # Check if limit exceeded
+
         if len(self.requests[client_ip]) >= self.max_requests:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Please try again later."},
                 headers={"Retry-After": str(self.window_seconds)}
             )
-        
-        # Add current request
+
         self.requests[client_ip].append(current_time)
-        
         return await call_next(request)
 
 # Setup CORS - More restrictive for production
@@ -135,8 +139,6 @@ def seed_default_tenant():
         else:
             print(f"[startup] Default tenant already exists (id={existing.id})")
 
-# SocketIO for real-time notifications
-sio = SocketManager(app=app, cors_allowed_origins="*")
 # Include Routers
 app.include_router(general.router)
 app.include_router(auth.router)
