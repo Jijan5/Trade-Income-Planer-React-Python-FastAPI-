@@ -127,6 +127,9 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
         break;
+      case 'whatsapp':
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+        break;
       case 'instagram':
         navigator.clipboard.writeText(shareUrl);
         showFlash("Link copied! Paste it on Instagram.", "success");
@@ -389,7 +392,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
               <div className="fixed inset-0 z-[100] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4" onClick={() => setShowShareModal(false)}>
                 <div className="bg-engine-panel border border-engine-panel-border/30 p-8 rounded-2xl shadow-panel-neon max-w-sm w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
                   <h3 className="text-xl font-extrabold text-engine-neon mb-8 text-center tracking-wider">Share Post</h3>
-                  <div className="grid grid-cols-4 gap-4 mb-8">
+                  <div className="grid grid-cols-5 gap-2 mb-8">
                     <button onClick={() => handleShareOption('x')} className="flex flex-col items-center gap-3 group">
                       <div className="w-14 h-14 bg-engine-bg rounded-full flex items-center justify-center border border-engine-panel-border/30 group-hover:border-white group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all">
                         <span className="text-2xl text-white">𝕏</span>
@@ -401,6 +404,12 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                         <span className="text-2xl text-[#1877F2] group-hover:text-white font-serif font-bold">f</span>
                       </div>
                       <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">Facebook</span>
+                    </button>
+                    <button onClick={() => handleShareOption('whatsapp')} className="flex flex-col items-center gap-3 group">
+                      <div className="w-14 h-14 bg-[#25D366]/10 rounded-full flex items-center justify-center border border-[#25D366]/30 group-hover:bg-[#25D366] group-hover:shadow-[0_0_15px_rgba(37,211,102,0.4)] transition-all">
+                        <span className="text-2xl text-[#25D366] group-hover:text-white font-bold">W</span>
+                      </div>
+                      <span className="text-xs font-bold text-gray-500 group-hover:text-gray-300">WhatsApp</span>
                     </button>
                     <button onClick={() => handleShareOption('instagram')} className="flex flex-col items-center gap-3 group">
                       <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400/20 via-red-500/20 to-purple-500/20 rounded-full flex items-center justify-center border border-pink-500/30 group-hover:from-yellow-400 group-hover:via-red-500 group-hover:to-purple-500 group-hover:shadow-[0_0_15px_rgba(236,72,153,0.4)] transition-all">

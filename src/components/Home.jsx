@@ -261,6 +261,14 @@ const PostItem = React.memo(
             "_blank"
           );
           break;
+        case "whatsapp":
+          window.open(
+            `https://api.whatsapp.com/send?text=${encodeURIComponent(
+              shareText + " " + shareUrl
+            )}`,
+            "_blank"
+          );
+          break;
         case "instagram":
           navigator.clipboard.writeText(shareUrl);
           showFlash("Link copied! Paste it on Instagram.", "success");
@@ -924,7 +932,7 @@ const PostItem = React.memo(
               <h3 className="text-lg font-bold text-white mb-4 text-center">
                 Share Post
               </h3>
-              <div className="grid grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-5 gap-2 mb-4">
                 <button
                   onClick={() => handleShareOption("x")}
                   className="flex flex-col items-center gap-2 group"
@@ -942,6 +950,15 @@ const PostItem = React.memo(
                     <span className="text-xl text-white">f</span>
                   </div>
                   <span className="text-xs text-gray-400">Facebook</span>
+                </button>
+                <button
+                  onClick={() => handleShareOption("whatsapp")}
+                  className="flex flex-col items-center gap-2 group"
+                >
+                  <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center group-hover:bg-green-400 transition-colors">
+                    <span className="text-xl text-white">W</span>
+                  </div>
+                  <span className="text-xs text-gray-400">WhatsApp</span>
                 </button>
                 <button
                   onClick={() => handleShareOption("instagram")}
