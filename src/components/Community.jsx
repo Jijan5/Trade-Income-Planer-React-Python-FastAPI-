@@ -919,7 +919,7 @@ const Community = ({
         </div>
 
         {/* Create Post Box */}
-        <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine mb-6 relative focus-within:z-[40]">
+        <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine mb-6 relative">
           <form onSubmit={handlePostSubmit}>
             <div className="flex gap-4 sm:gap-5">
               <div className="flex-1 min-w-0">
