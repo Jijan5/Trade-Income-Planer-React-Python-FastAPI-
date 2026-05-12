@@ -458,8 +458,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                     className="w-full bg-engine-bg border border-engine-panel-border/30 rounded-lg text-white p-2 text-sm focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all font-mono"
                   />
                 </div>
-                <p className="text-[10px] text-yellow-400 font-bold tracking-wider mt-2 border border-yellow-500/30 bg-yellow-900/20 p-2 rounded">
-                  ⚠️ Violation will lock trading for 30 mins.
+                <p className="text-[10px] text-yellow-400 font-bold tracking-wider mt-2 border border-yellow-500/30 bg-yellow-900/20 p-2 rounded flex items-center gap-1">
+                  <TriangleAlert className="w-3 h-3" /> Violation will lock trading for 30 mins.
                 </p>
               </div>
             )}
@@ -638,8 +638,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
                 </p>
                 {healthData.ai_insight && (
                   <div className="p-3 bg-engine-button/10 rounded-lg border border-engine-button-border/30">
-                    <p className="text-[11px] text-engine-neon font-medium leading-relaxed">
-                      <span className="font-bold mr-1">🎯 AI Advice:</span> {healthData.ai_insight}
+                    <p className="text-[11px] text-engine-neon font-medium leading-relaxed flex items-center">
+                      <Target className="w-4 h-4 mr-1" /> <span className="font-bold mr-1">AI Advice:</span> {healthData.ai_insight}
                     </p>
                   </div>
                 )}
@@ -885,8 +885,8 @@ const ManualTradeSimulator = ({ activeSymbol = "BINANCE:BTCUSDT" }) => {
           {/* Checklist indicator */}
           {!checklistConfirmed && (
             <div className="mb-5 p-3 bg-engine-bg border border-yellow-500/50 rounded-xl text-center shadow-[0_0_15px_rgba(234,179,8,0.1)]">
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400">
-                ⚠️ Complete checklist before trading
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-yellow-400 flex items-center justify-center gap-1">
+                <TriangleAlert className="w-3 h-3" /> Complete checklist before trading
               </p>
             </div>
           )}

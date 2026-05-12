@@ -304,7 +304,7 @@ const AdminDashboard = () => {
                   : "text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]"
               }`}
             >
-              <span className="text-4xl">{confirmModal.type === "success" ? "✔" : "⚠"}</span>
+              <div className="text-4xl">{confirmModal.type === "success" ? <CheckCircle2 className="w-12 h-12" /> : <TriangleAlert className="w-12 h-12" />}</div>
               {confirmModal.type === "success"
                 ? "CONFIRM ACTION"
                 : "ARE YOU SURE?"}
@@ -342,7 +342,7 @@ const AdminDashboard = () => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#030308]/90 backdrop-blur-engine p-4 animate-fade-in">
           <div className="bg-[#0a0f1c]/95 border border-red-500/30 p-8 rounded-2xl shadow-[0_0_30px_rgba(239,68,68,0.2)] max-w-sm w-full text-center">
             <h3 className="text-xl font-extrabold mb-4 uppercase tracking-widest flex flex-col items-center gap-3 text-red-400 drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
-              <span className="text-4xl">⚠</span>
+              <TriangleAlert className="w-12 h-12" />
               REJECT APPEAL
             </h3>
             <p className="text-gray-400 text-sm mb-4 font-medium">Please enter a reason for rejecting the appeal:</p>

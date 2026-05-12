@@ -468,7 +468,7 @@ export default function CustomizePlatform() {
                   <p className="text-[10px] text-gray-500">2 hours ago</p>
                 </div>
               </div>
-              <p className="text-sm mb-4 leading-relaxed">Just hit my weekly target using the new momentum strategy! The key is waiting for the EMA crossover confirmation on the 15m chart. 🚀📉</p>
+              <p className="text-sm mb-4 leading-relaxed">Just hit my weekly target using the new momentum strategy! The key is waiting for the EMA crossover confirmation on the 15m chart.</p>
               <div className="flex gap-4 border-t border-engine-panel-border/10 pt-3">
                 <button className="text-xs font-bold flex items-center gap-1 transition-colors hover:opacity-80" style={{ color: localTheme.neon_color }}>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" /></svg>

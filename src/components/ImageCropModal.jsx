@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Scissors } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 
 // Helper to create an image element from a URL
@@ -90,7 +91,7 @@ const ImageCropModal = ({ file, onApply, onCancel }) => {
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-engine-bg/95 backdrop-blur-engine p-4">
       <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-lg w-full">
         <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <span className="text-engine-neon">✂️</span> Crop Avatar
+          <Scissors className="w-5 h-5 text-engine-neon" /> Crop Avatar
         </h3>
 
         {file.type === 'image/gif' ? (

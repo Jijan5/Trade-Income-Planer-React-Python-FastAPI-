@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
+import { Crown, Users, ChevronRight, X } from "lucide-react";
 import api from "../lib/axios";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -1353,7 +1354,7 @@ const Home = ({
                   onClick={() => setPostImage({ file: null, preview: "" })}
                   className="absolute -top-3 -right-3 bg-red-500 hover:bg-red-400 transition-colors text-white rounded-full p-1.5 leading-none text-xs shadow-lg"
                 >
-                  ✕
+                  <X className="w-3 h-3" />
                 </button>
               </div>
             )}
@@ -1424,8 +1425,7 @@ const Home = ({
             {createdCommunities.length > 0 && (
               <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
                 <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
-                  <span className="text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">👑</span> Created
-                  Communities
+                  <Crown className="w-4 h-4 text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]" /> Created Communities
                 </h3>
                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                   {createdCommunities.map((comm) => (
@@ -1442,9 +1442,7 @@ const Home = ({
                           {comm.members_count} Members
                         </p>
                       </div>
-                      <span className="text-gray-500 group-hover:text-engine-neon transition-colors">
-                        →
-                      </span>
+                      <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-engine-neon transition-colors" />
                     </div>
                   ))}
                 </div>
@@ -1454,7 +1452,7 @@ const Home = ({
             {/* Joined Communities */}
             <div className="bg-engine-panel backdrop-blur-engine rounded-2xl border border-engine-panel-border/20 p-5 shadow-panel-neon">
               <h3 className="text-sm font-extrabold text-engine-neon mb-4 flex items-center gap-2 tracking-wider">
-                <span className="text-engine-neon drop-shadow-panel-neon">👥</span> Your Communities
+                <Users className="w-4 h-4 text-engine-neon drop-shadow-panel-neon" /> Your Communities
               </h3>
               <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                 {myCommunities.length === 0 ? (
@@ -1476,9 +1474,7 @@ const Home = ({
                           {comm.members_count} Members
                         </p>
                       </div>
-                      <span className="text-gray-500 group-hover:text-engine-neon transition-colors">
-                        →
-                      </span>
+                      <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-engine-neon transition-colors" />
                     </div>
                   ))
                 )}

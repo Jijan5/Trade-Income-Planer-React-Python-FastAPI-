@@ -10,7 +10,7 @@ import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { getPlanLevel } from "../utils/permissions";
 import MentionInput from "./MentionInput";
 import { createPortal } from "react-dom";
-import { TriangleAlert, Users, Search, Sparkles, Link as LinkIcon, Flag } from "lucide-react";
+import { TriangleAlert, Users, Search, Sparkles, Link as LinkIcon, Flag, Camera, ChevronRight, X } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -928,8 +928,8 @@ const Community = ({
             </div>
           </div>
           <div className="text-right flex flex-col items-end gap-3 relative z-10">
-            <button className="bg-engine-bg/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-engine shadow-lg" onClick={fetchMembers}>
-              👥 {activeCommunity.members_count} Members
+            <button className="bg-engine-bg/80 text-white px-5 py-2 rounded-full text-xs font-bold border border-white/20 cursor-pointer hover:bg-white/20 hover:border-white/40 transition-all backdrop-blur-engine shadow-lg flex items-center gap-2" onClick={fetchMembers}>
+              <Users className="w-4 h-4" /> {activeCommunity.members_count} Members
             </button>
             {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
                <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full uppercase font-bold tracking-wider backdrop-blur-engine">Creator View</span>
@@ -966,7 +966,7 @@ const Community = ({
                       onClick={() => setPostImage({ file: null, preview: "" })}
                       className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg hover:bg-red-400 hover:scale-110 transition-all border border-red-400/50"
                     >
-                      ✕
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 )}
@@ -990,7 +990,7 @@ const Community = ({
                       onClick={() => fileInputRef.current.click()}
                       className="text-gray-400 hover:text-engine-neon text-sm flex items-center gap-2 font-bold transition-colors"
                     >
-                      <span className="text-lg">📷</span> Upload
+                      <Camera className="w-4 h-4" /> Upload
                     </button>
                     <input
                       type="file"
@@ -1010,7 +1010,7 @@ const Community = ({
                       onClick={() => setShowLinkInput(!showLinkInput)}
                       className="text-gray-400 hover:text-engine-neon text-sm flex items-center gap-2 font-bold transition-colors"
                     >
-                      <span className="text-lg">🔗</span> Add Link
+                      <LinkIcon className="w-4 h-4" /> Add Link
                     </button>
                   </div>
 
@@ -1073,8 +1073,8 @@ const Community = ({
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
             <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-md w-full max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-center mb-6 border-b border-engine-panel-border/10 pb-4">
-                <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><span className="text-engine-neon">👥</span> Community Members</h3>
-                <button onClick={() => setShowMembersModal(false)} className="text-engine-neon/50 hover:text-engine-neon transition-colors text-xl font-bold">✕</button>
+                <h3 className="text-xl font-extrabold text-white flex items-center gap-2"><Users className="w-5 h-5 text-engine-neon" /> Community Members</h3>
+                <button onClick={() => setShowMembersModal(false)} className="text-engine-neon/50 hover:text-engine-neon transition-colors text-xl font-bold"><X className="w-6 h-6" /></button>
               </div>
               <div className="space-y-3">
                 {members.map(member => (
@@ -1294,7 +1294,7 @@ const Community = ({
                       className="text-sm font-bold hover:underline"
                       style={{ color: comm.text_color }}
                     >
-                      Join Group →
+                      Join Group <ChevronRight className="w-4 h-4 inline" />
                     </button>
                   )}
                 </div>
@@ -1617,7 +1617,7 @@ const Community = ({
                         </div>
                         <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="hidden" />
                         <span className={`text-xs font-extrabold uppercase flex items-center gap-1 transition-colors ${isVip ? 'text-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]' : 'text-gray-500 group-hover:text-yellow-500/70'}`}>
-                          ✨ Enable VIP Style (Animated)
+                          <Sparkles className="w-3 h-3 text-yellow-400" /> Enable VIP Style (Animated)
                         </span>
                       </label>
                     </div>
@@ -1692,8 +1692,8 @@ const Community = ({
                       "Community description will appear here..."}
                   </p>
                   <div className="flex items-center justify-between border-t border-white/20 pt-5 opacity-90 font-bold relative z-10">
-                    <span className="text-sm flex items-center gap-2"><span className="text-lg">👥</span> 1 Member</span>
-                    <span className="text-sm">Join Group →</span>
+                    <span className="text-sm flex items-center gap-2"><Users className="w-4 h-4" /> 1 Member</span>
+                    <span className="text-sm flex items-center gap-1">Join Group <ChevronRight className="w-4 h-4" /></span>
                   </div>
                 </div>
               </div>

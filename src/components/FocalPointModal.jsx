@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Target } from 'lucide-react';
 
 const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCancel }) => {
   const [focalPoint, setFocalPoint] = useState({ x: 50, y: 50 }); // percentages
@@ -65,7 +66,7 @@ const FocalPointModal = ({ file, initialFocalPoint = '50% 50%', onApply, onCance
       <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-3xl w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <span className="text-engine-neon">🎯</span> Set Focus Point
+            <Target className="w-6 h-6 text-engine-neon" /> Set Focus Point
           </h3>
           <span className="text-xs font-mono text-engine-neon bg-engine-button/10 px-2 py-1 rounded">
             {Math.round(focalPoint.x)}% {Math.round(focalPoint.y)}%

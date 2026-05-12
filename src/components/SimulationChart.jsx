@@ -1,5 +1,17 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useThemeEngine } from '../contexts/ThemeEngineContext';
+import { 
+  LineChart, 
+  CandlestickChart, 
+  MousePointer2, 
+  Slash, 
+  Minus, 
+  Square, 
+  Type, 
+  Eraser, 
+  RotateCcw, 
+  Undo2 
+} from 'lucide-react';
 
 const PAD = { top: 20, right: 75, bottom: 40, left: 12 };
 const FIB_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0];
@@ -28,13 +40,13 @@ function bband(data, n = 20, m = 2) {
 }
 
 const TOOLS = [
-  { id: 'pointer', label: '↖', tip: 'Pan' },
-  { id: 'trendline', label: '╱', tip: 'Trend Line' },
-  { id: 'hline', label: '─', tip: 'Horizontal Line' },
-  { id: 'rect', label: '▭', tip: 'Rectangle' },
+  { id: 'pointer', icon: <MousePointer2 className="w-4 h-4" />, tip: 'Pan' },
+  { id: 'trendline', icon: <Slash className="w-4 h-4" />, tip: 'Trend Line' },
+  { id: 'hline', icon: <Minus className="w-4 h-4" />, tip: 'Horizontal Line' },
+  { id: 'rect', icon: <Square className="w-4 h-4" />, tip: 'Rectangle' },
   { id: 'fib', label: 'Φ', tip: 'Fibonacci' },
-  { id: 'text', label: 'T', tip: 'Text' },
-  { id: 'eraser', label: '⌫', tip: 'Eraser' },
+  { id: 'text', icon: <Type className="w-4 h-4" />, tip: 'Text' },
+  { id: 'eraser', icon: <Eraser className="w-4 h-4" />, tip: 'Eraser' },
 ];
 
 export default function SimulationChart({ data }) {
@@ -380,8 +392,9 @@ export default function SimulationChart({ data }) {
         <div className="flex gap-1 ml-auto">
           {['candle','line'].map(t => (
             <button key={t} onClick={() => setChartType(t)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all ${chartType === t ? 'bg-engine-button text-engine-bg' : 'bg-engine-bg border border-engine-button-border/20 text-engine-neon/60 hover:text-engine-neon'}`}>
-              {t === 'candle' ? '🕯 Candle' : '📈 Line'}
+              className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest transition-all flex items-center gap-1.5 ${chartType === t ? 'bg-engine-button text-engine-bg' : 'bg-engine-bg border border-engine-button-border/20 text-engine-neon/60 hover:text-engine-neon'}`}>
+              {t === 'candle' ? <CandlestickChart className="w-3.5 h-3.5" /> : <LineChart className="w-3.5 h-3.5" />}
+              {t === 'candle' ? 'Candle' : 'Line'}
             </button>
           ))}
         </div>
@@ -402,12 +415,12 @@ export default function SimulationChart({ data }) {
           {TOOLS.map(t => (
             <button key={t.id} title={t.tip} onClick={() => setTool(t.id)}
               className={`w-9 h-9 rounded-lg text-sm font-bold transition-all flex items-center justify-center ${tool === t.id ? 'bg-engine-button text-engine-bg shadow-button-neon' : 'bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon'}`}>
-              {t.label}
+              {t.icon || t.label}
             </button>
           ))}
           <div className="mt-auto flex flex-col gap-1">
-            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">↩</button>
-            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">⟳</button>
+            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all"><Undo2 className="w-4 h-4" /></button>
+            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all"><RotateCcw className="w-4 h-4" /></button>
           </div>
         </div>
 

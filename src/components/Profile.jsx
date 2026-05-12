@@ -7,7 +7,7 @@ import { countryCodes } from "../utils/countryCodes";
 import AuthenticatedImage from "./AuthenticatedImage";
 import ImageCropModal from "./ImageCropModal";
 import { getPlanLevel } from "../utils/permissions";
-import { Settings, Star, Users, TriangleAlert } from "lucide-react";
+import { Settings, Star, Users, TriangleAlert, ChevronDown, ChevronRight } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -342,7 +342,7 @@ const Profile = ({ showFlash }) => {
               onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
             >
               <span>{user.country_code || "+1"}</span>
-              <span className="text-[10px] text-engine-neon">▼</span>
+              <ChevronDown className="w-4 h-4 text-engine-neon" />
             </div>
             
             {isCountryDropdownOpen && (
@@ -666,7 +666,7 @@ const Profile = ({ showFlash }) => {
                   <p className="text-sm mb-8 opacity-90 font-medium leading-relaxed">{editingComm.description || "Community description will appear here. Make it catchy!"}</p>
                   <div className="flex items-center justify-between border-t border-white/20 pt-5 opacity-90">
                     <span className="text-xs font-bold font-mono bg-white/10 px-3 py-1 rounded-lg backdrop-blur-engine">{myCommunities.find(c => c.id === editingComm.id)?.members_count || 1} MBRS</span>
-                    <span className="text-xs font-extrabold uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">JOIN <span className="text-lg leading-none">→</span></span>
+                    <span className="text-xs font-extrabold uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">JOIN <ChevronRight className="w-4 h-4" /></span>
                   </div>
                 </div>
               </div>

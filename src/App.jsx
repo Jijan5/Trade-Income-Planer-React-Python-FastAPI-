@@ -41,7 +41,7 @@ import {
 } from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
-import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon } from "lucide-react";
+import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon, Crown, ShieldCheck } from "lucide-react";
 
 // 🛡️ SECURITY: Protected Route for Admin
 const AdminRoute = ({ children }) => {
@@ -778,18 +778,18 @@ function App() {
                 {userData?.role === "admin" && (
                   <button
                     onClick={() => navigate("/admin")}
-                    className="hidden md:block text-xs bg-transparent border border-red-500/50 hover:border-red-500 text-red-500 hover:bg-red-500/10 px-5 py-2.5 rounded-xl font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)] transition-all transform hover:scale-105"
+                    className="hidden md:flex items-center gap-2 text-xs bg-transparent border border-red-500/50 hover:border-red-500 text-red-500 hover:bg-red-500/10 px-5 py-2.5 rounded-xl font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)] transition-all transform hover:scale-105"
                   >
-                    🛡️ Admin Panel
+                    <ShieldCheck className="w-4 h-4" /> Admin Panel
                   </button>
                 )}
                 {/* Upgrade button - only show if logged in */}
                 {token && (
                   <button
                     onClick={() => navigate("/subscription")}
-                    className="hidden md:block text-xs gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
+                    className="hidden md:flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
                   >
-                    👑 Upgrade Pro
+                    <Crown className="w-4 h-4" /> Upgrade Pro
                   </button>
                 )}
 
@@ -968,7 +968,7 @@ function App() {
                       }}
                       className="w-full bg-transparent border border-red-500/50 hover:border-red-500 text-red-500 hover:bg-red-500/10 py-3 rounded-xl font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)] transition-all flex items-center justify-center gap-2"
                     >
-                      🛡️ Admin Panel
+                        <ShieldCheck className="w-5 h-5" /> Admin Panel
                     </button>
                   )}
                   {token && (
@@ -979,7 +979,7 @@ function App() {
                       }}
                       className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
                     >
-                      👑 Upgrade Pro
+                        <Crown className="w-5 h-5" /> Upgrade Pro
                     </button>
                   )}
                 </div>

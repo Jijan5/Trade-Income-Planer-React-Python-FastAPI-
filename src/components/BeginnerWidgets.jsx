@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { BarChart3, Scale, Lightbulb } from 'lucide-react';
 
 // ============================================
 // POSITION SIZE CALCULATOR
@@ -31,7 +32,7 @@ export const PositionSizeCalculator = ({
   return (
     <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-engine mb-4">
       <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
-        <span className="text-xl">📊</span>
+        <BarChart3 className="w-5 h-5 text-engine-neon" />
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Position Size Calculator</h4>
       </div>
       
@@ -74,8 +75,8 @@ export const PositionSizeCalculator = ({
           APPLY POSITION SIZE
         </button>
         
-        <p className="text-[10px] font-bold text-gray-500 italic border-t border-engine-panel-border/10 pt-3 mt-3">
-          💡 Novice tip: Risk only 1-2% of your account per trade to survive losing streaks!
+        <p className="text-[10px] font-bold text-gray-500 italic border-t border-engine-panel-border/10 pt-3 mt-3 flex items-center gap-1.5">
+          <Lightbulb className="w-3.5 h-3.5 text-yellow-400" /> Novice tip: Risk only 1-2% of your account per trade to survive losing streaks!
         </p>
       </div>
     </div>
@@ -128,7 +129,7 @@ export const RiskRewardDisplay = ({
   return (
     <div className="bg-engine-panel p-5 rounded-2xl border border-engine-panel-border/30 shadow-panel-neon backdrop-blur-engine mb-4">
       <div className="flex items-center gap-2 mb-4 border-b border-engine-panel-border/10 pb-3">
-        <span className="text-xl">⚖️</span>
+        <Scale className="w-5 h-5 text-engine-neon" />
         <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Risk / Reward Ratio</h4>
       </div>
       
@@ -153,8 +154,8 @@ export const RiskRewardDisplay = ({
         </div>
       </div>
       
-      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-engine-panel-border/10 pt-3">
-        💡 Novice tip: Always aim for at least 2:1 risk/reward to stay profitable!
+      <p className="text-[10px] font-bold text-gray-500 italic mt-4 border-t border-engine-panel-border/10 pt-3 flex items-center gap-1.5">
+        <Lightbulb className="w-3.5 h-3.5 text-yellow-400" /> Novice tip: Always aim for at least 2:1 risk/reward to stay profitable!
       </p>
     </div>
   );
@@ -243,7 +244,7 @@ export const BeginnerTipsWidget = ({ recentPnL, totalTrades, accountBalance, ini
       <div className="absolute top-0 right-0 w-24 h-24 bg-engine-button/5 rounded-full blur-2xl"></div>
       <div className="flex items-center justify-between mb-4 relative z-10 border-b border-engine-panel-border/10 pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-xl">💡</span>
+          <Lightbulb className="w-5 h-5 text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]" />
           <h4 className="text-sm font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_var(--engine-neon)]">Trading Tip</h4>
         </div>
         <button 
@@ -299,7 +300,7 @@ export const BeginnerWidgetsPanel = ({
               : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-button-border/20'
           }`}
         >
-          <span className="text-sm mr-1">📊</span> Calculator
+          <BarChart3 className="w-4 h-4 inline mr-1" /> Calculator
         </button>
         <button
           onClick={() => setShowRR(!showRR)}
@@ -309,7 +310,7 @@ export const BeginnerWidgetsPanel = ({
               : 'bg-engine-bg/50 text-engine-neon/50 hover:bg-engine-button/10 hover:text-engine-neon border border-engine-button-border/20'
           }`}
         >
-          <span className="text-sm mr-1">⚖️</span> R/R Ratio
+          <Scale className="w-4 h-4 inline mr-1" /> R/R Ratio
         </button>
       </div>
       

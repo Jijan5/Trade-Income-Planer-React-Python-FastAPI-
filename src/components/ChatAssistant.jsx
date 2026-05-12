@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { TrendingUp, TrendingDown, Lightbulb, BarChart3, Send, X, RefreshCw, MessageSquare, Image as ImageIcon } from "lucide-react";
 import api from "../lib/axios";
 
 import { useAuth } from "../contexts/AuthContext";
@@ -16,7 +17,7 @@ const ChatAssistant = () => {
     {
       role: "assistant",
       content:
-        "Hello! I am Tip, your AI Trading Mentor. Ask me about market trends, trading strategies, or crypto analysis! 📈\n\n💡 Quick actions: Analyze trades or upload charts!",
+        "Hello! I am Tip, your AI Trading Mentor. Ask me about market trends, trading strategies, or crypto analysis!\n\nQuick actions: Analyze trades or upload charts!",
     },
   ]);
   const [input, setInput] = useState("");
@@ -207,7 +208,7 @@ const ChatAssistant = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-3 relative z-10">
               <div className="w-8 h-8 bg-engine-bg border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
-                📈
+                <TrendingUp className="w-4 h-4" />
               </div>
               <div>
                 <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">Market Trends</h3>
@@ -274,13 +275,13 @@ const ChatAssistant = () => {
                         {coin.symbol}
                       </span>
                       <span
-                        className={`font-mono text-xs font-bold ${
+                        className={`font-mono text-xs font-bold flex items-center gap-1 ${
                           coin.change_24h >= 0
                             ? "text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]"
                             : "text-red-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]"
                         }`}
                       >
-                        {coin.change_24h >= 0 ? "📈" : "📉"}{" "}
+                        {coin.change_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}{" "}
                         {coin.change_24h >= 0 ? "+" : ""}
                         {coin.change_24h.toFixed(2)}%
                       </span>
@@ -483,10 +484,10 @@ const ChatAssistant = () => {
                   onClick={() => setChartImage(null)}
                   className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-all border border-red-400/50"
                 >
-                  ✕
+                  <X className="w-3.5 h-3.5" />
                 </button>
-                <div className="absolute bottom-2 left-2 bg-engine-bg/80 backdrop-blur-engine text-engine-neon text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-engine-panel-border/30">
-                  📊 Chart Ready
+                <div className="absolute bottom-2 left-2 bg-engine-bg/80 backdrop-blur-engine text-engine-neon text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-md border border-engine-panel-border/30 flex items-center gap-1">
+                  <BarChart3 className="w-3 h-3" /> Chart Ready
                 </div>
               </div>
             )}
