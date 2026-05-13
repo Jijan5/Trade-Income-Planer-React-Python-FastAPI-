@@ -230,7 +230,8 @@ const SimulationLayout = ({
         {/* SECTION 2: SIMULATION TOOLS */}
         <div className="space-y-8">
           {/* View Switcher */}
-          <div className="flex justify-start sm:justify-center overflow-x-auto whitespace-nowrap border-b border-engine-neon/20 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+          <div className="w-full overflow-x-auto scrollbar-hide border-b border-engine-neon/20" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+            <div className="flex justify-start sm:justify-center min-w-max sm:min-w-full whitespace-nowrap">
             <Link
               to="/simulation/strategy"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
@@ -271,6 +272,7 @@ const SimulationLayout = ({
             >
               History
             </Link>
+          </div>
           </div>
           <Outlet context={{ showFlash }} />
         </div>
