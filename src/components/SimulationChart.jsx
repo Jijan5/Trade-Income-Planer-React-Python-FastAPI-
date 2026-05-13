@@ -1,17 +1,38 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useThemeEngine } from '../contexts/ThemeEngineContext';
-import { 
-  LineChart, 
-  CandlestickChart, 
-  MousePointer2, 
-  Slash, 
-  Minus, 
-  Square, 
-  Type, 
-  Eraser, 
-  RotateCcw, 
-  Undo2 
-} from 'lucide-react';
+import { LineChart, CandlestickChart, RotateCcw, Undo2 } from 'lucide-react';
+
+// Inline SVG icons — guaranteed to render regardless of bundler/CSS issues
+const IconPointer = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 3l14 9-7 1-4 7z"/>
+  </svg>
+);
+const IconTrendline = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="4" y1="20" x2="20" y2="4"/>
+  </svg>
+);
+const IconHline = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="3" y1="12" x2="21" y2="12"/>
+  </svg>
+);
+const IconRect = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="5" width="18" height="14" rx="1"/>
+  </svg>
+);
+const IconText = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/>
+  </svg>
+);
+const IconEraser = () => (
+  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 20H7L3 16l10-10 7 7-3.5 3.5"/><path d="M6.5 17.5l4-4"/>
+  </svg>
+);
 
 const PAD = { top: 20, right: 75, bottom: 40, left: 12 };
 const FIB_LEVELS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1.0];
@@ -49,14 +70,14 @@ const TOOLS = [
   { id: 'eraser',    tip: 'Eraser' },
 ];
 
-function ToolIcon({ id, className }) {
+function ToolIcon({ id }) {
   switch (id) {
-    case 'pointer':   return <MousePointer2 className={className} />;
-    case 'trendline': return <Slash className={className} />;
-    case 'hline':     return <Minus className={className} />;
-    case 'rect':      return <Square className={className} />;
-    case 'text':      return <Type className={className} />;
-    case 'eraser':    return <Eraser className={className} />;
+    case 'pointer':   return <IconPointer />;
+    case 'trendline': return <IconTrendline />;
+    case 'hline':     return <IconHline />;
+    case 'rect':      return <IconRect />;
+    case 'text':      return <IconText />;
+    case 'eraser':    return <IconEraser />;
     default:          return null;
   }
 }
@@ -427,7 +448,7 @@ export default function SimulationChart({ data }) {
           {TOOLS.map(t => (
             <button key={t.id} title={t.tip} onClick={() => setTool(t.id)}
               className={`w-9 h-9 rounded-lg text-sm font-bold transition-all flex items-center justify-center ${tool === t.id ? 'bg-engine-button text-engine-bg shadow-button-neon' : 'bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon'}`}>
-              {t.label ? t.label : <ToolIcon id={t.id} className="w-4 h-4" />}
+              {t.label ? t.label : <ToolIcon id={t.id} />}
             </button>
           ))}
           <div className="mt-auto flex flex-col gap-1">
