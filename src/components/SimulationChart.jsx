@@ -40,14 +40,26 @@ function bband(data, n = 20, m = 2) {
 }
 
 const TOOLS = [
-  { id: 'pointer', icon: <MousePointer2 className="w-4 h-4" />, tip: 'Pan' },
-  { id: 'trendline', icon: <Slash className="w-4 h-4" />, tip: 'Trend Line' },
-  { id: 'hline', icon: <Minus className="w-4 h-4" />, tip: 'Horizontal Line' },
-  { id: 'rect', icon: <Square className="w-4 h-4" />, tip: 'Rectangle' },
-  { id: 'fib', label: 'Φ', tip: 'Fibonacci' },
-  { id: 'text', icon: <Type className="w-4 h-4" />, tip: 'Text' },
-  { id: 'eraser', icon: <Eraser className="w-4 h-4" />, tip: 'Eraser' },
+  { id: 'pointer',   tip: 'Pan' },
+  { id: 'trendline', tip: 'Trend Line' },
+  { id: 'hline',     tip: 'Horizontal Line' },
+  { id: 'rect',      tip: 'Rectangle' },
+  { id: 'fib',       tip: 'Fibonacci', label: 'Φ' },
+  { id: 'text',      tip: 'Text' },
+  { id: 'eraser',    tip: 'Eraser' },
 ];
+
+function ToolIcon({ id, className }) {
+  switch (id) {
+    case 'pointer':   return <MousePointer2 className={className} />;
+    case 'trendline': return <Slash className={className} />;
+    case 'hline':     return <Minus className={className} />;
+    case 'rect':      return <Square className={className} />;
+    case 'text':      return <Type className={className} />;
+    case 'eraser':    return <Eraser className={className} />;
+    default:          return null;
+  }
+}
 
 export default function SimulationChart({ data }) {
   const { theme } = useThemeEngine();
@@ -415,7 +427,7 @@ export default function SimulationChart({ data }) {
           {TOOLS.map(t => (
             <button key={t.id} title={t.tip} onClick={() => setTool(t.id)}
               className={`w-9 h-9 rounded-lg text-sm font-bold transition-all flex items-center justify-center ${tool === t.id ? 'bg-engine-button text-engine-bg shadow-button-neon' : 'bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon'}`}>
-              {t.icon || t.label}
+              {t.label ? t.label : <ToolIcon id={t.id} className="w-4 h-4" />}
             </button>
           ))}
           <div className="mt-auto flex flex-col gap-1">
