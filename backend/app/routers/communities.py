@@ -248,35 +248,80 @@ async def delete_community(community_id: int, user: User = Depends(get_current_a
     community = session.get(Community, community_id)
     if not community:
         raise HTTPException(status_code=404, detail="Community not found")
-    
+
     if community.creator_username != user.username and user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized to delete this community")
 
-    post_ids = session.exec(select(Post.id).where(Post.community_id == community_id)).all()
+    try:
+        # Disable FK checks so we can delete in any order without constraint errors
+        session.exec(text("SET FOREIGN_KEY_CHECKS = 0"))
 
-    if post_ids:
-        comment_ids = session.exec(select(Comment.id).where(Comment.post_id.in_(post_ids))).all()
-        session.exec(text("DELETE FROM notification WHERE post_id IN :pids"), params={"pids": post_ids})
-        if comment_ids:
-             session.exec(text("DELETE FROM notification WHERE comment_id IN :cids"), params={"cids": comment_ids})
-             session.exec(text("DELETE FROM report WHERE comment_id IN :cids"), params={"cids": comment_ids})
+        # 1. Delete all notifications linked to this community or its posts/comments
+        session.exec(text("DELETE FROM notification WHERE community_id = :cid"), params={"cid": community_id})
+        session.exec(text("""
+            DELETE n FROM notification n
+            INNER JOIN post p ON n.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
+        session.exec(text("""
+            DELETE n FROM notification n
+            INNER JOIN comment c ON n.comment_id = c.id
+            INNER JOIN post p ON c.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
 
-        session.exec(text("DELETE FROM report WHERE post_id IN :pids"), params={"pids": post_ids})
-        session.exec(text("DELETE FROM reaction WHERE post_id IN :pids"), params={"pids": post_ids})
-        # Delete reactions on comments first
-        if comment_ids:
-            session.exec(text("DELETE FROM reaction WHERE comment_id IN :cids"), params={"cids": comment_ids})
-        # Delete replies (child comments with parent_id) BEFORE parent comments to avoid FK self-reference violation
-        session.exec(text("DELETE FROM comment WHERE post_id IN :pids AND parent_id IS NOT NULL"), params={"pids": post_ids})
-        # Now safe to delete parent comments
-        session.exec(text("DELETE FROM comment WHERE post_id IN :pids"), params={"pids": post_ids})
-        session.exec(text("DELETE FROM post WHERE id IN :pids"), params={"pids": post_ids})
+        # 2. Delete all reports on posts and comments in this community
+        session.exec(text("""
+            DELETE r FROM report r
+            INNER JOIN post p ON r.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
+        session.exec(text("""
+            DELETE r FROM report r
+            INNER JOIN comment c ON r.comment_id = c.id
+            INNER JOIN post p ON c.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
 
-    session.exec(text("DELETE FROM communitymember WHERE community_id = :cid"), params={"cid": community_id})
-    session.exec(text("DELETE FROM notification WHERE community_id = :cid"), params={"cid": community_id})
-    session.delete(community)
-    session.commit()
-    return {"status": "success"}
+        # 3. Delete all reactions on posts and comments in this community
+        session.exec(text("""
+            DELETE rx FROM reaction rx
+            INNER JOIN post p ON rx.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
+        session.exec(text("""
+            DELETE rx FROM reaction rx
+            INNER JOIN comment c ON rx.comment_id = c.id
+            INNER JOIN post p ON c.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
+
+        # 4. Delete all comments (replies + parents) linked to posts in this community
+        session.exec(text("""
+            DELETE c FROM comment c
+            INNER JOIN post p ON c.post_id = p.id
+            WHERE p.community_id = :cid
+        """), params={"cid": community_id})
+
+        # 5. Delete all posts in this community
+        session.exec(text("DELETE FROM post WHERE community_id = :cid"), params={"cid": community_id})
+
+        # 6. Delete all community members
+        session.exec(text("DELETE FROM communitymember WHERE community_id = :cid"), params={"cid": community_id})
+
+        # 7. Finally delete the community itself
+        session.exec(text("DELETE FROM community WHERE id = :cid"), params={"cid": community_id})
+
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete community: {str(e)}")
+    finally:
+        # Always re-enable FK checks, even if an error occurred
+        session.exec(text("SET FOREIGN_KEY_CHECKS = 1"))
+
+    return {"status": "success", "message": "Community and all related data deleted successfully"}
+
   
 @router.get("/api/communities/{community_id}/posts", response_model=list[PostResponse])
 async def get_community_posts(community_id: int, session: Session = Depends(get_session)):
