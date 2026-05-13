@@ -230,7 +230,7 @@ const SimulationLayout = ({
         {/* SECTION 2: SIMULATION TOOLS */}
         <div className="space-y-8">
           {/* View Switcher */}
-          <div className="flex justify-center border-b border-engine-neon/20">
+          <div className="flex justify-start md:justify-center overflow-x-auto whitespace-nowrap border-b border-engine-neon/20 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             <Link
               to="/simulation/strategy"
               className={`px-6 py-4 text-sm font-extrabold uppercase tracking-widest transition-all ${
