@@ -1386,8 +1386,8 @@ function App() {
             </div>
           </footer>
           )}
-          {/* AI Chat Assistant Widget (hidden on landing page) */}
-          {location.pathname !== "/" && <ChatAssistant />}
+          {/* AI Chat Assistant Widget (hidden on landing page, and contact-us for non-logged-in users) */}
+          {location.pathname !== "/" && (location.pathname !== "/contact-us" || !!token) && <ChatAssistant />}
 
           {showNotifications && (
             <NotificationsModal
