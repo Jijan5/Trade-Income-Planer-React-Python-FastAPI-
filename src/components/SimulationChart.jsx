@@ -61,13 +61,13 @@ function bband(data, n = 20, m = 2) {
 }
 
 const TOOLS = [
-  { id: 'pointer',   tip: 'Pan' },
-  { id: 'trendline', tip: 'Trend Line' },
-  { id: 'hline',     tip: 'Horizontal Line' },
-  { id: 'rect',      tip: 'Rectangle' },
-  { id: 'fib',       tip: 'Fibonacci', label: 'Φ' },
-  { id: 'text',      tip: 'Text' },
-  { id: 'eraser',    tip: 'Eraser' },
+  { id: 'pointer',   tip: 'Pan',             label: '↖' },
+  { id: 'trendline', tip: 'Trend Line',       label: '╱' },
+  { id: 'hline',     tip: 'Horizontal Line',  label: '—' },
+  { id: 'rect',      tip: 'Rectangle',        label: '▭' },
+  { id: 'fib',       tip: 'Fibonacci',        label: 'Φ' },
+  { id: 'text',      tip: 'Text',             label: 'T' },
+  { id: 'eraser',    tip: 'Eraser',           label: '⌫' },
 ];
 
 function ToolIcon({ id }) {
