@@ -452,8 +452,8 @@ export default function SimulationChart({ data }) {
             </button>
           ))}
           <div className="mt-auto flex flex-col gap-1">
-            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all"><Undo2 className="w-4 h-4" /></button>
-            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all"><RotateCcw className="w-4 h-4" /></button>
+            <button title="Undo" onClick={undo} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">↶</button>
+            <button title="Reset View" onClick={reset} className="w-9 h-9 rounded-lg bg-engine-bg border border-engine-button-border/15 text-engine-neon/60 hover:border-engine-button-border/40 hover:text-engine-neon text-sm font-bold flex items-center justify-center transition-all">↻</button>
           </div>
         </div>
 
