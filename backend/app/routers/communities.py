@@ -263,6 +263,12 @@ async def delete_community(community_id: int, user: User = Depends(get_current_a
 
         session.exec(text("DELETE FROM report WHERE post_id IN :pids"), params={"pids": post_ids})
         session.exec(text("DELETE FROM reaction WHERE post_id IN :pids"), params={"pids": post_ids})
+        # Delete reactions on comments first
+        if comment_ids:
+            session.exec(text("DELETE FROM reaction WHERE comment_id IN :cids"), params={"cids": comment_ids})
+        # Delete replies (child comments with parent_id) BEFORE parent comments to avoid FK self-reference violation
+        session.exec(text("DELETE FROM comment WHERE post_id IN :pids AND parent_id IS NOT NULL"), params={"pids": post_ids})
+        # Now safe to delete parent comments
         session.exec(text("DELETE FROM comment WHERE post_id IN :pids"), params={"pids": post_ids})
         session.exec(text("DELETE FROM post WHERE id IN :pids"), params={"pids": post_ids})
 
