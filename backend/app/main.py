@@ -32,23 +32,48 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 # Security: Rate Limiting Middleware
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Simple in-memory rate limiting middleware to prevent brute force attacks."""
+    """In-memory rate limiting middleware. Applies a global limit to all routes
+    and a much stricter limit specifically to sensitive auth endpoints."""
     def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: dict = {}
         self._last_cleanup = time.time()
-    
+
+        # Brute-force protection: stricter limits for login/auth endpoints
+        self.auth_paths = ["/api/token", "/api/register", "/api/forgot-password", "/api/reset-password"]
+        self.auth_max_requests = 10   # max 10 attempts per minute per IP
+        self.auth_window_seconds = 60
+        self.auth_requests: dict = {}
+
     async def dispatch(self, request: Request, call_next):
-        # Skip rate limiting for health checks, docs, static assets
-        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] \
-                or request.url.path.startswith(('/auth', '/api', '/static')):
+        # Skip rate limiting for health checks, docs, and static assets only
+        if request.url.path in ["/health", "/docs", "/openapi.json", "/redoc"] \
+                or request.url.path.startswith('/static'):
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
 
+        # --- Strict Brute-Force Protection for Auth Endpoints ---
+        if request.url.path in self.auth_paths:
+            if client_ip not in self.auth_requests:
+                self.auth_requests[client_ip] = []
+            self.auth_requests[client_ip] = [
+                t for t in self.auth_requests[client_ip]
+                if current_time - t < self.auth_window_seconds
+            ]
+            if len(self.auth_requests[client_ip]) >= self.auth_max_requests:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too many attempts. Please wait 60 seconds before trying again."},
+                    headers={"Retry-After": str(self.auth_window_seconds)}
+                )
+            self.auth_requests[client_ip].append(current_time)
+            return await call_next(request)
+
+        # --- General Rate Limiting for all other routes ---
         # Periodic cleanup to prevent unbounded memory growth
         if current_time - self._last_cleanup > 300:  # every 5 minutes
             cutoff = current_time - self.window_seconds
@@ -61,7 +86,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if client_ip not in self.requests:
             self.requests[client_ip] = []
 
-        # Remove requests outside the sliding window
         self.requests[client_ip] = [
             t for t in self.requests[client_ip]
             if current_time - t < self.window_seconds
@@ -77,16 +101,20 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests[client_ip].append(current_time)
         return await call_next(request)
 
-# Setup CORS - More restrictive for production
+# Setup CORS - Restricted to allowed origins only
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
 ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
 
+# Fallback to a safe default if env is not set (prevents wide-open CORS in production)
+if not ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS = [os.getenv("FRONTEND_URL", "http://localhost:5173")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 # Add security headers middleware
