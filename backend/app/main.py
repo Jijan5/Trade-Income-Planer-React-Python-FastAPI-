@@ -14,28 +14,38 @@ load_dotenv()
 
 app = FastAPI(title="Trading Simulation", version="1.0.0")
 
-# Security: HTTP Security Headers Middleware
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+# Security: HTTP Security Headers Middleware (Pure ASGI to prevent Starlette BaseHTTPMiddleware body bugs)
+class SecurityHeadersMiddleware:
     """Add security headers to all responses"""
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        
-        # 🛡️ Security Headers
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-        
-        return response
+    def __init__(self, app):
+        self.app = app
 
-# Security: Rate Limiting Middleware
-class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                from starlette.datastructures import MutableHeaders
+                headers = MutableHeaders(scope=message)
+                # 🛡️ Security Headers
+                headers["X-Content-Type-Options"] = "nosniff"
+                headers["X-Frame-Options"] = "DENY"
+                headers["X-XSS-Protection"] = "1; mode=block"
+                headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+                headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+                headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+# Security: Rate Limiting Middleware (Pure ASGI to prevent Starlette BaseHTTPMiddleware body bugs)
+class RateLimitMiddleware:
     """In-memory rate limiting middleware. Applies a global limit to all routes
     and a much stricter limit specifically to sensitive auth endpoints."""
     def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
-        super().__init__(app)
+        self.app = app
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: dict = {}
@@ -47,21 +57,29 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.auth_window_seconds = 60
         self.auth_requests: dict = {}
 
-    async def dispatch(self, request: Request, call_next):
-        # Skip rate limiting for OPTIONS preflight requests (must reach CORSMiddleware)
-        if request.method == "OPTIONS":
-            return await call_next(request)
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
+        # Skip rate limiting for OPTIONS preflight requests
+        if scope.get("method") == "OPTIONS":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
         # Skip rate limiting for health checks, docs, and static assets only
-        if request.url.path in ["/health", "/docs", "/openapi.json", "/redoc"] \
-                or request.url.path.startswith('/static'):
-            return await call_next(request)
+        if path in ["/health", "/docs", "/openapi.json", "/redoc"] or path.startswith('/static'):
+            await self.app(scope, receive, send)
+            return
 
-        client_ip = request.client.host if request.client else "unknown"
+        # Get client IP address
+        client = scope.get("client")
+        client_ip = client[0] if client else "unknown"
         current_time = time.time()
 
         # --- Strict Brute-Force Protection for Auth Endpoints ---
-        if request.url.path in self.auth_paths:
+        if path in self.auth_paths:
             if client_ip not in self.auth_requests:
                 self.auth_requests[client_ip] = []
             self.auth_requests[client_ip] = [
@@ -69,16 +87,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 if current_time - t < self.auth_window_seconds
             ]
             if len(self.auth_requests[client_ip]) >= self.auth_max_requests:
-                return JSONResponse(
-                    status_code=429,
-                    content={"detail": "Too many attempts. Please wait 60 seconds before trying again."},
-                    headers={"Retry-After": str(self.auth_window_seconds)}
-                )
+                await self.send_429(send, self.auth_window_seconds)
+                return
             self.auth_requests[client_ip].append(current_time)
-            return await call_next(request)
+            await self.app(scope, receive, send)
+            return
 
         # --- General Rate Limiting for all other routes ---
-        # Periodic cleanup to prevent unbounded memory growth
         if current_time - self._last_cleanup > 300:  # every 5 minutes
             cutoff = current_time - self.window_seconds
             self.requests = {
@@ -96,14 +111,27 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         ]
 
         if len(self.requests[client_ip]) >= self.max_requests:
-            return JSONResponse(
-                status_code=429,
-                content={"detail": "Rate limit exceeded. Please try again later."},
-                headers={"Retry-After": str(self.window_seconds)}
-            )
+            await self.send_429(send, self.window_seconds)
+            return
 
         self.requests[client_ip].append(current_time)
-        return await call_next(request)
+        await self.app(scope, receive, send)
+
+    async def send_429(self, send, retry_after):
+        import json
+        content = json.dumps({"detail": "Rate limit exceeded. Please try again later."}).encode("utf-8")
+        await send({
+            "type": "http.response.start",
+            "status": 429,
+            "headers": [
+                (b"content-type", b"application/json"),
+                (b"retry-after", str(retry_after).encode("utf-8")),
+            ],
+        })
+        await send({
+            "type": "http.response.body",
+            "body": content,
+        })
 
 # Setup CORS - Restricted to allowed origins only
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
