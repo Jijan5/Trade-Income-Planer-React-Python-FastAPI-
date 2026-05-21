@@ -14,86 +14,47 @@ load_dotenv()
 
 app = FastAPI(title="Trading Simulation", version="1.0.0")
 
-# Security: HTTP Security Headers Middleware (Pure ASGI to prevent Starlette BaseHTTPMiddleware body bugs)
-class SecurityHeadersMiddleware:
+# Security: HTTP Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add security headers to all responses"""
-    def __init__(self, app):
-        self.app = app
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        
+        # 🛡️ Security Headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        
+        return response
 
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
-
-        async def send_wrapper(message):
-            if message["type"] == "http.response.start":
-                from starlette.datastructures import MutableHeaders
-                headers = MutableHeaders(scope=message)
-                # 🛡️ Security Headers
-                headers["X-Content-Type-Options"] = "nosniff"
-                headers["X-Frame-Options"] = "DENY"
-                headers["X-XSS-Protection"] = "1; mode=block"
-                headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-                headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-                headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
-            await send(message)
-
-        await self.app(scope, receive, send_wrapper)
-
-# Security: Rate Limiting Middleware (Pure ASGI to prevent Starlette BaseHTTPMiddleware body bugs)
-class RateLimitMiddleware:
+# Security: Rate Limiting Middleware
+class RateLimitMiddleware(BaseHTTPMiddleware):
     """In-memory rate limiting middleware. Applies a global limit to all routes
     and a much stricter limit specifically to sensitive auth endpoints."""
     def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
-        self.app = app
+        super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: dict = {}
         self._last_cleanup = time.time()
 
-        # Brute-force protection: stricter limits for login/auth endpoints
-        self.auth_paths = ["/api/token", "/api/register", "/api/forgot-password", "/api/reset-password"]
-        self.auth_max_requests = 10   # max 10 attempts per minute per IP
-        self.auth_window_seconds = 60
-        self.auth_requests: dict = {}
+    async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for OPTIONS preflight requests (must reach CORSMiddleware)
+        if request.method == "OPTIONS":
+            return await call_next(request)
 
-    async def __call__(self, scope, receive, send):
-        if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
+        # Skip rate limiting for health checks, docs, static assets
+        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] \
+                or request.url.path.startswith(('/auth', '/api', '/static')):
+            return await call_next(request)
 
-        # Skip rate limiting for OPTIONS preflight requests
-        if scope.get("method") == "OPTIONS":
-            await self.app(scope, receive, send)
-            return
-
-        path = scope.get("path", "")
-        # Skip rate limiting for health checks, docs, and static assets only
-        if path in ["/health", "/docs", "/openapi.json", "/redoc"] or path.startswith('/static'):
-            await self.app(scope, receive, send)
-            return
-
-        # Get client IP address
-        client = scope.get("client")
-        client_ip = client[0] if client else "unknown"
+        client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
 
-        # --- Strict Brute-Force Protection for Auth Endpoints ---
-        if path in self.auth_paths:
-            if client_ip not in self.auth_requests:
-                self.auth_requests[client_ip] = []
-            self.auth_requests[client_ip] = [
-                t for t in self.auth_requests[client_ip]
-                if current_time - t < self.auth_window_seconds
-            ]
-            if len(self.auth_requests[client_ip]) >= self.auth_max_requests:
-                await self.send_429(send, self.auth_window_seconds)
-                return
-            self.auth_requests[client_ip].append(current_time)
-            await self.app(scope, receive, send)
-            return
-
-        # --- General Rate Limiting for all other routes ---
+        # Periodic cleanup to prevent unbounded memory growth
         if current_time - self._last_cleanup > 300:  # every 5 minutes
             cutoff = current_time - self.window_seconds
             self.requests = {
@@ -111,35 +72,18 @@ class RateLimitMiddleware:
         ]
 
         if len(self.requests[client_ip]) >= self.max_requests:
-            await self.send_429(send, self.window_seconds)
-            return
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Please try again later."},
+                headers={"Retry-After": str(self.window_seconds)}
+            )
 
         self.requests[client_ip].append(current_time)
-        await self.app(scope, receive, send)
-
-    async def send_429(self, send, retry_after):
-        import json
-        content = json.dumps({"detail": "Rate limit exceeded. Please try again later."}).encode("utf-8")
-        await send({
-            "type": "http.response.start",
-            "status": 429,
-            "headers": [
-                (b"content-type", b"application/json"),
-                (b"retry-after", str(retry_after).encode("utf-8")),
-            ],
-        })
-        await send({
-            "type": "http.response.body",
-            "body": content,
-        })
+        return await call_next(request)
 
 # Setup CORS - Restricted to allowed origins only
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
 ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
-
-# Fallback to a safe default if env is not set (prevents wide-open CORS in production)
-if not ALLOWED_ORIGINS:
-    ALLOWED_ORIGINS = [os.getenv("FRONTEND_URL", "http://localhost:5173")]
 
 # NOTE: Starlette/FastAPI applies middleware in REVERSE registration order.
 # The last middleware added runs FIRST. We need:
@@ -162,10 +106,10 @@ app.add_middleware(SecurityHeadersMiddleware)
 #    before any rate limiting or other middleware can block them.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "Accept"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Health check endpoint
