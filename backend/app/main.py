@@ -48,6 +48,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.auth_requests: dict = {}
 
     async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for OPTIONS preflight requests (must reach CORSMiddleware)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # Skip rate limiting for health checks, docs, and static assets only
         if request.url.path in ["/health", "/docs", "/openapi.json", "/redoc"] \
                 or request.url.path.startswith('/static'):
@@ -109,6 +113,25 @@ ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
 if not ALLOWED_ORIGINS:
     ALLOWED_ORIGINS = [os.getenv("FRONTEND_URL", "http://localhost:5173")]
 
+# NOTE: Starlette/FastAPI applies middleware in REVERSE registration order.
+# The last middleware added runs FIRST. We need:
+#   Request flow: RateLimitMiddleware -> SessionMiddleware -> SecurityHeadersMiddleware -> CORSMiddleware -> route
+# So we register them in the opposite order:
+
+# 1. Add configurable rate limiting (runs last in registration = first on request)
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
+app.add_middleware(RateLimitMiddleware, max_requests=RATE_LIMIT_REQUESTS, window_seconds=RATE_LIMIT_WINDOW)
+
+# 2. SessionMiddleware is required by Authlib for OAuth2 state/nonce
+_SESSION_SECRET = os.getenv("SECRET_KEY", "changeme-use-a-strong-random-secret")
+app.add_middleware(SessionMiddleware, secret_key=_SESSION_SECRET)
+
+# 3. Add security headers middleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# 4. CORS runs FIRST (registered last) so preflight OPTIONS requests are handled
+#    before any rate limiting or other middleware can block them.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -116,18 +139,6 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept"],
 )
-
-# Add security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
-
-# SessionMiddleware is required by Authlib for OAuth2 state/nonce
-_SESSION_SECRET = os.getenv("SECRET_KEY", "changeme-use-a-strong-random-secret")
-app.add_middleware(SessionMiddleware, secret_key=_SESSION_SECRET)
-
-# Add configurable rate limiting (default 100/min per IP, env override)
-RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
-RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
-app.add_middleware(RateLimitMiddleware, max_requests=RATE_LIMIT_REQUESTS, window_seconds=RATE_LIMIT_WINDOW)
 
 # Health check endpoint
 @app.get("/health")
