@@ -80,32 +80,34 @@ const StrategyCard = ({ strategyData }) => {
       </div>
 
       {/* Chart & Action Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-engine-bg/20 gap-4">
-        {/* Miniature Equity Curve */}
-        <div className="w-full md:w-48 h-12 flex-shrink-0">
-            {daily_breakdown && daily_breakdown.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={daily_breakdown}>
-                        <defs>
-                        <linearGradient id="colorEq" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#00cfff" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#00cfff" stopOpacity={0}/>
-                        </linearGradient>
-                        </defs>
-                        <Area type="monotone" dataKey="end_balance" stroke="#00cfff" fillOpacity={1} fill="url(#colorEq)" isAnimationActive={false} />
-                    </AreaChart>
-                </ResponsiveContainer>
-            )}
+      <div className="p-4 bg-engine-bg/20 border-t border-engine-panel-border/10">
+        <div className="flex items-center justify-between gap-4">
+          {/* Miniature Equity Curve */}
+          <div className="flex-1 h-12 overflow-hidden relative">
+              {daily_breakdown && daily_breakdown.length > 0 && (
+                  <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={daily_breakdown}>
+                          <defs>
+                          <linearGradient id="colorEq" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#00cfff" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#00cfff" stopOpacity={0}/>
+                          </linearGradient>
+                          </defs>
+                          <Area type="monotone" dataKey="end_balance" stroke="#00cfff" fillOpacity={1} fill="url(#colorEq)" isAnimationActive={false} />
+                      </AreaChart>
+                  </ResponsiveContainer>
+              )}
+          </div>
+          
+          {/* Copy Button */}
+          <button
+            onClick={handleCopyStrategy}
+            className="flex-shrink-0 px-5 sm:px-6 py-2 sm:py-2.5 bg-engine-button text-engine-bg text-[10px] sm:text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-button-neon hover:bg-[#00e5ff] flex items-center justify-center gap-2 z-10 relative"
+          >
+            {canCopy ? <Play className="w-3 h-3 sm:w-4 sm:h-4" /> : <span className="text-sm">🔒</span>}
+            {canCopy ? "Copy Strategy" : "Upgrade to Copy"}
+          </button>
         </div>
-        
-        {/* Copy Button */}
-        <button
-          onClick={handleCopyStrategy}
-          className="w-full md:w-auto px-6 py-2.5 bg-engine-button text-engine-bg text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all shadow-button-neon hover:bg-[#00e5ff] flex items-center justify-center gap-2"
-        >
-          {canCopy ? <Play className="w-4 h-4" /> : <span className="text-sm">🔒</span>}
-          {canCopy ? "Copy Strategy" : "Upgrade to Copy"}
-        </button>
       </div>
     </div>
   );

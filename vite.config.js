@@ -21,6 +21,6 @@ export default defineConfig({
     ]
   },
   build: {
-    sourcemap: false, // Security: Disable source maps in production to hide source code
+    sourcemap: true, // Security: Disable source maps in production to hide source code
   },
 })
