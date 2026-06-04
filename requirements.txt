@@ -43,3 +43,4 @@ pytest-cov
 mkdocs
 mkdocs-material
 mkdocstrings
+sendgrid

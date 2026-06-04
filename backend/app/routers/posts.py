@@ -77,6 +77,7 @@ async def create_post(
     content: str = Form(...),
     community_id: Optional[int] = Form(None),
     link_url: Optional[str] = Form(None),
+    strategy_data: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_active_user),
     session: Session = Depends(get_session)
@@ -101,6 +102,7 @@ async def create_post(
             content=content,
             image_url=image_url_to_save,
             link_url=link_url,
+            strategy_data=strategy_data,
             tenant_id=user.tenant_id  # Ensure tenant_id is set
         )
         session.add(db_post)

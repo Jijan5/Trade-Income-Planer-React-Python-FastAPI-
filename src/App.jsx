@@ -541,7 +541,7 @@ function App() {
     try {
       // Pastikan backend berjalan di port 8000
       const response = await api.post("/simulate", params);
-      setSimulationData(response.data);
+      setSimulationData({ ...response.data, formData: params });
     } catch (err) {
       console.error("Simulation Error:", err);
       setError("Gagal menghubungi server. Pastikan backend Python berjalan.");

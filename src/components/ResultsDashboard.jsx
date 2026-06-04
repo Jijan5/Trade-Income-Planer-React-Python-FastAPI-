@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useRef } from "react";
 import { BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { Sparkles, Skull, TriangleAlert, CheckCircle } from "lucide-react";
+import { Sparkles, Skull, TriangleAlert, CheckCircle, Share2 } from "lucide-react";
 import SimulationChart from "./SimulationChart";
+import ShareStrategyModal from "./ShareStrategyModal";
 
 const ResultsDashboard = ({ data }) => {
   if (!data) return null;
@@ -18,6 +19,7 @@ const ResultsDashboard = ({ data }) => {
 
   const [filter, setFilter] = useState("daily");
   const [viewMode, setViewMode] = useState("daily"); // 'daily' or 'journal'
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const filters = [
     { id: "daily", label: "Daily", days: 1 },
@@ -389,29 +391,52 @@ const ResultsDashboard = ({ data }) => {
             </button>
           ))}
         </div>
-        <button
-          onClick={downloadCSV}
-          className="px-5 py-2 mt-2 sm:mt-0 bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border hover:shadow-button-neon text-engine-neon text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-3 mt-2 sm:mt-0">
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="px-5 py-2 bg-transparent border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border hover:shadow-button-neon text-engine-neon text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          Export CSV
-        </button>
+            <Share2 className="w-4 h-4" />
+            Share Strategy
+          </button>
+          <button
+            onClick={downloadCSV}
+            className="px-5 py-2 bg-engine-bg border border-engine-button-border/30 hover:bg-engine-button/10 hover:border-engine-button-border hover:shadow-button-neon text-engine-neon text-xs font-extrabold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Custom Canvas Chart — remounts on every new simulation run */}
       <SimulationChart key={runKey} data={aggregatedData} />
+
+      {/* Share Modal */}
+      <ShareStrategyModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        simulationData={data}
+        showFlash={(msg, type) => {
+          // Normally we'd use context, but ResultsDashboard might not have access directly.
+          // Wait, App.jsx has showFlash context via usePostInteractions or we can just pass window event
+          // Let's use a custom event or check if showFlash is passed as prop
+          const event = new CustomEvent("show-flash", { detail: { message: msg, type } });
+          window.dispatchEvent(event);
+        }}
+      />
 
       {/* PnL Chart */}
       <div className="bg-engine-panel p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon backdrop-blur-engine h-[400px]">

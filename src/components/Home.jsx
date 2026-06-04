@@ -13,6 +13,7 @@ import { useAuth } from "../contexts/AuthContext";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthenticatedImage from "./AuthenticatedImage"; // Import the new component
 import MentionInput from "./MentionInput";
+import StrategyCard from "./StrategyCard";
 import { usePostInteractions } from "../contexts/PostInteractionContext";
 import { createPortal } from "react-dom";
 
@@ -437,6 +438,10 @@ const PostItem = React.memo(
               onClick={() => setPreviewImage(post.image_url)} // Preview will also use the blob
             />
           </div>
+        )}
+        
+        {post.strategy_data && (
+          <StrategyCard strategyData={JSON.parse(post.strategy_data)} />
         )}
 
         {/* Actions */}

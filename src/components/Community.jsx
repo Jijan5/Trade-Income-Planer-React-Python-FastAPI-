@@ -11,6 +11,7 @@ import { getPlanLevel } from "../utils/permissions";
 import MentionInput from "./MentionInput";
 import { createPortal } from "react-dom";
 import { TriangleAlert, Users, Search, Sparkles, Link as LinkIcon, Flag, Camera, ChevronRight, X } from "lucide-react";
+import StrategyCard from "./StrategyCard";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -221,6 +222,10 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
             )}
             {post.link_url && (
               <a href={post.link_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-4 p-4 bg-engine-panel border border-engine-button-border/20 rounded-xl text-engine-neon text-sm hover:bg-engine-button/10 hover:shadow-button-neon transition-all truncate relative z-10"><LinkIcon className="w-4 h-4" /> {post.link_url}</a>
+            )}
+            
+            {post.strategy_data && (
+              <StrategyCard strategyData={JSON.parse(post.strategy_data)} />
             )}
             {/* Actions */}
             <div className="flex items-center gap-6 mt-4 pt-4">

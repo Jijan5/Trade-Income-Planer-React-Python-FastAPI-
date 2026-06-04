@@ -288,6 +288,7 @@ class Post(SQLModel, table=True):
     content: str
     image_url: Optional[str] = None
     link_url: Optional[str] = None
+    strategy_data: Optional[str] = SQLField(default=None, sa_column=sa.Column(sa.TEXT))
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     likes: int = SQLField(default=0)
     comments_count: int = SQLField(default=0)
@@ -298,6 +299,7 @@ class PostCreate(BaseModel):
     content: str
     image_url: Optional[str] = None
     link_url: Optional[str] = None
+    strategy_data: Optional[str] = None
 
 class PostResponse(BaseModel):
     id: int
@@ -307,6 +309,7 @@ class PostResponse(BaseModel):
     content: str
     image_url: Optional[str] = None
     link_url: Optional[str] = None
+    strategy_data: Optional[str] = None
     created_at: datetime
     likes: int
     comments_count: int

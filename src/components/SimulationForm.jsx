@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Settings, TriangleAlert, X, Info } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const SimulationForm = ({ onSimulate, isLoading }) => {
+  const location = useLocation();
+  const presetData = location.state?.presetData;
+
   const [formData, setFormData] = useState({
     initial_balance: 10000,
     capital_utilization: 30,
@@ -12,9 +16,16 @@ const SimulationForm = ({ onSimulate, isLoading }) => {
     simulation_days: 30,
     fees_per_trade: 0,
     risk_type: "dynamic",
+    ...(presetData || {})
   });
 
   const [activeTooltip, setActiveTooltip] = useState(null);
+
+  useEffect(() => {
+    if (presetData) {
+      setFormData(prev => ({ ...prev, ...presetData }));
+    }
+  }, [presetData]);
 
   // Preset Strategi Umum
   const STRATEGY_PRESETS = [
