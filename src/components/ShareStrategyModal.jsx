@@ -73,7 +73,9 @@ const ShareStrategyModal = ({ isOpen, onClose, simulationData, showFlash }) => {
         const formData = new FormData();
         formData.append("content", caption);
         formData.append("strategy_data", strategyDataStr);
-        promises.push(api.post("/posts", formData));
+        promises.push(api.post("/posts", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        }));
       }
 
       for (const commId of selectedDestinations.communities) {
@@ -81,7 +83,9 @@ const ShareStrategyModal = ({ isOpen, onClose, simulationData, showFlash }) => {
         formData.append("content", caption);
         formData.append("community_id", commId);
         formData.append("strategy_data", strategyDataStr);
-        promises.push(api.post("/posts", formData));
+        promises.push(api.post("/posts", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        }));
       }
 
       await Promise.all(promises);
