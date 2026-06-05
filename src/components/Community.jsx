@@ -806,7 +806,9 @@ const Community = ({
         const formData = new FormData();
         formData.append("is_private", newPrivacy);
         
-        const res = await api.put(`/communities/${activeCommunity.id}`, formData);
+        const res = await api.put(`/communities/${activeCommunity.id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setCommunities(communities.map(c => c.id === activeCommunity.id ? { ...c, is_private: newPrivacy } : c));
         showFlash(`Community posts are now ${newPrivacy ? 'Private (Hidden from global feed)' : 'Public (Visible on global feed)'}`, "success");
       } catch (e) {
