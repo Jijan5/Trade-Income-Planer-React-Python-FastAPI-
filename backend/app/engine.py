@@ -36,6 +36,7 @@ def calculate_compounding(request):
     daily_results = []
     current_balance = initial_balance
     trade_log = []
+    ruin_threshold_det = initial_balance * 0.05
     
     # Create a deterministic sequence of wins/losses based on winrate
     wins_needed = int(total_trades * win_rate)
@@ -50,7 +51,7 @@ def calculate_compounding(request):
         daily_pnl = 0
         
         for _ in range(trades_per_day):
-            if current_balance <= 0: break
+            if current_balance <= ruin_threshold_det: break
             if trade_counter >= len(outcomes): break
             is_win = outcomes[trade_counter]
             trade_counter += 1
@@ -81,7 +82,7 @@ def calculate_compounding(request):
                     balance=f"{current_balance:.2f}"
                 ))
 
-        if current_balance <= 0:
+        if current_balance <= ruin_threshold_det:
             current_balance = 0
             
         roi = ((current_balance - start_bal) / start_bal * 100) if start_bal > 0 else 0
@@ -104,6 +105,7 @@ def calculate_compounding(request):
     final_balances = []
     ruin_count = 0
     max_drawdowns = []
+    ruin_threshold = initial_balance * 0.05 # 95% drawdown is considered ruin
     
     for _ in range(iterations):
         mc_balance = initial_balance
@@ -112,7 +114,7 @@ def calculate_compounding(request):
         
         # Simulate trades for this iteration
         for _ in range(total_trades):
-            if mc_balance <= 0:
+            if mc_balance <= ruin_threshold:
                 break
             
             # Randomize outcome based on win rate
@@ -139,7 +141,7 @@ def calculate_compounding(request):
                 if dd > mc_drawdown:
                     mc_drawdown = dd
         
-        if mc_balance <= 0:
+        if mc_balance <= ruin_threshold:
             ruin_count += 1
             mc_balance = 0
             

@@ -62,6 +62,32 @@ const StrategyCard = ({ strategyData }) => {
         </div>
       )}
 
+      {/* Strategy Parameters Section */}
+      {formData && (
+        <div className="bg-engine-panel-border/5 p-4 border-b border-engine-panel-border/20">
+          <h5 className="text-[9px] font-extrabold text-engine-neon/60 uppercase tracking-widest mb-3 flex items-center gap-2">
+             Strategy Configuration
+          </h5>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { label: "RISK TYPE", value: formData.risk_type ? formData.risk_type.toUpperCase() : "DYNAMIC" },
+              { label: "CAPITAL UTIL", value: `${formData.capital_utilization}%` },
+              { label: "RISK / TRADE", value: `${formData.risk_per_trade}%` },
+              { label: "RISK:REWARD", value: `1:${formData.risk_reward_ratio}` },
+              { label: "WIN RATE", value: `${formData.win_rate}%` },
+              { label: "TRADES/DAY", value: formData.trades_per_day },
+              { label: "FEES/TRADE", value: `$${formData.fees_per_trade}` },
+              { label: "DURATION", value: `${formData.simulation_days} Days` }
+            ].map((param, idx) => (
+              <div key={idx} className="bg-engine-bg/60 border border-engine-panel-border/20 rounded-lg p-2.5 flex flex-col justify-center transition-all hover:border-engine-panel-border/40 hover:bg-engine-bg/80">
+                <p className="text-[7.5px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">{param.label}</p>
+                <p className="text-xs font-mono font-bold text-white">{param.value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Metrics Section */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-0 border-b border-engine-panel-border/20">
         {[
