@@ -256,6 +256,7 @@ class Community(SQLModel, table=True):
     hover_animation: str = SQLField(default="none") # 'scale', 'glow', 'none'
     hover_color: str = SQLField(default="#3b82f6")
     bg_focal_point: str = SQLField(default="50% 50%")
+    is_private: bool = SQLField(default=False)
     
 class NotificationRead(BaseModel):
     id: int

@@ -536,6 +536,7 @@ const Community = ({
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [members, setMembers] = useState([]);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", onConfirm: null });
+  const [kickModal, setKickModal] = useState({ isOpen: false, username: "", reason: "Spam", customReason: "" });
 
   // Fetch Communities
   const fetchCommunities = async () => {
@@ -779,22 +780,39 @@ const Community = ({
       }
     };
 
-    // Handle Kick Member
-    const handleKickMember = (username) => {
-      setConfirmModal({
-        isOpen: true,
-        message: `Are you sure you want to kick ${username} from this community?`,
-        onConfirm: async () => {
-          try {
-            await api.delete(`/communities/${activeCommunity.id}/members/${username}`);
-            setMembers(members.filter(m => m.username !== username));
-            showFlash(`${username} has been kicked.`, "success");
-          } catch (error) {
-            showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
-          }
+    // Handle Kick Member Trigger
+    const handleKickClick = (username) => {
+      setKickModal({ isOpen: true, username, reason: "Spam", customReason: "" });
+    };
+
+    const submitKick = async () => {
+      const finalReason = kickModal.reason === "Other" ? kickModal.customReason : kickModal.reason;
+      if (!finalReason.trim()) {
+        return showFlash("Please specify a reason.", "error");
       }
-    });
-  };
+      try {
+        await api.delete(`/communities/${activeCommunity.id}/members/${kickModal.username}?reason=${encodeURIComponent(finalReason)}`);
+        setMembers(members.filter(m => m.username !== kickModal.username));
+        showFlash(`${kickModal.username} has been kicked.`, "success");
+        setKickModal({ isOpen: false, username: "", reason: "Spam", customReason: "" });
+      } catch (error) {
+        showFlash(error.response?.data?.detail || "Failed to kick member.", "error");
+      }
+    };
+
+    const handleTogglePrivacy = async () => {
+      try {
+        const newPrivacy = !activeCommunity.is_private;
+        const formData = new FormData();
+        formData.append("is_private", newPrivacy);
+        
+        const res = await api.put(`/communities/${activeCommunity.id}`, formData);
+        setCommunities(communities.map(c => c.id === activeCommunity.id ? { ...c, is_private: newPrivacy } : c));
+        showFlash(`Community posts are now ${newPrivacy ? 'Private (Hidden from global feed)' : 'Public (Visible on global feed)'}`, "success");
+      } catch (e) {
+        showFlash("Failed to update privacy", "error");
+      }
+    };
 
   const handlePaste = (e) => {
     const items = e.clipboardData.items;
@@ -937,7 +955,17 @@ const Community = ({
               <Users className="w-4 h-4" /> {activeCommunity.members_count} Members
             </button>
             {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && (
+              <div className="flex flex-col items-end gap-2">
                <span className="text-[10px] bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 px-3 py-1 rounded-full uppercase font-bold tracking-wider backdrop-blur-engine">Creator View</span>
+               
+               <div className="flex items-center gap-2 mt-1 bg-engine-bg/50 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                  <span className="text-xs text-white/80 font-bold" title="If private, posts will not appear in the global Home feed.">Private Posts:</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={!!activeCommunity.is_private} onChange={handleTogglePrivacy} />
+                    <div className="w-9 h-5 bg-engine-panel-border/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-engine-neon shadow-[0_0_10px_rgba(0,0,0,0.3)]"></div>
+                  </label>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -1098,7 +1126,7 @@ const Community = ({
                       </div>
                     </div>
                     {(currentUser === activeCommunity.creator_username || userData?.role === 'admin') && member.username !== activeCommunity.creator_username && (
-                      <button onClick={() => handleKickMember(member.username)} className="text-xs bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 px-3 py-1.5 rounded-lg transition-all font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)]">
+                      <button onClick={() => handleKickClick(member.username)} className="text-xs bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 px-3 py-1.5 rounded-lg transition-all font-bold shadow-[0_0_10px_rgba(239,68,68,0.1)]">
                         Kick
                       </button>
                     )}
@@ -1124,6 +1152,56 @@ const Community = ({
               <div className="flex gap-4 justify-center">
                 <button onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })} className="px-6 py-2.5 rounded-xl border border-engine-button-border/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
                 <button onClick={() => { confirmModal.onConfirm(); setConfirmModal({ ...confirmModal, isOpen: false }); }} className="px-6 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all">Confirm</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Kick Reason Modal */}
+        {kickModal.isOpen && (
+          <div className="fixed inset-0 z-[80] flex items-center justify-center bg-engine-bg/90 backdrop-blur-engine p-4 animate-fade-in">
+            <div className="bg-engine-panel border border-engine-panel-border/30 p-6 rounded-2xl shadow-panel-neon max-w-md w-full relative overflow-hidden">
+              <div className="flex justify-between items-center mb-6 border-b border-engine-panel-border/10 pb-4">
+                <h3 className="text-xl font-extrabold text-red-400 flex items-center gap-2">
+                  <TriangleAlert className="w-5 h-5" /> Kick {kickModal.username}
+                </h3>
+                <button onClick={() => setKickModal({ ...kickModal, isOpen: false })} className="text-engine-neon/50 hover:text-engine-neon transition-colors"><X className="w-6 h-6" /></button>
+              </div>
+              
+              <div className="space-y-4 mb-6">
+                <p className="text-sm text-gray-300 font-bold mb-2">Select a reason for kicking this member:</p>
+                {["Spam", "Harassment", "Toxic", "Scam/Phishing", "Other"].map(reason => (
+                  <label key={reason} className="flex items-center gap-3 cursor-pointer group">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${kickModal.reason === reason ? 'border-red-500 bg-red-500/20' : 'border-gray-500 group-hover:border-red-400'}`}>
+                      {kickModal.reason === reason && <div className="w-2.5 h-2.5 bg-red-500 rounded-full shadow-[0_0_5px_red]"></div>}
+                    </div>
+                    <input 
+                      type="radio" 
+                      name="kickReason" 
+                      value={reason} 
+                      checked={kickModal.reason === reason} 
+                      onChange={(e) => setKickModal({ ...kickModal, reason: e.target.value })} 
+                      className="hidden" 
+                    />
+                    <span className={`text-sm font-bold transition-colors ${kickModal.reason === reason ? 'text-red-400' : 'text-gray-400 group-hover:text-gray-200'}`}>{reason}</span>
+                  </label>
+                ))}
+                
+                {kickModal.reason === "Other" && (
+                  <textarea 
+                    value={kickModal.customReason}
+                    onChange={(e) => setKickModal({ ...kickModal, customReason: e.target.value })}
+                    placeholder="Please specify the reason..."
+                    className="w-full bg-engine-bg/60 border border-engine-panel-border/30 rounded-xl text-white p-3 text-sm focus:border-red-500 focus:shadow-[0_0_10px_rgba(239,68,68,0.3)] outline-none h-24 resize-none transition-all mt-2"
+                  />
+                )}
+              </div>
+              
+              <div className="flex gap-4 justify-end">
+                <button onClick={() => setKickModal({ ...kickModal, isOpen: false })} className="px-5 py-2.5 rounded-xl border border-engine-button-border/20 text-engine-neon/70 hover:text-engine-neon hover:bg-engine-button/10 text-sm font-bold transition-all">Cancel</button>
+                <button onClick={submitKick} className="px-5 py-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] text-sm font-bold transition-all flex items-center gap-2">
+                  Confirm Kick
+                </button>
               </div>
             </div>
           </div>

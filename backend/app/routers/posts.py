@@ -22,10 +22,13 @@ class AppealCreate(SQLModel):
 
 @router.get("/api/posts", response_model=list[PostResponse])
 async def get_all_posts(session: Session = Depends(get_session), skip: int = 0, limit: int = 10, current_user: User = Depends(get_current_user)):
+    from ..models import Community
     query = (
         select(Post, User)
         .join(User, Post.username == User.username)
+        .outerjoin(Community, Post.community_id == Community.id)
         .where(Post.tenant_id == current_user.tenant_id)
+        .where((Post.community_id == None) | (Community.is_private == False))
         .order_by(Post.created_at.desc())
         .offset(skip)
         .limit(limit)

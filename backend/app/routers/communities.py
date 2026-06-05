@@ -87,7 +87,13 @@ async def leave_community(community_id: int, user: User = Depends(get_current_ac
     return {"status": "success"}
 
 @router.delete("/api/communities/{community_id}/members/{username_to_kick}")
-async def kick_community_member(community_id: int, username_to_kick: str, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+async def kick_community_member(
+    community_id: int, 
+    username_to_kick: str, 
+    reason: str = "Violation of community rules",
+    user: User = Depends(get_current_active_user), 
+    session: Session = Depends(get_session)
+):
     community = session.get(Community, community_id)
     if not community:
         raise HTTPException(status_code=404, detail="Community not found")
@@ -116,7 +122,7 @@ async def kick_community_member(community_id: int, username_to_kick: str, user: 
         user_id=user_to_kick.id,
         actor_username=user.username,
         type="system_broadcast",
-        content=f"You have been kicked from the community '{community.name}'.",
+        content=f"You have been kicked from the community '{community.name}'. Reason: {reason}",
         community_id=community_id,
         tenant_id=user.tenant_id
     )
@@ -135,6 +141,7 @@ async def create_community(
     hover_animation: str = Form("none"),
     hover_color: str = Form("#3b82f6"),
     bg_focal_point: str = Form("50% 50%"),
+    is_private: bool = Form(False),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_active_user),
@@ -172,6 +179,7 @@ async def create_community(
         hover_animation=hover_animation,
         hover_color=hover_color,
         bg_focal_point=bg_focal_point,
+        is_private=is_private,
         members_count=1,
         active_count=1,
         tenant_id = user.tenant_id
@@ -198,6 +206,7 @@ async def update_community(
     hover_animation: Optional[str] = Form(None),
     hover_color: Optional[str] = Form(None),
     bg_focal_point: Optional[str] = Form(None),
+    is_private: Optional[bool] = Form(None),
     avatar_file: Optional[UploadFile] = File(None),
     bg_image_file: Optional[UploadFile] = File(None),
     user: User = Depends(get_current_active_user),
@@ -209,14 +218,15 @@ async def update_community(
     if community.creator_username != user.username:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    if name: community.name = name
-    if description: community.description = description
-    if bg_type: community.bg_type = bg_type
-    if text_color: community.text_color = text_color
-    if font_family: community.font_family = font_family
-    if hover_animation: community.hover_animation = hover_animation
-    if hover_color: community.hover_color = hover_color
-    if bg_focal_point: community.bg_focal_point = bg_focal_point
+    if name is not None: community.name = name
+    if description is not None: community.description = description
+    if bg_type is not None: community.bg_type = bg_type
+    if text_color is not None: community.text_color = text_color
+    if font_family is not None: community.font_family = font_family
+    if hover_animation is not None: community.hover_animation = hover_animation
+    if hover_color is not None: community.hover_color = hover_color
+    if bg_focal_point is not None: community.bg_focal_point = bg_focal_point
+    if is_private is not None: community.is_private = is_private
 
     if avatar_file:
         os.makedirs("static/avatars", exist_ok=True)
