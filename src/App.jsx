@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
   Routes,
   Route,
@@ -41,7 +41,7 @@ import {
 } from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
-import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon, Crown, ShieldCheck } from "lucide-react";
+import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon, Crown, ShieldCheck, BookOpen, LogOut, User } from "lucide-react";
 
 // 🛡️ SECURITY: Protected Route for Admin
 const AdminRoute = ({ children }) => {
@@ -413,6 +413,22 @@ function App() {
   const [activeCategory, setActiveCategory] = useState("Crypto");
   const [communities, setCommunities] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    if (isProfileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
 
   // Notification State
   const [showNotifications, setShowNotifications] = useState(false);
@@ -785,15 +801,7 @@ function App() {
                     <ShieldCheck className="w-4 h-4" /> Admin Panel
                   </button>
                 )}
-                {/* Upgrade button - only show if logged in */}
-                {token && (
-                  <button
-                    onClick={() => navigate("/subscription")}
-                    className="hidden md:flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg px-5 py-2.5 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-200 transform hover:scale-105"
-                  >
-                    <Crown className="w-4 h-4" /> Upgrade Pro
-                  </button>
-                )}
+                {/* Upgrade button moved to Profile Dropdown */}
 
                 {token ? (
                   <>
@@ -822,34 +830,50 @@ function App() {
                       )}
                     </button>
 
-                    {/* Desktop Profile & Logout */}
-                    <div
-                      className="hidden md:flex items-center gap-3 cursor-pointer hover:bg-engine-button/10 p-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-engine-neon/30 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]"
-                      onClick={() => navigate("/profile")}
-                    >
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt="Avatar"
-                          className="w-8 h-8 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 bg-engine-bg rounded-full flex items-center justify-center text-engine-neon font-bold text-xs border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]">
-                          {userData?.username?.substring(0, 2).toUpperCase() ||
-                            "U"}
+                    {/* Desktop Profile & Dropdown */}
+                    <div className="relative hidden md:block" ref={profileDropdownRef}>
+                      <div
+                        className="flex items-center gap-3 cursor-pointer hover:bg-engine-button/10 p-1.5 pr-3 rounded-full transition-all border border-transparent hover:border-engine-neon/30 hover:shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]"
+                        onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      >
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt="Avatar"
+                            className="w-8 h-8 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-engine-bg rounded-full flex items-center justify-center text-engine-neon font-bold text-xs border border-engine-neon/50 shadow-[0_0_5px_rgba(var(--engine-neon-rgb),0.3)]">
+                            {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                          </div>
+                        )}
+                        <div className="text-sm font-bold text-white flex items-center">
+                          {userData?.username || "User"}
+                          <VerifiedBadge user={userData} />
                         </div>
-                      )}
-                      <div className="text-sm font-bold text-white hidden sm:flex items-center">
-                        {userData?.username || "User"}
-                        <VerifiedBadge user={userData} />
                       </div>
+
+                      {/* Dropdown Menu */}
+                      {isProfileDropdownOpen && (
+                        <>
+                          <div className="absolute right-0 mt-2 w-56 bg-engine-panel border border-engine-neon/20 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50 overflow-hidden backdrop-blur-md py-2 animate-fade-in">
+                            <button onClick={() => { setIsProfileDropdownOpen(false); navigate("/profile"); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-engine-button/10 hover:text-white transition-colors flex items-center gap-3 font-bold">
+                              <User className="w-4 h-4 text-engine-neon" /> Profile Settings
+                            </button>
+                            <button onClick={() => { setIsProfileDropdownOpen(false); navigate("/learning-modules"); }} className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-engine-button/10 hover:text-white transition-colors flex items-center gap-3 font-bold">
+                              <BookOpen className="w-4 h-4 text-[#00e5ff]" /> Learning Modules
+                            </button>
+                            <button onClick={() => { setIsProfileDropdownOpen(false); navigate("/subscription"); }} className="w-full text-left px-4 py-3 text-sm text-amber-400 hover:bg-amber-500/10 transition-colors flex items-center gap-3 font-extrabold tracking-wide">
+                              <Crown className="w-4 h-4" /> Upgrade Pro
+                            </button>
+                            <div className="border-t border-white/5 my-1"></div>
+                            <button onClick={() => { setIsProfileDropdownOpen(false); logout(); }} className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-3 font-bold">
+                              <LogOut className="w-4 h-4" /> Logout
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <button
-                      onClick={logout}
-                      className="hidden md:block text-xs bg-transparent border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-xl transition-all font-bold"
-                    >
-                      Logout
-                    </button>
 
                     {/* Mobile Hamburger Button */}
                     <button
@@ -974,15 +998,26 @@ function App() {
                     </button>
                   )}
                   {token && (
-                    <button
-                      onClick={() => {
-                        navigate("/subscription");
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
-                    >
-                        <Crown className="w-5 h-5" /> Upgrade Pro
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          navigate("/learning-modules");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full bg-transparent border border-engine-neon/30 text-engine-neon hover:bg-engine-button/10 py-3 rounded-xl font-bold shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)] transition-all flex items-center justify-center gap-2"
+                      >
+                        <BookOpen className="w-5 h-5" /> Learning Modules
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/subscription");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full bg-gradient-to-r from-amber-500 to-yellow-300 hover:from-yellow-400 hover:to-yellow-200 text-engine-bg py-3 rounded-xl font-extrabold shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all flex items-center justify-center gap-2"
+                      >
+                          <Crown className="w-5 h-5" /> Upgrade Pro
+                      </button>
+                    </>
                   )}
                 </div>
 
