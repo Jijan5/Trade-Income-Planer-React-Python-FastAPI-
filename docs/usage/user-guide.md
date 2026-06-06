@@ -54,6 +54,14 @@ Access from the main menu → **Simulation**
    - Daily breakdown
    - Monte Carlo analysis
 
+#### Share & Copy Strategy
+
+Found a winning strategy? You can share it with others or copy from them:
+
+1. Look for the "Share Strategy" button after running a successful simulation.
+2. Publish it to a community feed.
+3. Other users (Premium/Platinum) can click "Copy Strategy" on your post to instantly load your exact parameters into their simulator.
+
 ### Goal Planner
 
 Set and track your financial goals:
@@ -112,6 +120,25 @@ Update your profile:
    - Bio
    - Settings
 3. Save changes
+
+## Learning Modules
+
+Enhance your trading knowledge with our curated educational content:
+
+### Accessing Modules
+1. Navigate to **Learning Modules** from the main menu or profile dropdown.
+2. Browse through **Individual Modules** and **Module Bundles**.
+
+### Plan Limits
+- **Free/Basic**: Can view Free modules or purchase Premium ones individually.
+- **Premium**: Can view up to 3 Premium modules per day.
+- **Platinum**: Unlimited, unrestricted access to all modules and bundles.
+
+### Features
+- Cinematic full-screen module viewer
+- Integrated YouTube video lessons
+- Rich-text documentation
+- Navigate seamlessly between modules within a bundle
 
 ## Subscriptions
 

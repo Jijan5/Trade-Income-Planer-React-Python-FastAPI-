@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../lib/axios";
 import { useAuth } from "../contexts/AuthContext";
 import ContactMessages from "./ContactMessages";
-import { LayoutDashboard, Users, CreditCard, FileText, Flag, MessageSquare, Mail, Megaphone, Scale, TriangleAlert, X, Check, CheckCircle2 } from "lucide-react";
+import { LayoutDashboard, Users, CreditCard, FileText, Flag, MessageSquare, Mail, Megaphone, Scale, TriangleAlert, X, Check, CheckCircle2, BookOpen, Package, Plus, Pencil, Trash2, Eye, EyeOff, Image } from "lucide-react";
+import LearningAdminPanel from "./LearningAdminPanel";
 
 const AdminDashboard = () => {
   const { userData } = useAuth();
@@ -23,6 +24,16 @@ const AdminDashboard = () => {
   const [posts, setPosts] = useState([]);
   const [searchContent, setSearchContent] = useState("");
   const [searchFeedback, setSearchFeedback] = useState("");
+
+  // Learning Modules state
+  const [learningModules, setLearningModules] = useState([]);
+  const [learningBundles, setLearningBundles] = useState([]);
+  const [learningSubTab, setLearningSubTab] = useState('modules'); // 'modules' | 'bundles'
+  const [moduleForm, setModuleForm] = useState(null); // null = closed, {} = new, {...} = edit
+  const [bundleForm, setBundleForm] = useState(null);
+  const [moduleFormData, setModuleFormData] = useState({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false });
+  const [bundleFormData, setBundleFormData] = useState({ title: '', description: '', price: 0, is_published: false, module_ids: [] });
+  const [learningLoading, setLearningLoading] = useState(false);
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState({
@@ -91,6 +102,7 @@ const AdminDashboard = () => {
     if (activeTab === "reports") fetchReports();
     if (activeTab === "feedbacks") fetchFeedbacks();
     if (activeTab === "content") fetchAllPosts();
+    if (activeTab === "learning") fetchLearning();
     let interval;
     if (activeTab === "appeals") {
       fetchUsers();
@@ -264,6 +276,7 @@ const AdminDashboard = () => {
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard className="w-4 h-4" /> },
     { id: "users", label: "User Management", icon: <Users className="w-4 h-4" /> },
     { id: "subscriptions", label: "Subscriptions", icon: <CreditCard className="w-4 h-4" /> },
+    { id: "learning", label: "Learning Modules", icon: <BookOpen className="w-4 h-4" /> },
     { id: "content", label: "Content Moderation", icon: <FileText className="w-4 h-4" /> },
     { id: "reports", label: "Reports", icon: <Flag className="w-4 h-4" /> },
     { id: "feedbacks", label: "Feedbacks", icon: <MessageSquare className="w-4 h-4" /> },
@@ -271,6 +284,85 @@ const AdminDashboard = () => {
     { id: "broadcast", label: "Broadcast", icon: <Megaphone className="w-4 h-4" /> },
     { id: "appeals", label: "Appeals", icon: <Scale className="w-4 h-4" /> },
   ];
+
+  // ─── Learning Module helpers ────────────────────────────────────────────────
+  const fetchLearning = async () => {
+    setLearningLoading(true);
+    try {
+      const [modRes, bunRes] = await Promise.all([
+        api.get('/admin/learning/modules'),
+        api.get('/admin/learning/bundles'),
+      ]);
+      setLearningModules(modRes.data);
+      setLearningBundles(bunRes.data);
+    } catch (e) { console.error(e); } finally { setLearningLoading(false); }
+  };
+
+  const openNewModule = () => {
+    setModuleFormData({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false });
+    setModuleForm('new');
+  };
+  const openEditModule = (m) => {
+    setModuleFormData({ title: m.title, description: m.description || '', content_html: m.content_html || '', video_url: m.video_url || '', price: m.price, is_published: m.is_published, _id: m.id });
+    setModuleForm('edit');
+  };
+  const saveModule = async (thumbnailFile) => {
+    const fd = new FormData();
+    Object.entries(moduleFormData).forEach(([k, v]) => { if (k !== '_id') fd.append(k, v); });
+    if (thumbnailFile) fd.append('thumbnail', thumbnailFile);
+    try {
+      if (moduleForm === 'edit' && moduleFormData._id) {
+        await api.put(`/admin/learning/modules/${moduleFormData._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await api.post('/admin/learning/modules', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      showFlash('Module saved!', 'success'); setModuleForm(null); fetchLearning();
+    } catch (e) { showFlash('Failed to save module.', 'error'); }
+  };
+  const deleteModule = async (id) => {
+    setConfirmModal({ isOpen: true, message: 'Delete this module? This removes it from all bundles too.', type: 'danger', onConfirm: async () => {
+      await api.delete(`/admin/learning/modules/${id}`); fetchLearning(); showFlash('Module deleted.', 'success');
+    }});
+  };
+
+  const openNewBundle = () => {
+    setBundleFormData({ title: '', description: '', price: 0, is_published: false, module_ids: [] });
+    setBundleForm('new');
+  };
+  const openEditBundle = (b) => {
+    setBundleFormData({ title: b.title, description: b.description || '', price: b.price, is_published: b.is_published, module_ids: b.module_ids || [], _id: b.id });
+    setBundleForm('edit');
+  };
+  const saveBundle = async (thumbnailFile) => {
+    const fd = new FormData();
+    fd.append('title', bundleFormData.title);
+    fd.append('description', bundleFormData.description);
+    fd.append('price', bundleFormData.price);
+    fd.append('is_published', bundleFormData.is_published);
+    fd.append('module_ids', bundleFormData.module_ids.join(','));
+    if (thumbnailFile) fd.append('thumbnail', thumbnailFile);
+    try {
+      if (bundleForm === 'edit' && bundleFormData._id) {
+        await api.put(`/admin/learning/bundles/${bundleFormData._id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await api.post('/admin/learning/bundles', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      showFlash('Bundle saved!', 'success'); setBundleForm(null); fetchLearning();
+    } catch (e) { showFlash('Failed to save bundle.', 'error'); }
+  };
+  const deleteBundle = async (id) => {
+    setConfirmModal({ isOpen: true, message: 'Delete this bundle?', type: 'danger', onConfirm: async () => {
+      await api.delete(`/admin/learning/bundles/${id}`); fetchLearning(); showFlash('Bundle deleted.', 'success');
+    }});
+  };
+
+  // Toggle module in bundle selection
+  const toggleModuleInBundle = (mid) => {
+    setBundleFormData(prev => ({
+      ...prev,
+      module_ids: prev.module_ids.includes(mid) ? prev.module_ids.filter(x => x !== mid) : [...prev.module_ids, mid]
+    }));
+  };
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
@@ -810,6 +902,21 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === "learning" && (
+          <LearningAdminPanel
+            subTab={learningSubTab} setSubTab={setLearningSubTab}
+            modules={learningModules} bundles={learningBundles}
+            loading={learningLoading}
+            moduleForm={moduleForm} setModuleForm={setModuleForm}
+            moduleFormData={moduleFormData} setModuleFormData={setModuleFormData}
+            bundleForm={bundleForm} setBundleForm={setBundleForm}
+            bundleFormData={bundleFormData} setBundleFormData={setBundleFormData}
+            onNewModule={openNewModule} onEditModule={openEditModule} onDeleteModule={deleteModule} onSaveModule={saveModule}
+            onNewBundle={openNewBundle} onEditBundle={openEditBundle} onDeleteBundle={deleteBundle} onSaveBundle={saveBundle}
+            onToggleModule={toggleModuleInBundle}
+          />
         )}
       </div>
 

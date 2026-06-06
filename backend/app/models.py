@@ -480,3 +480,76 @@ class UserTradingPreferencesUpdate(BaseModel):
     default_position_size: Optional[float] = None
     default_risk_percent: Optional[float] = None
     preferred_template: Optional[str] = None
+
+
+# ─── Learning Modules ──────────────────────────────────────────────────────────
+
+class LearningModule(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    title: str = SQLField(index=True)
+    description: Optional[str] = SQLField(default=None)
+    content_html: Optional[str] = SQLField(default=None, sa_column=sa.Column(sa.Text))
+    thumbnail_url: Optional[str] = SQLField(default=None)
+    video_url: Optional[str] = SQLField(default=None)
+    price: float = SQLField(default=0.0)
+    is_published: bool = SQLField(default=False)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class ModuleBundle(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    title: str = SQLField(index=True)
+    description: Optional[str] = SQLField(default=None)
+    thumbnail_url: Optional[str] = SQLField(default=None)
+    price: float = SQLField(default=0.0)
+    is_published: bool = SQLField(default=False)
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class BundleModule(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    bundle_id: int = SQLField(foreign_key="modulebundle.id")
+    module_id: int = SQLField(foreign_key="learningmodule.id")
+
+
+class ModuleAccess(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    module_id: Optional[int] = SQLField(default=None, foreign_key="learningmodule.id")
+    bundle_id: Optional[int] = SQLField(default=None, foreign_key="modulebundle.id")
+    purchased_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class ModuleView(SQLModel, table=True):
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    module_id: int = SQLField(foreign_key="learningmodule.id", index=True)
+    viewed_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+# Pydantic read schemas
+class LearningModuleRead(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    content_html: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    video_url: Optional[str] = None
+    price: float
+    is_published: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ModuleBundleRead(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    price: float
+    is_published: bool
+    created_at: datetime
+    updated_at: datetime
+    modules: list[LearningModuleRead] = []

@@ -11,7 +11,7 @@ import {
 import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
-import TradingViewChartWidget from "./components/TradingViewChartWidget";
+import CustomPlatformChart from "./components/CustomPlatformChart";
 import GoalPlanner from "./components/GoalPlanner";
 import ManualTradeSimulator from "./components/ManualTradeSimulator";
 import ChatAssistant from "./components/ChatAssistant";
@@ -31,6 +31,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import ContactUs from "./components/ContactUs";
 import CustomizePlatform from "./components/CustomizePlatform";
 import GoogleCallback from "./components/GoogleCallback";
+import LearningModules from "./components/LearningModules";
 import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -223,7 +224,7 @@ const SimulationLayout = ({
 
           {/* Chart Container */}
           <div className="h-[600px] bg-engine-panel/80 backdrop-blur-xl rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)] overflow-hidden">
-            <TradingViewChartWidget symbol={activeSymbol} />
+            <CustomPlatformChart symbol={activeSymbol} />
           </div>
         </div>
 
@@ -1234,6 +1235,14 @@ function App() {
                     <PlatinumRoute>
                       <CustomizePlatform />
                     </PlatinumRoute>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/learning-modules"
+                element={
+                  <ProtectedRoute>
+                    <LearningModules />
                   </ProtectedRoute>
                 }
               />

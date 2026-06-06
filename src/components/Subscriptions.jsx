@@ -14,6 +14,7 @@ const Subscription = ({ onSubscribe }) => {
       features: [
         "Export Trade History (CSV)",
         "Prop Firm Challenge Simulator",
+        "Access to Basic Learning Modules",
       ],
       color: "blue",
       recommended: false,
@@ -30,6 +31,8 @@ const Subscription = ({ onSubscribe }) => {
         "Discipline Mode (Trading Rules)",
         "Risk Management Calculator",
         "Strategy Simulator & Goal Planner",
+        "Share & Copy Community Strategies",
+        "3 Premium Learning Modules/Day",
         "Create up to 3 Communities"
       ],
       color: "purple",
@@ -45,6 +48,7 @@ const Subscription = ({ onSubscribe }) => {
         "Everything in Premium",
         "Verified User Badge",
         "Customize Platform",
+        "Unlimited Learning Modules Access",
         "Unlimited Community Creation",
         "Priority Support"
       ],

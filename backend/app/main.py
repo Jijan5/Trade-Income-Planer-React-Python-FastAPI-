@@ -8,7 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 from .database import create_db_and_tables
-from .routers import auth, users, posts, communities, simulation, admin, general, payment
+from .routers import auth, users, posts, communities, simulation, admin, general, payment, market_data, learning
 
 load_dotenv()
 
@@ -159,3 +159,5 @@ app.include_router(communities.router)
 app.include_router(simulation.router)
 app.include_router(admin.router)
 app.include_router(payment.router)
+app.include_router(market_data.router)
+app.include_router(learning.router)

@@ -34,6 +34,8 @@
 - **Risk Management Calculator (Basic/Advanced):** Calculate your risk of trade before open position BUY/SELL with basic or advanced risk management features.
 - **Glossary:** A comprehensive reference guide defining key trading terms, concepts, and metrics used throughout the platform (e.g., win rate, risk-reward ratio, drawdown, ROI).
 - **Monte Carlo Simulation:** Perform risk analysis and projection of future equity growth using Monte Carlo simulation techniques.
+- **Share & Copy Strategy:** Seamlessly share your winning strategies within the community. Other users can copy your exact parameters to run their own simulations in one click.
+- **Learning Modules:** Access premium, curated educational content, video tutorials, and interactive rich-text guides. Features plan-based access controls and bundled courses.
 - **Platform Appearance Engine (Platinum):** A granular, real-time theme customization system. Platinum users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
 
 ### Admin Features
@@ -301,10 +303,13 @@ Payment is processed securely via **LemonSqueezy**. All plan upgrades are handle
 | ---------------------------- | ---- |  ------ |  -------  | -------- |
 | Manual Trade                 | ✅   | ✅     | ✅      | ✅       |
 | Export CSV                   | ❌   | ✅     | ✅      | ✅       |
+| Basic Learning Modules       | ✅   | ✅     | ✅      | ✅       |
 | Strategy Simulator           | ❌   | ❌     | ✅      | ✅       |
 | Goal Planner                 | ❌   | ❌     | ✅      | ✅       |
 | Create Community             | ❌   | ❌     | ✅      | ✅       |
 | Risk Calculator              | ❌   | ❌     | ✅      | ✅       |
+| Share & Copy Strategy        | ❌   | ❌     | ✅      | ✅       |
+| Premium Learning Modules     | ❌   | ❌     | 3/Day   | Unlim.   |
 | Platform Appearance Engine   | ❌   | ❌     | ❌      | ✅       |
 | Verified Badge               | ❌   | ❌     | ❌      | ✅       |
 | Price                        |  $0  |  $12/mo |  $19/mo  | $28/mo   |
