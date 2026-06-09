@@ -194,8 +194,8 @@ const TradeHistory = () => {
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center bg-engine-panel backdrop-blur-engine p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
-        <h2 className="text-xl font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-engine-panel backdrop-blur-engine p-4 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon">
+        <h2 className="text-xl font-extrabold text-white uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] text-center sm:text-left">
           Overview & Performance
         </h2>
         <div className="flex gap-3 items-center">
@@ -350,22 +350,22 @@ const TradeHistory = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-engine-panel border border-green-500/20 rounded-xl p-4 flex items-center justify-between">
+              <div className="bg-engine-panel border border-green-500/20 rounded-xl p-4 flex flex-col justify-between">
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Best Trade</p>
                   <p className="text-lg font-bold font-mono text-green-400">${parseFloat(stats.bestTrade?.pnl || 0).toFixed(2)}</p>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-extrabold text-gray-300 border-l border-engine-panel-border/30 pl-3">{stats.bestTrade?.symbol || '-'}</span>
+                <div className="mt-2 pt-2 border-t border-engine-panel-border/10 w-full overflow-hidden">
+                  <span className="text-xs font-extrabold text-gray-300 block truncate" title={stats.bestTrade?.symbol || '-'}>{stats.bestTrade?.symbol || '-'}</span>
                 </div>
               </div>
-              <div className="bg-engine-panel border border-red-500/20 rounded-xl p-4 flex items-center justify-between">
+              <div className="bg-engine-panel border border-red-500/20 rounded-xl p-4 flex flex-col justify-between">
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Worst Trade</p>
                   <p className="text-lg font-bold font-mono text-red-400">-${Math.abs(parseFloat(stats.worstTrade?.pnl || 0)).toFixed(2)}</p>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-extrabold text-gray-300 border-l border-engine-panel-border/30 pl-3">{stats.worstTrade?.symbol || '-'}</span>
+                <div className="mt-2 pt-2 border-t border-engine-panel-border/10 w-full overflow-hidden">
+                  <span className="text-xs font-extrabold text-gray-300 block truncate" title={stats.worstTrade?.symbol || '-'}>{stats.worstTrade?.symbol || '-'}</span>
                 </div>
               </div>
             </div>

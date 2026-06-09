@@ -42,9 +42,9 @@ const NotificationsModal = ({ onClose, onNotificationClick }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex justify-end bg-engine-bg/80 backdrop-blur-engine transition-all" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-transparent" onClick={onClose}>
       <div 
-        className="w-full max-w-sm h-full bg-engine-panel border-l border-engine-panel-border/30 shadow-[-20px_0_50px_rgba(var(--engine-neon-rgb),0.1)] flex flex-col animate-slide-in-right backdrop-blur-engine"
+        className="absolute top-20 right-4 sm:right-8 w-[calc(100vw-2rem)] sm:w-96 max-h-[80vh] bg-engine-panel border border-engine-panel-border/30 rounded-2xl shadow-panel-neon flex flex-col animate-fade-in backdrop-blur-engine overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 border-b border-engine-panel-border/20 flex justify-between items-center bg-engine-bg/50">

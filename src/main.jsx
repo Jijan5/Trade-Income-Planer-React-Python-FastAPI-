@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Suppress noisy third-party SDK logs in development
 // (Midtrans Snap.js fires "checkSupportDomain" repeatedly on localhost)
@@ -19,6 +20,7 @@ if (import.meta.env.DEV) {
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <App />
       </AuthProvider>

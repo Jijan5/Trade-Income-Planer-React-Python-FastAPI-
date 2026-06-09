@@ -26,6 +26,39 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
   const countryDropdownRef = useRef(null);
 
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(null);
+
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Handle native back button to close modal instead of exiting site
+  useEffect(() => {
+    // Only push state if onClose exists (meaning it's rendered as a modal)
+    if (onCloseRef.current) {
+      window.history.pushState({ authModal: true }, '');
+
+      const handlePopState = (e) => {
+        if (onCloseRef.current) {
+          onCloseRef.current();
+        }
+      };
+      
+      // Delay adding the listener to prevent React 18 Strict Mode double-mount bugs
+      const timer = setTimeout(() => {
+        window.addEventListener('popstate', handlePopState);
+      }, 100);
+
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('popstate', handlePopState);
+        // If the modal unmounts (e.g. user clicked X), we should pop the state to keep history clean
+        if (window.history.state?.authModal) {
+          window.history.back();
+        }
+      };
+    }
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target)) {
@@ -78,15 +111,32 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
   }
 
   useEffect(() => {
-    if (isEmoji(username)) {
-        setUsernameError('Usernames cannot contain emojis.');
-        setIsUsernameAvailable(null);
+    if (isLogin || !username) {
+      setIsUsernameAvailable(null);
+      setUsernameError("");
+      return;
     }
-  }, [username]);
 
-  useEffect(() => {
-      setUsernameError(validateUsername(username));
-  }, [username])
+    const error = validateUsername(username);
+    if (isEmoji(username)) {
+      setUsernameError('Usernames cannot contain emojis.');
+      setIsUsernameAvailable(null);
+      return;
+    }
+    
+    setUsernameError(error);
+
+    if (error) {
+      setIsUsernameAvailable(null);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      checkUsernameAvailability();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username, isLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -275,7 +325,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
         .auth-corner-br { bottom: 14px; right: 14px; border-bottom: 1.5px solid #00cfff; border-right: 1.5px solid #00cfff; }
       `}</style>
 
-      <div className="min-h-screen flex items-center justify-center bg-[#030308] px-4 relative overflow-hidden font-sans">
+      <div className="min-h-screen flex items-center justify-center bg-[#030308] px-4 py-12 md:py-0 relative overflow-x-hidden font-sans">
 
         {/* ── Rich Animated Background ── */}
         <div className="auth-bg-container">
@@ -309,11 +359,11 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
           <div className="auth-corner auth-corner-br"></div>
         </div>
 
-        <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-engine rounded-2xl border border-[#00cfff]/20 p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all">
+        <div className="max-w-md w-full bg-[#0a0f1c]/80 backdrop-blur-engine rounded-2xl border border-[#00cfff]/20 p-6 md:p-8 shadow-[0_0_40px_rgba(0,207,255,0.05)] relative z-10 transition-all my-8 md:my-0">
           {onClose && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-[#00cfff] transition-colors font-bold text-2xl leading-none"
+              className="absolute top-2 right-2 md:top-4 md:right-4 p-2 text-gray-500 hover:text-[#00cfff] transition-colors font-bold text-3xl leading-none z-50"
             >
               &times;
             </button>
@@ -343,10 +393,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1.5">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-400 mb-1.5">
                 Username
               </label>
               <input
+                id="username"
+                name="username"
                 type="text"
                 required
                 value={username}
@@ -355,22 +407,15 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
               />
               {!isLogin && (
                 <>
-                  <button 
-                    type="button" 
-                    onClick={checkUsernameAvailability}
-                    className="text-xs bg-[#00cfff]/10 hover:bg-[#00cfff]/20 text-[#00cfff] border border-[#00cfff]/30 px-4 py-2 rounded-lg transition-all mt-2 shadow-[0_0_10px_rgba(0,207,255,0.05)]"
-                  >
-                    Check Username
-                  </button>
                   {usernameError && <p className="text-red-400 text-xs mt-2">{usernameError}</p>}
                   {isUsernameAvailable === true && (
-                    <p className="text-[#00cfff] text-xs mt-2 font-medium">✓ Username can be used!</p>
+                    <p className="text-[#00cfff] text-xs mt-2 font-medium animate-fade-in">✓ Username is available!</p>
                   )}
                   {isUsernameAvailable === false && (
-                    <p className="text-red-400 text-xs mt-2 font-medium">✗ Username already exists.</p>
+                    <p className="text-red-400 text-xs mt-2 font-medium animate-fade-in">✗ Username already exists.</p>
                   )}
                   {isUsernameAvailable === null && usernameError === "" && username !== "" && (
-                    <p className="text-gray-400 text-xs mt-2 font-light">Click check username to verify.</p>
+                    <p className="text-gray-400 text-xs mt-2 font-light">Checking availability...</p>
                   )}
                 </>
               )}
@@ -378,10 +423,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-400 mb-1.5">
                   Full Name
                 </label>
                 <input
+                  id="fullName"
+                  name="fullName"
                   type="text"
                   required
                   value={fullName}
@@ -393,10 +440,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-1.5">
                   Email
                 </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   required
                   value={email}
@@ -454,10 +503,12 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-400 mb-1.5">
                     WhatsApp
                   </label>
                   <input
+                    id="phoneNumber"
+                    name="phoneNumber"
                     type="tel"
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#00cfff] focus:shadow-[0_0_10px_rgba(0,207,255,0.2)] transition-all"
@@ -468,7 +519,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-sm font-medium text-gray-400">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-400">
                   Password
                 </label>
                 {isLogin && (
@@ -488,6 +539,8 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
               </div>
               <div className="relative">
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
@@ -515,11 +568,13 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-400 mb-1.5">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     required
                     value={confirmPassword}

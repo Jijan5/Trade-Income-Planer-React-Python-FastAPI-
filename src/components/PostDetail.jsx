@@ -183,7 +183,7 @@ const PostDetail = ({ showFlash }) => {
             autoFocus
             rows={1}
           />
-          <button onClick={() => submitComment(replyContent, comment.id)} className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest shadow-button-neon transition-all">REPLY</button>
+          <button onClick={() => submitComment(replyContent, comment.id)} disabled={!replyContent?.trim()} className={`px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase tracking-widest transition-all ${!replyContent?.trim() ? "bg-engine-panel border border-engine-neon/20 text-gray-500 cursor-not-allowed" : "bg-engine-button hover:bg-[#00e5ff] text-engine-bg shadow-button-neon"}`}>REPLY</button>
           <button onClick={() => setReplyingTo(null)} className="text-engine-neon/50 hover:text-engine-neon text-[10px] font-extrabold uppercase tracking-widest transition-colors">CANCEL</button>
         </div>
       )}
@@ -297,7 +297,8 @@ const PostDetail = ({ showFlash }) => {
           />
           <button 
             onClick={() => submitComment(newComment)}
-            className="bg-engine-button hover:bg-[#00e5ff] text-engine-bg px-8 py-4 rounded-xl text-[11px] font-extrabold uppercase tracking-widest shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 transition-all whitespace-nowrap"
+            disabled={!newComment?.trim()}
+            className={`px-8 py-4 rounded-xl text-[11px] font-extrabold uppercase tracking-widest hover:-translate-y-0.5 transition-all whitespace-nowrap ${!newComment?.trim() ? "bg-engine-panel border border-engine-neon/20 text-gray-500 cursor-not-allowed" : "bg-engine-button hover:bg-[#00e5ff] text-engine-bg shadow-button-neon hover:shadow-button-neon"}`}
           >
             SEND
           </button>

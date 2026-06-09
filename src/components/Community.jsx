@@ -276,7 +276,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                               <MentionInput value={editingItem.content} onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })} className="w-full bg-engine-panel border border-engine-panel-border/40 rounded-lg px-3 py-2 text-white text-sm focus:border-engine-panel-border outline-none shadow-panel-neon" rows={1} />
                               <div className="flex justify-end gap-3">
                                 <button onClick={() => setEditingItem(null)} className="text-xs text-engine-neon/70 hover:text-engine-neon px-3 py-1.5 border border-engine-button-border/20 hover:bg-engine-button/10 rounded-md transition-colors font-bold">Cancel</button>
-                                <button onClick={handleUpdateComment} className="text-xs bg-engine-button text-engine-bg px-3 py-1.5 rounded-md hover:shadow-button-neon font-bold transition-all">Save</button>
+                                <button onClick={() => handleUpdateComment(editingItem)} className="text-xs bg-engine-button text-engine-bg px-3 py-1.5 rounded-md hover:shadow-button-neon font-bold transition-all">Save</button>
                               </div>
                             </div>
                           ) : (
@@ -329,7 +329,7 @@ const CommunityPostItem = React.memo(({ post, onPostUpdate, onPostDelete, showFl
                 })()}
                 <div className="flex gap-3 mt-5 relative z-10">
                 <MentionInput placeholder="Write a comment..." name={`commentInput-${post.id}`} value={commentText || ""} onChange={(e) => setNewCommentText(prev => ({ ...prev, [post.id]: e.target.value }))} className="flex-1 bg-engine-bg/80 border border-engine-panel-border/30 rounded-xl px-4 py-3 text-sm text-white focus:border-engine-panel-border focus:shadow-panel-neon outline-none transition-all" onKeyPress={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitComment(post.id, commentText); } }} rows={1} />
-                <button onClick={() => submitComment(post.id, commentText)} className="bg-engine-button hover:bg-[#00e5ff] hover:shadow-button-neon text-engine-bg px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide">Send</button>
+                <button onClick={() => submitComment(post.id, commentText)} disabled={!commentText?.trim()} className={`px-6 py-2 rounded-xl text-sm font-extrabold transition-all tracking-wide ${!commentText?.trim() ? "bg-engine-panel border border-engine-neon/20 text-gray-500 cursor-not-allowed" : "bg-engine-button hover:bg-[#00e5ff] hover:shadow-button-neon text-engine-bg"}`}>Send</button>
                 </div>
               </div>
             )}

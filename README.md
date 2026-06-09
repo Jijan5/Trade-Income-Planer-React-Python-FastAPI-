@@ -37,6 +37,8 @@
 - **Share & Copy Strategy:** Seamlessly share your winning strategies within the community. Other users can copy your exact parameters to run their own simulations in one click.
 - **Learning Modules:** Access premium, curated educational content, video tutorials, and interactive rich-text guides. Features plan-based access controls and bundled courses.
 - **Platform Appearance Engine (Platinum):** A granular, real-time theme customization system. Platinum users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
+- **System Transparency & API:** Publicly accessible System Status page and Developer API documentation showing real-time operational health.
+- **Legal Framework:** Built-in Privacy Policy, Terms of Service, and Cookie Policy pages ensuring commercial compliance.
 
 ### Admin Features
 
@@ -76,6 +78,9 @@ The React-based frontend provides a user-friendly interface for interacting with
 - **Profile:** A page for users to manage their account settings and view their trading history.
 - **AdminDashboard:** A panel for administrators to manage the platform.
 - **Forgot Password:** Handles the Forgot Password flow.
+- **StatusPage:** Displays the operational status of all platform services.
+- **APIDocs:** Interactive documentation showcasing the platform's REST endpoints for developers.
+- **LegalPages:** Renders the Terms of Service, Privacy Policy, and Cookie Policy. (Features smart "Back" navigation that returns users to their Dashboard if logged in, or the Landing Page if logged out).
 
 ## Backend (FastAPI)
 

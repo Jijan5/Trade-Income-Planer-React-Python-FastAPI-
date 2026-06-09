@@ -132,8 +132,12 @@ const ChatAssistant = () => {
             username: userData.username,
             plan: userData.plan || "free",
             market_data: marketContext,
+            platform_context: "You are TIP, the AI assistant for the Trade Income Planner platform. Provide clear, direct answers about trading, platform features (simulator, community, performance tracking), and crypto/forex markets. Never say you are an AI developed by OpenAI.",
           }
-        : { market_data: marketContext },
+        : { 
+            market_data: marketContext,
+            platform_context: "You are TIP, the AI assistant for the Trade Income Planner platform. Provide clear, direct answers about trading, platform features (simulator, community, performance tracking), and crypto/forex markets. Never say you are an AI developed by OpenAI.",
+          },
     };
 
     try {
@@ -200,166 +204,11 @@ const ChatAssistant = () => {
 
   return (
     <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end font-sans">
-      {/* Market Data Panel */}
-      {isOpen && showMarketPanel && (
-        <div className="bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[400px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50">
-          {/* Header */}
-          <div className="bg-engine-bg p-4 border-b border-engine-panel-border/20 flex justify-between items-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
-            <div className="flex items-center gap-3 relative z-10">
-              <div className="w-8 h-8 bg-engine-bg border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">Market Trends</h3>
-                <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Live Market Data</p>
-              </div>
-            </div>
-            <div className="flex gap-2 relative z-10">
-              <button
-                onClick={fetchMarketData}
-                disabled={loadingMarket}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 ${loadingMarket ? "animate-spin" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </button>
-              <button
-                onClick={() => setShowMarketPanel(false)}
-                className="text-engine-neon/50 hover:text-engine-neon hover:drop-shadow-[0_0_5px_var(--engine-neon)] transition-all"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
 
-          {/* Market Data */}
-          <div className="flex-1 overflow-y-auto p-4 bg-engine-panel custom-scrollbar">
-            {loadingMarket ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3">
-                 <div className="w-6 h-6 border-2 border-engine-panel-border/30 border-t-[#00cfff] rounded-full animate-spin"></div>
-                 <div className="text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">Loading market data...</div>
-              </div>
-            ) : marketData.length > 0 ? (
-              <div className="space-y-3">
-                {marketData.map((coin, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-engine-bg/80 p-4 rounded-xl border border-engine-panel-border/10 hover:border-engine-panel-border/30 transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]"
-                  >
-                    <div className="flex justify-between items-center mb-3 border-b border-engine-panel-border/10 pb-2">
-                      <span className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
-                        {coin.symbol}
-                      </span>
-                      <span
-                        className={`font-mono text-xs font-bold flex items-center gap-1 ${
-                          coin.change_24h >= 0
-                            ? "text-green-400 drop-shadow-[0_0_3px_rgba(74,222,128,0.5)]"
-                            : "text-red-400 drop-shadow-[0_0_3px_rgba(239,68,68,0.5)]"
-                        }`}
-                      >
-                        {coin.change_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}{" "}
-                        {coin.change_24h >= 0 ? "+" : ""}
-                        {coin.change_24h.toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
-                      <span className="text-engine-neon/50">Price:</span>
-                      <span className="text-white font-mono text-xs drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]">
-                        $
-                        {coin.price.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
-                      <span className="text-engine-neon/50">24h High:</span>
-                      <span className="text-green-400 font-mono text-xs">
-                        $
-                        {coin.high_24h.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest">
-                      <span className="text-engine-neon/50">24h Low:</span>
-                      <span className="text-red-400 font-mono text-xs">
-                        $
-                        {coin.low_24h.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                    <div className="mt-3 pt-3 border-t border-engine-panel-border/10">
-                      <span
-                        className={`text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-md border ${
-                          coin.trend.includes("Bullish")
-                            ? "bg-green-900/20 text-green-400 border-green-500/30 shadow-[0_0_5px_rgba(74,222,128,0.2)]"
-                            : coin.trend.includes("Bearish")
-                            ? "bg-red-900/20 text-red-400 border-red-500/30 shadow-[0_0_5px_rgba(239,68,68,0.2)]"
-                            : "bg-engine-bg text-engine-neon/70 border-engine-panel-border/20"
-                        }`}
-                      >
-                        {coin.trend.toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">
-                No market data available
-              </div>
-            )}
-          </div>
-
-          {/* Quick Questions */}
-          <div className="p-4 bg-engine-bg border-t border-engine-panel-border/20">
-            <p className="text-[9px] font-extrabold uppercase tracking-widest text-engine-neon/50 mb-3">QUICK QUESTIONS:</p>
-            <div className="flex flex-wrap gap-2">
-              {quickQuestions.map((q, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleQuickQuestion(q)}
-                  className="text-[9px] font-extrabold uppercase tracking-wider bg-engine-button/10 hover:bg-engine-button/20 border border-engine-button-border/30 hover:border-engine-button-border/50 text-engine-neon hover:text-[#00e5ff] px-3 py-1.5 rounded-lg transition-all shadow-button-neon hover:shadow-button-neon"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-80 sm:w-96 h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
+        <div className="bg-engine-panel backdrop-blur-engine border border-engine-panel-border/30 rounded-2xl shadow-panel-neon w-[calc(100vw-3rem)] sm:w-96 h-[60vh] sm:h-[500px] flex flex-col mb-4 overflow-hidden animate-fade-in z-50 relative">
           {/* Header */}
           <div className="bg-engine-bg p-4 border-b border-engine-panel-border/20 flex justify-between items-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-engine-neon/10 to-transparent pointer-events-none"></div>
@@ -424,6 +273,79 @@ const ChatAssistant = () => {
               </button>
             </div>
           </div>
+
+          {/* Market Data Overlay */}
+          {showMarketPanel && (
+            <div className="absolute inset-0 bg-engine-panel backdrop-blur-engine flex flex-col z-20 animate-fade-in">
+              <div className="bg-engine-bg p-4 border-b border-engine-panel-border/20 flex justify-between items-center relative overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent pointer-events-none"></div>
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="w-8 h-8 bg-engine-bg border border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] rounded-full flex items-center justify-center text-green-400 font-bold text-xs">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-white text-[11px] uppercase tracking-widest drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">Market Trends</h3>
+                    <p className="text-[9px] text-green-400 font-bold uppercase tracking-widest mt-0.5">Live Market Data</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 relative z-10">
+                  <button onClick={fetchMarketData} disabled={loadingMarket} className="text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loadingMarket ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <button onClick={() => setShowMarketPanel(false)} className="text-engine-neon/50 hover:text-engine-neon transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 bg-engine-panel custom-scrollbar">
+                {loadingMarket ? (
+                  <div className="flex flex-col items-center justify-center h-full gap-3">
+                     <div className="w-6 h-6 border-2 border-engine-panel-border/30 border-t-[#00cfff] rounded-full animate-spin"></div>
+                     <div className="text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">Loading market data...</div>
+                  </div>
+                ) : marketData.length > 0 ? (
+                  <div className="space-y-3">
+                    {marketData.map((coin, idx) => (
+                      <div key={idx} className="bg-engine-bg/80 p-4 rounded-xl border border-engine-panel-border/10">
+                        <div className="flex justify-between items-center mb-3 border-b border-engine-panel-border/10 pb-2">
+                          <span className="font-extrabold text-white text-[11px] uppercase tracking-widest">{coin.symbol}</span>
+                          <span className={`font-mono text-xs font-bold flex items-center gap-1 ${coin.change_24h >= 0 ? "text-green-400" : "text-red-400"}`}>
+                            {coin.change_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />} {coin.change_24h >= 0 ? "+" : ""}{coin.change_24h.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
+                          <span className="text-engine-neon/50">Price:</span>
+                          <span className="text-white font-mono text-xs">${coin.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest mb-1">
+                          <span className="text-engine-neon/50">24h High:</span>
+                          <span className="text-green-400 font-mono text-xs">${coin.high_24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] font-extrabold uppercase tracking-widest">
+                          <span className="text-engine-neon/50">24h Low:</span>
+                          <span className="text-red-400 font-mono text-xs">${coin.low_24h.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-engine-neon/50 text-[10px] font-extrabold uppercase tracking-widest">No market data available</div>
+                )}
+              </div>
+              <div className="p-4 bg-engine-bg border-t border-engine-panel-border/20 shrink-0">
+                <p className="text-[9px] font-extrabold uppercase tracking-widest text-engine-neon/50 mb-3">QUICK QUESTIONS:</p>
+                <div className="flex flex-wrap gap-2">
+                  {quickQuestions.map((q, idx) => (
+                    <button key={idx} onClick={() => { handleQuickQuestion(q); setShowMarketPanel(false); }} className="text-[9px] font-extrabold uppercase tracking-wider bg-engine-button/10 hover:bg-engine-button/20 border border-engine-button-border/30 text-engine-neon px-3 py-1.5 rounded-lg transition-all">{q}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-engine-panel custom-scrollbar">

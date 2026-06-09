@@ -290,7 +290,7 @@ const PostItem = React.memo(
       <div
         key={post.id}
         id={`post-${post.id}`}
-        className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-[40] transition-all"
+        className="bg-engine-panel backdrop-blur-engine p-6 rounded-2xl border border-engine-panel-border/20 shadow-panel-neon relative overflow-hidden group/post focus-within:overflow-visible focus-within:z-20 transition-all"
       >
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
@@ -601,7 +601,7 @@ const PostItem = React.memo(
                               Cancel
                             </button>
                             <button
-                              onClick={handleUpdateComment}
+                              onClick={() => handleUpdateComment(editingItem)}
                               className="text-xs bg-engine-button text-engine-bg font-bold px-3 py-1 rounded-lg hover:bg-[#00b3e6] transition-colors"
                             >
                               Save
@@ -817,7 +817,8 @@ const PostItem = React.memo(
               />
               <button
                 onClick={() => submitComment(post.id, commentText)}
-                className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-5 py-2.5 rounded-xl text-sm font-bold shadow-button-neon transition-all hover:shadow-button-neon"
+                disabled={!commentText?.trim()}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${!commentText?.trim() ? "bg-engine-panel border border-engine-neon/20 text-gray-500 cursor-not-allowed" : "bg-engine-button hover:bg-[#00b3e6] text-engine-bg shadow-button-neon hover:shadow-button-neon"}`}
               >
                 Send
               </button>
@@ -1280,7 +1281,7 @@ const Home = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pb-10">
       {/* 📱 Mobile View Switcher */}
-      <div className="lg:hidden col-span-1 flex bg-engine-panel backdrop-blur-engine p-1.5 rounded-xl border border-engine-panel-border/20 sticky top-24 z-30 shadow-panel-neon">
+      <div className="lg:hidden col-span-1 flex bg-engine-panel backdrop-blur-engine p-1.5 rounded-xl border border-engine-panel-border/20 sticky top-24 z-[45] shadow-panel-neon">
         <button
           onClick={() => setMobileView("feed")}
           className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${

@@ -6,37 +6,50 @@ import {
   Calculator, Scale, Lightbulb, CheckSquare, BookOpen, GraduationCap, TriangleAlert
 } from "lucide-react";
 
-const FeatureCarousel = ({ images }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [images.length]);
+const GenericMockup = ({ color }) => {
+  const isCyan = color === 'cyan';
+  const colorClass = isCyan ? 'bg-[#00cfff]' : 'bg-purple-500';
+  const gradientClass = isCyan ? 'from-[#00cfff]/20' : 'from-purple-500/20';
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={currentIndex}
-          src={images[currentIndex]}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 w-full h-full object-cover"
-          alt="Feature showcase"
-        />
-      </AnimatePresence>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {images.map((_, i) => (
-          <div 
-            key={i} 
-            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentIndex ? 'w-6 bg-[#00cfff]' : 'w-2 bg-white/30'}`}
-          />
-        ))}
+    <div className="w-full h-full p-6 sm:p-8 flex flex-col gap-4">
+      {/* Top Bar */}
+      <div className="flex justify-between items-center pb-4 border-b border-gray-700/30">
+        <div className="flex gap-3 items-center">
+          <div className={`w-3 h-3 rounded-full ${colorClass} shadow-[0_0_10px_currentColor]`}></div>
+          <div className="w-24 h-3 bg-gray-700/50 rounded-full"></div>
+        </div>
+        <div className="w-16 h-3 bg-gray-700/50 rounded-full"></div>
+      </div>
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex gap-4">
+        {/* Left Column (Stats) */}
+        <div className="w-1/3 flex flex-col gap-4">
+          <div className={`flex-1 rounded-xl bg-gradient-to-br ${gradientClass} to-transparent border border-white/5 p-4 flex flex-col justify-end`}>
+            <div className="w-8 h-2 bg-white/20 rounded-full mb-2"></div>
+            <div className="w-16 h-4 bg-white/40 rounded-full"></div>
+          </div>
+          <div className={`flex-1 rounded-xl bg-gradient-to-br ${gradientClass} to-transparent border border-white/5 p-4 flex flex-col justify-end`}>
+            <div className="w-8 h-2 bg-white/20 rounded-full mb-2"></div>
+            <div className="w-16 h-4 bg-white/40 rounded-full"></div>
+          </div>
+        </div>
+        
+        {/* Right Column (Chart) */}
+        <div className="flex-1 rounded-xl border border-white/5 bg-black/20 p-4 flex items-end gap-2 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')]"></div>
+          {[30, 50, 40, 70, 55, 85, 60, 100].map((h, i) => (
+            <div 
+              key={i} 
+              className={`flex-1 rounded-t-sm relative z-10 opacity-70 group-hover:opacity-100 transition-all duration-500`} 
+              style={{ height: `${h}%`, transitionDelay: `${i * 50}ms` }}
+            >
+              <div className={`absolute bottom-0 w-full h-full bg-gradient-to-t ${gradientClass} to-transparent`}></div>
+              <div className={`absolute top-0 w-full h-1 ${colorClass}`}></div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -90,6 +103,11 @@ const LandingPage = ({ onLogin, onRegister }) => {
       opacity: 1,
       transition: { staggerChildren: 0.15 }
     }
+  };
+
+  const handleRegisterClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    onRegister();
   };
 
   const fadeUp = {
@@ -275,7 +293,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
 
       <div className="relative z-10">
         {/* Hero Section */}
-        <section className="flex flex-col items-center justify-center text-center px-6 py-32 lg:py-1 min-h-[90vh]">
+        <section id="hero" className="flex flex-col items-center justify-center text-center px-4 pt-24 pb-12 lg:py-10 min-h-[85vh]">
           <motion.div 
             variants={staggerContainer}
             initial="hidden"
@@ -287,14 +305,14 @@ const LandingPage = ({ onLogin, onRegister }) => {
               The #1 Platform for Training Crypto, Forex, and Commodities Traders
             </motion.div>
             
-            <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1]">
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.1]">
               Master Your Trading<br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00cfff] via-[#00f2fe] to-[#4facfe] drop-shadow-[0_0_20px_rgba(0,207,255,0.3)]">
                 Skills & Strategy
               </span>
             </motion.h1>
             
-            <motion.p variants={fadeUp} className="text-lg md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed font-light">
+            <motion.p variants={fadeUp} className="text-base md:text-2xl text-gray-200 max-w-3xl mx-auto leading-relaxed font-normal">
               Simulate trades with real-time market data, track performance, join exclusive communities, and leverage AI-powered insights to become a consistently skilled trader.
             </motion.p>
             
@@ -302,7 +320,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
               <motion.button
                 whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(0, 207, 255, 0.4)" }}
                 whileTap={{ scale: 0.98 }}
-                onClick={onRegister}
+                onClick={handleRegisterClick}
                 className="px-10 py-5 bg-[#00cfff] hover:bg-[#00b3e6] text-[#030308] rounded-2xl font-extrabold text-lg transition-colors shadow-[0_0_20px_rgba(0,207,255,0.25)]"
               >
                 Start Trading Free
@@ -320,7 +338,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
         </section>
 
         {/* Quick Features Section */}
-        <section className="py-32 px-6">
+        <section id="features" className="py-32 px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div 
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
@@ -346,12 +364,12 @@ const LandingPage = ({ onLogin, onRegister }) => {
                 <motion.div 
                   key={idx}
                   variants={fadeUp}
-                  whileHover={{ y: -8, boxShadow: "0 20px 40px -10px rgba(0, 207, 255, 0.15)" }}
-                  className="group relative bg-[#0a0f1c]/60 p-10 rounded-[2rem] backdrop-blur-engine shadow-[0_4px_30px_rgba(0,0,0,0.1)] transition-all duration-300 overflow-hidden"
+                  whileHover={{ y: -8, borderColor: "rgba(0, 207, 255, 0.5)", boxShadow: "0 20px 40px -10px rgba(0, 207, 255, 0.2)" }}
+                  className="group relative bg-[#0a0f1c]/90 border border-[#00cfff]/20 p-10 rounded-[2rem] backdrop-blur-engine shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#00cfff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="relative z-10">
-                    <div className="w-16 h-16 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all duration-500">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#00cfff]/20 to-transparent border border-[#00cfff]/30 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,207,255,0.4)] transition-all duration-500">
                       <item.icon className="w-8 h-8 text-[#00cfff]" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
@@ -404,17 +422,6 @@ const LandingPage = ({ onLogin, onRegister }) => {
                         </li>
                       ))}
                     </ul>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={onRegister}
-                      className="inline-flex items-center px-8 py-4 bg-[#00cfff]/10 hover:bg-[#00cfff]/20 text-[#00cfff] rounded-xl font-bold transition-all shadow-[inset_0_0_0_1px_rgba(0,207,255,0.3)] mt-4"
-                    >
-                      Get Started
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-3" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </motion.button>
                   </motion.div>
 
                   {/* Image Side */}
@@ -422,7 +429,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
                     <div className="relative rounded-[2rem] overflow-hidden bg-[#0a0f1c]/40 backdrop-blur-engine shadow-[0_20px_50px_rgba(0,0,0,0.3)] group aspect-video">
                       <div className="absolute inset-0 bg-gradient-to-tr from-[#00cfff]/10 to-transparent opacity-50 z-10 pointer-events-none mix-blend-overlay"></div>
                       
-                      <FeatureCarousel images={feature.images} />
+                      <GenericMockup color={feature.color} />
                       
                       {/* Decorative elements overlay */}
                       <div className="absolute top-8 right-8 w-32 h-32 bg-[#00cfff]/20 rounded-full blur-3xl z-10 pointer-events-none"></div>
@@ -439,7 +446,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
         </section>
 
         {/* Manual Trade Features Highlight */}
-        <section className="py-32 px-6">
+        <section id="simulator" className="py-32 px-6">
           <div className="max-w-7xl mx-auto">
             <motion.div 
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
@@ -474,11 +481,11 @@ const LandingPage = ({ onLogin, onRegister }) => {
                 <motion.div 
                   key={idx}
                   variants={fadeUp}
-                  whileHover={{ scale: 1.02, backgroundColor: "rgba(10, 15, 28, 0.8)", boxShadow: "0 10px 30px rgba(0, 207, 255, 0.08)" }}
-                  className="bg-[#0a0f1c]/50 p-8 rounded-3xl backdrop-blur-engine shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 flex flex-col h-full relative overflow-hidden group"
+                  whileHover={{ scale: 1.02, backgroundColor: "rgba(10, 15, 28, 0.95)", borderColor: "rgba(0, 207, 255, 0.5)", boxShadow: "0 10px 30px rgba(0, 207, 255, 0.15)" }}
+                  className="bg-[#0a0f1c]/90 border border-[#00cfff]/20 p-8 rounded-3xl backdrop-blur-engine shadow-[0_8px_20px_rgba(0,0,0,0.2)] transition-all duration-300 flex flex-col h-full relative overflow-hidden group"
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00cfff]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="w-14 h-14 bg-[#00cfff]/10 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(0,207,255,0.05)] text-[#00cfff]">
+                  <div className="w-14 h-14 bg-gradient-to-br from-[#00cfff]/20 to-transparent border border-[#00cfff]/30 rounded-2xl flex items-center justify-center mb-6 shadow-[inset_0_0_15px_rgba(0,207,255,0.1)] group-hover:shadow-[0_0_20px_rgba(0,207,255,0.3)] text-[#00cfff] transition-all">
                     <feature.icon className="w-7 h-7" />
                   </div>
                   <h3 className="font-bold text-xl mb-3">{feature.title}</h3>
@@ -494,12 +501,12 @@ const LandingPage = ({ onLogin, onRegister }) => {
           <motion.div 
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
             variants={fadeUp}
-            className="max-w-5xl mx-auto text-center bg-[#0a0f1c]/80 backdrop-blur-engine p-16 md:p-24 rounded-[3rem] shadow-[0_0_50px_rgba(0,207,255,0.05)] relative overflow-hidden group"
+            className="max-w-5xl mx-auto text-center bg-[#0a0f1c]/90 border border-[#00cfff]/20 backdrop-blur-engine p-8 md:p-24 rounded-[3rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] hover:border-[#00cfff]/60 hover:shadow-[0_0_80px_rgba(0,207,255,0.15)] transition-all duration-500 relative overflow-hidden group"
           >
             {/* Animated glow background inside CTA */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#00cfff]/5 to-transparent opacity-50"></div>
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-1 bg-gradient-to-r from-transparent via-[#00cfff]/50 to-transparent"></div>
-            <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-[#00cfff]/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-[#00cfff]/20 transition-colors duration-1000"></div>
+            <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-[#00cfff]/5 rounded-full blur-[100px] pointer-events-none transition-colors duration-1000"></div>
             
             <div className="relative z-10">
               <h2 className="text-4xl md:text-6xl font-extrabold mb-8 tracking-tight">Ready to Transform Your Trading?</h2>
@@ -509,7 +516,7 @@ const LandingPage = ({ onLogin, onRegister }) => {
               <motion.button
                 whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0, 207, 255, 0.4)" }}
                 whileTap={{ scale: 0.95 }}
-                onClick={onRegister}
+                onClick={handleRegisterClick}
                 className="px-12 py-6 bg-[#00cfff] text-[#030308] rounded-2xl font-extrabold text-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all"
               >
                 Register Now!

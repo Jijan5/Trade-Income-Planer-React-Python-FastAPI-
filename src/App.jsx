@@ -11,7 +11,7 @@ import {
 import api from "./lib/axios";
 import SimulationForm from "./components/SimulationForm";
 import ResultsDashboard from "./components/ResultsDashboard";
-import CustomPlatformChart from "./components/CustomPlatformChart";
+import TradingViewChartWidget from "./components/TradingViewChartWidget";
 import GoalPlanner from "./components/GoalPlanner";
 import ManualTradeSimulator from "./components/ManualTradeSimulator";
 import ChatAssistant from "./components/ChatAssistant";
@@ -32,6 +32,9 @@ import ContactUs from "./components/ContactUs";
 import CustomizePlatform from "./components/CustomizePlatform";
 import GoogleCallback from "./components/GoogleCallback";
 import LearningModules from "./components/LearningModules";
+import { TermsOfService, PrivacyPolicy, CookiePolicy } from './components/LegalPages';
+import APIDocs from './components/APIDocs';
+import StatusPage from './components/StatusPage';
 import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -224,7 +227,7 @@ const SimulationLayout = ({
 
           {/* Chart Container */}
           <div className="h-[600px] bg-engine-panel/80 backdrop-blur-xl rounded-2xl border border-engine-neon/20 shadow-[0_0_30px_rgba(var(--engine-neon-rgb),0.05)] overflow-hidden">
-            <CustomPlatformChart symbol={activeSymbol} />
+                  <TradingViewChartWidget symbol={activeSymbol} />
           </div>
         </div>
 
@@ -431,11 +434,46 @@ function App() {
     };
   }, [isProfileDropdownOpen]);
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = (e) => {
+      // Check event target scrollTop, fallback to window.scrollY
+      const target = e.target;
+      const scrollY = target.scrollTop !== undefined ? target.scrollTop : window.scrollY;
+      setIsScrolled(scrollY > 50);
+    };
+    
+    // Use capture: true because scroll events don't bubble. 
+    // This catches scrolling on #root or body if they act as the scroll container.
+    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
+    
+    // Initial check
+    const rootEl = document.getElementById('root');
+    const initialScroll = Math.max(window.scrollY || 0, rootEl?.scrollTop || 0, document.documentElement?.scrollTop || 0);
+    setIsScrolled(initialScroll > 50);
+    
+    return () => window.removeEventListener("scroll", handleScroll, { capture: true });
+  }, []);
+
   // Notification State
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [highlightedPost, setHighlightedPost] = useState(null);
   const planLevel = getPlanLevel(userData?.plan);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#login') {
+      setAuthInitialLogin(true);
+      setShowAuth(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    } else if (hash === '#signup') {
+      setAuthInitialLogin(false);
+      setShowAuth(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   // Midtrans logic removed for LemonSqueezy migration
 
@@ -458,6 +496,7 @@ function App() {
   // Feedback State
   const [feedbackEmail, setFeedbackEmail] = useState("");
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackSent, setFeedbackSent] = useState(false);
 
   // Auto-fill email if logged in
   useEffect(() => {
@@ -501,9 +540,13 @@ function App() {
           email: feedbackEmail,
           message: feedbackMessage,
         });
+        setFeedbackSent(true);
+        setTimeout(() => setFeedbackSent(false), 3000);
         showFlash("Feedback sent! Thank you.", "success");
       } catch (error) {
         console.error("Feedback error", error);
+        setFeedbackSent(true);
+        setTimeout(() => setFeedbackSent(false), 3000);
         showFlash("Feedback sent! (Saved locally)", "success");
       }
       if (!userData) setFeedbackEmail("");
@@ -760,7 +803,15 @@ function App() {
           )}
           {/* Navbar */}
           {location.pathname !== "/customize-platform" && (
-            <nav className={`bg-engine-panel/80 backdrop-blur-md border-b px-6 py-4 fixed top-0 left-0 right-0 z-50 ${location.pathname === "/suspended" ? "border-red-500/50 shadow-[0_4px_30px_rgba(239,68,68,0.15)]" : "border-engine-neon/20 shadow-[0_4px_30px_rgba(var(--engine-neon-rgb),0.05)]"}`}>
+            <nav 
+              className={`px-6 py-4 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                location.pathname === "/suspended" 
+                  ? "bg-engine-panel/80 backdrop-blur-md border-b border-red-500/50 shadow-[0_4px_30px_rgba(239,68,68,0.15)]" 
+                  : location.pathname === "/" && !isScrolled
+                    ? "bg-transparent border-transparent"
+                    : "bg-engine-panel/80 backdrop-blur-md border-b border-engine-neon/20 shadow-[0_4px_30px_rgba(var(--engine-neon-rgb),0.05)]"
+              }`}
+            >
             <div className="flex items-center justify-between w-full">
               <div
                 className="flex items-center cursor-pointer"
@@ -790,6 +841,13 @@ function App() {
                       {item.icon}
                     </button>
                   ))}
+                {!token && location.pathname === '/' && (
+                  <div className="flex gap-2 px-2">
+                    <button onClick={() => { document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) }} className="text-gray-400 hover:text-white px-4 py-2 text-sm font-bold transition-colors rounded-full hover:bg-white/5">Home</button>
+                    <button onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }} className="text-gray-400 hover:text-white px-4 py-2 text-sm font-bold transition-colors rounded-full hover:bg-white/5">Features</button>
+                    <button onClick={() => { document.getElementById('simulator')?.scrollIntoView({ behavior: 'smooth' }) }} className="text-gray-400 hover:text-white px-4 py-2 text-sm font-bold transition-colors rounded-full hover:bg-white/5">Simulator</button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-4">
@@ -904,7 +962,7 @@ function App() {
                         setAuthInitialLogin(true);
                         setShowAuth(true);
                       }}
-                      className="text-xs bg-transparent text-white border border-white/10 hover:border-engine-neon/50 px-5 py-2.5 rounded-lg font-bold transition-all hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:bg-engine-button/10"
+                      className="text-xs bg-transparent text-white border border-white/10 hover:border-engine-neon/50 px-3 py-2 md:px-5 md:py-2.5 rounded-lg font-bold transition-all hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.2)] hover:bg-engine-button/10"
                     >
                       Login
                     </button>
@@ -913,9 +971,17 @@ function App() {
                         setAuthInitialLogin(false);
                         setShowAuth(true);
                       }}
-                      className="text-xs bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-5 py-2.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.4)]"
+                      className="text-xs bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-3 py-2 md:px-5 md:py-2.5 rounded-lg font-bold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_20px_rgba(var(--engine-neon-rgb),0.4)]"
                     >
                       Sign Up
+                    </button>
+                    <button
+                      onClick={() => setIsMobileMenuOpen(true)}
+                      className="md:hidden text-gray-400 hover:text-white p-2 ml-1"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                      </svg>
                     </button>
                   </>
                 )}
@@ -925,7 +991,7 @@ function App() {
           )}
 
           {/* Mobile Menu Modal */}
-          {isMobileMenuOpen && token && (
+          {isMobileMenuOpen && (
             <div
               className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -957,33 +1023,43 @@ function App() {
                   </button>
                 </div>
 
-                {/* Profile Summary */}
-                <div
-                  className="flex items-center gap-4 mb-8 p-4 bg-engine-bg border border-engine-neon/20 rounded-2xl cursor-pointer hover:bg-engine-button/5 transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]"
-                  onClick={() => {
-                    navigate("/profile");
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt="Avatar"
-                      className="w-12 h-12 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-engine-panel rounded-full flex items-center justify-center text-engine-neon font-bold text-lg border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">
-                      {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                {token ? (
+                  <>
+                    {/* Profile Summary */}
+                    <div
+                      className="flex items-center gap-4 mb-8 p-4 bg-engine-bg border border-engine-neon/20 rounded-2xl cursor-pointer hover:bg-engine-button/5 transition-all shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.05)]"
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt="Avatar"
+                          className="w-12 h-12 rounded-full object-cover border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-engine-panel rounded-full flex items-center justify-center text-engine-neon font-bold text-lg border border-engine-neon/50 shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)]">
+                          {userData?.username?.substring(0, 2).toUpperCase() || "U"}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-white font-bold text-lg flex items-center gap-1">
+                          {userData?.username}
+                          <VerifiedBadge user={userData} />
+                        </p>
+                        <p className="text-gray-400 text-xs">{userData?.email}</p>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <p className="text-white font-bold text-lg flex items-center gap-1">
-                      {userData?.username}
-                      <VerifiedBadge user={userData} />
-                    </p>
-                    <p className="text-gray-400 text-xs">{userData?.email}</p>
+                  </>
+                ) : (
+                  <div className="space-y-4 mb-8">
+                    <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }) }} className="w-full text-left px-4 py-3 text-white hover:text-engine-neon transition-colors font-bold text-lg border-b border-white/10">Home</button>
+                    <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }) }} className="w-full text-left px-4 py-3 text-white hover:text-engine-neon transition-colors font-bold text-lg border-b border-white/10">Features</button>
+                    <button onClick={() => { setIsMobileMenuOpen(false); document.getElementById('simulator')?.scrollIntoView({ behavior: 'smooth' }) }} className="w-full text-left px-4 py-3 text-white hover:text-engine-neon transition-colors font-bold text-lg border-b border-white/10">Simulator</button>
                   </div>
-                </div>
+                )}
 
                 {/* Menu Items */}
                 <div className="space-y-4 flex-1">
@@ -1246,6 +1322,11 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
+              <Route path="/api-docs" element={<APIDocs />} />
+              <Route path="/status" element={<StatusPage />} />
             </Routes>
           </div>
           {/* 📱 MOBILE BOTTOM NAVIGATION */}
@@ -1270,7 +1351,7 @@ function App() {
           )}
           {/* Footer */}
           {location.pathname !== "/customize-platform" && (
-          <footer className={`bg-engine-bg border-t mt-auto py-12 z-10 relative hidden md:block overflow-hidden ${location.pathname === "/suspended" ? "border-red-500/50" : "border-engine-neon/20"}`}>
+          <footer className={`bg-engine-bg border-t mt-auto py-12 z-10 relative overflow-hidden ${location.pathname === "/suspended" ? "border-red-500/50" : "border-engine-neon/20"}`}>
             <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent to-transparent ${location.pathname === "/suspended" ? "via-red-500/30" : "via-[#00cfff]/30"}`}></div>
             <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 items-center relative z-10">
               <div className="text-center md:text-left">
@@ -1320,45 +1401,45 @@ function App() {
                       required
                     />
                   </div>
-                  <div className="text-right mt-2">
+                  <div className="mt-4 flex w-full">
                     <button
                       type="submit"
-                      className="bg-engine-button hover:bg-[#00b3e6] text-engine-bg px-6 py-2.5 rounded-xl text-sm font-extrabold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)]"
+                      className={`w-full px-6 py-3 rounded-xl text-sm font-extrabold transition-all shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.2)] hover:shadow-[0_0_15px_rgba(var(--engine-neon-rgb),0.4)] ${feedbackSent ? "bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]" : "bg-engine-button hover:bg-[#00b3e6] text-engine-bg"}`}
                     >
-                      Send Feedback
+                      {feedbackSent ? "✓ Sent!" : "Send Feedback"}
                     </button>
                   </div>
                 </form>
               </div>
             </div>
-            <div className="max-w-7xl mx-auto mt-4">
+            <div className="max-w-7xl mx-auto mt-16 px-4 md:px-0">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div>
                   <h4 className="font-semibold mb-4">Platform</h4>
                   <ul className="space-y-2 text-sm text-gray-400">
                     <li>
-                      <a
-                        href="/simulation/manual"
+                      <Link
+                        to="/simulation/manual"
                         className="hover:text-white transition-colors"
                       >
                         Trade Simulator
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="/community"
+                      <Link
+                        to="/community"
                         className="hover:text-white transition-colors"
                       >
                         Communities
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="/simulation/history"
+                      <Link
+                        to="/simulation/history"
                         className="hover:text-white transition-colors"
                       >
                         Performance Tracking
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>
@@ -1366,28 +1447,28 @@ function App() {
                   <h4 className="font-semibold mb-4">Support</h4>
                   <ul className="space-y-2 text-sm text-gray-400">
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/api-docs"
                         className="hover:text-white transition-colors"
                       >
                         API Documentation
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="/contact-us"
+                      <Link
+                        to="/contact-us"
                         className="hover:text-white transition-colors"
                       >
                         Contact Us
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/status"
                         className="hover:text-white transition-colors"
                       >
                         Status
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>
@@ -1395,28 +1476,28 @@ function App() {
                   <h4 className="font-semibold mb-4">Legal</h4>
                   <ul className="space-y-2 text-sm text-gray-400">
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/privacy-policy"
                         className="hover:text-white transition-colors"
                       >
                         Privacy Policy
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/terms-of-service"
                         className="hover:text-white transition-colors"
                       >
                         Terms of Service
-                      </a>
+                      </Link>
                     </li>
                     <li>
-                      <a
-                        href="#"
+                      <Link
+                        to="/cookie-policy"
                         className="hover:text-white transition-colors"
                       >
                         Cookie Policy
-                      </a>
+                      </Link>
                     </li>
                   </ul>
                 </div>

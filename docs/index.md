@@ -9,6 +9,8 @@ Trade Income Planner is a comprehensive trading simulation and portfolio managem
 - **Portfolio Management**: Manage your trading portfolios
 - **Community**: Connect with other traders
 - **Payment Integration**: Secure subscription management via Midtrans
+- **System Transparency**: Real-time status page and public API documentation
+- **Legal Compliance**: Built-in Terms of Service, Privacy Policy, and Cookie Policy
 
 ## Quick Links
 
