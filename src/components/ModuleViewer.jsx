@@ -88,8 +88,9 @@ const ModuleViewer = ({ module, onClose, onPrev, onNext, hasPrev, hasNext, curre
                 [&_blockquote]:border-l-2 [&_blockquote]:border-engine-neon/50 [&_blockquote]:pl-4 [&_blockquote]:text-gray-400 [&_blockquote]:italic
                 [&_code]:bg-engine-bg [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-engine-neon [&_code]:text-xs [&_code]:font-mono
                 [&_img]:rounded-xl [&_img]:border [&_img]:border-engine-neon/10 [&_img]:my-4
-                [&_a]:text-engine-neon [&_a]:underline"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(module.content_html) }}
+                [&_a]:text-engine-neon [&_a]:underline
+                [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4 [&_iframe]:border [&_iframe]:border-engine-neon/10"
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(module.content_html, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] }) }}
             />
           )}
         </div>

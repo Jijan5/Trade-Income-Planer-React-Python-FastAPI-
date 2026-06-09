@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Package, Image, X, Check } from 'lucide-react';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 // ─── Module Form Modal ────────────────────────────────────────────────────────
 const ModuleFormModal = ({ data, setData, onSave, onClose, title }) => {
@@ -28,14 +30,23 @@ const ModuleFormModal = ({ data, setData, onSave, onClose, title }) => {
           {/* Content */}
           <div>
             <label className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest block mb-1">Content (HTML/Rich Text)</label>
-            <textarea
-              value={data.content_html}
-              onChange={inp('content_html')}
-              rows={8}
-              className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#00cfff] transition-all resize-y font-mono"
-              placeholder="<p>Your module content here... You can use HTML tags like <strong>bold</strong>, <em>italic</em>, <h2>heading</h2>, <ul><li>list items</li></ul></p>"
-            />
-            <p className="text-gray-600 text-[10px] mt-1">Supports HTML: &lt;strong&gt;, &lt;em&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;blockquote&gt;, &lt;img src="..."&gt;</p>
+            <div className="react-quill-dark">
+              <ReactQuill 
+                theme="snow" 
+                value={data.content_html} 
+                onChange={(val) => setData(prev => ({ ...prev, content_html: val }))}
+                placeholder="Write your module content here..."
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'image', 'video'],
+                    ['clean']
+                  ]
+                }}
+              />
+            </div>
           </div>
           {/* YouTube URL */}
           <div>
