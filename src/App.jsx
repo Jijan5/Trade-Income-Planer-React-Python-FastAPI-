@@ -619,6 +619,14 @@ function App() {
       }
 
       try {
+        if (plan.isTrial) {
+          showFlash("Activating your 7-Day Platinum Trial...", "info");
+          await api.post("/payment/trial");
+          await fetchUserProfile();
+          showFlash("7-Day Platinum Trial activated successfully!", "success");
+          return;
+        }
+
         showFlash("Generating secure checkout link...", "info");
         // Request LemonSqueezy Checkout URL from Backend
         const response = await api.post("/payment/create_transaction", {
@@ -635,7 +643,10 @@ function App() {
         }
       } catch (error) {
         console.error("Payment Error:", error);
-        showFlash("Failed to initiate secure checkout. Please try again.", "error");
+        showFlash(
+          error.response?.data?.detail || "Failed to initiate secure checkout. Please try again.",
+          "error"
+        );
       }
     },
     [token, fetchUserProfile, showFlash]

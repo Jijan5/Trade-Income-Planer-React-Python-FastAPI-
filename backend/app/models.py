@@ -139,6 +139,7 @@ class User(SQLModel, table=True):
   reset_token: Optional[str] = SQLField(default=None, index=True)
   reset_token_expires: Optional[datetime] = SQLField(default=None)
   status: str = SQLField(default="active")  # statuses: active, banned
+  has_used_trial: bool = SQLField(default=False)
   plan_billing_cycle: Optional[str] = SQLField(default=None) # Monthly, Yearly
   plan_start_date: Optional[datetime] = SQLField(default=None)
   plan_expires_at: Optional[datetime] = SQLField(default=None)
@@ -165,6 +166,7 @@ class UserRead(BaseModel):
   avatar_url: Optional[str] = None
   plan: str
   status: str
+  has_used_trial: bool
   full_name: Optional[str] = None
   country_code: Optional[str] = None
   phone_number: Optional[str] = None
@@ -196,6 +198,7 @@ class UserUpdateAdmin(SQLModel):
     role: Optional[str] = None
     plan: Optional[str] = None
     status: Optional[str] = None
+    has_used_trial: Optional[bool] = None
     full_name: Optional[str] = None
     country_code: Optional[str] = None
     phone_number: Optional[str] = None

@@ -511,16 +511,19 @@ const LandingPage = ({ onLogin, onRegister }) => {
             <div className="relative z-10">
               <h2 className="text-4xl md:text-6xl font-extrabold mb-8 tracking-tight">Ready to Transform Your Trading?</h2>
               <p className="text-gray-300 text-xl md:text-2xl mb-12 max-w-3xl mx-auto font-light">
-                Join thousands of traders who have already improved their performance with our platform.
+                Join thousands of traders who have already improved their performance with our platform. Start your 7-day free trial of our Platinum features today.
               </p>
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0, 207, 255, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleRegisterClick}
-                className="px-12 py-6 bg-[#00cfff] text-[#030308] rounded-2xl font-extrabold text-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all"
-              >
-                Register Now!
-              </motion.button>
+              <div className="flex flex-col items-center gap-4">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0, 207, 255, 0.4)" }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRegisterClick}
+                  className="px-12 py-6 bg-[#00cfff] text-[#030308] rounded-2xl font-extrabold text-xl shadow-[0_0_20px_rgba(0,207,255,0.2)] transition-all flex flex-col items-center justify-center leading-tight"
+                >
+                  <span>Start 7-Day Free Trial</span>
+                </motion.button>
+                <span className="text-gray-500 text-sm font-medium">No credit card required to register • Cancel anytime</span>
+              </div>
             </div>
           </motion.div>
         </section>

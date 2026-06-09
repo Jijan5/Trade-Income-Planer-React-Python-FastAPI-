@@ -39,6 +39,7 @@
 - **Platform Appearance Engine (Platinum):** A granular, real-time theme customization system. Platinum users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
 - **System Transparency & API:** Publicly accessible System Status page and Developer API documentation showing real-time operational health.
 - **Legal Framework:** Built-in Privacy Policy, Terms of Service, and Cookie Policy pages ensuring commercial compliance.
+- **Platinum Trial System:** An automated 7-day free trial that unlocks the Custom Engine, Premium Learning Modules, Strategy Simulator, and all Platinum features, featuring a live UI countdown and auto-downgrade on expiration.
 
 ### Admin Features
 

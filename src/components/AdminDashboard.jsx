@@ -584,14 +584,16 @@ const AdminDashboard = () => {
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-widest border ${
-                          u.plan === "Platinum"
+                          u.plan === "Platinum" && !u.plan_billing_cycle && u.has_used_trial
+                            ? "bg-yellow-900/20 text-yellow-400 border-yellow-500/30"
+                            : u.plan === "Platinum"
                             ? "bg-purple-900/20 text-purple-400 border-purple-500/30"
                             : u.plan === "Premium"
                             ? "bg-blue-900/20 text-[#00cfff] border-[#00cfff]/30"
                             : "bg-[#030308] text-gray-400 border-gray-700"
                         }`}
                       >
-                        {u.plan}
+                        {u.plan === "Platinum" && !u.plan_billing_cycle && u.has_used_trial ? "PLATINUM:TRIAL" : u.plan}
                       </span>
                       {u.plan_billing_cycle && (
                         <div className="text-[9px] text-[#00cfff]/50 font-bold uppercase tracking-widest mt-2">

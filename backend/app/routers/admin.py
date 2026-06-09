@@ -20,16 +20,17 @@ async def get_dashboard_stats(user: User = Depends(get_current_admin_user), sess
     users = session.exec(select(User).where(User.tenant_id == user.tenant_id)).all()
     
     total_users = len(users)
-    active_subs = len([u for u in users if u.plan != "Free"])
+    # Exclude trial accounts (which have no billing cycle) from active paid subs
+    active_subs = len([u for u in users if u.plan != "Free" and u.plan_billing_cycle])
     
-    # Calculate MRR (Monthly Recurring Revenue) based on active plans
+    # Calculate MRR (Monthly Recurring Revenue) based on active paid plans
     plan_prices = {"Basic": 12, "Premium": 19, "Platinum": 28, "Free": 0}
-    mrr = sum(plan_prices.get(u.plan, 0) for u in users)
+    mrr = sum(plan_prices.get(u.plan, 0) for u in users if u.plan_billing_cycle)
     
-    # Subscription Distribution
+    # Subscription Distribution (excluding free and trial)
     dist_map = {"Basic": 0, "Premium": 0, "Platinum": 0}
     for u in users:
-        if u.plan in dist_map:
+        if u.plan in dist_map and u.plan_billing_cycle:
             dist_map[u.plan] += 1
             
     subs_distribution = [

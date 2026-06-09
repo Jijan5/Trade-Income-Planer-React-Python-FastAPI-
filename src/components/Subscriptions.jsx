@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, Bot, ShieldCheck, TriangleAlert, TrendingUp } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const Subscription = ({ onSubscribe }) => {
   const [billingCycle, setBillingCycle] = useState("monthly"); // 'monthly' or 'yearly'
@@ -56,6 +57,43 @@ const Subscription = ({ onSubscribe }) => {
       recommended: false,
     },
   ];
+
+  const { userData } = useAuth();
+  const [timeLeft, setTimeLeft] = useState("");
+
+  const isTrialActive = userData?.plan === "Platinum" && !userData?.plan_billing_cycle && userData?.plan_expires_at;
+  const hasUsedTrial = userData?.has_used_trial === true;
+
+  useEffect(() => {
+    if (!isTrialActive) return;
+    
+    const interval = setInterval(() => {
+      const expiresAt = new Date(userData.plan_expires_at).getTime();
+      const now = new Date().getTime();
+      const distance = expiresAt - now;
+
+      if (distance < 0) {
+        setTimeLeft("EXPIRED");
+        clearInterval(interval);
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (days > 0) {
+        setTimeLeft(`${days} Days Left (Trial)`);
+      } else {
+        // Format as HH:MM
+        const h = hours < 10 ? `0${hours}` : hours;
+        const m = minutes < 10 ? `0${minutes}` : minutes;
+        setTimeLeft(`Expires in ${h}:${m}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isTrialActive, userData?.plan_expires_at]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 animate-fade-in">
@@ -150,20 +188,35 @@ const Subscription = ({ onSubscribe }) => {
 
             <div className="p-8 pt-0 mt-auto">
               <button
-                onClick={() => onSubscribe && onSubscribe({ 
-                    ...plan, 
-                    billingCycle, 
-                    finalPrice: price 
-                })}
+                disabled={plan.id === 'platinum' && isTrialActive}
+                onClick={() => {
+                  if (plan.id === 'platinum' && !hasUsedTrial) {
+                     onSubscribe && onSubscribe({ ...plan, isTrial: true });
+                     return;
+                  }
+                  onSubscribe && onSubscribe({ ...plan, billingCycle, finalPrice: price })
+                }}
                 className={`w-full py-3.5 rounded-xl font-extrabold text-[11px] uppercase tracking-widest transition-all duration-300
                   ${plan.recommended 
                     ? 'bg-engine-button text-engine-bg shadow-button-neon hover:shadow-button-neon hover:-translate-y-0.5 hover:bg-[#00e5ff]' 
                     : 'bg-engine-bg border border-engine-button-border/30 text-engine-neon hover:bg-engine-button/10 hover:border-engine-button-border/50 hover:shadow-button-neon'
                   }
+                  ${plan.id === 'platinum' && isTrialActive ? 'opacity-80 cursor-default hover:translate-y-0' : ''}
                 `}
               >
-                CHOOSE {plan.name}
+                {plan.id === 'platinum' && isTrialActive ? (
+                  timeLeft
+                ) : plan.id === 'platinum' && !hasUsedTrial ? (
+                  "Start 7 Days Free Trial"
+                ) : (
+                  `CHOOSE ${plan.name}`
+                )}
               </button>
+              {plan.id === 'platinum' && (!hasUsedTrial || isTrialActive) && (
+                <div className="text-center mt-3 text-gray-500 text-[10px] uppercase tracking-widest font-bold">
+                  Cancel anytime
+                </div>
+              )}
             </div>
           </div>
         )})}

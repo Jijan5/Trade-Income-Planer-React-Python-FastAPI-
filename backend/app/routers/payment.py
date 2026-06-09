@@ -200,3 +200,26 @@ async def verify_payment(
     except Exception as e:
         print(f"Webhook Processing Error: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+@router.post("/api/payment/trial")
+async def claim_platinum_trial(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    """
+    Claim a 7-day free trial of the Platinum plan.
+    User can only claim this once.
+    """
+    if current_user.has_used_trial:
+        raise HTTPException(status_code=400, detail="You have already claimed your 7-day trial.")
+        
+    if current_user.plan != "Free":
+        raise HTTPException(status_code=400, detail="You already have an active subscription.")
+        
+    current_user.plan = "Platinum"
+    current_user.plan_start_date = datetime.utcnow()
+    current_user.plan_expires_at = datetime.utcnow() + timedelta(days=7)
+    current_user.has_used_trial = True
+    
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    
+    return {"status": "success", "message": "7-day Platinum trial activated!"}

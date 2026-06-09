@@ -21,6 +21,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     tenant = session.exec(select(Tenant).where(Tenant.id == user.tenant_id, Tenant.is_active == True)).first()
     if not tenant:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tenant not active")
+        
+    # Auto-downgrade plan if expired
+    from datetime import datetime
+    if user.plan != "Free" and user.plan_expires_at and user.plan_expires_at < datetime.utcnow():
+        user.plan = "Free"
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
     return user
 
 async def get_current_admin_user(current_user: User = Depends(get_current_user)):
