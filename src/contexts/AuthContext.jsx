@@ -98,6 +98,13 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     navigate("/home");
   }, [navigate]);
+
+  // Silent token swap — updates the stored JWT without triggering navigation.
+  // Used when the backend re-issues a token after a profile update (e.g. username change).
+  const refreshToken = useCallback((newToken) => {
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+  }, []);
   useEffect(() => {
     // Cleanup blob URL on component unmount or when avatar changes
     return () => {
@@ -152,6 +159,7 @@ export const AuthProvider = ({ children }) => {
       setUnreadCount,
       login,
       logout,
+      refreshToken,
       fetchUserProfile,
       fetchUnreadCount,
     }),
@@ -163,6 +171,7 @@ export const AuthProvider = ({ children }) => {
       unreadCount,
       login,
       logout,
+      refreshToken,
       fetchUserProfile,
       fetchUnreadCount,
     ]

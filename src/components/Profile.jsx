@@ -35,7 +35,7 @@ const MyCommunitiesList = React.memo(({ myCommunities, openEditModal }) => {
 
 const Profile = ({ showFlash }) => {
   const navigate = useNavigate();
-  const { userData, avatarUrl, fetchUserProfile } = useAuth();
+  const { userData, avatarUrl, fetchUserProfile, refreshToken } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const planLevel = getPlanLevel(userData?.plan);
   const canCustomize = isAdmin || planLevel >= 3; // Platinum (3) or Admin
@@ -156,14 +156,12 @@ const Profile = ({ showFlash }) => {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    const token = localStorage.getItem("token");
     const formData = new FormData();
     formData.append("username", user.username);
     formData.append("email", user.email);
     formData.append("full_name", user.full_name || "");
     formData.append("country_code", user.country_code || "");
     formData.append("phone_number", user.phone_number || "");
-    if (password) formData.append("password", password);
     if (avatarFile) formData.append("avatar_file", avatarFile);
 
     try {
@@ -172,12 +170,14 @@ const Profile = ({ showFlash }) => {
       const res = await api.put("/users/me", formData, {
         headers: { "Content-Type": undefined },
       });
-      
+
+      // Silently swap the new JWT so the polling timer never fires with the old token.
+      if (res.data?.new_access_token) {
+        refreshToken(res.data.new_access_token);
+      }
+
       setUser(res.data);
       setAvatarFile(null);
-      
-      // Notify parent (App.jsx) to update navbar
-      fetchUserProfile();
 
       if (isPasswordChange) {
         // Request PIN
@@ -194,6 +194,7 @@ const Profile = ({ showFlash }) => {
       setLoading(false);
     }
   };
+
 
   const handlePinSubmit = async (e) => {
     e.preventDefault();

@@ -8,7 +8,7 @@ from sqlmodel import Session, select, func
 from ..database import get_session
 from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post
 from ..dependencies import get_current_user, get_current_active_user
-from ..auth import get_password_hash
+from ..auth import get_password_hash, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
 
@@ -108,7 +108,21 @@ async def update_user_profile(
     session.add(user)
     session.commit()
     session.refresh(user)
-    return user
+
+    # Issue a fresh JWT so the client session stays alive after username/email changes.
+    # Encode user.id (not username) so future profile updates never invalidate the token.
+    from datetime import timedelta
+    from fastapi.responses import JSONResponse
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": user.role, "tenant_id": user.tenant_id},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    user_data = user.dict()
+    if user.avatar_url and not user.avatar_url.startswith('https'):
+        user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', '')}{user.avatar_url}"
+
+    return JSONResponse(content={**user_data, "new_access_token": access_token})
 
 @router.get("/api/users/me/theme", response_model=UserTheme)
 async def get_user_theme(user: User = Depends(get_current_user), session: Session = Depends(get_session)):
