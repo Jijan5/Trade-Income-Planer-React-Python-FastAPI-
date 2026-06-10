@@ -96,8 +96,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
     setLoading(true);
-    // fetchUserProfile();
-  }, []);
+    navigate("/home");
+  }, [navigate]);
   useEffect(() => {
     // Cleanup blob URL on component unmount or when avatar changes
     return () => {
