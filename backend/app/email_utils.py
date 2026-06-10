@@ -196,3 +196,68 @@ def send_password_reset_email(recipient_email: str, pin: str):
         except Exception as e:
             print(f"SMTP: Failed to send password reset email: {e}")
             return False
+
+def send_verification_email(recipient_email: str, verification_link: str):
+    """
+    Sends an email verification link to a new user.
+    """
+    body = f"""
+    <html>
+        <body>
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: sans-serif;">
+                <h2 style="color: #333; text-align: center;">Verify Your Account</h2>
+                <p>Hello,</p>
+                <p>Welcome to Trade Income Planner! To complete your registration and activate your 7-day trial, please verify your email address by clicking the link below:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_link}" style="background-color: #00cfff; color: #000; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block;">Verify My Email</a>
+                </div>
+                
+                <p>If the button doesn't work, copy and paste this URL into your browser:</p>
+                <p style="word-break: break-all; color: #555;">{verification_link}</p>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #888;">If you didn't create an account, you can safely ignore this email.</p>
+                <p>Best regards,<br>The Trade Income Planner Team</p>
+            </div>
+        </body>
+    </html>
+    """
+
+    if IS_PRODUCTION and SENDGRID_API_KEY:
+        sg_message = Mail(
+            from_email=SMTP_USER,
+            to_emails=recipient_email,
+            subject="Verify Your Email - Trade Income Planner",
+            html_content=body
+        )
+        try:
+            sg = SendGridAPIClient(SENDGRID_API_KEY)
+            response = sg.send(sg_message)
+            print(f"SendGrid verification email sent successfully! Status code: {response.status_code}")
+            return True
+        except Exception as e:
+            print(f"Failed to send verification email via SendGrid: {e}")
+            return False
+    else:
+        if not all([SMTP_USER, SMTP_PASSWORD, SMTP_SERVER]):
+            print("SMTP credentials are not fully set in .env. Cannot send verification email.")
+            return False
+
+        msg = MIMEMultipart()
+        msg['From'] = f"Trade Income Planner <{SMTP_USER}>"
+        msg['To'] = recipient_email
+        msg['Subject'] = "Verify Your Email - Trade Income Planner"
+        msg.attach(MIMEText(body, 'html'))
+
+        try:
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            text = msg.as_string()
+            server.sendmail(SMTP_USER, recipient_email, text)
+            server.quit()
+            print(f"SMTP: Verification email sent successfully to {recipient_email}")
+            return True
+        except Exception as e:
+            print(f"SMTP: Failed to send verification email: {e}")
+            return False

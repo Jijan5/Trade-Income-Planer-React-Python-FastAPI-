@@ -35,6 +35,7 @@ import LearningModules from "./components/LearningModules";
 import { TermsOfService, PrivacyPolicy, CookiePolicy } from './components/LegalPages';
 import APIDocs from './components/APIDocs';
 import StatusPage from './components/StatusPage';
+import VerifyEmail from './components/VerifyEmail';
 import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -1148,6 +1149,10 @@ function App() {
               <Route
                 path="/forgot-password"
                 element={<ForgotPassword showFlash={showFlash} />}
+              />
+              <Route
+                path="/verify-email"
+                element={<VerifyEmail />}
               />
               <Route
                 path="/auth/callback/google"

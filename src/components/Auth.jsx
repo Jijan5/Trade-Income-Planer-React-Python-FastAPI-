@@ -180,7 +180,7 @@ const Auth = ({ onLogin, initialIsLogin = true, onClose }) => {
           country_code: countryCode,
           phone_number: phoneNumber,
         });
-        setSuccess("Registration successful! Please login.");
+        setSuccess("Registration successful! Please check your email inbox to verify your account before logging in.");
         setIsLogin(true);
         setPassword("");
         setConfirmPassword("");

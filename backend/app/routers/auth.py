@@ -23,6 +23,9 @@ async def register(user: UserCreate, session: Session = Depends(get_session)):
   if existing_user:
     raise HTTPException(status_code=400, detail="Username already registered")
 
+  import secrets
+  verification_token = secrets.token_urlsafe(32)
+
   hashed_pwd = get_password_hash(user.password)
   db_user = User(
       tenant_id=default_tenant.id,
@@ -31,13 +34,27 @@ async def register(user: UserCreate, session: Session = Depends(get_session)):
       hashed_password=hashed_pwd,
       full_name=user.full_name,
       country_code=user.country_code,
-      phone_number=user.phone_number
+      phone_number=user.phone_number,
+      is_email_verified=False,
+      email_verification_token=verification_token
   )
   session.add(db_user)
   session.commit()
   session.refresh(db_user)
 
-  return {"message": "User created successfully"}
+  # Send verification email
+  import os
+  from ..email_utils import send_verification_email
+  frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+  verification_link = f"{frontend_url}/verify-email?token={verification_token}"
+  
+  email_sent = send_verification_email(db_user.email, verification_link)
+  if not email_sent:
+      print(f"\n========================================")
+      print(f" [LOCAL/DEBUG] VERIFICATION LINK: {verification_link} ")
+      print(f"========================================\n")
+
+  return {"message": "User created successfully. Please verify your email."}
 
 @router.post("/api/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
@@ -49,6 +66,9 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     user = session.exec(select(User).where(User.username == form_data.username, User.tenant_id == default_tenant.id)).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password", headers={"WWW-Authenticate": "Bearer"},)
+    
+    if not user.is_email_verified:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please verify your email address to log in.")
   
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username, "role": user.role, "tenant_id": user.tenant_id}, expires_delta=access_token_expires)
@@ -63,6 +83,18 @@ async def check_username(req: CheckUsernameRequest, session: Session = Depends(g
   existing_user = session.exec(select(User).where(User.username == req.username, User.tenant_id == req.tenant_id)).first()
   available = existing_user is None
   return {"available": available}
+
+@router.get("/api/verify-email")
+async def verify_email(token: str, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.email_verification_token == token)).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification token.")
+    
+    user.is_email_verified = True
+    user.email_verification_token = None
+    session.add(user)
+    session.commit()
+    return {"status": "success", "message": "Email verified successfully."}
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
@@ -229,6 +261,7 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
             provider="google",
             country_code="+0",        # Google doesn't provide this — placeholder
             phone_number="0000000000", # Google doesn't provide this — placeholder
+            is_email_verified=True,    # Bypass verification for Google
         )
         session.add(existing)
         session.commit()

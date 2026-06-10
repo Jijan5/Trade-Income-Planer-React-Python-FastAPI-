@@ -139,6 +139,8 @@ class User(SQLModel, table=True):
   reset_token: Optional[str] = SQLField(default=None, index=True)
   reset_token_expires: Optional[datetime] = SQLField(default=None)
   status: str = SQLField(default="active")  # statuses: active, banned
+  is_email_verified: bool = SQLField(default=False)
+  email_verification_token: Optional[str] = SQLField(default=None, index=True)
   has_used_trial: bool = SQLField(default=False)
   plan_billing_cycle: Optional[str] = SQLField(default=None) # Monthly, Yearly
   plan_start_date: Optional[datetime] = SQLField(default=None)
