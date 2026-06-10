@@ -164,48 +164,65 @@ async def get_single_market_data(symbol: str):
 @router.get("/api/news")
 async def get_crypto_news():
     """
-    Fetch crypto news from CoinDesk.
+    Fetch crypto news from CoinTelegraph RSS.
     Cached for NEWS_CACHE_TTL seconds (default 5 min) to avoid slamming
-    the external API under high user load.
+    the external feed under high user load.
     """
-    cache_key = "news:coindesk"
+    cache_key = "news:cointelegraph"
     cached = _cache_get(cache_key)
     if cached:
         return cached
 
     def _fetch_news():
-        url     = "https://data-api.coindesk.com/news/v1/article/list?lang=EN&limit=10"
+        import xml.etree.ElementTree as ET
+        import re
+        url     = "https://cointelegraph.com/rss"
         headers = {"User-Agent": "Mozilla/5.0"}
         resp    = requests.get(url, headers=headers, timeout=10)
         resp.raise_for_status()
-        return resp.json()
-
-    try:
-        loop     = asyncio.get_event_loop()
-        api_data = await loop.run_in_executor(None, _fetch_news)
-        articles = api_data.get("Data", [])
-
+        
+        root = ET.fromstring(resp.text)
         mapped_articles = []
-        for article in articles[:10]:
+        
+        for item in root.findall('./channel/item')[:10]:
             try:
+                title = item.find('title').text if item.find('title') is not None else "No title"
+                link = item.find('link').text if item.find('link') is not None else "#"
+                pub_date = item.find('pubDate').text if item.find('pubDate') is not None else ""
+                
+                # Try to extract image from enclosure
+                image_url = "https://via.placeholder.com/400x250/1e293b/94a3b8?text=Crypto+News"
+                enclosure = item.find('enclosure')
+                if enclosure is not None and enclosure.get('url'):
+                    image_url = enclosure.get('url')
+                
+                # Extract clean description
+                desc = item.find('description').text if item.find('description') is not None else ""
+                clean_desc = re.sub('<[^<]+?>', '', desc) # Remove HTML tags
+                body = (clean_desc[:300] + "...") if clean_desc else "Read full article..."
+
                 mapped_articles.append({
-                    "id":           str(article.get("ID", "")),
-                    "title":        article.get("TITLE", "No title"),
-                    "body":         (article.get("BODY", "") or "")[:300] + "...",
-                    "imageurl":     article.get("IMAGE_URL", "https://via.placeholder.com/400x250/1e293b/94a3b8?text=Crypto+News"),
-                    "published_on": article.get("PUBLISHED_ON", 0),
-                    "url":          article.get("URL", "#"),
-                    "source_info":  {"name": article.get("SOURCE_DATA", {}).get("NAME", "Crypto News")},
+                    "id":           link.split('/')[-1] if link else str(time.time()),
+                    "title":        title,
+                    "body":         body,
+                    "imageurl":     image_url,
+                    "published_on": pub_date,
+                    "url":          link,
+                    "source_info":  {"name": "CoinTelegraph"},
                 })
             except Exception as e:
                 print(f"[news] Error mapping article: {e}")
+                
+        return {"Data": mapped_articles}
 
-        result = {"Data": mapped_articles}
+    try:
+        loop     = asyncio.get_event_loop()
+        result   = await loop.run_in_executor(None, _fetch_news)
         _cache_set(cache_key, result, NEWS_TTL)
         return result
     except Exception as e:
         print(f"[news] Fetch error: {e}")
-        raise HTTPException(status_code=500, detail="Failed to fetch news from CoinDesk")
+        raise HTTPException(status_code=500, detail="Failed to fetch news")
 
 
 @router.post("/api/chat", response_model=ChatResponse)
