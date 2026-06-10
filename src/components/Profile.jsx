@@ -184,15 +184,12 @@ const Profile = ({ showFlash }) => {
         await api.post("/users/me/request-password-pin");
         setPinModal({ isOpen: true, error: "" });
       } else {
-        setMessage({ type: "success", text: "Profile updated successfully!" });
+        showFlash("Profile updated successfully!", "success");
       }
-      
+      fetchProfile();
     } catch (error) {
-      console.error("Update failed", error);
-      setMessage({ 
-        type: "error", 
-        text: error.response?.data?.detail || "Failed to update profile." 
-      });
+      console.error("Profile update failed", error);
+      showFlash(error.response?.data?.detail || "Failed to update profile.", "error");
     } finally {
       setLoading(false);
     }
@@ -212,7 +209,7 @@ const Profile = ({ showFlash }) => {
       setPinModal({ isOpen: false, error: "" });
       setPinInput("");
       setPassword(""); // Clear password field
-      setMessage({ type: "success", text: "Profile and password updated successfully!" });
+      showFlash("Profile and password updated successfully!", "success");
     } catch (error) {
       console.error("PIN Verification failed", error);
       setPinModal(prev => ({ ...prev, error: error.response?.data?.detail || "Invalid PIN" }));

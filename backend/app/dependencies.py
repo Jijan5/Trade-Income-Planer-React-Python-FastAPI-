@@ -11,10 +11,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    username: str = payload.get("sub")
-    if username is None:
+    subject: str = payload.get("sub")
+    if subject is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    user = session.exec(select(User).where(User.username == username)).first()
+        
+    if subject.isdigit():
+        user = session.exec(select(User).where(User.id == int(subject))).first()
+    else:
+        user = session.exec(select(User).where(User.username == subject)).first()
+        
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     # Ensure user belongs to active tenant

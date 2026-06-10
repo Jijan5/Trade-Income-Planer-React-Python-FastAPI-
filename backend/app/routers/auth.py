@@ -71,7 +71,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Please verify your email address to log in.")
   
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.username, "role": user.role, "tenant_id": user.tenant_id}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"sub": str(user.id), "role": user.role, "tenant_id": user.tenant_id}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 class CheckUsernameRequest(BaseModel):
