@@ -2,10 +2,11 @@ import os
 import uuid
 import shutil
 from typing import Optional
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from sqlmodel import Session, select, func
 from ..database import get_session
-from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post, Achievement, UserAchievement
+from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post
 from ..dependencies import get_current_user, get_current_active_user
 from ..auth import get_password_hash
 
