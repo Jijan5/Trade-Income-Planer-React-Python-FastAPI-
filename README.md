@@ -39,6 +39,10 @@
 - **Platform Appearance Engine (Platinum):** A granular, real-time theme customization system. Platinum users can independently configure Panel and Button neon glow (toggle, color, blur radius, opacity), border colors, glass opacity & blur, font family, and more — with an instant live preview before applying changes.
 - **System Transparency & API:** Publicly accessible System Status page and Developer API documentation showing real-time operational health.
 - **Legal Framework:** Built-in Privacy Policy, Terms of Service, and Cookie Policy pages ensuring commercial compliance.
+- **Broker Integrations (Roadmap):** "Coming Soon" hub showcasing future Read-Only API sync with top brokers (MetaTrader, Interactive Brokers, Alpaca).
+- **Secure Registration Workflow:** Mandatory email verification system for all native registrations to prevent bot spam, with automatic bypass for verified Google OAuth logins.
+- **Profile Security:** Advanced 6-digit PIN verification system with a 15-minute expiration required for updating sensitive profile credentials like passwords.
+- **Live Crypto News:** Real-time news feed aggregator powered by an active CoinTelegraph RSS feed integration.
 - **Platinum Trial System:** An automated 7-day free trial that unlocks the Custom Engine, Premium Learning Modules, Strategy Simulator, and all Platinum features, featuring a live UI countdown and auto-downgrade on expiration.
 
 ### Admin Features
@@ -122,15 +126,25 @@ The `engine.py` module contains the mathematical models and logic for the tradin
     - **Purpose:** AI-driven analysis of trading behavior.
     - **Logic:** Evaluates a list of trades to compute scores for Risk Management, Emotional Control, and System Adherence, providing actionable insights.
 
-## Forgot Password Flow (PIN-Based)
+## Security & Authentication Flows
 
-The application implements a secure PIN-based forgot password flow for local development. Here's how it works:
-
+### Forgot Password Flow (PIN-Based)
+The application implements a secure PIN-based forgot password flow.
 1.  **User Request:** The user requests a password reset by entering their email address on the "Forgot Password" page.
-2.  **PIN Generation:** The backend generates a 6-digit PIN and displays it in the VS Code terminal (for local development purposes). In a production environment, this PIN would be sent to the user's email address.
+2.  **PIN Generation:** The backend generates a 6-digit PIN and sends it via email (using SendGrid or local SMTP fallback).
 3.  **PIN Verification:** The user enters the PIN on the "Verify PIN" page. The backend verifies the PIN against the stored PIN and expiration time.
-4.  **Password Reset:** If the PIN is valid, the user is redirected to the "Reset Password" page, where they can enter a new password.
-5.  **Password Update:** The backend updates the user's password in the database and invalidates the PIN.
+4.  **Password Reset:** If the PIN is valid, the user is redirected to the "Reset Password" page to set a new password.
+
+### Profile Update Security
+Changing sensitive data like passwords from within the Profile dashboard utilizes a specialized dual-step verification:
+1.  Users request a password change, triggering a secure PIN sent to their registered email.
+2.  A specialized, non-scrolling modal appears requiring the PIN to authorize the final database update.
+
+### Email Verification Workflow
+To protect the 7-day free trial system from bot abuse, native user registrations are guarded:
+1.  Unverified accounts are hard-blocked at the API level from receiving JWT login tokens.
+2.  Users must click a secure verification link sent to their email to activate the account.
+3.  Users authenticating via Google OAuth are automatically marked as verified to ensure a frictionless social login experience.
 
 ## Admin Panel
 
