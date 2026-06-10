@@ -36,6 +36,7 @@ import { TermsOfService, PrivacyPolicy, CookiePolicy } from './components/LegalP
 import APIDocs from './components/APIDocs';
 import StatusPage from './components/StatusPage';
 import VerifyEmail from './components/VerifyEmail';
+import BrokerIntegrations from './components/BrokerIntegrations';
 import { ThemeEngineProvider } from "./contexts/ThemeEngineContext";
 import { ManualTradeProvider } from "./contexts/ManualTradeContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -46,7 +47,7 @@ import {
 } from "./contexts/NotificationContext";
 import VerifiedBadge from "./components/VerifiedBadge";
 import { getPlanLevel } from "./utils/permissions";
-import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon, Crown, ShieldCheck, BookOpen, LogOut, User } from "lucide-react";
+import { Home as HomeIcon, Library as ExploreIcon, UserCheck as CommunityIcon, BarChart3 as SimulationIcon, Link2 as BrokerIcon, Crown, ShieldCheck, BookOpen, LogOut, User } from "lucide-react";
 
 // 🛡️ SECURITY: Protected Route for Admin
 const AdminRoute = ({ children }) => {
@@ -712,6 +713,11 @@ function App() {
         title: "Simulation",
         icon: <SimulationIcon className="w-5 h-5" strokeWidth={2} />,
       },
+      {
+        path: "/broker-integrations",
+        title: "Brokers",
+        icon: <BrokerIcon className="w-5 h-5" strokeWidth={2} />,
+      },
     ],
     []
   );
@@ -1168,6 +1174,14 @@ function App() {
                       setHighlightedPost={setHighlightedPost}
                       showFlash={showFlash}
                     />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/broker-integrations"
+                element={
+                  <ProtectedRoute>
+                    <BrokerIntegrations />
                   </ProtectedRoute>
                 }
               />
