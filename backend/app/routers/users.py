@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile
 from sqlmodel import Session, select, func
 from ..database import get_session
-from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post
+from ..models import User, UserRead, Community, CommunityMember, Notification, NotificationRead, UserTheme, UserThemeCreateUpdate, Comment, Post, Achievement, UserAchievement
 from ..dependencies import get_current_user, get_current_active_user
 from ..auth import get_password_hash
 
@@ -18,11 +18,61 @@ async def read_user_profile(user: User = Depends(get_current_user)):
         user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', '')}{user.avatar_url}"
     return UserRead(**user_data)
 
+class RequestPasswordPinRequest(BaseModel):
+    pass 
+
+@router.post("/api/users/me/request-password-pin")
+async def request_password_pin(user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+    import secrets
+    import string
+    from datetime import timedelta, datetime
+    from ..email_utils import send_password_reset_email
+    
+    pin = ''.join(secrets.choice(string.digits) for _ in range(6))
+    user.reset_token = pin
+    user.reset_token_expires = datetime.utcnow() + timedelta(minutes=15)
+    session.add(user)
+    session.commit()
+
+    email_sent = send_password_reset_email(user.email, pin)
+    if email_sent:
+        print(f"\n========================================")
+        print(f" [PRODUCTION] Profile Password PIN sent to: {user.email}")
+        print(f"========================================\n")
+    else:
+        print(f"\n========================================")
+        print(f" [LOCAL/DEBUG] PROFILE PASSWORD PIN: {pin} ")
+        print(f" [Email failed to send - check SMTP settings]")
+        print(f"========================================\n")
+
+    return {"status": "success", "message": "PIN sent to your email address."}
+
+class ChangePasswordRequest(BaseModel):
+    pin: str
+    new_password: str
+
+@router.post("/api/users/me/change-password")
+async def change_password(req: ChangePasswordRequest, user: User = Depends(get_current_active_user), session: Session = Depends(get_session)):
+    from datetime import datetime
+    
+    if not user.reset_token or user.reset_token != req.pin:
+        raise HTTPException(status_code=400, detail="Invalid PIN")
+    
+    if user.reset_token_expires and datetime.utcnow() > user.reset_token_expires:
+        raise HTTPException(status_code=400, detail="PIN expired")
+        
+    user.hashed_password = get_password_hash(req.new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    session.add(user)
+    session.commit()
+    
+    return {"status": "success", "message": "Password updated successfully."}
+
 @router.put("/api/users/me", response_model=UserRead)
 async def update_user_profile(
     username: Optional[str] = Form(None),
     email: Optional[str] = Form(None),
-    password: Optional[str] = Form(None),
     full_name: Optional[str] = Form(None),
     country_code: Optional[str] = Form(None),
     phone_number: Optional[str] = Form(None),
@@ -45,9 +95,6 @@ async def update_user_profile(
     if full_name is not None: user.full_name = full_name
     if country_code is not None: user.country_code = country_code
     if phone_number is not None: user.phone_number = phone_number
-        
-    if password:
-        user.hashed_password = get_password_hash(password)
         
     if avatar_file:
         os.makedirs("static/avatars", exist_ok=True)

@@ -51,7 +51,10 @@ const Profile = ({ showFlash }) => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [pinModal, setPinModal] = useState({ isOpen: false, error: "" });
+  const [pinInput, setPinInput] = useState("");
   const fileInputRef = useRef(null);
 
   const [cropTarget, setCropTarget] = useState(null); // 'userAvatar' | 'editCommAvatar'
@@ -164,17 +167,25 @@ const Profile = ({ showFlash }) => {
     if (avatarFile) formData.append("avatar_file", avatarFile);
 
     try {
+      const isPasswordChange = password.trim().length > 0;
+      
       const res = await api.put("/users/me", formData, {
         headers: { "Content-Type": undefined },
       });
       
       setUser(res.data);
-      setPassword(""); // Clear password field
       setAvatarFile(null);
-      setMessage({ type: "success", text: "Profile updated successfully!" });
       
       // Notify parent (App.jsx) to update navbar
       fetchUserProfile();
+
+      if (isPasswordChange) {
+        // Request PIN
+        await api.post("/users/me/request-password-pin");
+        setPinModal({ isOpen: true, error: "" });
+      } else {
+        setMessage({ type: "success", text: "Profile updated successfully!" });
+      }
       
     } catch (error) {
       console.error("Update failed", error);
@@ -184,6 +195,29 @@ const Profile = ({ showFlash }) => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    setPinLoading(true);
+    setPinModal(prev => ({ ...prev, error: "" }));
+
+    try {
+      await api.post("/users/me/change-password", {
+        pin: pinInput,
+        new_password: password
+      });
+      
+      setPinModal({ isOpen: false, error: "" });
+      setPinInput("");
+      setPassword(""); // Clear password field
+      setMessage({ type: "success", text: "Profile and password updated successfully!" });
+    } catch (error) {
+      console.error("PIN Verification failed", error);
+      setPinModal(prev => ({ ...prev, error: error.response?.data?.detail || "Invalid PIN" }));
+    } finally {
+      setPinLoading(false);
     }
   };
 
@@ -742,6 +776,65 @@ const Profile = ({ showFlash }) => {
           setRawCropFile(null);
         }} 
       />
+    )}
+
+    {/* PIN Verification Modal */}
+    {pinModal.isOpen && (
+      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-hidden animate-fade-in">
+        <div className="bg-engine-panel border border-[#00cfff]/30 p-8 rounded-2xl shadow-[0_0_40px_rgba(0,207,255,0.15)] max-w-sm w-full text-center relative" onClick={e => e.stopPropagation()}>
+          <h3 className="text-xl font-extrabold text-white uppercase tracking-widest mb-2 flex flex-col items-center gap-3">
+            <span className="w-12 h-12 rounded-full bg-[#00cfff]/10 flex items-center justify-center border border-[#00cfff]/30 shadow-button-neon mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-[#00cfff]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </span>
+            Verify Password Change
+          </h3>
+          <p className="text-gray-400 text-xs mb-6 font-medium leading-relaxed">
+            For your security, we've sent a 6-digit PIN to <span className="text-[#00cfff]">{user.email}</span>. Please enter it below to confirm your new password. Valid for 15 minutes.
+          </p>
+          
+          {pinModal.error && (
+            <p className="text-red-400 text-[10px] font-extrabold uppercase tracking-widest mb-4 bg-red-900/20 p-2 rounded-lg border border-red-500/30">
+              {pinModal.error}
+            </p>
+          )}
+
+          <form onSubmit={handlePinSubmit} className="space-y-6">
+            <div>
+              <input
+                type="text"
+                maxLength={6}
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="w-full bg-[#030308] border border-[#00cfff]/30 rounded-xl text-white p-4 font-mono text-center text-2xl tracking-[0.5em] focus:border-[#00cfff] focus:shadow-button-neon outline-none transition-all placeholder:text-gray-700"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-3 justify-center">
+              <button 
+                type="button" 
+                onClick={() => {
+                  setPinModal({ isOpen: false, error: "" });
+                  setPassword(""); // Abort password change
+                }} 
+                className="flex-1 px-5 py-3 rounded-xl bg-engine-bg border border-[#00cfff]/30 hover:bg-[#00cfff]/10 hover:border-[#00cfff]/50 text-[#00cfff] text-[11px] font-extrabold uppercase tracking-widest transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                disabled={pinLoading || pinInput.length < 6}
+                className="flex-1 px-5 py-3 rounded-xl bg-[#00cfff] text-engine-bg hover:bg-[#00e5ff] text-[11px] font-extrabold uppercase tracking-widest shadow-[0_0_15px_rgba(0,207,255,0.3)] hover:shadow-[0_0_25px_rgba(0,207,255,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {pinLoading ? "Verifying..." : "Verify & Save"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     )}
     </div>
   );
