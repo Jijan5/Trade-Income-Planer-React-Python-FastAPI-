@@ -113,12 +113,15 @@ async def update_user_profile(
     # Encode user.id (not username) so future profile updates never invalidate the token.
     from datetime import timedelta
     from fastapi.responses import JSONResponse
+    from fastapi.encoders import jsonable_encoder
+
     access_token = create_access_token(
         data={"sub": str(user.id), "role": user.role, "tenant_id": user.tenant_id},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
-    user_data = user.dict()
+    # jsonable_encoder converts datetimes and other non-JSON types automatically.
+    user_data = jsonable_encoder(user)
     if user.avatar_url and not user.avatar_url.startswith('https'):
         user_data['avatar_url'] = f"{os.getenv('API_BASE_URL', '')}{user.avatar_url}"
 
