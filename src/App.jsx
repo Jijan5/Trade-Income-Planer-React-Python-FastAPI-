@@ -1357,6 +1357,7 @@ function App() {
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/api-docs" element={<APIDocs />} />
               <Route path="/status" element={<StatusPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
           {/* 📱 MOBILE BOTTOM NAVIGATION */}
