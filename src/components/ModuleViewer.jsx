@@ -78,7 +78,8 @@ const ModuleViewer = ({ module, onClose, onPrev, onNext, hasPrev, hasNext, curre
           {module.content_html && (
             <div
               ref={contentRef}
-              className="prose prose-invert prose-sm max-w-none text-gray-200 leading-relaxed
+              className="prose prose-invert prose-sm max-w-none text-gray-200 leading-relaxed break-words overflow-hidden w-full
+                [&_*]:max-w-full [&_*]:break-words
                 [&_h1]:text-engine-neon [&_h1]:font-extrabold [&_h1]:uppercase [&_h1]:tracking-widest
                 [&_h2]:text-white [&_h2]:font-bold
                 [&_h3]:text-gray-300
@@ -87,8 +88,8 @@ const ModuleViewer = ({ module, onClose, onPrev, onNext, hasPrev, hasNext, curre
                 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
                 [&_blockquote]:border-l-2 [&_blockquote]:border-engine-neon/50 [&_blockquote]:pl-4 [&_blockquote]:text-gray-400 [&_blockquote]:italic
                 [&_code]:bg-engine-bg [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-engine-neon [&_code]:text-xs [&_code]:font-mono
-                [&_img]:rounded-xl [&_img]:border [&_img]:border-engine-neon/10 [&_img]:my-4
-                [&_a]:text-engine-neon [&_a]:underline
+                [&_img]:rounded-xl [&_img]:border [&_img]:border-engine-neon/10 [&_img]:my-4 [&_img]:max-w-full [&_img]:h-auto
+                [&_a]:text-engine-neon [&_a]:underline [&_a]:break-all
                 [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:rounded-xl [&_iframe]:my-4 [&_iframe]:border [&_iframe]:border-engine-neon/10"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(module.content_html, { ADD_TAGS: ['iframe'], ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling'] }) }}
             />
