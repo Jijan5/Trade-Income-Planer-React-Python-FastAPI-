@@ -39,20 +39,20 @@ const ModuleCard = ({ module, onOpen, isPremiumLimited }) => {
         {module.description && <p className="text-gray-500 text-xs leading-relaxed line-clamp-2">{module.description}</p>}
 
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
-          <span className={`font-extrabold text-sm ${isPaid ? 'text-engine-neon' : 'text-green-400'}`}>
-            {isPaid ? `$${module.price.toFixed(2)}` : 'Free'}
+          <span className={`font-extrabold text-sm ${isPaid && !module.is_free ? 'text-engine-neon' : 'text-green-400'}`}>
+            {module.is_free ? 'Free' : isPaid ? `$${module.price.toFixed(2)}` : 'Free'}
           </span>
           <button
             onClick={() => onOpen(module)}
-            disabled={isPremiumLimited}
+            disabled={isPremiumLimited && !module.is_free}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-widest transition-all
-              ${isPremiumLimited
+              ${isPremiumLimited && !module.is_free
                 ? 'opacity-40 cursor-not-allowed bg-gray-800 text-gray-500 border border-gray-700'
                 : 'bg-engine-neon/10 border border-engine-neon/40 text-engine-neon hover:bg-engine-neon hover:text-engine-bg shadow-[0_0_10px_rgba(var(--engine-neon-rgb),0.1)]'
               }`}
           >
-            {isPremiumLimited ? <Lock className="w-3 h-3" /> : <BookOpen className="w-3 h-3" />}
-            {isPremiumLimited ? 'Limit' : 'Learn'}
+            {isPremiumLimited && !module.is_free ? <Lock className="w-3 h-3" /> : <BookOpen className="w-3 h-3" />}
+            {isPremiumLimited && !module.is_free ? 'Limit' : 'Learn'}
           </button>
         </div>
       </div>
@@ -102,7 +102,9 @@ const BundleCard = ({ bundle, onOpen }) => (
       </div>
 
       <div className="flex items-center justify-between mt-auto pt-2 border-t border-white/5">
-        <span className="font-extrabold text-sm text-purple-400">${bundle.price.toFixed(2)}</span>
+        <span className={`font-extrabold text-sm ${bundle.is_free ? 'text-green-400' : 'text-purple-400'}`}>
+          {bundle.is_free ? 'Free' : `$${bundle.price.toFixed(2)}`}
+        </span>
         <button
           onClick={() => onOpen(bundle)}
           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-extrabold uppercase tracking-widest bg-purple-600/20 border border-purple-500/40 text-purple-400 hover:bg-purple-600 hover:text-white transition-all shadow-[0_0_10px_rgba(147,51,234,0.1)]"

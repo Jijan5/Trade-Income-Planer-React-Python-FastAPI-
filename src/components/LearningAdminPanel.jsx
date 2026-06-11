@@ -54,10 +54,21 @@ const ModuleFormModal = ({ data, setData, onSave, onClose, title }) => {
             <input value={data.video_url} onChange={inp('video_url')} className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#00cfff] transition-all font-mono" placeholder="https://www.youtube.com/watch?v=..." />
           </div>
           {/* Price + Published row */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-[10px] font-extrabold text-[#00cfff]/70 uppercase tracking-widest block mb-1">Price ($)</label>
               <input type="number" min="0" step="0.01" value={data.price} onChange={inp('price')} className="w-full bg-[#030308] border border-[#00cfff]/20 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-[#00cfff] transition-all" />
+            </div>
+            <div className="flex items-end pb-2.5">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div
+                  className={`w-12 h-6 rounded-full transition-all relative ${data.is_free ? 'bg-green-500' : 'bg-gray-700'}`}
+                  onClick={() => setData(prev => ({ ...prev, is_free: !prev.is_free }))}
+                >
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${data.is_free ? 'left-7' : 'left-1'}`} />
+                </div>
+                <span className="text-sm font-bold text-gray-300">Free</span>
+              </label>
             </div>
             <div className="flex items-end pb-2.5">
               <label className="flex items-center gap-3 cursor-pointer group">
@@ -152,10 +163,21 @@ const BundleFormModal = ({ data, setData, onSave, onClose, title, allModules }) 
             <p className="text-gray-600 text-xs mt-1">{data.module_ids.length} module(s) selected</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-[10px] font-extrabold text-purple-400/70 uppercase tracking-widest block mb-1">Bundle Price ($)</label>
               <input type="number" min="0" step="0.01" value={data.price} onChange={inp('price')} className="w-full bg-[#030308] border border-purple-500/20 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-purple-500 transition-all" />
+            </div>
+            <div className="flex items-end pb-2.5">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div
+                  className={`w-12 h-6 rounded-full transition-all relative ${data.is_free ? 'bg-green-500' : 'bg-gray-700'}`}
+                  onClick={() => setData(prev => ({ ...prev, is_free: !prev.is_free }))}
+                >
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${data.is_free ? 'left-7' : 'left-1'}`} />
+                </div>
+                <span className="text-sm font-bold text-gray-300">Free</span>
+              </label>
             </div>
             <div className="flex items-end pb-2.5">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -240,7 +262,11 @@ const LearningAdminPanel = ({
                     <p className="text-gray-500 text-xs truncate">{m.description || 'No description'}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[#00cfff] font-extrabold text-sm">${m.price.toFixed(2)}</span>
+                    {m.is_free ? (
+                      <span className="text-green-400 font-extrabold text-sm uppercase">Free</span>
+                    ) : (
+                      <span className="text-[#00cfff] font-extrabold text-sm">${m.price.toFixed(2)}</span>
+                    )}
                     <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest border ${m.is_published ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-gray-900/20 text-gray-500 border-gray-700'}`}>
                       {m.is_published ? <><Eye className="w-2.5 h-2.5 inline mr-1" />Live</> : <><EyeOff className="w-2.5 h-2.5 inline mr-1" />Draft</>}
                     </span>
@@ -280,7 +306,11 @@ const LearningAdminPanel = ({
                     <p className="text-gray-500 text-xs">{(b.module_ids || []).length} module(s)</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-purple-400 font-extrabold text-sm">${b.price.toFixed(2)}</span>
+                    {b.is_free ? (
+                      <span className="text-green-400 font-extrabold text-sm uppercase">Free</span>
+                    ) : (
+                      <span className="text-purple-400 font-extrabold text-sm">${b.price.toFixed(2)}</span>
+                    )}
                     <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest border ${b.is_published ? 'bg-green-900/20 text-green-400 border-green-500/30' : 'bg-gray-900/20 text-gray-500 border-gray-700'}`}>
                       {b.is_published ? 'Live' : 'Draft'}
                     </span>

@@ -498,6 +498,7 @@ class LearningModule(SQLModel, table=True):
     video_url: Optional[str] = SQLField(default=None)
     price: float = SQLField(default=0.0)
     is_published: bool = SQLField(default=False)
+    is_free: bool = SQLField(default=False)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
 
@@ -509,6 +510,7 @@ class ModuleBundle(SQLModel, table=True):
     thumbnail_url: Optional[str] = SQLField(default=None)
     price: float = SQLField(default=0.0)
     is_published: bool = SQLField(default=False)
+    is_free: bool = SQLField(default=False)
     created_at: datetime = SQLField(default_factory=datetime.utcnow)
     updated_at: datetime = SQLField(default_factory=datetime.utcnow)
 
@@ -544,6 +546,7 @@ class LearningModuleRead(BaseModel):
     video_url: Optional[str] = None
     price: float
     is_published: bool
+    is_free: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -555,6 +558,7 @@ class ModuleBundleRead(BaseModel):
     thumbnail_url: Optional[str] = None
     price: float
     is_published: bool
+    is_free: bool = False
     created_at: datetime
     updated_at: datetime
     modules: list[LearningModuleRead] = []

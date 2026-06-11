@@ -31,8 +31,8 @@ const AdminDashboard = () => {
   const [learningSubTab, setLearningSubTab] = useState('modules'); // 'modules' | 'bundles'
   const [moduleForm, setModuleForm] = useState(null); // null = closed, {} = new, {...} = edit
   const [bundleForm, setBundleForm] = useState(null);
-  const [moduleFormData, setModuleFormData] = useState({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false });
-  const [bundleFormData, setBundleFormData] = useState({ title: '', description: '', price: 0, is_published: false, module_ids: [] });
+  const [moduleFormData, setModuleFormData] = useState({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false, is_free: false });
+  const [bundleFormData, setBundleFormData] = useState({ title: '', description: '', price: 0, is_published: false, is_free: false, module_ids: [] });
   const [learningLoading, setLearningLoading] = useState(false);
 
   // Confirmation Modal State
@@ -299,11 +299,11 @@ const AdminDashboard = () => {
   };
 
   const openNewModule = () => {
-    setModuleFormData({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false });
+    setModuleFormData({ title: '', description: '', content_html: '', video_url: '', price: 0, is_published: false, is_free: false });
     setModuleForm('new');
   };
   const openEditModule = (m) => {
-    setModuleFormData({ title: m.title, description: m.description || '', content_html: m.content_html || '', video_url: m.video_url || '', price: m.price, is_published: m.is_published, _id: m.id });
+    setModuleFormData({ title: m.title, description: m.description || '', content_html: m.content_html || '', video_url: m.video_url || '', price: m.price, is_published: m.is_published, is_free: m.is_free, _id: m.id });
     setModuleForm('edit');
   };
   const saveModule = async (thumbnailFile) => {
@@ -326,11 +326,11 @@ const AdminDashboard = () => {
   };
 
   const openNewBundle = () => {
-    setBundleFormData({ title: '', description: '', price: 0, is_published: false, module_ids: [] });
+    setBundleFormData({ title: '', description: '', price: 0, is_published: false, is_free: false, module_ids: [] });
     setBundleForm('new');
   };
   const openEditBundle = (b) => {
-    setBundleFormData({ title: b.title, description: b.description || '', price: b.price, is_published: b.is_published, module_ids: b.module_ids || [], _id: b.id });
+    setBundleFormData({ title: b.title, description: b.description || '', price: b.price, is_published: b.is_published, is_free: b.is_free, module_ids: b.module_ids || [], _id: b.id });
     setBundleForm('edit');
   };
   const saveBundle = async (thumbnailFile) => {
@@ -339,6 +339,7 @@ const AdminDashboard = () => {
     fd.append('description', bundleFormData.description);
     fd.append('price', bundleFormData.price);
     fd.append('is_published', bundleFormData.is_published);
+    fd.append('is_free', bundleFormData.is_free);
     fd.append('module_ids', bundleFormData.module_ids.join(','));
     if (thumbnailFile) fd.append('thumbnail', thumbnailFile);
     try {

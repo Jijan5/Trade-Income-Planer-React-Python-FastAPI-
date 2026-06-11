@@ -109,7 +109,11 @@ def get_module(
     if not module or not module.is_published:
         raise HTTPException(status_code=404, detail="Module not found")
 
-    access = _user_has_access(user, module_id, None, session)
+    if module.is_free:
+        access = {"allowed": True, "reason": "free"}
+    else:
+        access = _user_has_access(user, module_id, None, session)
+        
     if not access["allowed"]:
         raise HTTPException(
             status_code=403,
@@ -152,7 +156,11 @@ def get_bundle(
     if not bundle or not bundle.is_published:
         raise HTTPException(status_code=404, detail="Bundle not found")
 
-    access = _user_has_access(user, 0, bundle_id, session)
+    if bundle.is_free:
+        access = {"allowed": True, "reason": "free"}
+    else:
+        access = _user_has_access(user, 0, bundle_id, session)
+        
     if not access["allowed"]:
         raise HTTPException(
             status_code=403,
@@ -213,6 +221,7 @@ async def admin_create_module(
     video_url: str = Form(""),
     price: float = Form(0.0),
     is_published: bool = Form(False),
+    is_free: bool = Form(False),
     thumbnail: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
     user: User = Depends(_require_admin)
@@ -229,6 +238,7 @@ async def admin_create_module(
         video_url=video_url or None,
         price=price,
         is_published=is_published,
+        is_free=is_free,
     )
     session.add(module)
     session.commit()
@@ -245,6 +255,7 @@ async def admin_update_module(
     video_url: str = Form(""),
     price: float = Form(0.0),
     is_published: bool = Form(False),
+    is_free: bool = Form(False),
     thumbnail: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
     user: User = Depends(_require_admin)
@@ -262,6 +273,7 @@ async def admin_update_module(
     module.video_url = video_url or None
     module.price = price
     module.is_published = is_published
+    module.is_free = is_free
     module.updated_at = datetime.utcnow()
 
     session.add(module)
@@ -310,6 +322,7 @@ async def admin_create_bundle(
     description: str = Form(""),
     price: float = Form(0.0),
     is_published: bool = Form(False),
+    is_free: bool = Form(False),
     module_ids: str = Form(""),   # comma-separated list of module IDs
     thumbnail: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
@@ -325,6 +338,7 @@ async def admin_create_bundle(
         thumbnail_url=thumbnail_url,
         price=price,
         is_published=is_published,
+        is_free=is_free,
     )
     session.add(bundle)
     session.commit()
@@ -350,6 +364,7 @@ async def admin_update_bundle(
     description: str = Form(""),
     price: float = Form(0.0),
     is_published: bool = Form(False),
+    is_free: bool = Form(False),
     module_ids: str = Form(""),
     thumbnail: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session),
@@ -366,6 +381,7 @@ async def admin_update_bundle(
     bundle.description = description or None
     bundle.price = price
     bundle.is_published = is_published
+    bundle.is_free = is_free
     bundle.updated_at = datetime.utcnow()
     session.add(bundle)
     session.commit()
