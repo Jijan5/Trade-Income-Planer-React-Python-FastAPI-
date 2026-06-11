@@ -237,7 +237,8 @@ class TestUserModels:
             role="user",
             avatar_url=None,
             plan="Free",
-            status="active"
+            status="active",
+            has_used_trial=False
         )
         
         assert user.id == 1
