@@ -93,6 +93,15 @@ const LandingPage = ({ onLogin, onRegister }) => {
       features: ["Dynamic Dashboard", "PnL Charts", "Win Rate Visualization", "CSV Export"],
       color: "blue",
       images: ["/images/history_1_pnl_1777453857621.png", "/images/history_2_winrate_1777453875146.png", "/images/history_3_log_1777454054882.png"]
+    },
+    {
+      id: "learning",
+      icon: BookOpen,
+      title: "Interactive Learning Modules",
+      description: "Master trading concepts from basics to advanced strategies through structured, interactive courses and practical examples.",
+      features: ["Structured Curriculum", "Beginner to Advanced", "Step-by-Step Guides", "Progress Tracking"],
+      color: "cyan",
+      images: ["", "", ""]
     }
   ];
 
@@ -354,9 +363,10 @@ const LandingPage = ({ onLogin, onRegister }) => {
             <motion.div 
               initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
             >
               {[
+                { icon: BookOpen, title: "Structured Learning", desc: "Master trading concepts from beginner basics to advanced technical analysis through step-by-step courses." },
                 { icon: BarChart2, title: "Advanced Trade Simulator", desc: "Practice with live market data and historical scenarios. Test strategies across multiple timeframes without financial risk." },
                 { icon: Bot, title: "AI-Powered Analytics", desc: "Receive personalized insights on your trading patterns, risk management, and psychological biases to optimize performance." },
                 { icon: Users, title: "Elite Trading Communities", desc: "Connect with verified traders, share strategies, and access exclusive signals in a collaborative professional network." }
