@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../lib/axios';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKeyPress, autoFocus, name, ...props }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [cursorPos, setCursorPos] = useState(null);
     const [matchIndex, setMatchIndex] = useState(null);
     const textareaRef = useRef(null);
+    const containerRef = useRef(null);
 
     // Sync external autoFocus
     useEffect(() => {
@@ -17,22 +20,18 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
 
     const handleChange = async (e) => {
         const val = e.target.value;
-        onChange(e); // Trigger external change handler immediately
+        onChange(e);
 
         const selectionStart = e.target.selectionStart;
         setCursorPos(selectionStart);
 
-        // Get text up to cursor
         const textBeforeCursor = val.slice(0, selectionStart);
-        // Regex to match @ followed by word characters right before cursor
         const match = /(?:^|\s)@(\w*)$/.exec(textBeforeCursor);
 
         if (match) {
             const query = match[1];
-            setMatchIndex(match.index + (match[0].startsWith(' ') ? 1 : 0)); // index of the '@'
-            
+            setMatchIndex(match.index + (match[0].startsWith(' ') ? 1 : 0));
             try {
-                // Search API
                 const res = await api.get(`/users/search?q=${query}`);
                 if (res.data.length > 0) {
                     setSuggestions(res.data);
@@ -51,27 +50,24 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
 
     const handleSuggestionClick = (username) => {
         if (matchIndex === null) return;
-        
+
         const val = value || "";
         const beforeMention = val.slice(0, matchIndex);
         const afterMention = val.slice(cursorPos);
         const newValue = `${beforeMention}@${username} ${afterMention}`;
-        
-        // Create synthetic event
-        const syntheticEvent = {
-            target: {
-                name,
-                value: newValue
-            }
-        };
-        
-        onChange(syntheticEvent);
+
+        onChange({ target: { name, value: newValue } });
         setShowSuggestions(false);
-        
-        // Restore focus
-        if (textareaRef.current) {
-            textareaRef.current.focus();
-        }
+        setSuggestions([]);
+
+        // Restore focus and position cursor after the inserted mention
+        setTimeout(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();
+                const newCursor = matchIndex + username.length + 2;
+                textareaRef.current.setSelectionRange(newCursor, newCursor);
+            }
+        }, 0);
     };
 
     const handleKeyDown = (e) => {
@@ -83,30 +79,27 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
             } else if (e.key === 'Escape') {
                 setShowSuggestions(false);
             }
-        } 
-        
-        if (onKeyPress && e.key === 'Enter' && !e.shiftKey) {
+        }
+
+        if (!showSuggestions && onKeyPress && e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             onKeyPress(e);
         }
     };
 
-    // Close suggestions on outside click
+    // Close when clicking OUTSIDE the entire wrapper (textarea + dropdown)
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (textareaRef.current && !textareaRef.current.contains(event.target)) {
-                // Timeout to allow suggestion click to register first
-                setTimeout(() => setShowSuggestions(false), 200);
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setShowSuggestions(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-
     return (
-        <div className="relative w-full">
+        <div ref={containerRef} className="relative w-full">
             <textarea
                 ref={textareaRef}
                 value={value}
@@ -118,8 +111,8 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
                 rows={rows}
                 {...props}
             />
-            
-            {showSuggestions && (
+
+            {showSuggestions && suggestions.length > 0 && (
                 <div className="absolute z-[100] mt-1 w-64 max-h-64 overflow-y-auto bg-engine-panel backdrop-blur-engine border border-engine-panel-border/50 rounded-xl shadow-[0_10px_50px_rgba(var(--engine-neon-rgb),0.3)] custom-scrollbar">
                     <div className="px-3 py-2 border-b border-engine-panel-border/20 text-[10px] text-engine-neon font-extrabold uppercase tracking-widest bg-engine-bg/50">
                         Select a User
@@ -127,17 +120,28 @@ const MentionInput = ({ value, onChange, placeholder, className, rows = 3, onKey
                     {suggestions.map((user, idx) => (
                         <div
                             key={user.username}
-                            onClick={() => handleSuggestionClick(user.username)}
+                            // onMouseDown + preventDefault prevents the textarea from blurring
+                            // before the selection registers — this was the root cause of the bug.
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSuggestionClick(user.username);
+                            }}
                             className={`flex items-center gap-3 p-3 cursor-pointer transition-colors hover:bg-engine-button/20 ${idx !== suggestions.length - 1 ? 'border-b border-engine-button-border/10' : ''}`}
                         >
                             {user.avatar_url ? (
-                                <img src={`${user.avatar_url.startsWith('http') ? '' : API_BASE_URL}${user.avatar_url}`} alt={user.username} className="w-8 h-8 rounded-full border border-engine-panel-border/50 shadow-panel-neon object-cover" />
+                                <img
+                                    src={`${user.avatar_url.startsWith('http') ? '' : API_BASE_URL}${user.avatar_url}`}
+                                    alt={user.username}
+                                    className="w-8 h-8 rounded-full border border-engine-panel-border/50 shadow-panel-neon object-cover"
+                                />
                             ) : (
                                 <div className="w-8 h-8 bg-engine-bg rounded-full border border-engine-panel-border/50 shadow-panel-neon flex items-center justify-center text-engine-neon text-xs font-bold">
                                     {user.username.substring(0, 2).toUpperCase()}
                                 </div>
                             )}
-                            <span className="text-white font-bold text-sm drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">{user.username}</span>
+                            <span className="text-white font-bold text-sm drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">
+                                {user.username}
+                            </span>
                         </div>
                     ))}
                 </div>

@@ -1,76 +1,55 @@
-import React, { useState, useEffect } from "react";
-import api from "../lib/axios";
+import React, { useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
-const AuthenticatedImage = ({ src, alt, ...props }) => {
-  const [imageSrc, setImageSrc] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+/**
+ * AuthenticatedImage
+ *
+ * Renders images stored on the backend's /static/ endpoint.
+ * Static files are served publicly by FastAPI (no auth required),
+ * so we simply build the full URL and use a plain <img> tag.
+ * This avoids the previous axios double-URL bug that caused Network Errors.
+ *
+ * Supports all image types including .gif (animated GIFs work fine).
+ */
+const AuthenticatedImage = ({ src, alt, fallback = null, ...props }) => {
+  const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    if (!src) {
-      setIsLoading(false);
-      return;
-    }
-
-    let isMounted = true;
-    const fetchImage = async () => {
-      try {
-        // Construct the full, absolute URL to bypass the '/api' prefix
-        // Remove any leading slash from src to avoid double slashes
-        const cleanSrc = src.startsWith("/") ? src.slice(1) : src;
-        const imageUrl = `${API_BASE_URL}/${cleanSrc}`;
-        console.log("Fetching image from:", imageUrl);
-        const response = await api.get(imageUrl, {
-          responseType: "blob",
-        });
-        if (isMounted) {
-          const blobUrl = URL.createObjectURL(response.data);
-          setImageSrc(blobUrl);
-        }
-      } catch (error) {
-        console.error("Failed to load authenticated image:", error);
-        if (isMounted) {
-          setImageSrc(null); // Or a placeholder
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchImage();
-
-    return () => {
-      isMounted = false;
-      if (imageSrc) {
-        URL.revokeObjectURL(imageSrc);
-      }
-    };
-  }, [src]);
-
-  if (isLoading) {
-    return (
-      <div
-        className="w-full h-48 bg-gray-700 animate-pulse rounded"
-        {...props}
-      ></div>
-    );
+  // If no src provided, render nothing or a placeholder
+  if (!src) {
+    return fallback || null;
   }
 
-  if (!imageSrc) {
-    return (
+  // If already a full URL (http/https), use it directly.
+  // Otherwise, join API_BASE_URL with the path, avoiding double slashes.
+  let imageUrl;
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    imageUrl = src;
+  } else {
+    const cleanSrc = src.startsWith("/") ? src : `/${src}`;
+    imageUrl = `${API_BASE_URL}${cleanSrc}`;
+  }
+
+  if (hasError) {
+    // Render fallback or a neutral placeholder div on error
+    return fallback || (
       <div
-        className="w-full h-48 bg-gray-800 flex items-center justify-center rounded"
+        style={{ background: "#1a1f2e", display: "flex", alignItems: "center", justifyContent: "center" }}
         {...props}
       >
-        <p className="text-gray-500">Image not available</p>
+        <span style={{ color: "#4a5568", fontSize: "0.7rem" }}>—</span>
       </div>
     );
   }
 
-  return <img src={imageSrc} alt={alt} {...props} />;
+  return (
+    <img
+      src={imageUrl}
+      alt={alt}
+      onError={() => setHasError(true)}
+      {...props}
+    />
+  );
 };
 
 export default AuthenticatedImage;

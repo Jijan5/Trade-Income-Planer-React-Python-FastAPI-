@@ -125,7 +125,7 @@ structured environment to fail, learn, and grow without losing real capital.
 This platform was built from personal experience. Like many beginners, the
 original developer jumped into live trading without proper discipline or risk
 management. The result was repeated revenge trading — chasing losses
-emotionally — which ultimately led to losing over $1,000 (IDR 17,000,000+).
+emotionally — which ultimately led to losing over $300 (IDR 5,000,000+).
 
 That loss was painful, but it sparked a clear mission: to build a platform
 that forces traders to master emotional control and risk management in a
@@ -133,7 +133,7 @@ simulated environment BEFORE touching real money.
 
 Every feature in this platform — from the Discipline Rules in the Manual Trade
 Simulator, to the AI Trading Coach, to the Pre-Check Trade validation — was
-designed specifically to solve the problems that caused that $1,000 loss.
+designed specifically to solve the problems that caused that $300 loss.
 
 --------------------------------------------------------------------------------
 1.4  Design Philosophy
@@ -167,7 +167,7 @@ PART 2 — GETTING STARTED (USER GUIDE)
 --------------------------------------------------------------------------------
 To create an account on the platform:
 
-  1. Click "Get Started" or "Sign Up" on the Landing Page.
+  1. Click "Sign Up" on the Landing Page.
   2. Fill in the registration form:
        - Full Name
        - Username (unique, used for @mentions)
@@ -197,7 +197,8 @@ You can register and log in instantly using your Google account:
   3. You will be redirected to your dashboard automatically.
 
 Google OAuth users are automatically marked as verified. No email token step
-is required for social login.
+is required for social login. Make sure after Continue With Google, you have to 
+fill your full name, phone number, and password. 
 
 --------------------------------------------------------------------------------
 2.3  Standard Login
@@ -596,7 +597,7 @@ where all users share trading ideas, insights, and discussions.
 
   SHARED STRATEGY CARDS:
   Strategy cards shared via the Strategy Simulator appear directly in the
-  feed. Other users can click "Copy Strategy" directly from the feed card.
+  feed. Other users can click "Copy Strategy" directly from the feed card (premium or above).
 
   ACCESS: All plans.
 
@@ -850,10 +851,10 @@ Navigate to "Users" in the Admin sidebar.
   theme settings, community memberships). This action is IRREVERSIBLE.
   The primary recommended disciplinary action is Suspend, not Delete.
 
-  NOTE ON "BANNED" STATUS:
-  A "banned" status value exists as a reference in the database model
-  (models.py), but it is not actively used as a separate workflow in the
-  current admin UI. Suspension is the primary moderation tool.
+  BANNING A USER (Permanent):
+  Change the user's status to "banned" via the Edit action.
+  A banned user is permanently blocked from accessing the platform. This is
+  a stricter alternative to suspension and is fully supported in the admin UI.
 
 --------------------------------------------------------------------------------
 4.4  Subscriptions
@@ -1043,7 +1044,7 @@ PART 5 -- TECHNICAL GUIDE (FOR NEW OWNER / DEVELOPER)
     - slowapi (rate limiting)
 
   DATABASE:
-    - MySQL 8.0
+    - MySQL 8.4.3
 
   DOMAIN & DNS:
     - Domain Registrar : Hostinger (https://tradeplanner.my.id)
@@ -1119,9 +1120,9 @@ Copy .env.example to .env and fill in all values before running the platform.
 5.3  Running Locally
 --------------------------------------------------------------------------------
   PREREQUISITES:
-    - Python 3.13+
-    - Node.js 20+ and npm
-    - MySQL 8.0 running locally or via Docker
+    - Python 3.13.1
+    - Node.js 25.5.0 and npm
+    - MySQL 8.4.3 running locally or via Docker
 
   STEP 1 -- BACKEND SETUP:
     cd backend
@@ -1180,7 +1181,7 @@ The entire stack is containerized and can be deployed with a single command.
 --------------------------------------------------------------------------------
 5.5  Database
 --------------------------------------------------------------------------------
-  ENGINE   : MySQL 8.0
+  ENGINE   : MySQL 8.4.3
   ORM      : SQLModel (built on SQLAlchemy)
 
   The database schema is defined entirely in:
