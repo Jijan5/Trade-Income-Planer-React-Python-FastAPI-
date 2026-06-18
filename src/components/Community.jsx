@@ -628,6 +628,10 @@ const Community = ({
       if (planLevel < 2) return showFlash("Upgrade to Premium to create communities.", "error");
       // Premium limit: 3 communities. Platinum: Unlimited.
       const myOwnedCommunities = communities.filter(c => c.creator_username === currentUser);
+      
+      const isTrial = userData?.plan === "Platinum" && !userData?.plan_billing_cycle;
+      if (isTrial && myOwnedCommunities.length >= 1) return showFlash("Platinum Trial allows creation of 1 community. Upgrade to full Platinum for unlimited communities.", "error");
+
       if (planLevel === 2 && myOwnedCommunities.length >= 3) return showFlash("Premium limit reached (3 communities). Upgrade to Platinum for unlimited.", "error");
     }
     if (!token) return showFlash("Please login first", "error");
