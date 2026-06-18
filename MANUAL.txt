@@ -1,0 +1,1370 @@
+================================================================================
+         TRADE INCOME PLANNER (TIP) — COMPLETE PLATFORM MANUAL
+                         Version 1.0 | June 2026
+================================================================================
+
+This manual covers every feature of the Trade Income Planner (TIP) platform
+from a user perspective, an admin perspective, and a technical/developer
+perspective. It is intended for end users, platform administrators, and any
+new owner who acquires this platform.
+
+Domain: https://tradeplanner.my.id
+
+--------------------------------------------------------------------------------
+WHITE LABEL NOTICE
+--------------------------------------------------------------------------------
+This platform is 100% white-label ready. After acquisition, the new owner has
+full freedom to:
+  - Rename the platform brand entirely
+  - Replace the domain with any domain they own
+  - Restyle the entire UI (colors, fonts, logo)
+  - Remove or update all references to the current brand name
+  - Replace all API keys with their own accounts
+  - Modify pricing, features, or subscription tiers
+
+You are purchasing complete intellectual property (IP). Nothing is locked.
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+  PART 1 — INTRODUCTION
+    1.1  What is Trade Income Planner?
+    1.2  Who is it built for?
+    1.3  The Origin Story
+    1.4  Design Philosophy
+    1.5  White Label & Rebranding
+
+  PART 2 — GETTING STARTED (USER GUIDE)
+    2.1  Registration & Email Verification
+    2.2  Google OAuth Login
+    2.3  Standard Login
+    2.4  Forgot Password
+    2.5  The 7-Day Platinum Free Trial
+    2.6  Subscription Plans
+    2.7  Upgrading Your Plan
+    2.8  Profile Management
+    2.9  Verified Badge
+
+  PART 3 — PLATFORM FEATURES (USER GUIDE)
+    3.1  Strategy Simulator
+    3.2  Goal Planner
+    3.3  Manual Trade Simulator (Paper Trading)
+    3.4  Trade History & Analytics
+    3.5  Risk Management Calculator
+    3.6  AI Chatbot
+    3.7  Social Hub — Home Feed
+    3.8  Community
+    3.9  Learning Modules
+    3.10 Explore & Live News
+    3.11 Platform Appearance Engine (Platinum Only)
+    3.12 Notifications
+    3.13 System Status & API Docs
+    3.14 Legal Pages
+    3.15 Connect Brokers (Roadmap)
+
+  PART 4 — ADMIN GUIDE
+    4.1  Accessing the Admin Dashboard
+    4.2  Dashboard Overview
+    4.3  User Management
+    4.4  Subscriptions
+    4.5  Learning Modules Management
+    4.6  Content Moderation
+    4.7  Reports
+    4.8  Feedback
+    4.9  Contact Messages
+    4.10 Broadcasts
+    4.11 Appeals
+
+  PART 5 — TECHNICAL GUIDE (FOR NEW OWNER / DEVELOPER)
+    5.1  Tech Stack Overview
+    5.2  Environment Variables (.env Setup)
+    5.3  Running Locally
+    5.4  Docker Deployment
+    5.5  Database
+    5.6  Security Architecture
+    5.7  Payment Integration (LemonSqueezy / Stripe)
+    5.8  Test Coverage
+    5.9  White Label & Rebranding Guide
+
+================================================================================
+PART 1 — INTRODUCTION
+================================================================================
+
+--------------------------------------------------------------------------------
+1.1  What is Trade Income Planner (TIP)?
+--------------------------------------------------------------------------------
+Trade Income Planner (TIP) is a comprehensive FinTech SaaS platform designed
+to help retail traders and beginners build the skills, discipline, and
+emotional control required to trade profitably — before they risk real money
+in the live markets.
+
+The platform combines:
+  - A fully simulated paper trading environment
+  - AI-powered coaching and market analysis
+  - Financial goal planning and compounding simulators
+  - A social community hub for global trader discussions
+  - Premium educational content (Learning Modules)
+  - A complete admin system for full platform management
+
+TIP bridges the gap between learning and live trading by giving users a safe,
+structured environment to fail, learn, and grow without losing real capital.
+
+--------------------------------------------------------------------------------
+1.2  Who is it built for?
+--------------------------------------------------------------------------------
+  - Retail traders who are new to forex, crypto, or equities
+  - Beginners who struggle with emotional control and revenge trading
+  - Aspiring prop firm candidates who want to practice challenge rules
+  - Intermediate traders who want to backtest strategies via simulation
+  - Any trader looking for a community to share and discuss ideas
+
+--------------------------------------------------------------------------------
+1.3  The Origin Story
+--------------------------------------------------------------------------------
+This platform was built from personal experience. Like many beginners, the
+original developer jumped into live trading without proper discipline or risk
+management. The result was repeated revenge trading — chasing losses
+emotionally — which ultimately led to losing over $1,000 (IDR 17,000,000+).
+
+That loss was painful, but it sparked a clear mission: to build a platform
+that forces traders to master emotional control and risk management in a
+simulated environment BEFORE touching real money.
+
+Every feature in this platform — from the Discipline Rules in the Manual Trade
+Simulator, to the AI Trading Coach, to the Pre-Check Trade validation — was
+designed specifically to solve the problems that caused that $1,000 loss.
+
+--------------------------------------------------------------------------------
+1.4  Design Philosophy
+--------------------------------------------------------------------------------
+The platform's visual identity is inspired by the aesthetic of the video game
+Cyberpunk 2077 — a dark, neon-glowing, futuristic interface that feels premium
+and immersive. Research into trader communities also confirmed that the majority
+of traders strongly prefer dark-themed interfaces for long trading sessions,
+as they are easier on the eyes.
+
+The Platform Appearance Engine (a Platinum feature) was created as a direct
+response to mixed feedback from early testers who each had different aesthetic
+preferences. Rather than picking one style and forcing it on everyone, the
+"middle way" solution was to build a granular customization system that lets
+each Platinum user set their own neon colors, glow intensities, glass opacity,
+blur levels, and font families — with a live preview before applying.
+
+--------------------------------------------------------------------------------
+1.5  White Label & Rebranding
+--------------------------------------------------------------------------------
+This platform is sold as a 100% white-label product. See the dedicated
+rebranding guide in Section 5.9 for step-by-step technical instructions on
+how to fully rebrand the platform after acquisition.
+
+================================================================================
+PART 2 — GETTING STARTED (USER GUIDE)
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1  Registration & Email Verification
+--------------------------------------------------------------------------------
+To create an account on the platform:
+
+  1. Click "Get Started" or "Sign Up" on the Landing Page.
+  2. Fill in the registration form:
+       - Full Name
+       - Username (unique, used for @mentions)
+       - Email Address
+       - Password
+       - Country Code + Phone Number
+  3. Submit the form.
+  4. Check your email inbox for a verification email from the platform.
+  5. Click the secure token link inside the email.
+  6. Your account is now activated and you can log in.
+
+IMPORTANT: If you do NOT click the verification link, your account will remain
+inactive and you will be blocked from logging in. This is an intentional
+security measure to prevent bot spam and protect the 7-day free trial system
+from abuse.
+
+The verification link is single-use and expires after a set period. If it has
+expired, you can request a new verification email from the login screen.
+
+--------------------------------------------------------------------------------
+2.2  Google OAuth Login
+--------------------------------------------------------------------------------
+You can register and log in instantly using your Google account:
+
+  1. Click "Continue with Google" on the login or registration screen.
+  2. Select your Google account and authorize the platform.
+  3. You will be redirected to your dashboard automatically.
+
+Google OAuth users are automatically marked as verified. No email token step
+is required for social login.
+
+--------------------------------------------------------------------------------
+2.3  Standard Login
+--------------------------------------------------------------------------------
+  1. Go to the platform URL: https://tradeplanner.my.id
+  2. Click "Login".
+  3. Enter your registered email address and password.
+  4. Click "Sign In".
+
+If your account has not been email-verified, you will see an error and must
+complete the verification step (see Section 2.1).
+
+If your account has been suspended by an admin, you will be redirected to the
+Suspended Page with information about your suspension.
+
+--------------------------------------------------------------------------------
+2.4  Forgot Password
+--------------------------------------------------------------------------------
+If you have forgotten your password:
+
+  1. Click "Forgot Password?" on the login screen.
+  2. Enter your registered email address and click "Send PIN".
+  3. Check your email for a 6-digit PIN code.
+  4. Enter the PIN on the verification screen.
+  
+  IMPORTANT: The PIN expires after 15 minutes. If it expires, you must
+  request a new one by repeating from Step 1.
+
+  5. Once the PIN is verified, you will be prompted to enter and confirm
+     your new password.
+  6. Click "Reset Password". You can now log in with your new password.
+
+--------------------------------------------------------------------------------
+2.5  The 7-Day Platinum Free Trial
+--------------------------------------------------------------------------------
+All newly registered users are automatically granted a 7-day free trial of
+the Platinum plan. This unlocks ALL premium features immediately, including:
+
+  - Strategy Simulator
+  - Goal Planner
+  - Risk Management Calculator
+  - Share & Copy Strategy
+  - Premium Learning Modules (unlimited)
+  - Platform Appearance Engine (Custom Engine)
+  - Verified Badge
+
+A live countdown timer is displayed in your dashboard showing the remaining
+trial time. When the trial expires, your account is automatically downgraded
+to the Free plan. No payment is charged during the trial.
+
+To continue using Platinum features after the trial, you must upgrade to a
+paid subscription (see Section 2.6).
+
+--------------------------------------------------------------------------------
+2.6  Subscription Plans
+--------------------------------------------------------------------------------
+The platform operates on a 4-tier subscription model:
+
+  FREE PLAN — $0/month
+  -------------------------------------------
+  - Manual Trade Simulator
+  - Basic Learning Modules
+  - Home Feed & Community (read + participate)
+  - AI Chatbot (limited)
+  - Live News Feed
+
+  BASIC PLAN — $12/month | $119/year
+  -------------------------------------------
+  Everything in Free, plus:
+  - Export Trade History to CSV
+
+  PREMIUM PLAN — $19/month | $189/year
+  -------------------------------------------
+  Everything in Basic, plus:
+  - Strategy Simulator
+  - Goal Planner
+  - Risk Management Calculator (Basic & Advanced)
+  - Share & Copy Strategy
+  - Create Communities
+  - Premium Learning Modules (3 per day limit)
+
+  PLATINUM PLAN — $28/month | $279/year
+  -------------------------------------------
+  Everything in Premium, plus:
+  - Premium Learning Modules (unlimited)
+  - Platform Appearance Engine (Custom Engine)
+  - Verified Badge on profile
+
+NOTE FOR NEW OWNER: These prices are set within your LemonSqueezy account.
+After acquisition, you are free to change the pricing to whatever you see fit.
+
+--------------------------------------------------------------------------------
+2.7  Upgrading Your Plan
+--------------------------------------------------------------------------------
+  1. Go to your Profile page and click "Upgrade Plan", or navigate to the
+     Subscription section.
+  2. Select the plan you want to upgrade to.
+  3. You will be redirected to LemonSqueezy's secure checkout page.
+  4. Complete payment. LemonSqueezy sends a webhook to the platform, which
+     automatically upgrades your account plan.
+  5. Your new features are available immediately after payment is confirmed.
+
+Annual plans offer a significant discount over monthly billing.
+
+--------------------------------------------------------------------------------
+2.8  Profile Management
+--------------------------------------------------------------------------------
+Access your profile by clicking your avatar or username in the navigation bar.
+
+  EDITING PROFILE INFORMATION:
+  - Full Name, Username, Bio, Country, and Phone Number can be edited freely.
+  - Upload a new avatar photo. The platform includes a built-in image crop
+    tool so you can perfectly frame your profile picture before saving.
+
+  CHANGING YOUR PASSWORD:
+  For security, changing your password requires PIN verification:
+  1. Go to Profile Settings > Security.
+  2. Click "Change Password".
+  3. A 6-digit PIN will be sent to your registered email.
+  4. Enter the PIN in the verification modal (expires in 15 minutes).
+  5. Enter and confirm your new password.
+  6. Click Save.
+
+  ACCOUNT SECURITY:
+  All sensitive credential changes are protected by the PIN system to ensure
+  that even if someone has access to your browser session, they cannot change
+  your password without also having access to your email inbox.
+
+--------------------------------------------------------------------------------
+2.9  Verified Badge
+--------------------------------------------------------------------------------
+Platinum plan subscribers receive a Verified Badge displayed next to their
+username on posts, comments, and their profile page. The badge signals to the
+community that this user is a committed, paying member of the platform.
+
+The badge is automatically applied when a Platinum subscription is active and
+is removed if the subscription expires or is downgraded.
+
+================================================================================
+PART 3 — PLATFORM FEATURES (USER GUIDE)
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1  Strategy Simulator
+--------------------------------------------------------------------------------
+The Strategy Simulator lets you test trading strategies using mathematical
+simulation without risking real capital. Real-time asset prices are fetched
+via TradingView integration.
+
+  SETTING UP A SIMULATION:
+  Fill in the following parameters:
+    - Initial Balance      : Your starting capital (e.g., $10,000)
+    - Capital Utilization  : % of balance used per session
+    - Risk Per Trade       : % of balance risked on each trade
+    - Risk/Reward Ratio    : Your target RR (e.g., 2 = 1:2 RR)
+    - Win Rate             : Expected % of winning trades
+    - Trades Per Day       : How many trades you take daily
+    - Simulation Days      : How many days to simulate (max 3,650)
+    - Risk Type            : Dynamic (risk % of current balance) or
+                             Fixed (risk % of starting balance)
+    - Fees Per Trade       : Optional commission/spread cost per trade
+
+  RUNNING THE SIMULATION:
+  Click "Run Simulation". The backend engine iterates through each trade
+  and calculates PnL outcomes based on your win rate, applying wins and
+  losses to produce a day-by-day equity curve.
+
+  READING THE RESULTS:
+  - Equity curve chart showing balance growth over time
+  - Total ROI (%)
+  - Final Balance
+  - Total trades won vs. lost
+  - Detailed trade log
+
+  WHAT-IF FUTURE PROJECTION:
+  After running a simulation, use the What-If tool to project what your
+  equity would look like if you continued trading with the same parameters
+  into the future under different market scenarios.
+
+  MONTE CARLO SIMULATION:
+  The Monte Carlo tool runs hundreds of randomized variations of your
+  strategy to show the statistical range of possible outcomes — best case,
+  worst case, and most likely case. This helps you understand the true risk
+  of your strategy before trading it live.
+
+  SHARE STRATEGY:
+  Once satisfied with a simulation, click "Share Strategy" to publish your
+  exact parameters as a strategy card to the community feed. Other users
+  can see your setup and copy it with one click.
+
+  COPY STRATEGY:
+  On the Community or Home Feed, if you see a shared strategy card from
+  another user, click "Copy Strategy". The platform instantly loads their
+  exact parameters into your Strategy Simulator form so you can run their
+  simulation yourself.
+
+  ACCESS: Premium and Platinum plans. Available during 7-day trial.
+
+--------------------------------------------------------------------------------
+3.2  Goal Planner
+--------------------------------------------------------------------------------
+The Goal Planner reverse-engineers the trading performance required to hit
+a specific financial target within a given timeframe.
+
+  HOW TO USE:
+    1. Enter your Initial Balance (your current capital).
+    2. Enter your Target Balance (how much you want to reach).
+    3. Enter the Deadline in Months (how long you have to get there).
+    4. Click "Calculate".
+
+  OUTPUT:
+    - Required Monthly Return (%): The consistent monthly gain you need
+      to hit your goal via compounding.
+    - Feasibility Assessment: The platform evaluates whether the required
+      return is realistic (e.g., "Challenging but achievable",
+      "Very Unlikely — reduce your goal or extend your deadline").
+    - Month-by-month balance projection chart.
+
+  This tool is especially useful for setting realistic trading expectations
+  and avoiding the trap of over-leveraging to chase unrealistic goals.
+
+  ACCESS: Premium and Platinum plans. Available during 7-day trial.
+
+--------------------------------------------------------------------------------
+3.3  Manual Trade Simulator (Paper Trading)
+--------------------------------------------------------------------------------
+The Manual Trade Simulator is the most feature-rich section of the platform.
+It is a full paper trading journal and simulator that enforces real trading
+discipline on every trade you take.
+
+  OPENING A PAPER TRADE:
+    1. Navigate to the Manual Trade Simulator.
+    2. Select your asset/symbol.
+    3. Enter trade details: direction (Buy/Sell), entry price, stop loss,
+       take profit, and position size.
+    4. The built-in Risk Calculator immediately shows you the dollar amount
+       at risk and your potential reward.
+    5. Complete the Pre-Check Trade checklist before submitting.
+    6. Click "Open Trade".
+
+  PRE-CHECK TRADE:
+  Before any trade can be submitted, the platform requires you to confirm
+  a checklist of trading criteria (e.g., "Is this trade aligned with my
+  plan?", "Have I set my stop loss?"). This simulates the mental discipline
+  required in live trading and prevents impulsive entries.
+
+  TRADE SETUP TEMPLATES:
+  You can create and save reusable trade setup templates for your most
+  common trade configurations. Instead of filling in all fields manually
+  each time, load a template and your preferred settings are pre-filled.
+
+  DISCIPLINE RULES:
+  The platform allows you to configure personal discipline rules, such as:
+    - Maximum number of trades per day
+    - Maximum daily loss limit
+    - Mandatory break after X consecutive losses
+  If you violate a rule, the simulator blocks further trades for the session.
+  This directly trains emotional control and prevents revenge trading.
+
+  PROP FIRM CHALLENGE MODE:
+  Simulate the exact conditions of a proprietary trading firm evaluation:
+    - Set a Maximum Daily Drawdown limit
+    - Set a Maximum Total Drawdown limit
+    - Set a Profit Target
+  The simulator tracks your progress against these rules and tells you if
+  you have "passed" or "failed" the challenge — just like a real prop firm.
+
+  AI TRADING COACH:
+  After accumulating trade history, trigger the AI Trading Coach to analyze
+  your trading behavior. Powered by Google Gemini, it evaluates:
+    - Risk Management Score
+    - Emotional Control Score (detecting revenge trading patterns)
+    - System Adherence Score
+  The AI provides specific, actionable feedback on where your trading
+  psychology needs improvement.
+
+  BUILT-IN RISK CALCULATOR:
+  Integrated directly into the trade ticket. Enter your account balance,
+  risk percentage, entry price, and stop loss — the calculator instantly
+  shows your exact position size and dollar risk before you commit.
+
+  SHORT TUTORIALS & GLOSSARY:
+  Beginner help widgets are embedded throughout the simulator. Hover over
+  any metric (Win Rate, Drawdown, Risk/Reward, etc.) to see a plain-English
+  explanation. A full Glossary is also accessible from the simulator.
+
+  ACCESS: All plans (Free and above).
+
+--------------------------------------------------------------------------------
+3.4  Trade History & Analytics
+--------------------------------------------------------------------------------
+Every trade you make in the Manual Simulator is automatically recorded in
+your Trade History journal.
+
+  VIEWING HISTORY:
+  Navigate to Trade History to see a full chronological log of all your
+  paper trades including entry, exit, PnL, and notes.
+
+  PERFORMANCE METRICS:
+    - Win Rate (%)
+    - Total Profit & Loss
+    - Return on Investment (ROI %)
+    - Maximum Drawdown
+    - Average RR achieved vs. planned
+    - Consecutive wins/losses streaks
+
+  CHARTS:
+  Equity curve and PnL bar charts help you visually identify performance
+  trends and periods of emotional trading.
+
+  EXPORT TO CSV:
+  Basic, Premium, and Platinum subscribers can export their complete trade
+  history as a CSV file for further analysis in Excel or Google Sheets.
+
+  ACCESS: All plans. CSV Export requires Basic plan or above.
+
+--------------------------------------------------------------------------------
+3.5  Risk Management Calculator
+--------------------------------------------------------------------------------
+A standalone calculator for computing the correct position size before
+entering any trade — separate from the Manual Simulator.
+
+  BASIC MODE:
+    - Account Balance
+    - Risk Percentage (%)
+    - Entry Price
+    - Stop Loss Price
+    Output: Position size and dollar amount at risk.
+
+  ADVANCED MODE:
+  Adds additional inputs for leverage, pip value, and commission costs
+  to give a more precise calculation for forex and futures trading.
+
+  Use this tool before every live trade to ensure you are never risking
+  more than your planned percentage on a single position.
+
+  ACCESS: Premium and Platinum plans. Available during 7-day trial.
+
+--------------------------------------------------------------------------------
+3.6  AI Chatbot
+--------------------------------------------------------------------------------
+The AI Chatbot is powered by Google Gemini and serves as your on-demand
+trading analysis assistant.
+
+  HOW TO ACCESS:
+  Click the chat icon (typically in the bottom corner of the dashboard).
+  The chatbot panel slides open.
+
+  FEATURES:
+
+  1. CHART IMAGE ANALYSIS ("Explain This Chart"):
+     Upload a screenshot of any trading chart. The AI reads the image,
+     identifies patterns (e.g., head and shoulders, support/resistance,
+     trend lines), and gives you a detailed breakdown of what it sees
+     and potential trade implications.
+
+  2. MARKET TREND ANALYSIS:
+     Ask the AI any question about market trends, trading concepts, or
+     risk management. Example questions:
+       - "What does a bearish engulfing candle mean?"
+       - "Is BTC in a downtrend based on current conditions?"
+       - "Explain the concept of confluence in trading."
+
+  3. TRADING INSIGHTS:
+     The AI can analyze your described trading situation and give you
+     structured, data-driven insights to help you make better decisions.
+
+  Note: AI responses are for educational and informational purposes only
+  and do not constitute financial advice.
+
+  ACCESS: All plans (Free users may have limited daily queries).
+
+--------------------------------------------------------------------------------
+3.7  Social Hub — Home Feed
+--------------------------------------------------------------------------------
+The Home Feed is the main social space of the platform — a global timeline
+where all users share trading ideas, insights, and discussions.
+
+  CREATING A POST:
+    1. Click the "Create Post" area at the top of the feed.
+    2. Type your content. You can add images or links.
+    3. Use @username to mention other users in your post.
+       Mentioned users receive a notification automatically.
+    4. Click "Post" to publish.
+
+  INTERACTING WITH POSTS:
+    - React to posts with emoji reactions
+    - Click "Comment" to add a reply
+    - Reply to specific comments (nested replies supported)
+    - Use @mentions inside comments to notify other users
+
+  REPORTING A POST:
+  If you see inappropriate content, click the "..." menu on a post and
+  select "Report". Provide a reason. The report is sent to the Admin
+  dashboard for review.
+
+  SHARED STRATEGY CARDS:
+  Strategy cards shared via the Strategy Simulator appear directly in the
+  feed. Other users can click "Copy Strategy" directly from the feed card.
+
+  ACCESS: All plans.
+
+--------------------------------------------------------------------------------
+3.8  Community
+--------------------------------------------------------------------------------
+Communities are dedicated group spaces for focused trading discussions
+around a specific topic, asset class, or trading style.
+
+  BROWSING COMMUNITIES:
+  All users can browse and join existing communities from the Community
+  section. Click any community to view its posts and members.
+
+  CREATING A COMMUNITY:
+  Premium and Platinum subscribers can create their own communities:
+    1. Go to Community > Create Community.
+    2. Enter a community name, description, and optional cover image.
+    3. Click "Create". You are automatically the community owner.
+
+  POSTING IN A COMMUNITY:
+  Navigate to a community and use the post box to share content that is
+  visible only to community members.
+
+  COMMUNITY MODERATION (OWNER):
+  As a community owner, you can:
+    - Remove posts that violate community rules
+    - Manage membership
+
+  ACCESS: Joining is free for all. Creating requires Premium or Platinum.
+
+--------------------------------------------------------------------------------
+3.9  Learning Modules
+--------------------------------------------------------------------------------
+Learning Modules are curated educational content pieces — video tutorials,
+rich-text guides, and interactive lessons — covering trading fundamentals,
+strategy development, and psychology.
+
+  BROWSING MODULES:
+  Go to the Learning Modules section to see all available content.
+  Modules are tagged as FREE or PAID. Free modules are accessible to all
+  users regardless of plan.
+
+  BUYING A SINGLE MODULE:
+  Paid modules have individual prices set by the admin. Click "Buy Module"
+  and complete checkout to gain permanent access.
+
+  BUYING A BUNDLE:
+  The admin may group multiple modules into a bundle at a discounted price.
+  Click "Buy Bundle" to purchase the entire bundle at once.
+
+  PLAN-BASED DAILY ACCESS LIMITS:
+    - Free Plan    : Basic/free modules only
+    - Basic Plan   : Basic/free modules only
+    - Premium Plan : Premium modules (limited to 3 per day)
+    - Platinum Plan: Premium modules (unlimited per day)
+    - Trial Period : Unlimited access to all modules
+
+  WATCHING CONTENT:
+  Click any accessible module to open the Module Viewer. Video content
+  plays inline. Rich-text guides are displayed in a clean reading layout.
+
+  ACCESS: All plans (free content). Paid modules require purchase or
+  Premium/Platinum subscription.
+
+--------------------------------------------------------------------------------
+3.10  Explore & Live News
+--------------------------------------------------------------------------------
+  LIVE NEWS FEED:
+  The Explore section displays a real-time crypto and financial news feed
+  aggregated from CoinTelegraph via RSS. News cards are updated
+  automatically and link to the full article on the source website.
+
+  EXPLORING POSTS:
+  The Explore section also surfaces trending community posts and popular
+  shared strategies from across the platform, helping users discover
+  content beyond their own feed.
+
+  ACCESS: All plans.
+
+--------------------------------------------------------------------------------
+3.11  Platform Appearance Engine (Platinum Only)
+--------------------------------------------------------------------------------
+The Platform Appearance Engine is a granular, real-time theme customization
+system available exclusively to Platinum subscribers. It was designed as a
+"middle way" solution to allow every user to set the platform's look exactly
+to their personal preference.
+
+  HOW TO ACCESS:
+  Go to Profile > Customize Platform (or via the sidebar).
+
+  CUSTOMIZABLE SETTINGS:
+
+  PANEL SETTINGS:
+    - Neon Glow Toggle   : Enable or disable the glow effect on panels
+    - Neon Color         : Pick any color for the panel glow
+    - Neon Blur Radius   : Control how far the glow spreads (e.g., "20px")
+    - Neon Opacity       : Control the intensity of the glow (0.0 - 1.0)
+    - Border Color       : Set the panel border color independently
+    - Glass Opacity      : Control the translucency of panel backgrounds
+    - Glass Blur         : Control the frosted-glass blur intensity
+
+  BUTTON SETTINGS:
+    - Neon Glow Toggle   : Enable or disable the glow on buttons
+    - Neon Color         : Pick any color for button glow
+    - Neon Blur Radius   : Control button glow spread
+    - Neon Opacity       : Control button glow intensity
+    - Border Color       : Set button border color independently
+
+  GLOBAL SETTINGS:
+    - Background Color   : Set the main page background color
+    - Font Family        : Choose from available font families (e.g., Inter,
+                           Roboto, Orbitron)
+
+  LIVE PREVIEW:
+  All changes are previewed in real time on the settings page before you
+  apply them. Click "Apply Changes" to save your theme to your account.
+  Your theme is stored server-side and loads on any device you log into.
+
+  ACCESS: Platinum plan only. Available during 7-day trial.
+
+--------------------------------------------------------------------------------
+3.12  Notifications
+--------------------------------------------------------------------------------
+Click the bell icon in the navigation bar to open your notification panel.
+
+  NOTIFICATION TYPES:
+    - MENTION       : Someone tagged you with @yourusername in a post or comment
+    - REPLY         : Someone replied to your comment or post
+    - BROADCAST     : A system-wide announcement sent by the admin
+    - SYSTEM        : Account status changes or platform alerts
+
+  Unread notifications are highlighted. Click any notification to navigate
+  directly to the relevant post, comment, or community.
+
+  ACCESS: All plans.
+
+--------------------------------------------------------------------------------
+3.13  System Status & API Docs
+--------------------------------------------------------------------------------
+  SYSTEM STATUS PAGE:
+  A publicly accessible page (no login required) that displays the real-time
+  operational health of all platform services (API, Database, Payment
+  Gateway, AI Services). Useful for checking if there is a known outage.
+
+  API DOCUMENTATION PAGE:
+  An interactive, publicly accessible page that lists all available REST API
+  endpoints of the platform, with descriptions of request/response formats.
+  Intended for developers who want to build integrations on top of the
+  platform's API.
+
+  ACCESS: Public (no login required).
+
+--------------------------------------------------------------------------------
+3.14  Legal Pages
+--------------------------------------------------------------------------------
+The platform includes built-in, editable legal pages:
+
+    - Privacy Policy
+    - Terms of Service
+    - Cookie Policy
+
+  These pages are accessible from the footer of the landing page and from
+  within the authenticated dashboard. The platform uses smart "Back"
+  navigation: if you are logged in, the back button returns you to your
+  Dashboard; if you are logged out, it returns you to the Landing Page.
+
+  NOTE FOR NEW OWNER: Update all legal pages to reflect your company name,
+  jurisdiction, and contact information before launching publicly.
+
+  Access: Public (no login required).
+
+--------------------------------------------------------------------------------
+3.15  Connect Brokers (Roadmap — Not Yet Available)
+--------------------------------------------------------------------------------
+The "Connect Brokers" section is a planned future feature. It is currently
+displayed as a "Coming Soon" hub in the platform to signal the product
+roadmap to users.
+
+  PLANNED INTEGRATIONS:
+    - MetaTrader 4 / MetaTrader 5 (Read-Only API sync)
+    - Interactive Brokers (Read-Only API sync)
+    - Alpaca (Read-Only API sync)
+
+  WHAT IT WILL DO:
+  When implemented, users will be able to connect their live broker account
+  via a read-only API key. The platform will automatically import their real
+  trade history, allowing the AI Trading Coach and Analytics to analyze
+  REAL trades instead of only paper trades.
+
+  This feature represents a significant upsell opportunity for a new owner
+  as it bridges the gap between simulation and live trading analysis.
+
+  ACCESS: Roadmap -- not yet implemented.
+
+================================================================================
+PART 4 -- ADMIN GUIDE
+================================================================================
+
+The Admin Dashboard is accessible only to users with the "admin" role.
+All admin actions are protected by Role-Based Access Control (RBAC).
+
+--------------------------------------------------------------------------------
+4.1  Accessing the Admin Dashboard
+--------------------------------------------------------------------------------
+  1. Log in with an account that has the "admin" role.
+  2. You will see an "Admin" link in the navigation bar.
+  3. Click it to enter the Admin Dashboard.
+
+Regular users cannot access the admin panel. Any unauthorized access attempt
+returns a 403 Forbidden error from the API.
+
+--------------------------------------------------------------------------------
+4.2  Dashboard Overview
+--------------------------------------------------------------------------------
+The first screen shows a bird's-eye view of the platform's health:
+
+  - TOTAL USERS      : Total registered user accounts
+  - ACTIVE SUBS      : Total number of paying subscribers (excludes Free/trial)
+  - MRR              : Monthly Recurring Revenue in USD (calculated from
+                       active paid plans: Basic=$12, Premium=$19, Platinum=$28)
+  - USER GROWTH CHART: Bar chart showing new user registrations by month
+  - PLAN DISTRIBUTION: Breakdown of paid users by plan tier
+
+--------------------------------------------------------------------------------
+4.3  User Management
+--------------------------------------------------------------------------------
+Navigate to "Users" in the Admin sidebar.
+
+  VIEWING ALL USERS:
+  A full table of all registered users is displayed, showing username, email,
+  plan, role, and account status.
+
+  EDITING A USER:
+  Click "Edit" on any user row to modify:
+    - Role         : user / admin
+    - Plan         : Free / Basic / Premium / Platinum
+    - Status       : active / suspended
+
+  SUSPENDING A USER:
+  Change the user's status to "suspended" via the Edit action.
+  A suspended user is immediately redirected to the Suspended Page upon
+  login and cannot access any platform features until unsuspended.
+
+  UNSUSPENDING A USER:
+  Change the user's status back to "active" via Edit, or use the dedicated
+  Unsuspend action. The user can log in normally again immediately.
+
+  DELETING A USER (Use with extreme caution):
+  A permanent delete endpoint exists in the backend API. Deleting a user
+  removes their account and all associated data (trades, notifications,
+  theme settings, community memberships). This action is IRREVERSIBLE.
+  The primary recommended disciplinary action is Suspend, not Delete.
+
+  NOTE ON "BANNED" STATUS:
+  A "banned" status value exists as a reference in the database model
+  (models.py), but it is not actively used as a separate workflow in the
+  current admin UI. Suspension is the primary moderation tool.
+
+--------------------------------------------------------------------------------
+4.4  Subscriptions
+--------------------------------------------------------------------------------
+Navigate to "Subscriptions" in the Admin sidebar.
+
+Displays all users currently on a paid plan (Basic, Premium, or Platinum),
+showing their username, plan, billing cycle, and the date they subscribed.
+
+This view is derived from user plan data. For full transaction history and
+billing management, log in to your LemonSqueezy dashboard directly.
+
+--------------------------------------------------------------------------------
+4.5  Learning Modules Management
+--------------------------------------------------------------------------------
+Navigate to "Learning" or "Modules" in the Admin sidebar.
+
+  ADDING A NEW MODULE:
+    1. Click "Add Module".
+    2. Fill in: Title, Description, Content (rich text editor supported),
+       Video URL (optional), and Thumbnail image.
+    3. Set the access level:
+         - FREE    : Module is accessible to ALL users at no cost.
+         - PAID    : Module requires purchase or Premium/Platinum plan.
+    4. If PAID, set the individual module price (e.g., $9.99).
+    5. Click "Save".
+
+  CREATING A BUNDLE:
+    1. Select multiple existing modules.
+    2. Click "Create Bundle".
+    3. Give the bundle a name and set a bundle price (e.g., $24.99 for
+       modules that would cost $40 individually).
+    4. Users can purchase the entire bundle at the discounted price.
+
+  EDITING / DELETING A MODULE:
+  Use the Edit or Delete buttons on any existing module card in the list.
+
+--------------------------------------------------------------------------------
+4.6  Content Moderation
+--------------------------------------------------------------------------------
+Navigate to "Content" or "Posts" in the Admin sidebar.
+
+  Displays all recent posts from all users across the platform, sorted by
+  newest first. As an admin you can:
+
+    - Read the full post content
+    - View who posted it and when
+    - Delete the post immediately if it violates platform rules
+
+  Deleting a post from this panel permanently removes it and all its
+  associated comments from the platform.
+
+--------------------------------------------------------------------------------
+4.7  Reports
+--------------------------------------------------------------------------------
+Navigate to "Reports" in the Admin sidebar.
+
+  When a user reports a post (via the "..." menu on any post), the report
+  appears here. Each report shows:
+    - The reported post content
+    - The reason the user provided
+    - The username of the reporting user
+    - The date/time of the report
+
+  ACTIONS:
+    - DELETE POST  : Remove the reported post from the platform permanently.
+    - DISMISS      : Dismiss the report without taking action on the post.
+                     The report record is removed from the queue.
+
+--------------------------------------------------------------------------------
+4.8  Feedback
+--------------------------------------------------------------------------------
+Navigate to "Feedback" in the Admin sidebar.
+
+  Users can submit general feedback about the platform from the Contact/
+  Feedback form. All submitted feedback appears here, showing the user's
+  email, their message, and the submission date.
+
+  ACTIONS:
+    - DELETE : Remove a feedback entry from the list. The backend DELETE
+               endpoint is confirmed present. Use this to clean up spam
+               or already-actioned feedback.
+
+  NOTE: There is currently no "Reply" function for Feedback entries.
+  To respond to a user's feedback directly, use the Contact Messages
+  section (Section 4.9) or reply manually to their email.
+
+--------------------------------------------------------------------------------
+4.9  Contact Messages
+--------------------------------------------------------------------------------
+Navigate to "Contact" in the Admin sidebar.
+
+  When users submit the "Contact Us" form on the platform, their messages
+  appear here. Each entry shows the sender's name, email, subject, and
+  their full message.
+
+  REPLYING TO A MESSAGE:
+    1. Click "Reply" on a contact message.
+    2. A reply form opens with the recipient email pre-filled.
+    3. Write your subject line and reply message.
+    4. Click "Send Reply".
+    5. The platform sends a real email to the user's inbox via SMTP.
+    6. After the reply is sent successfully, the contact message is
+       automatically deleted from the queue.
+
+  This allows the admin to handle all customer support from within the
+  platform without needing to open a separate email client.
+
+  NOTE ON SUPPORT EMAIL:
+  The current SMTP configuration uses a placeholder/dummy support email.
+  The new owner must update the SMTP credentials in the .env file with
+  a real email account (e.g., support@yourdomain.com) for this feature
+  to function in production.
+
+--------------------------------------------------------------------------------
+4.10  Broadcasts
+--------------------------------------------------------------------------------
+Navigate to "Broadcast" in the Admin sidebar.
+
+  Broadcasts allow the admin to send a global notification to ALL users
+  on the platform simultaneously.
+
+  HOW TO SEND A BROADCAST:
+    1. Click "Send Broadcast".
+    2. Type your announcement message.
+    3. Click "Send".
+
+  The message is instantly delivered as a notification to every registered
+  user's notification panel. All users will see it the next time they open
+  the notification bell. Broadcasts are labeled as "System" notifications.
+
+  USE CASES:
+    - Announcing new features or updates
+    - Alerting users about scheduled maintenance
+    - Promoting a new learning module or community event
+    - Welcoming users during a launch campaign
+
+--------------------------------------------------------------------------------
+4.11  Appeals
+--------------------------------------------------------------------------------
+Navigate to "Appeals" in the Admin sidebar.
+
+  When a user's account is suspended, they have the option to submit an
+  appeal explaining why they believe the suspension was incorrect or
+  requesting reconsideration.
+
+  Each appeal shows:
+    - The suspended user's username and email
+    - Their written appeal message
+    - The date the appeal was submitted
+
+  ACTIONS:
+    - APPROVE : Lifts the suspension. The user's status is set back to
+                "active" and they can log in immediately. The platform
+                sends them a notification that their appeal was approved.
+    - REJECT  : The suspension remains. You can provide a reason which
+                is communicated back to the user via notification.
+
+================================================================================
+PART 5 -- TECHNICAL GUIDE (FOR NEW OWNER / DEVELOPER)
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1  Tech Stack Overview
+--------------------------------------------------------------------------------
+  FRONTEND:
+    - React 19 (with Vite build tool)
+    - Tailwind CSS (with custom neon/glassmorphism utilities)
+    - Recharts (dashboard charts and analytics)
+    - Lightweight Charts (TradingView-style candlestick charts)
+    - Framer Motion (animations)
+    - Socket.io Client (real-time features)
+    - Lucide React (icon library)
+    - React Router DOM v7 (client-side routing)
+    - Axios (HTTP client)
+    - date-fns (date formatting)
+    - DOMPurify (XSS sanitization)
+
+  BACKEND:
+    - FastAPI (Python 3.13) -- high-performance async API framework
+    - SQLModel (ORM built on SQLAlchemy + Pydantic)
+    - Pydantic v2 (data validation)
+    - PyMySQL (MySQL database driver)
+    - python-jose (JWT token handling)
+    - passlib + bcrypt (password hashing)
+    - httpx (async HTTP client for external API calls)
+    - slowapi (rate limiting)
+
+  DATABASE:
+    - MySQL 8.0
+
+  DOMAIN & DNS:
+    - Domain Registrar : Hostinger (https://tradeplanner.my.id)
+    - DNS Management   : Cloudflare (also provides free SSL/TLS)
+
+  CURRENT HOSTING (IMPORTANT NOTE FOR NEW OWNER):
+    The live platform is currently deployed on an Azure Cloud environment
+    that belongs to a company account owned by a friend of the developer.
+    The developer was given access as a courtesy. Because it is a company
+    Azure account, it is NOT possible for the developer to invite or
+    transfer access to any external party -- including the new buyer.
+
+    WHAT THIS MEANS FOR YOU:
+    After acquisition, you MUST provision your own server to deploy the
+    platform. This is straightforward because the entire application is
+    100% Dockerized (see Section 5.4). You can deploy it on:
+      - Your own Microsoft Azure account
+      - Amazon Web Services (AWS EC2 or App Service)
+      - DigitalOcean Droplet ($12-$24/month is sufficient to start)
+      - Any Linux-based VPS (minimum 2GB RAM recommended)
+
+    The platform is completely infrastructure-agnostic. Nothing in the code
+    is tied to Azure specifically.
+
+--------------------------------------------------------------------------------
+5.2  Environment Variables (.env Setup)
+--------------------------------------------------------------------------------
+Copy .env.example to .env and fill in all values before running the platform.
+
+  # Google OAuth (for "Continue with Google" login)
+  GOOGLE_CLIENT_ID=        (from Google Cloud Console)
+  GOOGLE_CLIENT_SECRET=    (from Google Cloud Console)
+
+  # CoinDesk API (for market data features)
+  COIN_DESK_API_KEY=       (from CoinDesk Developer portal)
+
+  # Google Gemini AI (for AI Chatbot / Chart Analysis)
+  GEMINI_API_KEY=          (from Google AI Studio -- aistudio.google.com)
+
+  # Google Gemini AI (separate key for AI Trading Coach)
+  GEMINI_TRADING_COACH_KEY= (can be the same key or a separate project key)
+
+  # JWT Authentication
+  SECRET_KEY=              (generate a long random string, e.g., 64 chars)
+  ALGORITHM=HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+  # CORS & Frontend URL
+  VITE_API_BASE_URL=       (your backend URL, e.g., https://api.yourdomain.com)
+
+  # LemonSqueezy Payment Gateway
+  LEMONSQUEEZY_API_KEY=        (from your LemonSqueezy account)
+  LEMONSQUEEZY_STORE_ID=       (from your LemonSqueezy store)
+  LEMONSQUEEZY_WEBHOOK_SECRET= (set in LemonSqueezy webhook settings)
+
+  # Email / SMTP (for verification emails, password PINs, contact replies)
+  SMTP_SERVER=    (e.g., smtp.sendgrid.net or smtp.gmail.com)
+  SMTP_HOST=      (same as SMTP_SERVER in most configs)
+  SMTP_PORT=      (e.g., 587 for TLS or 465 for SSL)
+  SMTP_USER=      (your SMTP login username or API key username)
+  SMTP_PASSWORD=  (your SMTP password or API key)
+  SUPPORT_EMAIL=  (the "From" address for outbound emails)
+
+  NOTE: The current SUPPORT_EMAIL is a placeholder/dummy address.
+  Replace it with a real email address that you own and control.
+  All user-facing emails (verification links, PINs, contact replies)
+  will be sent from this address.
+
+  # Database
+  DATABASE_URL=mysql+pymysql://USERNAME:PASSWORD@HOST:PORT/DBNAME
+
+--------------------------------------------------------------------------------
+5.3  Running Locally
+--------------------------------------------------------------------------------
+  PREREQUISITES:
+    - Python 3.13+
+    - Node.js 20+ and npm
+    - MySQL 8.0 running locally or via Docker
+
+  STEP 1 -- BACKEND SETUP:
+    cd backend
+    python -m venv venv
+
+    # Activate virtual environment:
+    # Windows:
+    venv\Scripts\activate
+    # macOS/Linux:
+    source venv/bin/activate
+
+    pip install -r requirements.txt
+
+    # Start the backend server:
+    uvicorn app.main:app --reload
+
+    Backend runs at: http://127.0.0.1:8000
+    API Docs (auto-generated): http://127.0.0.1:8000/docs
+
+  STEP 2 -- FRONTEND SETUP:
+    # In a new terminal, from the project root:
+    npm install
+    npm run dev
+
+    Frontend runs at: http://localhost:5173
+
+  STEP 3 -- DATABASE:
+    Create a MySQL database and set the DATABASE_URL in your .env file.
+    The application uses SQLModel which auto-creates tables on first run.
+
+--------------------------------------------------------------------------------
+5.4  Docker Deployment
+--------------------------------------------------------------------------------
+The entire stack is containerized and can be deployed with a single command.
+
+  QUICK START:
+    docker-compose up --build
+
+  SERVICES DEFINED IN docker-compose.yml:
+    - backend : FastAPI application (exposed on port 8080)
+    - db      : MySQL 8.0 database (exposed on port 3306)
+
+  The Dockerfile builds the FastAPI backend into a production container.
+  The entrypoint.sh script handles database initialization on container start.
+
+  FOR PRODUCTION DEPLOYMENT:
+    1. Set all .env variables on your server (or use Docker secrets).
+    2. Update VITE_API_BASE_URL to your public backend domain.
+    3. Build the frontend for production: npm run build
+       The output goes to the /dist folder.
+    4. Serve the /dist folder via Nginx, Caddy, or your chosen web server.
+    5. Run the backend container: docker-compose up -d backend db
+    6. Point your domain DNS (via Cloudflare) to your server IP.
+    7. Cloudflare handles SSL automatically (free).
+
+--------------------------------------------------------------------------------
+5.5  Database
+--------------------------------------------------------------------------------
+  ENGINE   : MySQL 8.0
+  ORM      : SQLModel (built on SQLAlchemy)
+
+  The database schema is defined entirely in:
+    backend/app/models.py
+
+  SQLModel automatically creates all tables on application startup if they
+  do not already exist. No manual migration scripts are required for a
+  fresh deployment.
+
+  KEY TABLES:
+    - user              : All registered user accounts
+    - post              : Home feed and community posts
+    - comment           : Post comments and nested replies
+    - community         : Community definitions and metadata
+    - communitymember   : Community membership join table
+    - notification      : All user notifications
+    - manualtrade       : Paper trade journal entries
+    - feedback          : User-submitted feedback
+    - report            : User content reports
+    - contactmessage    : User contact form submissions
+    - usertheme         : Per-user Appearance Engine settings
+    - learningmodule    : Educational content modules
+    - modulebundle      : Bundles of learning modules
+    - appeal            : Suspended user appeals
+
+--------------------------------------------------------------------------------
+5.6  Security Architecture
+--------------------------------------------------------------------------------
+  JWT AUTHENTICATION:
+    - All protected endpoints require a valid JWT Bearer token.
+    - Tokens expire after 30 minutes (configurable via .env).
+    - Tokens are issued on successful login.
+
+  PASSWORD HASHING:
+    - Passwords are hashed using bcrypt + SHA256 for enhanced security.
+    - Plain-text passwords are NEVER stored in the database.
+
+  EMAIL VERIFICATION (REGISTRATION):
+    - On registration, a unique secure token is generated and emailed.
+    - The user's account is marked "unverified" until the link is clicked.
+    - Unverified accounts are hard-blocked from receiving JWT tokens.
+    - This prevents bots from abusing the 7-day free trial.
+
+  PIN-BASED SENSITIVE UPDATES:
+    - Changing password (from profile) requires a 6-digit PIN sent via email.
+    - The PIN has a 15-minute expiration stored server-side.
+    - This means a session hijacker cannot change credentials without
+      also having access to the user's email inbox.
+
+  RATE LIMITING:
+    - 60 requests per minute per IP address (enforced via slowapi).
+    - Exceeding the limit returns HTTP 429 Too Many Requests.
+
+  CORS:
+    - Configurable allowed origins via the .env file.
+    - Only whitelisted domains can make cross-origin API requests.
+
+  SECURITY HEADERS:
+    - X-Content-Type-Options: nosniff
+    - X-Frame-Options: DENY
+    - X-XSS-Protection: 1; mode=block
+    - Strict-Transport-Security (HSTS)
+
+  SQL INJECTION PREVENTION:
+    - All database queries use SQLModel's parameterized query system.
+    - Raw SQL is only used in specific admin delete operations with
+      explicit parameter binding (no string interpolation).
+
+  ROLE-BASED ACCESS CONTROL (RBAC):
+    - Two roles: "user" and "admin".
+    - Admin-only endpoints are protected by the get_current_admin_user
+      dependency which raises HTTP 403 for non-admin callers.
+
+  DATA SANITIZATION:
+    - User-generated HTML content is sanitized with DOMPurify on the
+      frontend before rendering to prevent XSS attacks.
+
+--------------------------------------------------------------------------------
+5.7  Payment Integration (LemonSqueezy / Stripe)
+--------------------------------------------------------------------------------
+  CURRENT PROVIDER: LemonSqueezy
+
+  HOW IT WORKS:
+    1. User clicks "Upgrade" and is redirected to a LemonSqueezy
+       checkout URL (generated by the backend).
+    2. User completes payment on LemonSqueezy's hosted checkout page.
+    3. LemonSqueezy sends a signed webhook POST request to:
+           POST /api/payment/webhook
+    4. The backend verifies the webhook signature using the
+       LEMONSQUEEZY_WEBHOOK_SECRET from .env.
+    5. On a successful "order_created" or "subscription_created" event,
+       the backend automatically updates the user's plan in the database.
+    6. The user's new features are available on their next page load.
+
+  WEBHOOK ENDPOINT:
+    File: backend/app/routers/payment.py
+    Route: POST /api/payment/webhook
+
+  SWITCHING TO STRIPE (FOR NEW OWNER):
+  The webhook handler is isolated in payment.py. A developer can replace
+  LemonSqueezy with Stripe by:
+    1. Replacing the LemonSqueezy SDK calls with the Stripe Python SDK.
+    2. Updating the webhook signature verification logic (Stripe uses
+       stripe.Webhook.construct_event() instead of LemonSqueezy's method).
+    3. Replacing the .env keys with Stripe's API key and webhook secret.
+    4. Updating the checkout URL generation logic to use Stripe's
+       Payment Links or Checkout Sessions API.
+  The rest of the platform (plan enforcement, user model) requires no changes.
+
+--------------------------------------------------------------------------------
+5.8  Test Coverage
+--------------------------------------------------------------------------------
+  HOW TO RUN:
+    python -m pytest tests/
+
+  CURRENT RESULTS (as of June 2026):
+    80 tests | 0 failed | 4 warnings
+    Total Coverage: 92.01%
+    Minimum Threshold Enforced: 90%
+
+  COVERAGE BREAKDOWN:
+    backend\app\auth.py          100%
+    backend\app\database.py       73%
+    backend\app\dependencies.py   85%
+    backend\app\engine.py         77%
+    backend\app\models.py         99%
+    backend\app\utils.py         100%
+    TOTAL                         92%
+
+  The test suite covers model validation, authentication logic, simulation
+  engine calculations, utility functions, and dependency injection.
+
+--------------------------------------------------------------------------------
+5.9  White Label & Rebranding Guide
+--------------------------------------------------------------------------------
+After acquiring the platform, follow these steps to fully rebrand it:
+
+  STEP 1 -- CHANGE THE PLATFORM NAME:
+    Files to update:
+      - index.html                 : Update <title> and meta description tags
+      - src/components/LandingPage.jsx : Update all brand name text references
+      - README.md                  : Update the project name and description
+      - public/                    : Replace logo and favicon files
+
+  STEP 2 -- CHANGE THE DOMAIN:
+    1. Purchase your new domain (any registrar).
+    2. Transfer or set up DNS on Cloudflare pointing to your server IP.
+    3. Update VITE_API_BASE_URL in your .env to your new backend domain.
+    4. Update the CORS allowed origins in the backend to your new domain.
+    5. Update Google OAuth redirect URIs in the Google Cloud Console.
+
+  STEP 3 -- RESTYLE THE UI:
+    - tailwind.config.js : Update the base color palette and font config.
+    - src/index.css      : Update CSS custom properties (--neon-color, etc.)
+    - The Cyberpunk aesthetic is entirely CSS-driven. Changing the color
+      variables is sufficient for a complete visual rebrand.
+
+  STEP 4 -- REPLACE API KEYS:
+    Replace all keys in your .env file with keys from your own accounts:
+      - Google Cloud Console (OAuth + Gemini API)
+      - LemonSqueezy or Stripe (payments)
+      - Your SMTP provider (SendGrid, Mailgun, Gmail, etc.)
+      - Update SUPPORT_EMAIL to your real support email address
+
+  STEP 5 -- UPDATE LEGAL PAGES:
+    - src/components/LegalPages.jsx
+    Update: company name, jurisdiction, contact email, effective dates.
+
+  STEP 6 -- SET YOUR OWN PRICES:
+    Log in to your LemonSqueezy (or Stripe) account and create new
+    products/price points to match whatever subscription pricing you
+    decide to charge your users.
+
+================================================================================
+END OF MANUAL
+================================================================================
+
+Trade Income Planner (TIP) -- Complete Platform Manual
+Version 1.0 | June 2026
+Domain: https://tradeplanner.my.id
+
+This document is provided as part of the full platform acquisition.
+The new owner has complete rights to modify, extend, or replace this
+manual as they see fit.
+
+================================================================================
+
