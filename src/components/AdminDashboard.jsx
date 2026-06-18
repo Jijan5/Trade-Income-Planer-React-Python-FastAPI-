@@ -157,6 +157,23 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleDeleteFeedback = async (feedbackId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Delete this feedback entry? This action cannot be undone.",
+      type: "danger",
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/feedbacks/${feedbackId}`);
+          setFeedbacks(feedbacks.filter((f) => f.id !== feedbackId));
+          showFlash("Feedback deleted.", "success");
+        } catch (e) {
+          showFlash("Failed to delete feedback.", "error");
+        }
+      },
+    });
+  };
+
   const handleDismissReport = async (reportId) => {
     try {
       await api.delete(`/admin/reports/${reportId}`);
@@ -763,15 +780,23 @@ const AdminDashboard = () => {
               feedbacks.map((fb, idx) => (
                 <div
                   key={fb.id || idx}
-                  className="bg-[#030308]/60 p-5 rounded-xl border border-[#00cfff]/10 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+                  className="bg-[#030308]/60 p-5 rounded-xl border border-[#00cfff]/10 shadow-[0_0_10px_rgba(0,0,0,0.5)] hover:border-[#00cfff]/30 transition-all group"
                 >
-                  <div className="flex justify-between mb-3 border-b border-[#00cfff]/10 pb-2">
+                  <div className="flex justify-between items-start mb-3 border-b border-[#00cfff]/10 pb-2">
                     <span className="text-[#00cfff] font-extrabold text-[11px] font-mono tracking-widest drop-shadow-[0_0_3px_#00cfff]">
                       {fb.email}
                     </span>
-                    <span className="text-[#00cfff]/50 text-[10px] font-mono uppercase tracking-widest">
-                      {fb.date || new Date(fb.created_at).toLocaleDateString()}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[#00cfff]/50 text-[10px] font-mono uppercase tracking-widest">
+                        {fb.date || new Date(fb.created_at).toLocaleDateString()}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteFeedback(fb.id)}
+                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-white text-[9px] font-extrabold uppercase tracking-widest border border-red-500/30 bg-red-900/20 px-3 py-1 rounded-lg transition-all shadow-[0_0_8px_rgba(239,68,68,0.1)] hover:bg-red-600 hover:border-red-500"
+                      >
+                        DELETE
+                      </button>
+                    </div>
                   </div>
                   <p className="text-gray-300 font-medium leading-relaxed text-sm">{fb.message}</p>
                 </div>
@@ -1001,6 +1026,7 @@ const AdminDashboard = () => {
                   >
                     <option value="active">ACTIVE</option>
                     <option value="suspended">SUSPENDED</option>
+                    <option value="banned">BANNED (Permanent)</option>
                   </select>
                 </div>
                 <div>
