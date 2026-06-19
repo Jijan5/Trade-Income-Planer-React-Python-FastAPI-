@@ -32,53 +32,66 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 # Security: Rate Limiting Middleware
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """In-memory rate limiting middleware. Applies a global limit to all routes
-    and a much stricter limit specifically to sensitive auth endpoints."""
-    def __init__(self, app, max_requests: int = 100, window_seconds: int = 60):
+    """Per-IP rate limiting. Two tiers:
+    - Auth endpoints (/api/token, /api/register, /api/forgot-password):
+      max 10 requests per 60s to prevent brute-force.
+    - All other API endpoints: configurable via .env (default 300/60s).
+    - Static files and health checks are always exempt.
+    """
+    def __init__(self, app, max_requests: int = 300, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests: dict = {}
+        self.requests: dict = {}       # general request log
+        self.auth_requests: dict = {}  # strict auth log
         self._last_cleanup = time.time()
 
+    # Endpoints that need brute-force protection
+    AUTH_ENDPOINTS = ("/api/token", "/api/register", "/api/forgot-password", "/api/verify-reset-pin")
+    AUTH_MAX = 10   # per window
+    EXEMPT_PATHS = ("/health", "/docs", "/openapi.json", "/redoc", "/favicon.ico")
+    EXEMPT_PREFIXES = ("/static/", "/auth/")
+
     async def dispatch(self, request: Request, call_next):
-        # Skip rate limiting for OPTIONS preflight requests (must reach CORSMiddleware)
+        # Always pass through OPTIONS (CORS preflight) and static/health
         if request.method == "OPTIONS":
             return await call_next(request)
-
-        # Skip rate limiting for health checks, docs, static assets
-        if request.url.path in ["/", "/health", "/docs", "/openapi.json", "/redoc"] \
-                or request.url.path.startswith(('/auth', '/api', '/static')):
+        path = request.url.path
+        if path in self.EXEMPT_PATHS or any(path.startswith(p) for p in self.EXEMPT_PREFIXES):
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "unknown"
         current_time = time.time()
 
-        # Periodic cleanup to prevent unbounded memory growth
-        if current_time - self._last_cleanup > 300:  # every 5 minutes
+        # Periodic cleanup to prevent unbounded memory growth (every 5 min)
+        if current_time - self._last_cleanup > 300:
             cutoff = current_time - self.window_seconds
-            self.requests = {
-                ip: times for ip, times in self.requests.items()
-                if any(t > cutoff for t in times)
-            }
+            self.requests = {ip: [t for t in times if t > cutoff] for ip, times in self.requests.items() if any(t > cutoff for t in times)}
+            self.auth_requests = {ip: [t for t in times if t > cutoff] for ip, times in self.auth_requests.items() if any(t > cutoff for t in times)}
             self._last_cleanup = current_time
 
-        if client_ip not in self.requests:
-            self.requests[client_ip] = []
+        # --- Strict auth rate limit ---
+        if path in self.AUTH_ENDPOINTS:
+            bucket = self.auth_requests.setdefault(client_ip, [])
+            bucket[:] = [t for t in bucket if current_time - t < self.window_seconds]
+            if len(bucket) >= self.AUTH_MAX:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too many attempts. Please wait before trying again."},
+                    headers={"Retry-After": str(self.window_seconds)}
+                )
+            bucket.append(current_time)
 
-        self.requests[client_ip] = [
-            t for t in self.requests[client_ip]
-            if current_time - t < self.window_seconds
-        ]
-
-        if len(self.requests[client_ip]) >= self.max_requests:
+        # --- General API rate limit ---
+        bucket = self.requests.setdefault(client_ip, [])
+        bucket[:] = [t for t in bucket if current_time - t < self.window_seconds]
+        if len(bucket) >= self.max_requests:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Please try again later."},
                 headers={"Retry-After": str(self.window_seconds)}
             )
-
-        self.requests[client_ip].append(current_time)
+        bucket.append(current_time)
         return await call_next(request)
 
 # Setup CORS - Restricted to allowed origins only
@@ -91,12 +104,14 @@ ALLOWED_ORIGINS = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
 # So we register them in the opposite order:
 
 # 1. Add configurable rate limiting (runs last in registration = first on request)
-RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "100"))
+RATE_LIMIT_REQUESTS = int(os.getenv("RATE_LIMIT_REQUESTS", "300"))
 RATE_LIMIT_WINDOW = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 app.add_middleware(RateLimitMiddleware, max_requests=RATE_LIMIT_REQUESTS, window_seconds=RATE_LIMIT_WINDOW)
 
 # 2. SessionMiddleware is required by Authlib for OAuth2 state/nonce
-_SESSION_SECRET = os.getenv("SECRET_KEY", "changeme-use-a-strong-random-secret")
+_SESSION_SECRET = os.getenv("SECRET_KEY")
+if not _SESSION_SECRET:
+    raise RuntimeError("SECRET_KEY is not set in .env. This is required for JWT and session security.")
 app.add_middleware(SessionMiddleware, secret_key=_SESSION_SECRET)
 
 # 3. Add security headers middleware

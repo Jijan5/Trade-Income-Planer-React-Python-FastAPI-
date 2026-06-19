@@ -26,6 +26,11 @@ services:
       - .env
     environment:
       - MYSQL_SERVER=db
+      - WEB_CONCURRENCY=8
+      - RATE_LIMIT_REQUESTS=300
+      - RATE_LIMIT_WINDOW=60
+      - DB_POOL_SIZE=50
+      - DB_MAX_OVERFLOW=100
     depends_on:
       db:
         condition: service_healthy
@@ -40,10 +45,13 @@ services:
     image: mysql:8.4
     command: >
       --default-authentication-plugin=mysql_native_password
-      --max_connections=300
+      --max_connections=500
       --innodb_buffer_pool_size=512M
       --innodb_log_file_size=128M
       --table_open_cache=4000
+      --thread_cache_size=50
+      --wait_timeout=600
+      --interactive_timeout=600
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DB}

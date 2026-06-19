@@ -12,19 +12,25 @@ if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set. Please configure it in your .env file.")
 
 # ── Connection pool tuned for high concurrency ─────────────────────────────
-# pool_size     : persistent connections always open
+# pool_size     : persistent connections always open (base load)
 # max_overflow  : extra burst connections allowed under spike load
-# pool_pre_ping : drop stale connections before use (prevents "MySQL gone away")
-# pool_recycle  : recycle connections every 30 min (avoids MySQL 8h timeout)
-# pool_timeout  : raise immediately when pool exhausted instead of hanging
+#                 Total max = pool_size + max_overflow
+# pool_pre_ping : validate connection before use (prevents "MySQL has gone away")
+# pool_recycle  : recycle connections every 30 min (avoids MySQL 8h idle timeout)
+# pool_timeout  : how long to wait for a free connection before raising an error
+# read_timeout  : abort a stalled query after N seconds (prevents "stuck" requests)
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"connect_timeout": 10},
-    pool_size=int(os.getenv("DB_POOL_SIZE", "20")),
-    max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "40")),
+    connect_args={
+        "connect_timeout": 10,
+        "read_timeout": 30,
+        "write_timeout": 30,
+    },
+    pool_size=int(os.getenv("DB_POOL_SIZE", "50")),
+    max_overflow=int(os.getenv("DB_MAX_OVERFLOW", "100")),
     pool_pre_ping=True,
     pool_recycle=1800,
-    pool_timeout=10,
+    pool_timeout=30,
     echo=False,
 )
 
