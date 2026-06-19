@@ -4,8 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Construct DATABASE_URL from .env
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:@localhost:3306/db-trade-planer")
+# DATABASE_URL must be set in your .env file.
+# Format: mysql+pymysql://USER:PASSWORD@HOST:PORT/DB_NAME
+# See .env.example for a template.
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set. Please configure it in your .env file.")
 
 # ── Connection pool tuned for high concurrency ─────────────────────────────
 # pool_size     : persistent connections always open

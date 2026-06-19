@@ -87,6 +87,13 @@ TABLE OF CONTENTS
     5.8  Test Coverage
     5.9  White Label & Rebranding Guide
 
+  PART 6 — ADVANCED TECHNICAL REFERENCE
+    6.1  System Design
+    6.2  API Design
+    6.3  API Security
+    6.4  Caching Strategy
+    6.5  Simulation & Algorithm Design
+
 ================================================================================
 PART 1 — INTRODUCTION
 ================================================================================
@@ -345,8 +352,18 @@ PART 3 — PLATFORM FEATURES (USER GUIDE)
 3.1  Strategy Simulator
 --------------------------------------------------------------------------------
 The Strategy Simulator lets you test trading strategies using mathematical
-simulation without risking real capital. Real-time asset prices are fetched
-via TradingView integration.
+simulation without risking real capital.
+
+  MARKET DATA SOURCES USED BY THIS FEATURE:
+    - LIVE PRICE (for simulation input): Fetched from Yahoo Finance (yFinance)
+      via the backend API endpoint GET /api/price/{symbol}. This is the
+      current market price injected as the starting price for your simulation.
+    - CANDLESTICK CHART (visual only): The full interactive candlestick chart
+      displayed alongside the simulator is a TradingView Advanced Chart
+      Embedded Widget. This widget loads directly in your browser from
+      TradingView's CDN (s3.tradingview.com). It requires no API key and
+      makes no call to the platform's backend. It supports crypto (Binance),
+      forex (OANDA), and commodities (Gold/Silver/Oil).
 
   SETTING UP A SIMULATION:
   Fill in the following parameters:
@@ -1024,7 +1041,11 @@ PART 5 -- TECHNICAL GUIDE (FOR NEW OWNER / DEVELOPER)
     - React 19 (with Vite build tool)
     - Tailwind CSS (with custom neon/glassmorphism utilities)
     - Recharts (dashboard charts and analytics)
-    - Lightweight Charts (TradingView-style candlestick charts)
+    - Lightweight Charts (npm library for custom candlestick charts)
+    - TradingView Advanced Chart Widget (free embedded browser widget,
+      no API key required -- used in Strategy Simulator)
+    - TradingView Ticker Tape Widget (free embedded browser widget,
+      no API key required -- used in Explore page)
     - Framer Motion (animations)
     - Socket.io Client (real-time features)
     - Lucide React (icon library)
@@ -1354,6 +1375,341 @@ After acquiring the platform, follow these steps to fully rebrand it:
     Log in to your LemonSqueezy (or Stripe) account and create new
     products/price points to match whatever subscription pricing you
     decide to charge your users.
+
+================================================================================
+PART 6 -- ADVANCED TECHNICAL REFERENCE
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1  System Design
+--------------------------------------------------------------------------------
+The platform follows a classic 3-tier web architecture with a clear separation
+between the presentation layer, application layer, and data layer.
+
+  ARCHITECTURE OVERVIEW:
+
+    [Browser / React SPA]
+           |
+           | HTTPS (Cloudflare SSL)
+           |
+    [Nginx / Caddy - Static File Server]
+       Serves the compiled React /dist build
+           |
+           | Reverse Proxy (/api/*)
+           |
+    [FastAPI Backend (Docker Container)]
+       - REST API on port 8080
+       - JWT Authentication middleware
+       - Rate Limiting middleware (slowapi)
+       - CORS middleware
+       - Security Headers middleware
+           |
+           |------ [MySQL 8.4.3 Database]
+           |          All persistent data stored here.
+           |
+           |------ [Google Gemini AI API]
+           |          Used by: AI Chatbot, Chart Analysis,
+           |          AI Trading Coach
+           |
+           |------ [yFinance / Yahoo Finance API]
+           |          Used by: Fetching the live current price
+           |          number for simulation calculations.
+           |          Called via GET /api/price/{symbol}
+           |
+           |------ [Binance Public API]
+           |          Used by: Fetching OHLC candlestick data
+           |          for the kline chart view.
+           |          Called via GET /api/klines/{symbol}
+           |
+           |------ [LemonSqueezy API]
+           |          Used by: Subscription checkout and
+           |          webhook-based plan upgrades
+           |
+           |------ [SMTP / Email Provider]
+           |          Used by: Email verification,
+           |          password PINs, contact replies
+           |
+    [User's Browser -- Direct CDN Connections (no backend involved)]
+           |
+           |------ [TradingView Advanced Chart Widget]
+           |          Loaded from: s3.tradingview.com
+           |          No API key required. Free embedded widget.
+           |          Used by: Strategy Simulator candlestick chart.
+           |          Supports: Crypto (Binance), Forex (OANDA),
+           |          Commodities (Gold, Silver, Oil).
+           |
+           |------ [TradingView Ticker Tape Widget]
+                      Loaded from: s3.tradingview.com
+                      No API key required. Free embedded widget.
+                      Used by: Explore page price ticker bar.
+
+  REQUEST FLOW (AUTHENTICATED):
+    1. User's browser sends request with JWT Bearer token in header.
+    2. FastAPI's dependency injection runs get_current_user():
+       - Decodes and validates the JWT.
+       - Looks up the user in the database.
+       - Auto-downgrades plan if subscription has expired.
+    3. If the route requires active status, get_current_active_user()
+       checks that status == "active" (blocks suspended/banned users).
+    4. If the route is admin-only, get_current_admin_user()
+       checks that role == "admin" (blocks regular users).
+    5. The route handler executes and returns a JSON response.
+
+  MULTI-TENANCY:
+    The platform has a lightweight multi-tenancy system built in.
+    Every database record (users, posts, communities, etc.) is tagged
+    with a tenant_id. All database queries are scoped to the current
+    tenant, derived from the X-Tenant-Domain request header.
+    This means the same codebase can serve multiple brands/domains
+    from a single deployment by simply adding a new Tenant row.
+
+--------------------------------------------------------------------------------
+6.2  API Design
+--------------------------------------------------------------------------------
+The backend API follows REST conventions throughout.
+
+  BASE URL: https://api.yourdomain.com/api
+
+  CONVENTIONS:
+    - All endpoints use JSON request and response bodies.
+    - Authentication is via JWT Bearer token in the Authorization header.
+    - HTTP methods follow REST semantics:
+        GET    -> Read data (no side effects)
+        POST   -> Create a new resource or trigger an action
+        PUT    -> Update an existing resource (full or partial update)
+        DELETE -> Remove a resource permanently
+    - Successful responses return HTTP 200 or 201.
+    - Client errors return 4xx codes with a JSON detail message.
+    - Server errors return HTTP 500.
+
+  ROUTER MODULES (backend/app/routers/):
+    auth.py         -> /api/token, /api/register, /api/verify-email,
+                       /api/forgot-password, /api/verify-pin,
+                       /api/reset-password, /api/auth/google
+    users.py        -> /api/users/me, /api/users/{id},
+                       /api/users/search, /api/users/avatar
+    posts.py        -> /api/posts, /api/posts/{id},
+                       /api/posts/{id}/react, /api/posts/{id}/report,
+                       /api/comments, /api/comments/{id}
+    communities.py  -> /api/communities, /api/communities/{id},
+                       /api/communities/{id}/join,
+                       /api/communities/{id}/posts
+    simulation.py   -> /api/simulate, /api/plan,
+                       /api/analyze/health,
+                       /api/manual-trades,
+                       /api/price/{symbol}, /api/klines/{symbol},
+                       /api/trading-preferences
+    admin.py        -> /api/admin/users, /api/admin/stats,
+                       /api/admin/feedbacks, /api/admin/reports,
+                       /api/admin/broadcast,
+                       /api/admin/contact-messages,
+                       /api/admin/learning/modules,
+                       /api/admin/learning/bundles
+    learning.py     -> /api/learning/modules, /api/learning/bundles,
+                       /api/learning/modules/{id}/purchase
+    payment.py      -> /api/payment/checkout, /api/payment/webhook
+    market_data.py  -> /api/market/news
+    general.py      -> /api/feedback, /api/contact,
+                       /api/status, /api/notifications,
+                       /api/appearance
+
+  API DOCUMENTATION:
+    FastAPI auto-generates interactive API documentation from the code.
+    While the server is running, visit:
+      http://localhost:8000/docs  (Swagger UI -- interactive)
+      http://localhost:8000/redoc (ReDoc -- read-only, clean format)
+
+--------------------------------------------------------------------------------
+6.3  API Security
+--------------------------------------------------------------------------------
+The platform implements security in multiple layers:
+
+  LAYER 1 -- TRANSPORT SECURITY:
+    - All traffic is served over HTTPS enforced by Cloudflare.
+    - HSTS header (Strict-Transport-Security) prevents downgrade attacks.
+
+  LAYER 2 -- RATE LIMITING:
+    - Global limit of 100 requests per 60-second window per IP address.
+    - Implemented via a custom RateLimitMiddleware in main.py.
+    - Returns HTTP 429 with a Retry-After header when exceeded.
+    - Auth endpoints (/api/token, /api/register) are subject to the
+      same global limit, which effectively throttles brute-force attacks.
+
+  LAYER 3 -- AUTHENTICATION:
+    - JWT (JSON Web Tokens) signed with HS256 and a strong SECRET_KEY.
+    - Tokens expire after 30 minutes (configurable via .env).
+    - All protected routes require a valid non-expired token.
+    - Unverified accounts (email not confirmed) cannot receive tokens.
+
+  LAYER 4 -- AUTHORIZATION (RBAC):
+    - Three dependency guards enforce access control:
+        get_current_user()        -> Requires valid JWT only.
+        get_current_active_user() -> Requires status == "active".
+        get_current_admin_user()  -> Requires role == "admin".
+    - All admin routes use get_current_admin_user().
+    - All user-facing write operations use get_current_active_user().
+
+  LAYER 5 -- DATA VALIDATION:
+    - All request bodies are validated by Pydantic v2 models.
+    - Invalid data types, missing required fields, or out-of-range
+      values are rejected automatically with HTTP 422 before the
+      route handler even executes.
+
+  LAYER 6 -- DATABASE SECURITY:
+    - All queries use SQLModel's parameterized ORM system.
+    - Raw SQL is only used in the delete_user cascade (admin.py) and
+      uses explicit bound parameters, never string interpolation.
+      This fully prevents SQL injection.
+
+  LAYER 7 -- WEBHOOK SECURITY:
+    - LemonSqueezy webhooks are verified using HMAC signature
+      validation with the LEMONSQUEEZY_WEBHOOK_SECRET.
+    - Requests with invalid signatures are rejected with HTTP 400.
+
+  LAYER 8 -- XSS PREVENTION:
+    - User-generated HTML content is sanitized with DOMPurify
+      on the frontend before rendering.
+    - X-XSS-Protection and X-Content-Type-Options headers are
+      set on all responses.
+
+  LAYER 9 -- CLICKJACKING PREVENTION:
+    - X-Frame-Options: DENY prevents the platform from being
+      embedded in an iframe on another domain.
+
+--------------------------------------------------------------------------------
+6.4  Caching Strategy
+--------------------------------------------------------------------------------
+  CURRENT IMPLEMENTATION: In-Memory Price Cache
+
+  The only caching currently implemented is a lightweight in-memory
+  cache for market price data in backend/app/engine.py:
+
+    _price_cache = {}       # Dictionary: {symbol: (data, timestamp)}
+    _CACHE_DURATION = 30    # seconds
+
+  HOW IT WORKS:
+    When a request comes in for a market price (e.g., BTC-USD):
+    1. The engine checks if the symbol exists in _price_cache.
+    2. If found AND the timestamp is less than 30 seconds old,
+       the cached price is returned immediately (no external API call).
+    3. If the cache is stale or missing, yFinance is called to fetch
+       the live price, the result is stored in the cache, and
+       the price is returned.
+
+  BENEFIT:
+    This prevents hammering the yFinance/Yahoo Finance API when
+    multiple users are running simulations simultaneously. Without
+    this cache, each simulation start would trigger an external
+    HTTP call, causing latency and potential rate limiting.
+
+  SCOPE:
+    The cache is per-process and is cleared when the backend
+    container restarts. It is NOT shared across multiple backend
+    instances (i.e., not suitable for horizontal scaling as-is).
+
+  FUTURE OPPORTUNITY FOR NEW OWNER:
+    To scale the platform for high traffic, replace this in-memory
+    cache with a Redis instance. This would allow:
+      - Sharing cache across multiple backend containers
+      - Caching database query results (e.g., popular posts)
+      - Session storage for more stateless backends
+      - Rate limiting state shared across instances
+
+--------------------------------------------------------------------------------
+6.5  Simulation & Algorithm Design
+--------------------------------------------------------------------------------
+The core of the platform's value proposition is the simulation engine
+located in backend/app/engine.py. It implements two distinct
+algorithms that work together.
+
+  ALGORITHM 1: DETERMINISTIC PROJECTION
+  (Main equity curve shown to the user)
+
+  Purpose:
+    Produce a single, representative equity curve based on the
+    user's exact parameters. This is the "expected path" chart.
+
+  How it works:
+    Step 1: Calculate total number of trades (days x trades_per_day).
+    Step 2: Distribute wins and losses according to the win_rate:
+              wins_needed  = total_trades * win_rate
+              losses_needed = total_trades - wins_needed
+    Step 3: Create a list of [True, True, ..., False, False, ...]
+            outcomes and shuffle it randomly. This gives a realistic
+            distribution while keeping the exact win rate.
+    Step 4: Iterate through each trade in order:
+              - If risk_type = "dynamic": risk = current_balance * risk_%
+              - If risk_type = "fixed":   risk = initial_balance * risk_%
+              - WIN:  balance += (risk * RR_ratio) - fees
+              - LOSS: balance -= risk + fees
+    Step 5: If balance drops below 5% of starting capital,
+            it is treated as "ruin" and the simulation stops.
+    Step 6: Day-by-day equity values are logged and returned
+            as the main chart data.
+
+  Precision:
+    Python's Decimal module with 28-digit precision is used for all
+    monetary calculations to avoid floating-point rounding errors.
+
+  ALGORITHM 2: MONTE CARLO SIMULATION
+  (Statistical range of outcomes)
+
+  Purpose:
+    Run 500 independent randomized simulations using the same
+    parameters to produce a probability distribution of outcomes.
+    This shows the user the RANGE of what could happen, not just
+    one specific path.
+
+  How it works:
+    Step 1: Run 500 iterations. In each iteration:
+              - For each trade, use random.random() < win_rate
+                to randomly decide win or loss. This is pure
+                probability — each trade is independent.
+              - Apply the same risk/reward math as above.
+              - Track the maximum drawdown in this iteration.
+              - If balance drops below 5% of start, mark as ruin.
+    Step 2: Collect all 500 final balances and sort them.
+    Step 3: Extract key statistics:
+              Worst Case  = bottom 5th percentile  (5% of runs)
+              Median      = middle value            (50% of runs)
+              Best Case   = top 95th percentile     (95% of runs)
+              Risk of Ruin = (ruin_count / 500) * 100%
+
+  EXPECTANCY FORMULA:
+    The engine also calculates the mathematical expectancy of the
+    strategy — the average expected profit per dollar risked:
+
+      Expectancy = (risk * RR * win_rate) - (risk * (1 - win_rate)) - fees
+
+    A positive expectancy means the strategy has an edge over time.
+    A negative expectancy means the strategy loses money long-term
+    regardless of short-term luck.
+
+  GOAL PLANNER ALGORITHM:
+    Reverse-engineers the required monthly return using compound
+    interest math:
+
+      required_growth = (target / initial) ^ (1 / months) - 1
+
+    The result is then classified into a feasibility tier:
+      > 50% per month : "Very Unlikely"
+      > 20% per month : "Ambitious"
+      > 10% per month : "Challenging"
+      <= 10% per month: "Realistic"
+
+  AI TRADING COACH ALGORITHM:
+    The AI Coach uses Google Gemini 2.5 Flash to analyze a user's
+    trade history. The system sends a structured prompt containing:
+      - Total trades and win rate
+      - PnL, balance, and risk amount for each trade
+    The AI returns a JSON object with scores (0-100) for:
+      - Overall Score
+      - Risk Management Score
+      - Emotional Control Score (detects revenge trading patterns)
+      - System Adherence Score
+    A rule-based fallback engine runs if no Gemini key is configured,
+    detecting revenge trading by checking if position size increased
+    by more than 20% after a losing trade.
 
 ================================================================================
 END OF MANUAL
