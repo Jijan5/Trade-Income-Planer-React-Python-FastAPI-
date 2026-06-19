@@ -62,22 +62,21 @@ class TestGetCurrentUser:
             assert "User not found" in exc_info.value.detail
 
     @pytest.mark.asyncio
-    async def test_tenant_not_active(self, mock_session, sample_user):
-        """Test when tenant is not active."""
+    async def test_tenant_mismatch(self, mock_session, sample_user):
+        """Test when token tenant_id does not match user's actual tenant_id."""
         with patch('backend.app.dependencies.decode_access_token') as mock_decode:
+            # Token says tenant is 1
             mock_decode.return_value = {"sub": "testuser", "tenant_id": 1}
             
-            # Mock user query - return user first
+            # User in DB belongs to tenant 2
+            sample_user.tenant_id = 2
             mock_session.exec.return_value.first.return_value = sample_user
-            
-            # Second call for tenant returns None (inactive tenant)
-            mock_session.exec.return_value.first.side_effect = [sample_user, None]
             
             with pytest.raises(HTTPException) as exc_info:
                 await get_current_user(token="valid_token", session=mock_session)
             
-            # The exact error depends on implementation - may be 401 or 403
-            assert exc_info.value.status_code in [401, 403]
+            assert exc_info.value.status_code == 403
+            assert "Tenant mismatch" in exc_info.value.detail
 
 
 class TestGetCurrentAdminUser:

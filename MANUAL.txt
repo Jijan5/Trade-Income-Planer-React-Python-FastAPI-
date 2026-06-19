@@ -1320,7 +1320,7 @@ The entire stack is containerized and can be deployed with a single command.
 
   CURRENT RESULTS (as of June 2026):
     80 tests | 0 failed | 4 warnings
-    Total Coverage: 92.01%
+    Total Coverage: 91.82%
     Minimum Threshold Enforced: 90%
 
   COVERAGE BREAKDOWN:

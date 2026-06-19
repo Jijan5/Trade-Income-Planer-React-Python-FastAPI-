@@ -343,22 +343,22 @@ Payment is processed securely via **LemonSqueezy**. All plan upgrades are handle
 python -m pytest tests/
 ```
 
-### Test Coverage — **92.01%** ✅
+### Test Coverage — **91.82%** ✅
 
 The project enforces a minimum coverage threshold of **90%**. Current results (80 tests, all passing):
 
 ```
-Name                          Stmts   Miss  Cover
+Name                          Stmts   Miss  Cover   Missing
 -----------------------------------------------------------
 backend\app\auth.py              35      0   100%
-backend\app\database.py          11      3    73%
-backend\app\dependencies.py      48      7    85%
-backend\app\engine.py           200     46    77%
-backend\app\models.py           479      7    99%
+backend\app\database.py          13      4    69%   12, 38, 41-42
+backend\app\dependencies.py      49      8    84%   17, 21, 38-42, 72
+backend\app\engine.py           200     46    77%   86, 99, 118, 145-146, 209-210, 218-220, 229, 231, 233, 236-237, 239, 243-244, 252-256, 322-412
+backend\app\models.py           483      7    99%   216-222
 backend\app\utils.py             15      0   100%
 -----------------------------------------------------------
-TOTAL                           788     63    92%
-Required test coverage of 90% reached. Total coverage: 92.01%
+TOTAL                           795     65    92%
+Required test coverage of 90% reached. Total coverage: 91.82%
 ```
 
 ## 📄 License
