@@ -1,17 +1,76 @@
+# =============================================================================
+# cloudbuild.yaml — CI/CD Pipeline Template
+# =============================================================================
+# This file is a TEMPLATE for Google Cloud Build.
+# Replace all ${_PLACEHOLDER} values with your own GCP project details.
+#
+# REQUIRED SUBSTITUTIONS (set in Cloud Build trigger settings):
+#   _GCP_PROJECT_ID  : Your GCP project ID (e.g. my-project-123456)
+#   _REGION          : GCP region (e.g. asia-southeast1, us-central1)
+#   _SERVICE_NAME    : Cloud Run service name (e.g. trade-income-planner)
+#   _REPO_NAME       : Artifact Registry repo name (e.g. myrepo)
+#
+# HOW TO USE:
+#   1. Create an Artifact Registry Docker repository in your GCP project.
+#   2. Create a Cloud Build trigger linked to your GitHub repo.
+#   3. Set the substitution variables above in the trigger settings.
+#   4. Push to main branch to trigger a build.
+#
+# ALTERNATIVE: The recommended deployment method is Docker on any VM.
+#   See docker-compose.yml and MANUAL.txt (Section 5.4) for instructions.
+# =============================================================================
+
+substitutions:
+  _GCP_PROJECT_ID: "YOUR_GCP_PROJECT_ID"
+  _REGION: "asia-southeast1"
+  _SERVICE_NAME: "trade-income-planner"
+  _REPO_NAME: "YOUR_ARTIFACT_REGISTRY_REPO_NAME"
+
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [build, '-t', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planner:$COMMIT_SHA', '.']
+  # Step 1: Build the Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - build
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:latest"
+      - "."
 
-  - name: 'gcr.io/cloud-builders/docker'
-    args: [push, 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planner:$COMMIT_SHA']
+  # Step 2: Push image to Artifact Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - push
+      - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
 
-  - name: 'gcr.io/cloud-builders/gcloud'
+  # Step 3: Deploy to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
     entrypoint: gcloud
-    args: [run, 'deploy', 'trade-income-planner', '--image', 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planner:$COMMIT_SHA', '--region', 'asia-southeast1', '--platform', 'managed', '--allow-unauthenticated']
+    args:
+      - run
+      - deploy
+      - "${_SERVICE_NAME}"
+      - "--image"
+      - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
+      - "--region"
+      - "${_REGION}"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--memory"
+      - "1Gi"
+      - "--cpu"
+      - "2"
+      - "--concurrency"
+      - "80"
+      - "--min-instances"
+      - "1"
+      - "--max-instances"
+      - "20"
+
 options:
   logging: CLOUD_LOGGING_ONLY
-substitutions:
-  _DEPLOY_REGION: asia-southeast1
-  _PLATFORM: managed
+
 images:
-- 'asia-southeast1-docker.pkg.dev/delta-chess-482214-p4/tiprepo/trade-income-planner:$COMMIT_SHA'
+  - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${_GCP_PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:latest"

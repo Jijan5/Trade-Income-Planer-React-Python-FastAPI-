@@ -1,22 +1,78 @@
-runtime: python313-slim
+# =============================================================================
+# app.yaml — Google App Engine Configuration (TEMPLATE)
+# =============================================================================
+# This file is provided as a deployment reference for Google App Engine.
+# The platform is currently deployed via Docker on a VM (see docker-compose.yml).
+#
+# TO USE WITH GCP APP ENGINE:
+#   1. Fill in all env_variables values below with your real secrets.
+#   2. Do NOT commit a filled-in version to git — keep secrets out of source control.
+#   3. Run: gcloud app deploy
+#
+# IMPORTANT: Alternatively, use GCP Secret Manager and reference secrets
+#            instead of hardcoding them in this file.
+# =============================================================================
 
-entrypoint: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+runtime: python313
+
+entrypoint: >
+  gunicorn backend.app.main:app
+  --bind 0.0.0.0:$PORT
+  --workers 8
+  --worker-class uvicorn.workers.UvicornWorker
+  --worker-connections 1000
+  --max-requests 1000
+  --max-requests-jitter 100
+  --timeout 120
+  --keep-alive 5
+  --preload
 
 env_variables:
-  SECRET_KEY: "SECRET_KEY"
-  GEMINI_API_KEY: "GEMINI_API_KEY"
-  MYSQL_USER: "MYSQL_USER"
-  MYSQL_PASSWORD: "MYSQL_PASSWORD"
-  MYSQL_SERVER: "MYSQL_SERVER"
-  MYSQL_PORT: "MYSQL_PORT"
-  MYSQL_DB: "MYSQL_DB"
-  VITE_API_BASE_URL: "VITE_API_BASE_URL"
-  server_key: "MIDTRANS_SERVER_KEY"
-  client_key: "MIDTRANS_CLIENT_KEY"
+  # ── Core Security ──────────────────────────────────────────────────────────
+  SECRET_KEY: "REPLACE_WITH_STRONG_RANDOM_SECRET"
+  ENVIRONMENT: "production"
+
+  # ── Database ───────────────────────────────────────────────────────────────
+  DATABASE_URL: "mysql+pymysql://USER:PASSWORD@HOST:3306/DB_NAME"
+
+  # ── AI Services ────────────────────────────────────────────────────────────
+  GEMINI_API_KEY: "REPLACE_WITH_GEMINI_KEY"
+  GEMINI_TRADING_COACH_KEY: "REPLACE_WITH_GEMINI_COACH_KEY"
+
+  # ── OAuth (Google Login) ───────────────────────────────────────────────────
+  GOOGLE_CLIENT_ID: "REPLACE_WITH_GOOGLE_CLIENT_ID"
+  GOOGLE_CLIENT_SECRET: "REPLACE_WITH_GOOGLE_CLIENT_SECRET"
+
+  # ── Payment (LemonSqueezy) ─────────────────────────────────────────────────
+  LEMONSQUEEZY_API_KEY: "REPLACE_WITH_LS_API_KEY"
+  LEMONSQUEEZY_STORE_ID: "REPLACE_WITH_LS_STORE_ID"
+  LEMONSQUEEZY_WEBHOOK_SECRET: "REPLACE_WITH_LS_WEBHOOK_SECRET"
+
+  # ── Email / SMTP ───────────────────────────────────────────────────────────
+  SMTP_SERVER: "smtp.yourprovider.com"
+  SMTP_PORT: "587"
+  SMTP_USER: "your@email.com"
+  SMTP_PASSWORD: "REPLACE_WITH_SMTP_PASSWORD"
+  SUPPORT_EMAIL: "support@yourdomain.com"
+
+  # ── URLs ───────────────────────────────────────────────────────────────────
+  FRONTEND_URL: "https://yourdomain.com"
+  API_BASE_URL: "https://api.yourdomain.com"
+  ALLOWED_ORIGINS: "https://yourdomain.com,https://www.yourdomain.com"
+  VITE_API_BASE_URL: "https://api.yourdomain.com"
+
+  # ── Performance ────────────────────────────────────────────────────────────
+  WEB_CONCURRENCY: "8"
+  RATE_LIMIT_REQUESTS: "300"
+  RATE_LIMIT_WINDOW: "60"
+  DB_POOL_SIZE: "50"
+  DB_MAX_OVERFLOW: "100"
 
 automatic_scaling:
   target_cpu_utilization: 0.65
   min_instances: 1
-  max_instances: 10
+  max_instances: 20
 
-instance_class: F1
+# F4 = 512MB RAM, F4_1G = 1GB RAM
+# For production with 10k users, use at least F4_1G
+instance_class: F4_1G
